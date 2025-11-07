@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" 
+           xmlns:fx="http://javafx.com/fxml/1" 
+           fx:controller="com.ionres.respondph.admin.login.LoginFrameController"
+           styleClass="root-pane">
+    
+    <VBox styleClass="login-panel" maxWidth="450" maxHeight="450" alignment="CENTER">
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+        
+        <HBox alignment="CENTER" spacing="10" styleClass="logo-box">
+            <Label text="🛡" styleClass="shield-icon"/>
+            <Label text="RESPONDPH" styleClass="brand-name"/>
+        </HBox>
+        
+        <Label text="LOGIN TO YOUR ACCOUNT" styleClass="title-label">
+            <VBox.margin>
+                <Insets top="20" bottom="20"/>
+            </VBox.margin>
+        </Label>
+        
+        <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="10">
+            <Label text="👤" styleClass="icon-label"/>
+            <TextField fx:id="usernameField" promptText="USERNAME" styleClass="input-field" HBox.hgrow="ALWAYS"/>
+            <VBox.margin>
+                <Insets bottom="15"/>
+            </VBox.margin>
+        </HBox>
+        
+        <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="10">
+            <Label text="🔒" styleClass="icon-label"/>
+            <PasswordField fx:id="passwordField" promptText="PASSWORD" styleClass="input-field" HBox.hgrow="ALWAYS"/>
+        </HBox>
+        
+        <HBox alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="15" bottom="10"/>
+            </padding>
+            <CheckBox fx:id="rememberMeCheck" text="Remember me" styleClass="remember-checkbox"/>
+        </HBox>
+        
+        <Button text="LOG IN" onAction="#handleLogin" styleClass="login-button" maxWidth="Infinity">
+            <VBox.margin>
+                <Insets top="10"/>
+            </VBox.margin>
+        </Button>
+        
+    </VBox>
+    
+</StackPane>

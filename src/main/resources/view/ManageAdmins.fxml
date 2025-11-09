@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="rootPane" prefWidth="800" prefHeight="600" stylesheets="@/styles/manageadmins.css">
+    <VBox spacing="20" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="20">
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="20">
+            <Label text="Manage Admins" styleClass="header-label"/>
+            <Button text="Add New" styleClass="add-button"/>
+        </HBox>
+
+        <!-- Table -->
+        <TableView fx:id="adminTable" styleClass="admin-table">
+            <columns>
+                <TableColumn text="Username" prefWidth="150"/>
+                <TableColumn text="Age" prefWidth="80"/>
+                <TableColumn text="Email" prefWidth="200"/>
+                <TableColumn text="Role" prefWidth="150"/>
+                <TableColumn text="Actions" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+</AnchorPane>

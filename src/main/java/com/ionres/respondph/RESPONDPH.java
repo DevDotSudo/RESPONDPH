@@ -8,6 +8,10 @@ import javafx.stage.Stage;
 
 public class RESPONDPH extends Application {
     
+    public static void main(String[] args) {
+        launch(args);
+    }
+    
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -21,13 +25,10 @@ public class RESPONDPH extends Application {
             primaryStage.setScene(scene);
             primaryStage.setMinWidth(1200);
             primaryStage.setMinHeight(800);
+            primaryStage.setMaximized(true); 
             primaryStage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    public static void main(String[] args) {
-        launch(args);
     }
 }

@@ -20,7 +20,7 @@
                 <Label styleClass="sidebar-brand-highlight" text="PH" />
             </HBox>
             
-            <VBox styleClass="nav-menu" VBox.vgrow="ALWAYS">
+            <VBox prefHeight="75.0" prefWidth="219.0" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 
                 <Button onAction="#handleDashboard" styleClass="nav-button, nav-button-active">
                     <graphic>
@@ -67,25 +67,10 @@
     </left>
     
     <center>
-        <VBox styleClass="content-area">
+        <VBox fx:id="contentArea" prefHeight="Infinity" prefWidth="Infinity" styleClass="content-area">
             <padding>
                 <Insets bottom="40" left="40" right="40" top="40" />
             </padding>
-            
-            <Label styleClass="page-title" text="Dashboard">
-                <VBox.margin>
-                    <Insets bottom="30" />
-                </VBox.margin>
-            </Label>
-            
-            <VBox styleClass="map-placeholder" VBox.vgrow="ALWAYS">
-                <padding>
-                    <Insets bottom="40" left="40" right="40" top="40" />
-                </padding>
-                <Label styleClass="map-placeholder-text" text="Mapping na diri" />
-            </VBox>
-            
         </VBox>
     </center>
-    
 </BorderPane>

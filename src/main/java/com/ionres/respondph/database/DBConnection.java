@@ -1,6 +1,6 @@
 package com.ionres.respondph.database;
 
-import java.io.InputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,50 +19,42 @@ public class DBConnection {
         connection = createConnection();
     }
 
-    public static synchronized DBConnection getInstance() {
+    public static DBConnection getInstance() {
         if (instance == null) {
-            instance = new DBConnection();
+            synchronized (DBConnection.class) {
+                if (instance == null) {
+                    instance = new DBConnection();
+                }
+            }
         }
         return instance;
     }
 
     private Connection createConnection() {
-        try (InputStream input = DBConnection.class.getResourceAsStream("/config/Outlet.properties")) {
-            if (input == null) {
+        try {
+            Properties props = new Properties();
+            props.load(new FileInputStream("config/Outlet.properties"));
+            if (props == null) {
                 LOGGER.severe("Database configuration file not found.");
-                return null;
+                throw new IOException("Database configuration file not found.");
             }
+            String driver = props.getProperty("driver");
+            String url = props.getProperty("url");
+            String user = props.getProperty("user");
+            String pass = props.getProperty("pass");
 
-            Properties outlet = new Properties();
-            outlet.load(input);
-            Class.forName(outlet.getProperty("driver"));
-
-            return DriverManager.getConnection(
-                    outlet.getProperty("url"),
-                    outlet.getProperty("user"),
-                    outlet.getProperty("pass")
-            );
+            Class.forName(driver);
+            return DriverManager.getConnection(url, user, pass);
         } catch (IOException | ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to create database connection", ex);
-            return null;
+            throw new RuntimeException("Database connection failure", ex);
         }
     }
 
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connection = createConnection();
-            if (connection == null) {
-                throw new SQLException("Failed to re-establish database connection.");
-            }
         }
         return connection;
-    }
-
-    public static void main(String[] args) {
-        try {
-            System.out.println(DBConnection.getInstance().getConnection());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

@@ -28,7 +28,7 @@ public class RESPONDPH extends Application {
             primaryStage.setMaximized(true); 
             primaryStage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            
         }
     }
 }

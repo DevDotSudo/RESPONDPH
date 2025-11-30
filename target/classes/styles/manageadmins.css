@@ -1,0 +1,39 @@
+/* Root background */
+#rootPane {
+    -fx-background-color: #f5f6fa;
+}
+
+/* Header label */
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Add New button */
+.add-button {
+    -fx-background-color: #ff7f50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 6 15 6 15;
+    -fx-background-radius: 6;
+}
+
+.add-button:hover {
+    -fx-background-color: #ff6333;
+}
+
+/* Table style */
+.admin-table {
+    -fx-background-color: white;
+    -fx-border-color: #dcdde1;
+    -fx-border-width: 1;
+    -fx-table-cell-border-color: #dcdde1;
+    -fx-padding: 10;
+}
+
+.admin-table .column-header {
+    -fx-background-color: #ecf0f1;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}

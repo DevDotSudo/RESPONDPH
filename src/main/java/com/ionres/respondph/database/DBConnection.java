@@ -59,6 +59,10 @@ public class DBConnection {
     }
 
     public static void main(String[] args) {
-        System.out.println(DBConnection.getInstance());
+        try {
+            System.out.println(DBConnection.getInstance().getConnection());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

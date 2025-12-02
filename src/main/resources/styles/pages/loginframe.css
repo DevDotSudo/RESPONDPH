@@ -41,7 +41,7 @@
     -fx-max-height: 40;
 }
 
-.input-box:focused-within {
+.input-box:focused {
     -fx-border-color: #f97316;
 }
 

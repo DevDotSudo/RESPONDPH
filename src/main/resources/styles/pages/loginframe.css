@@ -65,9 +65,6 @@
     -fx-border-color: transparent;
     -fx-background-insets: 0;
     -fx-border-insets: 0;
-}
-
-.input-field:focused {
     -fx-effect: null;
 }
 

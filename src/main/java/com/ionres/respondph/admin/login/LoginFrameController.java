@@ -38,12 +38,12 @@ public class LoginFrameController {
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
                 loginStage.close();
                 
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/MainFrame.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pages/MainFrame.fxml"));
                 Parent root = loader.load();
                 
                 Stage stage = new Stage();
                 Scene scene = new Scene(root, 1200, 800);
-                scene.getStylesheets().add(getClass().getResource("/styles/mainframe.css").toExternalForm());
+                scene.getStylesheets().add(getClass().getResource("/styles/pages/mainframe.css").toExternalForm());
                 
                 stage.setTitle("RespondPH - Dashboard");
                 stage.setScene(scene);

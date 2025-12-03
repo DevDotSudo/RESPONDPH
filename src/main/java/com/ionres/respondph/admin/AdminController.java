@@ -12,7 +12,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
 import java.io.IOException;
 
 public class AdminController {
@@ -24,7 +23,7 @@ public class AdminController {
     private TableView<AdminModel> adminTable;
     
     @FXML
-    private TableColumn<AdminModel, Integer> idColumn;
+    private TableColumn<AdminModel, String> idColumn;
     
     @FXML
     private TableColumn<AdminModel, String> usernameColumn;
@@ -55,6 +54,7 @@ public class AdminController {
     
     @FXML
     public void initialize() {
+        adminTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         setupTableColumns();
         setupButtons();
         loadAdminData();

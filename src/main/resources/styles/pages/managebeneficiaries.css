@@ -83,6 +83,24 @@
     -fx-background-color: #e5e7eb;
 }
 
+.search-button {
+    -fx-background-color: #f97316;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.search-button:hover {
+    -fx-background-color: #ea580c;
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
 .add-button {
     -fx-background-color: #f97316;
     -fx-text-fill: white;

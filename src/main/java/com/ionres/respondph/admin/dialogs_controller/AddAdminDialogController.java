@@ -1,4 +1,4 @@
-package com.ionres.respondph.admin.components_controller;
+package com.ionres.respondph.admin.dialogs_controller;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

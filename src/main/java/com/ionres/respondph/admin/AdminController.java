@@ -1,6 +1,6 @@
 package com.ionres.respondph.admin;
 
-import com.ionres.respondph.admin.components_controller.AddAdminDialogController;
+import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -94,7 +94,7 @@ public class AdminController {
     @FXML
     private void showAddAdminDialog() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/components/AddAdminDialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/AddAdminDialog.fxml"));
             Parent dialogRoot = loader.load();
             
             AddAdminDialogController dialogController = loader.getController();

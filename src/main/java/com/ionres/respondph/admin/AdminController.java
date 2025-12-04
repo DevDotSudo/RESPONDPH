@@ -29,22 +29,25 @@ public class AdminController {
     private TableColumn<AdminModel, String> usernameColumn;
     
     @FXML
-    private TableColumn<AdminModel, Integer> ageColumn;
+    private TableColumn<AdminModel, Integer> fNameColumn;
     
     @FXML
-    private TableColumn<AdminModel, String> emailColumn;
+    private TableColumn<AdminModel, String> mNameColumn;
     
     @FXML
-    private TableColumn<AdminModel, String> roleColumn;
+    private TableColumn<AdminModel, String> lNameColumn;
     
     @FXML
-    private TableColumn<AdminModel, String> statusColumn;
+    private TableColumn<AdminModel, String> regDateColumn;
     
     @FXML
     private TableColumn<AdminModel, Void> actionsColumn;
     
     @FXML
-    private TextField searchField;
+    private TextField searchFld;
+
+    @FXML
+    private Button searchBtn;
     
     @FXML
     private Button addButton;
@@ -57,9 +60,14 @@ public class AdminController {
         adminTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         setupTableColumns();
         setupButtons();
-        loadAdminData();
+        loadTable();
     }
-    
+
+    @FXML
+    private void handleSearch() {
+        System.out.println(searchFld.getText());
+    }
+
     private void setupTableColumns() {
     }
     
@@ -74,12 +82,13 @@ public class AdminController {
         refreshButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                loadAdminData();
+                loadTable();
             }
         });
     }
     
-    private void loadAdminData() {
+    private void loadTable() {
+        System.out.println("Loading Table");
     }
     
     @FXML
@@ -103,7 +112,7 @@ public class AdminController {
             dialogStage.showAndWait();
             
             if (dialogController.isAdminAdded()) {
-                loadAdminData();
+                loadTable();
             }
             
         } catch (IOException e) {

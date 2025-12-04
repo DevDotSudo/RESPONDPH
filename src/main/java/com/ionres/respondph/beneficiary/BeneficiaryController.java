@@ -20,6 +20,9 @@ public class BeneficiaryController {
     private TextField searchField;
 
     @FXML
+    private  Button searchBtn;
+
+    @FXML
     private Button addButton;
 
     @FXML
@@ -52,6 +55,7 @@ public class BeneficiaryController {
     @FXML
     private void initialize() {
         beneficiaryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        loadTable();
     }
 
     @FXML
@@ -67,5 +71,9 @@ public class BeneficiaryController {
     @FXML
     private void handleRefresh() {
         System.out.println("Refresh Beneficiaries");
+    }
+
+    private void loadTable() {
+        System.out.println("Loading Table");
     }
 }

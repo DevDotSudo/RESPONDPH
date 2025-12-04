@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="rootPane" prefHeight="650" prefWidth="900" styleClass="root-pane" stylesheets="@/styles/pages/managebeneficiaries.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.BeneficiaryController">
+    
+    <VBox spacing="20" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        
+        <VBox styleClass="header-section">
+            <padding>
+                <Insets bottom="20" left="40" right="40" top="30" />
+            </padding>
+            
+            <Label styleClass="page-title" text="Manage Beneficiaries" />
+            
+            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+                <VBox.margin>
+                    <Insets top="20" />
+                </VBox.margin>
+                
+                <TextField fx:id="searchField" prefWidth="300" promptText="Search beneficiaries..." styleClass="search-field" />
+            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" stylesheets="@../../styles/pages/managebeneficiaries.css" text="Search" />
+                
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="addButton" onAction="#handleAddBeneficiary" styleClass="add-button" text="+ Add Beneficiary" />
+                <Button fx:id="refreshButton" onAction="#handleRefresh" styleClass="refresh-button" text="⟳ Refresh" />
+            </HBox>
+        </VBox>
+
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets bottom="40" left="40" right="40" />
+            </padding>
+            
+            <TableView fx:id="beneficiaryTable" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="nameColumn" prefWidth="1" text="Full Name" />
+                    <TableColumn fx:id="ageColumn" prefWidth="1" text="Age" />
+                    <TableColumn fx:id="contactColumn" prefWidth="1" text="Contact" />
+                    <TableColumn fx:id="addressColumn" prefWidth="1" text="Address" />
+                    <TableColumn fx:id="statusColumn" prefWidth="1" text="Status" />
+                    <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered" />
+                    <TableColumn fx:id="actionsColumn" prefWidth="1" text="Actions" />
+                </columns>
+            </TableView>
+        </VBox>
+        
+    </VBox>
+</AnchorPane>

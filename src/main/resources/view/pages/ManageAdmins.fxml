@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="rootPane" prefHeight="650" prefWidth="900" styleClass="root-pane" stylesheets="@/styles/pages/manageadmins.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.AdminController">
+
+    <VBox spacing="20" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <VBox styleClass="header-section">
+            <padding>
+                <Insets bottom="20" left="40" right="40" top="30" />
+            </padding>
+
+            <Label styleClass="page-title" text="Manage Admins" />
+
+            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+                <VBox.margin>
+                    <Insets top="20" />
+                </VBox.margin>
+
+                <TextField fx:id="searchFld" prefWidth="300" promptText="Search admins..." styleClass="search-field" />
+                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" stylesheets="@../../styles/pages/manageadmins.css" text="Search" />
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button fx:id="addButton" styleClass="add-button" text="+ Add Admin" />
+                <Button fx:id="refreshButton" styleClass="refresh-button" text="⟳ Refresh" />
+            </HBox>
+        </VBox>
+
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets bottom="40" left="40" right="40" />
+            </padding>
+
+            <TableView fx:id="adminTable" styleClass="admin-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="usernameColumn" prefWidth="1" text="Username" />
+                    <TableColumn fx:id="fNameColumn" prefWidth="1" text="First Name" />
+                    <TableColumn fx:id="mNameColumn" prefWidth="1" text="Middle Name" />
+                    <TableColumn fx:id="lNameColumn" minWidth="2.0" prefWidth="2.0" text="Last Name" />
+                    <TableColumn fx:id="regDateColumn" prefWidth="28.0" text="Registered Date" />
+                    <TableColumn fx:id="actionsColumn" minWidth="0.0" prefWidth="0.0" text="Actions" />
+                </columns>
+            </TableView>
+        </VBox>
+
+    </VBox>
+</AnchorPane>

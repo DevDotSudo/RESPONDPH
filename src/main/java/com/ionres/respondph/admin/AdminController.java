@@ -101,7 +101,7 @@ public class AdminController {
             
             Stage dialogStage = new Stage();
             dialogStage.initModality(Modality.APPLICATION_MODAL);
-            dialogStage.initStyle(StageStyle.UNDECORATED);
+            dialogStage.initStyle(StageStyle.DECORATED);
             dialogStage.setTitle("Add New Admin");
             
             Scene scene = new Scene(dialogRoot);

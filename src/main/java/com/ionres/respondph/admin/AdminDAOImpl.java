@@ -1,13 +1,101 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.ionres.respondph.admin;
 
-/**
- *
- * @author Davie
- */
-public class AdminDAOImpl {
-    
+import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.Cryptography;
+
+import javax.swing.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class AdminDAOImpl implements AdminDAO {
+
+    @Override
+    public boolean saving(AdminModel am) {
+        String sql = "INSERT INTO admin (username, first_name, middle_name, last_name, hash) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, am.getUsername());
+            ps.setString(2, am.getFirstname());
+            ps.setString(3, am.getMiddlename());
+            ps.setString(4, am.getLastname());
+            ps.setString(5, am.getPassword());
+
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        boolean flag = false;
+        String query = "SELECT * FROM admin where username=?";
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                flag = (rs.next());
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return flag;
+    }
+
+    @Override
+    public List<AdminModel> getAll() {
+        List<AdminModel> admins = new ArrayList<>();
+        String query = "SELECT * FROM admin";
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
+                    List<String> encrypted = new ArrayList();
+                    encrypted.add(rs.getString(2));
+                    encrypted.add(rs.getString(3));
+                    encrypted.add(rs.getString(4));
+                    encrypted.add(rs.getString(5));
+
+                    List<String> decrypted = cs.decrypt(encrypted);
+
+                    AdminModel admin = new AdminModel();
+                    admin.setId(rs.getInt("admin_id"));
+                    admin.setUsername(decrypted.get(0));
+                    admin.setFirstname(decrypted.get(1));
+                    admin.setMiddlename(decrypted.get(2));
+                    admin.setLastname(decrypted.get(3));
+
+                    admins.add(admin);
+                }
+            }
+
+            catch (Exception ex)
+            {
+                Logger.getLogger(AdminDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return admins;
+    }
 }

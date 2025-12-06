@@ -2,6 +2,7 @@ package com.ionres.respondph.database;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,17 +32,18 @@ public class DBConnection {
     }
 
     private Connection createConnection() {
-        try {
-            Properties props = new Properties();
-            props.load(new FileInputStream("config/Outlet.properties"));
-            if (props == null) {
+        try (InputStream input = DBConnection.class.getResourceAsStream("/config/Outlet.properties")) {
+            if (input == null) {
                 LOGGER.severe("Database configuration file not found.");
                 throw new IOException("Database configuration file not found.");
             }
-            String driver = props.getProperty("driver");
-            String url = props.getProperty("url");
-            String user = props.getProperty("user");
-            String pass = props.getProperty("pass");
+
+            Properties outlet = new Properties();
+            outlet.load(input);
+            String driver = outlet.getProperty("driver");
+            String url = outlet.getProperty("url");
+            String user = outlet.getProperty("user");
+            String pass = outlet.getProperty("pass");
 
             Class.forName(driver);
             return DriverManager.getConnection(url, user, pass);

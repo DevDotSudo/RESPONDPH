@@ -1,26 +1,56 @@
 package com.ionres.respondph.admin;
 
 public class AdminModel {
-    private String adminID;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private int id;
+    private String username;
+    private String firstname;
+    private String middlename;
+    private String lastname;
     private String password;
 
-    public AdminModel(String adminID, String firstName, String middleName, String lastName, String password) {
-        this.adminID = adminID;
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.password = password;
+
+    public int getId(){
+        return id;
+    }
+    public void setId(int newId){
+        this.id = newId;
+    }
+    public String getUsername(){
+        return  username;
+    }
+    public void setUsername(String newUsername){
+        this.username = newUsername;
     }
 
-    public String getAdminID() {
-        return adminID;
+    public String getFirstname(){
+        return  firstname;
+    }
+    public void setFirstname(String newFirstname){
+        this.firstname = newFirstname;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getMiddlename(){
+        return  middlename;
+    }
+    public void setMiddlename(String newMiddlename){
+        this.middlename = newMiddlename;
     }
 
+
+    public String getLastname(){
+        return lastname;
+
+    }
+    public void  setLastname(String newLastname){
+        this.lastname = newLastname;
+    }
+
+    public String getPassword(){
+        return  password;
+    }
+    public void setPassword(String newPassword){
+        this.password =  newPassword;
+    }
+
+    
 }

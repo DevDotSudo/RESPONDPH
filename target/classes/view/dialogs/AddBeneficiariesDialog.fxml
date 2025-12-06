@@ -20,7 +20,13 @@
       <ComboBox fx:id="genderSelection" prefHeight="35.0" prefWidth="186.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
         <Label styleClass="field-label" text="Middle Name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <TextField fx:id="middleNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter middle name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+        <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+
+        <Label styleClass="field-label" text="Password *" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="7" />
 
         <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="2" GridPane.rowIndex="2" />
         <TextField fx:id="lastNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter last name" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="3" />
@@ -30,10 +36,9 @@
       <TextField fx:id="maritalStatusFld" prefHeight="35.0" prefWidth="186.0" promptText="Enter marital status" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="5" />
 
         <columnConstraints>
-            <ColumnConstraints percentWidth="50.0" />
-            <ColumnConstraints percentWidth="50.0" />
+            <ColumnConstraints percentWidth="50" />
+            <ColumnConstraints percentWidth="50" />
          <ColumnConstraints minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-         <ColumnConstraints />
         </columnConstraints>
         <rowConstraints>
             <RowConstraints />

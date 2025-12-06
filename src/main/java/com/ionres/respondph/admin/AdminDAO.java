@@ -1,5 +1,9 @@
 package com.ionres.respondph.admin;
 
-public class AdminDAO {
-    
+import java.util.List;
+
+public interface AdminDAO {
+    public boolean saving(AdminModel am);
+    boolean existsByUsername(String username);
+    List<AdminModel> getAll();
 }

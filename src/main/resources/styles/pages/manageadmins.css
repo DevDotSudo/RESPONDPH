@@ -202,7 +202,7 @@
     -fx-font-size: 14px;
     -fx-text-fill: #1f2937;
     -fx-font-weight: 600;
-    -fx-padding: 0;
+    -fx-padding: 5px;
 }
 
 .action-button {

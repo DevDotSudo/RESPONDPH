@@ -85,6 +85,7 @@ public class AdminController {
         fNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstname"));
         mNameColumn.setCellValueFactory(new PropertyValueFactory<>("middlename"));
         lNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastname"));
+        regDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
     }
 
     private void setupButtons() {
@@ -99,7 +100,6 @@ public class AdminController {
         List<AdminModel> admins = adminService.getAllAdmins();
 
         adminList = FXCollections.observableArrayList(admins);
-
         adminTable.setItems(adminList);
     }
 

@@ -9,6 +9,17 @@ public class AdminModel {
     private String regDate;
     private String password;
 
+    public AdminModel(String username,String firstname, String middlename, String lastname, String regDate, String password){
+        this.username = username;
+        this.firstname = firstname;
+        this.middlename = middlename;
+        this.lastname = lastname;
+        this.regDate = regDate;
+        this.password = password;
+    }
+
+    public AdminModel(){}
+
     public int getId(){
         return id;
     }

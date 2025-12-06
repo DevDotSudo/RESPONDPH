@@ -9,19 +9,3 @@
     -fx-text-fill: #1f2937;
 }
 
-.map-placeholder {
-    -fx-background-color: white;
-    -fx-border-color: #d1d5db;
-    -fx-border-width: 2;
-    -fx-border-style: dashed;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-alignment: center;
-}
-
-.map-placeholder-text {
-    -fx-font-family: "Arial";
-    -fx-font-size: 24px;
-    -fx-text-fill: #f97316;
-    -fx-font-weight: normal;
-}

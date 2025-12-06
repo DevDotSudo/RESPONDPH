@@ -1,5 +1,6 @@
 package com.ionres.respondph.admin.login;
 
+import com.ionres.respondph.admin.AdminModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,7 +12,9 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class LoginController {
-    
+    LoginService loginService = new LoginServiceImpl();
+    private AdminModel admin = new AdminModel();
+
     @FXML
     private TextField usernameField;
     
@@ -26,15 +29,17 @@ public class LoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
         boolean rememberMe = rememberMeCheck.isSelected();
-        
-        if (username.isEmpty() || password.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Validation Error", 
-                     "Please enter both username and password.");
-            return;
-        }
-        
-        if (username.equals("a") && password.equals("a")) {
-            try {
+
+        try {
+            if (username.isEmpty() || password.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Validation Error",
+                        "Please enter both username and password.");
+                return;
+            }
+
+            admin = loginService.login(username, password);
+
+            if (admin != null) {
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
                 loginStage.close();
                 
@@ -51,14 +56,15 @@ public class LoginController {
                 stage.setMinHeight(800);
                 stage.setMaximized(true); 
                 stage.show();
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load dashboard: " + e.getMessage());
             }
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.");
-            passwordField.clear();
+            else {
+                showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.");
+                passwordField.clear();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load mapping: " + e.getMessage());
         }
     }
     

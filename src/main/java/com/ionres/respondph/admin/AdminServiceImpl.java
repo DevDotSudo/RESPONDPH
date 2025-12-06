@@ -1,11 +1,16 @@
 
 package com.ionres.respondph.admin;
 
-import com.ionres.respondph.exception.ExceptionFactory;
+import com.ionres.respondph.exception.*;
+import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.time.LocalDate;
 import java.util.List;
+import java.sql.SQLException;
 
 
 public class AdminServiceImpl implements  AdminService{
@@ -20,19 +25,39 @@ public class AdminServiceImpl implements  AdminService{
 
     @Override
     public boolean createAdmin(AdminModel admin) {
-        if (admin.getUsername() == null || admin.getUsername().isBlank()) {
-            throw ExceptionFactory.missingField("Username");
-        }
+        try {
+            if (admin.getUsername() == null || admin.getUsername().isBlank()) {
+                throw ExceptionFactory.missingField("Username");
+            }
 
-        if (adminDao.existsByUsername(admin.getUsername())) {
-            throw ExceptionFactory.duplicate("Admin", admin.getUsername());
-        }
-        boolean flag = adminDao.saving(admin);
+            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
-        if (!flag) {
-            throw ExceptionFactory.failedToCreate("Admin");
+            List<String> encryptedData = cs.encrypt(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
+            String hashedPassword = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
+
+            String encryptedUsername = encryptedData.get(0);
+            String encryptedFname = encryptedData.get(1);
+            String encryptedMname = encryptedData.get(2);
+            String encryptedLname = encryptedData.get(3);
+            String encryptedRegDate = encryptedData.get(4);
+
+            if (adminDao.existsByUsername(encryptedUsername)) {
+                throw ExceptionFactory.duplicate("Admin", admin.getUsername());
+            }
+
+            boolean flag = adminDao.saving(new AdminModel(encryptedUsername, encryptedFname, encryptedMname, encryptedLname, encryptedRegDate, hashedPassword));
+            if (!flag) {
+                throw ExceptionFactory.failedToCreate("Admin");
+            }
+            return flag;
+        } catch (SQLException ex) {
+            System.out.println("Error : " + ex);
+            return  false;
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex);
+            return  false;
         }
-        return flag;
     }
 
     @Override

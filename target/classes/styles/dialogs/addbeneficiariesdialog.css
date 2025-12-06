@@ -1,6 +1,5 @@
 .dialog-container {
     -fx-background-color: #374151;
-    -fx-background-radius: 16;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 30, 0, 0, 6);
 }
 

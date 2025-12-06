@@ -27,8 +27,7 @@ public class AdminDAOImpl implements AdminDAO {
             ps.setString(3, am.getMiddlename());
             ps.setString(4, am.getLastname());
             ps.setString(5, am.getRegDate());
-            ps.setString(5, am.getPassword());
-
+            ps.setString(6, am.getPassword());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -41,22 +40,22 @@ public class AdminDAOImpl implements AdminDAO {
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        boolean flag = false;
-        String query = "SELECT * FROM admin where username=?";
+    public boolean existsByUsername(String encryptedUsername) {
+        String sql = "SELECT COUNT(*) FROM admin WHERE username = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            stmt.setString(1, username);
+            ps.setString(1, encryptedUsername);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                flag = (rs.next());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return flag;
+        return false;
     }
 
     @Override
@@ -75,6 +74,7 @@ public class AdminDAOImpl implements AdminDAO {
                     encrypted.add(rs.getString(3));
                     encrypted.add(rs.getString(4));
                     encrypted.add(rs.getString(5));
+                    encrypted.add(rs.getString(6));
 
                     List<String> decrypted = cs.decrypt(encrypted);
 
@@ -84,6 +84,7 @@ public class AdminDAOImpl implements AdminDAO {
                     admin.setFirstname(decrypted.get(1));
                     admin.setMiddlename(decrypted.get(2));
                     admin.setLastname(decrypted.get(3));
+                    admin.setRegDate(decrypted.get(4));
 
                     admins.add(admin);
                 }
@@ -98,5 +99,10 @@ public class AdminDAOImpl implements AdminDAO {
             ex.printStackTrace();
         }
         return admins;
+    }
+
+    @Override
+    public AdminModel login(String username, String password) {
+        return null;
     }
 }

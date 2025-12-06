@@ -26,9 +26,10 @@ public class Cryptography {
 
 
     public List<String> encrypt(String username, String firstname, String middlename,
-                                String lastname, String password) throws Exception {
+                                String lastname, String regDate) throws Exception {
 
-        String[] inputs = {username, firstname, middlename, lastname, password};
+        String[] inputs = {username, firstname, middlename, lastname, regDate};
+
         List<String> encryptedList = new ArrayList<>();
 
         for (String input : inputs) {

@@ -1,143 +1,267 @@
+/* ===== DIALOG CONTAINER ===== */
 .dialog-container {
     -fx-background-color: #374151;
-    -fx-background-radius: 16;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 30, 0, 0, 6);
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 25, 0, 0, 8);
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 2px;
 }
 
-.dialog-title {
-    -fx-font-family: "Arial";
-    -fx-font-size: 28px;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
+.dialog-header {
     -fx-padding: 0 0 10 0;
 }
 
+.dialog-header-icon {
+    -fx-fill: #f97316;
+    -fx-icon-size: 28px;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.2), 8, 0, 0, 2);
+}
+
+.dialog-title {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 26px;
+    -fx-font-weight: 700;
+    -fx-text-fill: white;
+}
+
+.header-separator {
+    -fx-background-color: #f3f4f6;
+    -fx-padding: 0 0 5 0;
+}
+
+/* ===== FORM GRID ===== */
 .form-grid {
     -fx-background-color: transparent;
 }
 
 .field-label {
-    -fx-font-family: "Arial";
+    -fx-font-family: "Segoe UI", sans-serif;
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #e5e7eb;
+    -fx-font-weight: 600;
+    -fx-text-fill: white;
+    -fx-padding: 0 0 5 0;
 }
 
-.input-field {
-    -fx-background-color: #f9fafb;
-    -fx-background-radius: 6;
+.field-label .text {
+    -fx-fill: white;
+}
+
+/* ===== INPUT CONTAINERS ===== */
+.input-container {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
     -fx-border-color: #e5e7eb;
-    -fx-border-width: 1;
-    -fx-border-radius: 6;
-    -fx-padding: 10 12;
-    -fx-font-family: "Arial";
-    -fx-font-size: 14px;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 10px;
+    -fx-padding: 0 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.03), 4, 0, 0, 1);
+    -fx-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-container:hover {
+    -fx-border-color: #d1d5db;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 6, 0, 0, 2);
+}
+
+.input-container:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.15), 8, 0, 0, 3);
+}
+
+.field-icon {
+    -fx-fill: #9ca3af;
+    -fx-icon-size: 16px;
+    -fx-transition: all 0.2s ease;
+}
+
+.input-container:focused .field-icon {
+    -fx-fill: #3b82f6;
+}
+
+.input-container.error .field-icon {
+    -fx-fill: #dc2626;
+}
+
+.input-container.success .field-icon {
+    -fx-fill: #16a34a;
+}
+
+/* ===== INPUT FIELDS ===== */
+.input-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 14px 0;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 15px;
     -fx-text-fill: #1f2937;
     -fx-prompt-text-fill: #9ca3af;
     -fx-effect: null;
-    -fx-transition: -fx-border-color 0.2s ease-out, -fx-background-color 0.2s ease-out;
 }
 
 .input-field:focused {
-    -fx-border-color: #2563eb;
-    -fx-border-width: 2;
-    -fx-background-color: white;
-    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.3), 5, 0, 0, 0);
+    -fx-border-width: 0;
+    -fx-effect: null;
 }
 
-.input-field:hover {
-    -fx-border-color: #a1a1aa;
-}
-
+/* Remove default PasswordField styling */
 .input-field.password-field {
+    -fx-background-color: transparent;
+}
+
+/* ===== ERROR CONTAINER ===== */
+.error-container {
+    -fx-background-color: #fef2f2;
+    -fx-background-radius: 10px;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 10px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(220, 38, 38, 0.08), 6, 0, 0, 2);
+}
+
+.error-icon {
+    -fx-fill: #dc2626;
+    -fx-icon-size: 18px;
 }
 
 .error-label {
-    -fx-font-family: "Arial";
-    -fx-font-size: 13px;
-    -fx-text-fill: #b91c1c;
-    -fx-background-color: #fef2f2;
-    -fx-background-radius: 6;
-    -fx-padding: 10 15;
-    -fx-border-color: #fecaca;
-    -fx-border-width: 1;
-    -fx-border-radius: 6;
-    -fx-max-width: 100%; /* let it expand */
-    -fx-wrap-text: true;  /* allow text to wrap inside the label */
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #991b1b;
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
 }
 
+/* ===== BUTTON CONTAINER ===== */
 .button-container {
     -fx-background-color: transparent;
+    -fx-padding: 10px 0 0 0;
+    -fx-border-color: #f3f4f6;
+    -fx-border-width: 1px 0 0 0;
 }
 
+/* ===== SAVE BUTTON ===== */
 .save-button {
-    -fx-background-color: #f97316;
-    -fx-text-fill: white;
-    -fx-font-family: "Arial";
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-padding: 12 28;
-    -fx-background-radius: 8;
-    -fx-cursor: hand;
+    -fx-background-color: linear-gradient(to right, #f97316, #ea580c);
+    -fx-background-radius: 10px;
     -fx-border-width: 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.4), 10, 0, 0, 2);
-    -fx-transition: -fx-background-color 0.2s ease-out, -fx-scale-x 0.2s ease-out, -fx-scale-y 0.2s ease-out;
+    -fx-padding: 12px 24px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.25), 10, 0, 0, 3);
+    -fx-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    -fx-content-display: LEFT;
+}
+
+.save-button .button-icon {
+    -fx-fill: white;
+    -fx-icon-size: 16px;
+    -fx-transition: all 0.2s ease;
+}
+
+.save-button .button-text {
+    -fx-text-fill: white;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
 }
 
 .save-button:hover {
-    -fx-background-color: #ea580c;
-    -fx-scale-x: 1.03;
-    -fx-scale-y: 1.03;
+    -fx-background-color: linear-gradient(to right, #ea580c, #c2410c);
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.35), 12, 0, 0, 4);
+    -fx-translate-y: -1px;
 }
 
 .save-button:pressed {
-    -fx-background-color: #c2410c;
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
-    -fx-effect: none;
+    -fx-background-color: linear-gradient(to right, #c2410c, #9a3412);
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.2), 8, 0, 0, 2);
+    -fx-translate-y: 0;
 }
 
 .save-button:disabled {
-    -fx-background-color: #d1d5db;
-    -fx-text-fill: #9ca3af;
-    -fx-cursor: default;
+    -fx-background-color: linear-gradient(to right, #d1d5db, #9ca3af);
+    -fx-text-fill: #6b7280;
     -fx-effect: none;
+    -fx-cursor: default;
 }
 
+.save-button:disabled .button-icon {
+    -fx-fill: #6b7280;
+}
+
+/* ===== CANCEL BUTTON ===== */
 .cancel-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #e5e7eb;
-    -fx-font-family: "Arial";
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-padding: 12 28;
-    -fx-background-radius: 8;
-    -fx-border-color: #6b7280;
-    -fx-border-width: 1;
-    -fx-border-radius: 8;
+    -fx-background-radius: 10px;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 10px;
+    -fx-padding: 12px 24px;
     -fx-cursor: hand;
-    -fx-effect: null;
-    -fx-transition: -fx-background-color 0.2s ease-out, -fx-border-color 0.2s ease-out;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 4, 0, 0, 1);
+    -fx-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    -fx-content-display: LEFT;
+}
+
+.cancel-button .button-icon {
+    -fx-fill: #6b7280;
+    -fx-icon-size: 16px;
+    -fx-transition: all 0.2s ease;
+}
+
+.cancel-button .button-text {
+    -fx-text-fill: #6b7280;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
 }
 
 .cancel-button:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.1);
-    -fx-border-color: #e5e7eb;
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #9ca3af;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 6, 0, 0, 2);
 }
 
 .cancel-button:pressed {
-    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-color: #f3f4f6;
+    -fx-border-color: #6b7280;
+    -fx-effect: none;
 }
 
-.input-field.error {
+/* ===== VALIDATION STATES ===== */
+.input-container.error {
     -fx-border-color: #dc2626;
-    -fx-border-width: 2;
-    -fx-background-color: #fffafa;
-    -fx-effect: dropshadow(gaussian, rgba(220, 38, 38, 0.3), 5, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(220, 38, 38, 0.1), 6, 0, 0, 2);
 }
 
-.input-field.success {
+.input-container.success {
     -fx-border-color: #16a34a;
-    -fx-border-width: 2;
-    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.3), 5, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.1), 6, 0, 0, 2);
+}
+
+/* ===== PASSWORD STRENGTH INDICATOR ===== */
+.password-strength {
+    -fx-padding: 5px 0 0 15px;
+}
+
+.strength-weak {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+}
+
+.strength-medium {
+    -fx-text-fill: #f59e0b;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+}
+
+.strength-strong {
+    -fx-text-fill: #16a34a;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
 }

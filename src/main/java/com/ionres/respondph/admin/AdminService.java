@@ -1,13 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.ionres.respondph.admin;
 
-/**
- *
- * @author Davie
- */
-public class AdminService {
+
+import java.util.List;
+
+public interface AdminService {
+
+    List<AdminModel> getAllAdmins();
+    boolean createAdmin(AdminModel admin);
+    boolean updateAdmin(AdminModel admin, String confirmPassword);
     
 }

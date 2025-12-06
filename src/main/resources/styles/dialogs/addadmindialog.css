@@ -62,7 +62,8 @@
     -fx-border-color: #fecaca;
     -fx-border-width: 1;
     -fx-border-radius: 6;
-    -fx-max-width: infinity;
+    -fx-max-width: 100%; /* let it expand */
+    -fx-wrap-text: true;  /* allow text to wrap inside the label */
 }
 
 .button-container {

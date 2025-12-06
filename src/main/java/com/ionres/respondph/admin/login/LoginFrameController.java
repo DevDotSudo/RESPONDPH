@@ -33,7 +33,7 @@ public class LoginFrameController {
             return;
         }
         
-        if (username.equals("Admin") && password.equals("admin123")) {
+        if (username.equals("a") && password.equals("a")) {
             try {
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
                 loginStage.close();

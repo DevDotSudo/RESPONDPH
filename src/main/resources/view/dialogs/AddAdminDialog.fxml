@@ -47,9 +47,10 @@
          <RowConstraints />
       </rowConstraints>
     </GridPane>
-    
-    <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
-    
+
+    <Label fx:id="errorLabel" managed="false" visible="false" styleClass="error-label" wrapText="true" maxWidth="Infinity"/>
+
+
     <HBox alignment="CENTER_RIGHT" spacing="15" styleClass="button-container">
         <VBox.margin>
             <Insets top="10" />

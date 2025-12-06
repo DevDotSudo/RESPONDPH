@@ -4,10 +4,14 @@
  */
 package com.ionres.respondph.admin;
 
+import java.util.List;
+
 /**
  *
  * @author Davie
  */
-public class AdminDAO {
-    
+public interface AdminDAO {
+    public boolean saving(AdminModel am);
+    boolean existsByUsername(String username);
+    List<AdminModel> getAll();
 }

@@ -70,7 +70,8 @@
     -fx-background-color: transparent;
 }
 
-.save-button {
+
+.update-button {
     -fx-background-color: #f97316;
     -fx-text-fill: white;
     -fx-font-family: "Arial";
@@ -84,20 +85,20 @@
     -fx-transition: -fx-background-color 0.2s ease-out, -fx-scale-x 0.2s ease-out, -fx-scale-y 0.2s ease-out;
 }
 
-.save-button:hover {
+.update-button:hover {
     -fx-background-color: #ea580c;
     -fx-scale-x: 1.03;
     -fx-scale-y: 1.03;
 }
 
-.save-button:pressed {
+.update-button:pressed {
     -fx-background-color: #c2410c;
     -fx-scale-x: 0.98;
     -fx-scale-y: 0.98;
     -fx-effect: none;
 }
 
-.save-button:disabled {
+.update-button:disabled {
     -fx-background-color: #d1d5db;
     -fx-text-fill: #9ca3af;
     -fx-cursor: default;

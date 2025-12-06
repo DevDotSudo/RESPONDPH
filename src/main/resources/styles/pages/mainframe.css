@@ -7,7 +7,7 @@
 .sidebar {
     -fx-background-color: linear-gradient(to bottom, #1f2937, #374151);
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0, 4, 0);
-    -fx-pref-width: 300px;
+    -fx-pref-width: 270px;
 }
 
 .logo-section {
@@ -52,8 +52,8 @@
     -fx-border-width: 0;
     -fx-content-display: LEFT;
     -fx-transition: all 0.2s ease;
-    -fx-min-width: 300px;
-    -fx-max-width: 300px;
+    -fx-min-width: 270px;
+    -fx-max-width: 270px;
 }
 
 .nav-button .text {

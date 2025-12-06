@@ -25,29 +25,44 @@ public class Cryptography {
     }
 
 
-    public List<String> encrypt(String username, String firstname, String middlename,
-                                String lastname, String password) throws Exception {
+//    public List<String> encrypt(String username, String firstname, String middlename,
+//                                String lastname) throws Exception {
+//
+//        String[] inputs = {username, firstname, middlename, lastname};
+//        List<String> encryptedList = new ArrayList<>();
+//
+//        for (String input : inputs) {
+//            byte[] iv = new byte[IV_SIZE];
+//            new SecureRandom().nextBytes(iv);
+//
+//            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+//            GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+//            cipher.init(Cipher.ENCRYPT_MODE, key, spec);
+//
+//            byte[] ciphertext = cipher.doFinal(input.getBytes());
+//
+//            String combined = Base64.getEncoder().encodeToString(iv) + ":"
+//                    + Base64.getEncoder().encodeToString(ciphertext);
+//            encryptedList.add(combined);
+//        }
+//
+//        return encryptedList;
+//    }
 
-        String[] inputs = {username, firstname, middlename, lastname, password};
-        List<String> encryptedList = new ArrayList<>();
+    public String encrypt(String value) throws Exception {
+        byte[] iv = new byte[IV_SIZE];
+        new SecureRandom().nextBytes(iv);
 
-        for (String input : inputs) {
-            byte[] iv = new byte[IV_SIZE];
-            new SecureRandom().nextBytes(iv);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec);
 
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-            cipher.init(Cipher.ENCRYPT_MODE, key, spec);
+        byte[] ciphertext = cipher.doFinal(value.getBytes());
 
-            byte[] ciphertext = cipher.doFinal(input.getBytes());
-
-            String combined = Base64.getEncoder().encodeToString(iv) + ":"
-                    + Base64.getEncoder().encodeToString(ciphertext);
-            encryptedList.add(combined);
-        }
-
-        return encryptedList;
+        return Base64.getEncoder().encodeToString(iv) + ":" +
+                Base64.getEncoder().encodeToString(ciphertext);
     }
+
 
 
     public List<String> decrypt(List<String> encryptedList) throws Exception {

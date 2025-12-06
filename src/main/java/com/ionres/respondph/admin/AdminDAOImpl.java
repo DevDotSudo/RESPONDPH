@@ -40,23 +40,25 @@ public class AdminDAOImpl implements AdminDAO {
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        boolean flag = false;
-        String query = "SELECT * FROM admin where username=?";
+    public boolean existsByUsername(String encryptedUsername) {
+        String sql = "SELECT COUNT(*) FROM admin WHERE username = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            stmt.setString(1, username);
+            ps.setString(1, encryptedUsername);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                flag = (rs.next());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return flag;
+
+        return false;
     }
+
 
     @Override
     public List<AdminModel> getAll() {
@@ -97,5 +99,10 @@ public class AdminDAOImpl implements AdminDAO {
             ex.printStackTrace();
         }
         return admins;
+    }
+
+    @Override
+    public AdminModel login(String username, String password) {
+        return null;
     }
 }

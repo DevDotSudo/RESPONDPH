@@ -1,5 +1,9 @@
 package com.ionres.respondph.admin.login;
 
-public class LoginDAO {
+import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.util.Cryptography;
+
+public interface LoginDAO {
+    public AdminModel findByUsernameToLogin(String usernameInput, Cryptography cs);
     
 }

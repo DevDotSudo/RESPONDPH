@@ -219,15 +219,13 @@ public class AddAdminDialogController {
     }
 
 
-
-
     private void createAdmin() {
         String username = usernameField.getText();
         String fname = firstNameField.getText();
         String mname = middleNameField.getText();
         String lname = lastNameField.getText();
-        String  password= passwordField.getText();
-        String  confirmPass= confirmPasswordField.getText();
+        String password = passwordField.getText();
+        String confirmPass = confirmPasswordField.getText();
 
         if (!password.equals(confirmPass)) {
             JOptionPane.showMessageDialog(null, "Passwords do not match");
@@ -235,35 +233,26 @@ public class AddAdminDialogController {
             return;
         }
 
-
         try {
-            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
-            List<String> encrypted = cs.encrypt(username, fname, mname, lname, password);
-
             AdminModel adminModel = new AdminModel();
-            adminModel.setUsername(encrypted.get(0));
-            adminModel.setFirstname(encrypted.get(1));
-            adminModel.setMiddlename(encrypted.get(2));
-            adminModel.setLastname(encrypted.get(3));
-            adminModel.setPassword(encrypted.get(4));
-
-
+            adminModel.setUsername(username);
+            adminModel.setFirstname(fname);
+            adminModel.setMiddlename(mname);
+            adminModel.setLastname(lname);
+            adminModel.setPassword(password);
 
             adminService.createAdmin(adminModel);
-            JOptionPane.showMessageDialog(null, "Admin successfully created.", "Success", JOptionPane.INFORMATION_MESSAGE);
 
+            JOptionPane.showMessageDialog(null,
+                    "Admin successfully created.",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
 
-        } catch (ValidationException | DuplicateEntityException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Input Error", JOptionPane.WARNING_MESSAGE);
-        } catch (EntityOperationException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        } catch (DomainException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Unexpected system failure: " + e.getMessage(), "Fatal Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
 
 }

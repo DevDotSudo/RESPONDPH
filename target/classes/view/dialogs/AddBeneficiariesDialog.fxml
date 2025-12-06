@@ -15,7 +15,9 @@
     <GridPane hgap="15" prefHeight="410.0" prefWidth="594.0" styleClass="form-grid" vgap="15">
 
         <Label styleClass="field-label" text="First Name *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <TextField fx:id="firstNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter first name" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+      <DatePicker fx:id="birthDatePicker" prefHeight="35.0" prefWidth="186.0" GridPane.rowIndex="5" />
+      <ComboBox fx:id="genderSelection" prefHeight="35.0" prefWidth="186.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
         <Label styleClass="field-label" text="Middle Name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
         <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
@@ -26,8 +28,12 @@
         <Label styleClass="field-label" text="Password *" GridPane.columnIndex="0" GridPane.rowIndex="6" />
         <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="7" />
 
-        <Label styleClass="field-label" text="Confirm Password *" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-        <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+        <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+        <TextField fx:id="lastNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter last name" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+      <Label layoutX="10.0" layoutY="40.0" styleClass="field-label" text="Birthdate *" GridPane.rowIndex="4" />
+      <Label layoutX="10.0" layoutY="124.0" styleClass="field-label" text="Gender *" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <Label layoutX="208.0" layoutY="124.0" styleClass="field-label" text="Marital Status *" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+      <TextField fx:id="maritalStatusFld" prefHeight="35.0" prefWidth="186.0" promptText="Enter marital status" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="5" />
 
         <columnConstraints>
             <ColumnConstraints percentWidth="50" />

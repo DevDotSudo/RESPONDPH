@@ -1,5 +1,10 @@
 package com.ionres.respondph.admin.login;
 
-public class LoginDAO {
-    
+import com.ionres.respondph.admin.AdminModel;
+
+public interface LoginDAO {
+    boolean saveAdmin(AdminModel adminModel);
+    boolean adminLogin(String username, String password);
+    public void fetchAdmin();
+    public void getAdminByUsername(String username);
 }

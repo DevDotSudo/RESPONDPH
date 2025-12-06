@@ -10,7 +10,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class LoginFrameController {
+public class LoginController {
     
     @FXML
     private TextField usernameField;
@@ -47,7 +47,7 @@ public class LoginFrameController {
                 
                 stage.setTitle("RespondPH - Dashboard");
                 stage.setScene(scene);
-                stage.setMinWidth(1200);
+                stage.setMinWidth(1600);
                 stage.setMinHeight(800);
                 stage.setMaximized(true); 
                 stage.show();

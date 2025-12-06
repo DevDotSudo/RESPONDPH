@@ -7,7 +7,7 @@
 
 <StackPane xmlns="http://javafx.com/javafx/17" 
            xmlns:fx="http://javafx.com/fxml/1" 
-           fx:controller="com.ionres.respondph.admin.login.LoginFrameController"
+           fx:controller="com.ionres.respondph.admin.login.LoginController"
            styleClass="root-pane"
            stylesheets="@/styles/pages/loginframe.css">
     

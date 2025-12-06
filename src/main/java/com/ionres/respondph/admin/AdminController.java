@@ -1,9 +1,7 @@
-
-
-
 package com.ionres.respondph.admin;
 
 import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -15,17 +13,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
+import javafx.util.Callback;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import java.io.IOException;
 import java.util.List;
 
 public class AdminController {
 
     private AdminService adminService = new AdminServiceImpl();
-
+    ObservableList<AdminModel> adminList;
     @FXML
     private AnchorPane rootPane;
 
@@ -71,6 +72,7 @@ public class AdminController {
         setupTableColumns();
         setupButtons();
         loadTable();
+        actionButtons();
     }
     @FXML
     private void handleSearch() {
@@ -96,7 +98,7 @@ public class AdminController {
     public void loadTable() {
         List<AdminModel> admins = adminService.getAllAdmins();
 
-        ObservableList<AdminModel> adminList = FXCollections.observableArrayList(admins);
+        adminList = FXCollections.observableArrayList(admins);
 
         adminTable.setItems(adminList);
     }
@@ -117,7 +119,7 @@ public class AdminController {
 
             Stage dialogStage = new Stage();
             dialogStage.initModality(Modality.APPLICATION_MODAL);
-            dialogStage.initStyle(StageStyle.DECORATED);
+            dialogStage.initStyle(StageStyle.UNDECORATED);
             dialogStage.setTitle("Add New Admin");
 
             dialogController.setDialogStage(dialogStage);
@@ -143,6 +145,48 @@ public class AdminController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void actionButtons() {
+        Callback<TableColumn<AdminModel, Void>, TableCell<AdminModel, Void>> cellFactory = new Callback<TableColumn<AdminModel, Void>, TableCell<AdminModel, Void>>() {
+            @Override
+            public TableCell<AdminModel, Void> call(TableColumn<AdminModel, Void> adminModelVoidTableColumn) {
+                return new TableCell<>() {
+                    private final FontAwesomeIconView editIcon = new FontAwesomeIconView(FontAwesomeIcon.EDIT);
+                    private final FontAwesomeIconView deleteIcon = new FontAwesomeIconView(FontAwesomeIcon.TRASH);
+                    private final Button editButton = new Button("", editIcon);
+                    private final Button deleteButton = new Button("", deleteIcon);
+
+                    {
+                        editButton.getStyleClass().add("action-button");
+                        deleteButton.getStyleClass().add("delete-button");
+
+                        editButton.setOnAction(event -> {
+                            AdminModel admin = getTableView().getItems().get(getIndex());
+                            System.out.println("Edit: " + admin.getId());
+                        });
+
+                        deleteButton.setOnAction(event -> {
+                            AdminModel admin = getTableView().getItems().get(getIndex());
+                            adminList.remove(admin);
+                            System.out.println("Deleted: " + admin.getId());
+                        });
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            HBox box = new HBox(10, editButton, deleteButton);
+                            setGraphic(box);
+                        }
+                    }
+                };
+            }
+        };
+        actionsColumn.setCellFactory(cellFactory);
     }
 }
 

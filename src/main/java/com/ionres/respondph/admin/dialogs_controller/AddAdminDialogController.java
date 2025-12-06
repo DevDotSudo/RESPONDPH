@@ -226,8 +226,8 @@ public class AddAdminDialogController {
         String fname = firstNameField.getText();
         String mname = middleNameField.getText();
         String lname = lastNameField.getText();
-        String  password= passwordField.getText();
-        String  confirmPass= confirmPasswordField.getText();
+        String password= passwordField.getText();
+        String confirmPass= confirmPasswordField.getText();
 
         if (!password.equals(confirmPass)) {
             JOptionPane.showMessageDialog(null, "Passwords do not match");

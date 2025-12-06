@@ -17,7 +17,7 @@ public class AdminDAOImpl implements AdminDAO {
 
     @Override
     public boolean saving(AdminModel am) {
-        String sql = "INSERT INTO admin (username, first_name, middle_name, last_name, hash) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO admin (username, first_name, middle_name, last_name, regDate, hash) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -26,6 +26,7 @@ public class AdminDAOImpl implements AdminDAO {
             ps.setString(2, am.getFirstname());
             ps.setString(3, am.getMiddlename());
             ps.setString(4, am.getLastname());
+            ps.setString(5, am.getRegDate());
             ps.setString(5, am.getPassword());
 
 

@@ -23,7 +23,7 @@ public class RESPONDPH extends Application {
             
             primaryStage.setTitle("RespondPH - Login");
             primaryStage.setScene(scene);
-            primaryStage.setMinWidth(1200);
+            primaryStage.setMinWidth(1600);
             primaryStage.setMinHeight(800);
             primaryStage.setMaximized(true); 
             primaryStage.show();

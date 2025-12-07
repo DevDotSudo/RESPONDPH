@@ -198,10 +198,17 @@
     -fx-background-color: #9ca3af;
 }
 
+.admin-table .content{
+    -fx-font-size: 14px;
+    -fx-text-fill: #1f2937;
+    -fx-font-weight: 600;
+    -fx-padding: 5px;
+}
+
 .action-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #f97316;
-    -fx-font-size: 12px;
+    -fx-fill: #f97316;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 5 10;
     -fx-background-radius: 6;
@@ -213,13 +220,13 @@
 
 .action-button:hover {
     -fx-background-color: #f97316;
-    -fx-text-fill: white;
+    -fx-fill: white;
 }
 
 .delete-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #dc2626;
-    -fx-font-size: 12px;
+    -fx-fill: #dc2626;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 5 10;
     -fx-background-radius: 6;
@@ -231,5 +238,5 @@
 
 .delete-button:hover {
     -fx-background-color: #dc2626;
-    -fx-text-fill: white;
+    -fx-fill: white;
 }

@@ -1,0 +1,143 @@
+.dialog-container {
+    -fx-background-color: #374151;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 30, 0, 0, 6);
+}
+
+.dialog-title {
+    -fx-font-family: "Arial";
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 0 0 10 0;
+}
+
+.form-grid {
+    -fx-background-color: transparent;
+}
+
+.field-label {
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e5e7eb;
+}
+
+.input-field {
+    -fx-background-color: #f9fafb;
+    -fx-background-radius: 6;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 10 12;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-text-fill: #1f2937;
+    -fx-prompt-text-fill: #9ca3af;
+    -fx-effect: null;
+    -fx-transition: -fx-border-color 0.2s ease-out, -fx-background-color 0.2s ease-out;
+}
+
+.input-field:focused {
+    -fx-border-color: #2563eb;
+    -fx-border-width: 2;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.3), 5, 0, 0, 0);
+}
+
+.input-field:hover {
+    -fx-border-color: #a1a1aa;
+}
+
+.input-field.password-field {
+}
+
+.error-label {
+    -fx-font-family: "Arial";
+    -fx-font-size: 13px;
+    -fx-text-fill: #b91c1c;
+    -fx-background-color: #fef2f2;
+    -fx-background-radius: 6;
+    -fx-padding: 10 15;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-max-width: 100%; /* let it expand */
+    -fx-wrap-text: true;  /* allow text to wrap inside the label */
+}
+
+.button-container {
+    -fx-background-color: transparent;
+}
+
+
+.update-button {
+    -fx-background-color: #f97316;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 28;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.4), 10, 0, 0, 2);
+    -fx-transition: -fx-background-color 0.2s ease-out, -fx-scale-x 0.2s ease-out, -fx-scale-y 0.2s ease-out;
+}
+
+.update-button:hover {
+    -fx-background-color: #ea580c;
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+.update-button:pressed {
+    -fx-background-color: #c2410c;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+    -fx-effect: none;
+}
+
+.update-button:disabled {
+    -fx-background-color: #d1d5db;
+    -fx-text-fill: #9ca3af;
+    -fx-cursor: default;
+    -fx-effect: none;
+}
+
+.cancel-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e5e7eb;
+    -fx-font-family: "Arial";
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 28;
+    -fx-background-radius: 8;
+    -fx-border-color: #6b7280;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: null;
+    -fx-transition: -fx-background-color 0.2s ease-out, -fx-border-color 0.2s ease-out;
+}
+
+.cancel-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: #e5e7eb;
+}
+
+.cancel-button:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.input-field.error {
+    -fx-border-color: #dc2626;
+    -fx-border-width: 2;
+    -fx-background-color: #fffafa;
+    -fx-effect: dropshadow(gaussian, rgba(220, 38, 38, 0.3), 5, 0, 0, 0);
+}
+
+.input-field.success {
+    -fx-border-color: #16a34a;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.3), 5, 0, 0, 0);
+}

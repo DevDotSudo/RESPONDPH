@@ -3,60 +3,111 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 
 <VBox prefHeight="624.0" prefWidth="654.0" spacing="20" styleClass="dialog-container" stylesheets="@/styles/dialogs/addadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
-    
+
     <padding>
         <Insets bottom="30" left="30" right="30" top="30" />
     </padding>
-    
-    <Label styleClass="dialog-title" text="Add New Admin" />
-    
+
+    <!-- Header with Icon -->
+    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="dialog-header">
+        <FontAwesomeIconView glyphName="USER_PLUS" styleClass="dialog-header-icon" />
+        <Label styleClass="dialog-title" text="Add New Admin" />
+    </HBox>
+
+    <Separator styleClass="header-separator" />
+
     <GridPane hgap="15" prefHeight="442.0" prefWidth="594.0" styleClass="form-grid" vgap="15">
-        
+
+        <!-- Username -->
         <Label styleClass="field-label" text="Username *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <TextField fx:id="usernameField" promptText="Enter username" styleClass="input-field" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-        
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="input-container" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+            <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
+            <TextField fx:id="usernameField" promptText="Enter username" styleClass="input-field" HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <!-- First Name -->
         <Label styleClass="field-label" text="First Name *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="3">
+            <FontAwesomeIconView glyphName="ADDRESS_CARD" styleClass="field-icon" />
+            <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <!-- Middle Name -->
         <Label styleClass="field-label" text="Middle Name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-        
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <FontAwesomeIconView glyphName="ADDRESS_CARD" styleClass="field-icon" />
+            <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <!-- Last Name -->
         <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
-        
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="input-container" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5">
+            <FontAwesomeIconView glyphName="ADDRESS_CARD" styleClass="field-icon" />
+            <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <!-- Password -->
         <Label styleClass="field-label" text="Password *" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-        <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-        
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="7">
+            <FontAwesomeIconView glyphName="LOCK" styleClass="field-icon" />
+            <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="input-field" HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <!-- Confirm Password -->
         <Label styleClass="field-label" text="Confirm Password *" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-        <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-        
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="7">
+            <FontAwesomeIconView glyphName="LOCK" styleClass="field-icon" />
+            <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" styleClass="input-field" HBox.hgrow="ALWAYS" />
+        </HBox>
+
         <columnConstraints>
             <ColumnConstraints percentWidth="50" />
             <ColumnConstraints percentWidth="50" />
         </columnConstraints>
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+        </rowConstraints>
     </GridPane>
-    
-    <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
-    
+
+    <!-- Error Message -->
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="error-container" visible="false" managed="false">
+        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="error-icon" />
+        <Label fx:id="errorLabel" styleClass="error-label" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+    </HBox>
+
+    <!-- Buttons -->
     <HBox alignment="CENTER_RIGHT" spacing="15" styleClass="button-container">
         <VBox.margin>
-            <Insets top="10" />
+            <Insets top="20" />
         </VBox.margin>
-        
-        <Button fx:id="cancelButton" prefWidth="120" styleClass="cancel-button" text="Cancel" />
-        <Button fx:id="saveButton" prefHeight="40.0" prefWidth="151.0" styleClass="save-button" text="Save Admin" />
+
+        <Button fx:id="cancelButton" prefWidth="130" styleClass="cancel-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="TIMES" styleClass="button-icon" />
+                    <Label styleClass="button-text" text="Cancel" />
+                </HBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="saveButton" prefWidth="150" styleClass="save-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="CHECK" styleClass="button-icon" />
+                    <Label styleClass="button-text" text="Save Admin" />
+                </HBox>
+            </graphic>
+        </Button>
     </HBox>
-    
+
 </VBox>

@@ -22,6 +22,18 @@ public class MainFrameController {
     @FXML
     private Button manageBeneficiariesBtn;
 
+    @FXML
+    private Button aidsBtn;
+
+    @FXML
+    private Button familyMembersBtn;
+
+    @FXML
+    private Button sendSmsBtn;
+
+    @FXML
+    private Button settingsBtn;
+
     private Button activeBtn;
 
     public void initialize() {
@@ -46,7 +58,31 @@ public class MainFrameController {
         loadPage("/view/pages/ManageBeneficiaries.fxml");
         activeButton(manageBeneficiariesBtn);
     }
-    
+
+    @FXML
+    private void handleAids() {
+        loadPage("/view/pages/Aids.fxml");
+        activeButton(aidsBtn);
+    }
+
+    @FXML
+    private void handleFamilyMembers() {
+        loadPage("/view/pages/FamilyMembers.fxml");
+        activeButton(familyMembersBtn);
+    }
+
+    @FXML
+    private void handleSendSms() {
+        loadPage("/view/pages/SendSMS.fxml");
+        activeButton(sendSmsBtn);
+    }
+
+    @FXML
+    private void handleSettings() {
+        loadPage("/view/pages/Settings.fxml");
+        activeButton(settingsBtn);
+    }
+
     @FXML
     private void handleLogout() {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);

@@ -1,13 +1,74 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.ionres.respondph.admin;
 
-/**
- *
- * @author Davie
- */
-public class AdminServiceImpl {
-    
+import com.ionres.respondph.exception.*;
+import com.ionres.respondph.util.Cryptography;
+import org.mindrot.jbcrypt.BCrypt;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+import java.time.LocalDate;
+import java.util.List;
+import java.sql.SQLException;
+
+
+public class AdminServiceImpl implements  AdminService{
+    AdminDAO adminDao = new AdminDAOImpl();
+
+
+    @Override
+    public List<AdminModel> getAllAdmins() {
+        List<AdminModel> admins = adminDao.getAll();
+        return admins;
+    }
+
+    @Override
+    public boolean createAdmin(AdminModel admin) {
+        try {
+            if (admin.getUsername() == null || admin.getUsername().isBlank()) {
+                throw ExceptionFactory.missingField("Username");
+            }
+
+            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
+
+            List<String> encryptedData = cs.encrypt(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
+            String hashedPassword = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
+
+            String encryptedUsername = encryptedData.get(0);
+            String encryptedFname = encryptedData.get(1);
+            String encryptedMname = encryptedData.get(2);
+            String encryptedLname = encryptedData.get(3);
+            String encryptedRegDate = encryptedData.get(4);
+
+            if (adminDao.existsByUsername(encryptedUsername)) {
+                throw ExceptionFactory.duplicate("Admin", admin.getUsername());
+            }
+
+            boolean flag = adminDao.saving(new AdminModel(encryptedUsername, encryptedFname, encryptedMname, encryptedLname, encryptedRegDate, hashedPassword));
+            if (!flag) {
+                throw ExceptionFactory.failedToCreate("Admin");
+            }
+            return flag;
+        } catch (SQLException ex) {
+            System.out.println("Error : " + ex);
+            return  false;
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex);
+            return  false;
+        }
+    }
+
+    @Override
+    public boolean updateAdmin(AdminModel admin, String confirmPassword) {
+        return false;
+    }
+
+    @Override
+    public String generateAdminID() {
+        String year = String.valueOf(LocalDate.now().getYear());
+        String random = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        return "ADMIN-" + year + "-" + random;
+    }
 }

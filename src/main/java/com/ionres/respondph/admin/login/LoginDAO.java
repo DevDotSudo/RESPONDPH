@@ -1,10 +1,8 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.util.Cryptography;
 
 public interface LoginDAO {
-    boolean saveAdmin(AdminModel adminModel);
-    boolean adminLogin(String username, String password);
-    public void fetchAdmin();
-    public void getAdminByUsername(String username);
+        public AdminModel findByUsernameToLogin(String usernameInput, Cryptography cs);
 }

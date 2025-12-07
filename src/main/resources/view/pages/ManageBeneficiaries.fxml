@@ -6,11 +6,11 @@
 
 <AnchorPane fx:id="rootPane" prefHeight="650" prefWidth="900" styleClass="root-pane" stylesheets="@/styles/pages/managebeneficiaries.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.BeneficiaryController">
     
-    <VBox spacing="20" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         
         <VBox styleClass="header-section">
             <padding>
-                <Insets bottom="20" left="40" right="40" top="30" />
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
             </padding>
             
             <Label styleClass="page-title" text="Manage Beneficiaries" />
@@ -31,7 +31,7 @@
 
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets bottom="40" left="40" right="40" />
+                <Insets bottom="30.0" left="30.0" right="30.0" />
             </padding>
             
             <TableView fx:id="beneficiaryTable" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">

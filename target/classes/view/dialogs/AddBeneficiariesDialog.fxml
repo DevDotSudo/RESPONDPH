@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="624.0" prefWidth="654.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
+<VBox prefHeight="670.0" prefWidth="887.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
 
     <padding>
         <Insets bottom="30" left="30" right="30" top="30" />
@@ -12,22 +12,23 @@
 
     <Label prefHeight="42.0" prefWidth="306.0" styleClass="dialog-title" text="Add New Beneficiaries" />
 
-    <GridPane hgap="15" prefHeight="410.0" prefWidth="594.0" styleClass="form-grid" vgap="15">
+    <GridPane hgap="15" prefHeight="177.0" prefWidth="768.0" styleClass="form-grid" vgap="15">
 
         <Label styleClass="field-label" text="First Name *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <TextField fx:id="firstNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter first name" styleClass="input-field" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-      <DatePicker fx:id="birthDatePicker" prefHeight="35.0" prefWidth="186.0" GridPane.rowIndex="5" />
-      <ComboBox fx:id="genderSelection" prefHeight="35.0" prefWidth="186.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <DatePicker fx:id="birthDatePicker" maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="186.0" styleClass="birthdate-picker" GridPane.rowIndex="5" />
+      <ComboBox fx:id="genderSelection" maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="186.0" promptText="Select Gender" styleClass="select-gender" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
         <Label styleClass="field-label" text="Middle Name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
         <TextField fx:id="middleNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter middle name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
         <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="2" GridPane.rowIndex="2" />
         <TextField fx:id="lastNameField" prefHeight="35.0" prefWidth="186.0" promptText="Enter last name" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="3" />
-      <Label layoutX="10.0" layoutY="40.0" styleClass="field-label" text="Birthdate *" GridPane.rowIndex="4" />
-      <Label layoutX="10.0" layoutY="124.0" styleClass="field-label" text="Gender *" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-      <Label layoutX="208.0" layoutY="124.0" styleClass="field-label" text="Marital Status *" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+      <Label layoutX="10.0" styleClass="field-label" text="Birthdate *" GridPane.rowIndex="4" />
+      <Label layoutX="10.0" styleClass="field-label" text="Gender *" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <Label layoutX="208.0" styleClass="field-label" text="Marital Status *" GridPane.columnIndex="2" GridPane.rowIndex="4" />
       <TextField fx:id="maritalStatusFld" prefHeight="35.0" prefWidth="186.0" promptText="Enter marital status" styleClass="input-field" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="5" />
+      <Label layoutX="561.0" layoutY="124.0" styleClass="field-label" text="Solo Parent Status *" GridPane.rowIndex="6" />
 
         <columnConstraints>
             <ColumnConstraints percentWidth="50.0" />

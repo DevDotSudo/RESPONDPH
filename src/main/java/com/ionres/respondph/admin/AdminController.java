@@ -74,6 +74,7 @@ public class AdminController {
         loadTable();
         actionButtons();
     }
+
     @FXML
     private void handleSearch() {
         System.out.println(searchFld.getText());

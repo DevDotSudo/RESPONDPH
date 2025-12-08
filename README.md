@@ -13,7 +13,7 @@
   </samp>
   <br>
   <br>
-  <a rel="nofollow noopener noreferrer" target="_blank" href="#"><img src="https://img.shields.io/badge/Status-Deployed-28a745?style=flat&style=for-the-badge" alt="Status: Deployed"></a>
+  <a rel="nofollow noopener noreferrer" target="_blank" href="#"><img src="https://img.shields.io/badge/Status-Undeployed-28a745?style=flat&style=for-the-badge" alt="Status: Undeployed"></a>
   <a rel="nofollow noopener noreferrer" target="_blank" href="#"><img src="https://img.shields.io/badge/Algorithm-Fuzzy%20C--Means-007bff?style=flat&style=for-the-badge" alt="Algorithm: FCM"></a>
   <a rel="nofollow noopener noreferrer" target="_blank" href="#"><img src="https://img.shields.io/badge/Language-Hiligaynon%20Translation-e91e63?style=flat&style=for-the-badge" alt="Language: Hiligaynon"></a>
   <br>

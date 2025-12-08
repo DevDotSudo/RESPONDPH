@@ -106,10 +106,10 @@ public class Cryptography {
         return new String(decrypted);
     }
 
-    public List<String> encryptUpdate(String id, String fullname, String address,
-                                      String username) throws Exception {
+    public List<String> encryptUpdate(String username, String firstname, String middlename,
+                                      String lastname, String regDate) throws Exception {
 
-        String[] inputs = {id, fullname, address, username};
+        String[] inputs = {username, firstname, middlename, lastname, regDate};
         List<String> encryptedList = new ArrayList<>();
 
         for (String input : inputs) {

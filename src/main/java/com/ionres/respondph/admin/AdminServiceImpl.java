@@ -71,4 +71,64 @@ public class AdminServiceImpl implements  AdminService{
         String random = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         return "ADMIN-" + year + "-" + random;
     }
+
+    @Override
+    public boolean deleteAdmin(AdminModel admin) {
+        try {
+            if (admin == null || admin.getId() <= 0) {
+                throw ExceptionFactory.missingField("Admin ID");
+            }
+
+            boolean deleted = adminDao.delete(admin);
+
+            if (!deleted) {
+                throw ExceptionFactory.failedToDelete("Admin");
+            }
+            return deleted;
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateAdmin(AdminModel admin) {
+        try {
+            if (admin.getUsername() == null || admin.getUsername().isBlank()) {
+                throw ExceptionFactory.missingField("Username");
+            }
+
+            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
+
+            List<String> encryptedData = cs.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
+
+            String encryptedUsername = encryptedData.get(0);
+            String encryptedFname = encryptedData.get(1);
+            String encryptedMname = encryptedData.get(2);
+            String encryptedLname = encryptedData.get(3);
+            String encryptedRegDate = encryptedData.get(4);
+
+            admin.setUsername(encryptedUsername);
+            admin.setFirstname(encryptedFname);
+            admin.setMiddlename(encryptedMname);
+            admin.setLastname(encryptedLname);
+            admin.setRegDate(encryptedRegDate);
+
+
+            boolean flag = adminDao.update(admin);
+            if (!flag) {
+                throw ExceptionFactory.failedToCreate("Admin");
+            }
+            return flag;
+        } catch (SQLException ex) {
+            System.out.println("Error : " + ex);
+            return  false;
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex);
+            return  false;
+        }
+    }
+
 }

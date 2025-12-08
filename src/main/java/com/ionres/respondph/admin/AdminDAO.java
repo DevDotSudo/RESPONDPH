@@ -7,4 +7,7 @@ public interface AdminDAO {
     boolean existsByUsername(String username);
     List<AdminModel> getAll();
     public AdminModel login(String username, String password);
+    public boolean delete(AdminModel am);
+    public boolean update(AdminModel am);
+
 }

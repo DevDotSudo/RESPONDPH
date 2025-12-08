@@ -17,7 +17,7 @@
   <a rel="nofollow noopener noreferrer" target="_blank" href="#"><img src="https://img.shields.io/badge/Algorithm-Fuzzy%20C--Means-007bff?style=flat&style=for-the-badge" alt="Algorithm: FCM"></a>
   <a rel="nofollow noopener noreferrer" target="_blank" href="#"><img src="https://img.shields.io/badge/Language-Hiligaynon%20Translation-e91e63?style=flat&style=for-the-badge" alt="Language: Hiligaynon"></a>
   <br>
-  <a href="#"><img src="http://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=c95151&center=true&vCenter=true&width=600&lines=Expediting+Relief+with+Data+and+ML;Offline+SMS+Alerts+via+SIM800C;Prioritizing+High+Vulnerability+Cases" alt="Typing SVG"/></a>
+  <a href="#"><img src="http://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=c95151&center=true&vCenter=true&width=600&lines=Offline+SMS+Alerts+via+SIM800C;Prioritizing+High+Vulnerability+Cases" alt="Typing SVG"/></a>
 
 </div>
 

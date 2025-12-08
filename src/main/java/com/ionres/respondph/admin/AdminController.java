@@ -1,11 +1,8 @@
 package com.ionres.respondph.admin;
 
 import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -22,9 +19,12 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import java.io.IOException;
 import java.util.List;
+import com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController;
+import java.util.Optional;
+import com.ionres.respondph.util.AlertDialog;
 
 public class AdminController {
-
+    AlertDialog alertDialog = new AlertDialog();
     private AdminService adminService = new AdminServiceImpl();
     ObservableList<AdminModel> adminList;
     @FXML
@@ -136,16 +136,70 @@ public class AdminController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showErrorAlert("Error", "Unable to load the Add Admin dialog.");
+            alertDialog.showErrorAlert("Error", "Unable to load the Add Admin dialog.");
         }
     }
 
-    private void showErrorAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private void showEditAdminDialog(AdminModel selectedAdmin) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/EditAdminDialog.fxml"));
+            Parent dialogRoot = loader.load();
+
+            EditAdminDialogController dialogController = loader.getController();
+
+            dialogController.setAdminService(this.adminService);
+            dialogController.setAdminController(this);
+
+            dialogController.setAdminData(selectedAdmin);
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initStyle(StageStyle.UNDECORATED);
+            dialogStage.setTitle("Edit Admin Info");
+
+            dialogController.setDialogStage(dialogStage);
+
+            Scene scene = new Scene(dialogRoot);
+            dialogStage.setScene(scene);
+
+            dialogStage.showAndWait();
+
+            loadTable();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            alertDialog.showErrorAlert("Error", "Unable to load the Edit Admin dialog.");
+        }
+    }
+
+
+
+
+    private void deleteById(AdminModel am){
+        if (am == null || am.getId() <= 0) {
+            alertDialog.showErrorAlert("Invalid Selection", "Admin ID is missing or invalid.");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Delete");
+        confirm.setHeaderText("Are you sure you want to delete this admin?");
+        confirm.setContentText("Username: " + am.getUsername());
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+
+            boolean success = adminService.deleteAdmin(am);
+
+            if (success) {
+                adminList.remove(am);
+                adminTable.refresh();
+                alertDialog.showSuccess("Success", "Admin deleted successfully.");
+            } else {
+                alertDialog.showErrorAlert("Failed", "Unable to delete admin.");
+            }
+        }
+
     }
 
     private void actionButtons() {
@@ -164,13 +218,13 @@ public class AdminController {
 
                         editButton.setOnAction(event -> {
                             AdminModel admin = getTableView().getItems().get(getIndex());
-                            System.out.println("Edit: " + admin.getId());
+                            showEditAdminDialog(admin);
                         });
 
                         deleteButton.setOnAction(event -> {
                             AdminModel admin = getTableView().getItems().get(getIndex());
-                            adminList.remove(admin);
-                            System.out.println("Deleted: " + admin.getId());
+                            deleteById(admin);
+                            loadTable();
                         });
                     }
 

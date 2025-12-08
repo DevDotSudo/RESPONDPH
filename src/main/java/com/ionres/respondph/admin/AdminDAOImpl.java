@@ -105,4 +105,48 @@ public class AdminDAOImpl implements AdminDAO {
     public AdminModel login(String username, String password) {
         return null;
     }
+
+    @Override
+    public boolean delete(AdminModel am) {
+        String sql = "DELETE FROM admin WHERE admin_id = ?";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, am.getId());
+
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean update(AdminModel am) {
+        String sql = "UPDATE admin set username = ?, first_name = ?, middle_name = ?, last_name = ?, regdate = ? WHERE admin_id = ?";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, am.getUsername());
+            ps.setString(2, am.getFirstname());
+            ps.setString(3, am.getMiddlename());
+            ps.setString(4, am.getLastname());
+            ps.setString(5, am.getRegDate());
+            ps.setInt(6, am.getId());
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

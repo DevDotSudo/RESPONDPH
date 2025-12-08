@@ -3,7 +3,10 @@ package com.ionres.respondph.mapping;
 import com.gluonhq.maps.MapView;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapLayer;
+import javafx.animation.AnimationTimer;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -14,6 +17,9 @@ public class MappingController {
 
     @FXML
     private VBox mapContainer;
+
+    final double MIN_ZOOM = 5.0;
+    final double MAX_ZOOM = 18.0;
 
     private final double[][] coordinates = {
             {11.1029, 122.7580},
@@ -71,7 +77,7 @@ public class MappingController {
 
     private void loadMap() {
         MapView mapView = new MapView();
-        mapView.setZoom(13);
+        mapView.setZoom(10);
 
         MapPoint center = new MapPoint(11.0450, 122.7950);
         mapView.setCenter(center);
@@ -84,7 +90,7 @@ public class MappingController {
                 if (polygon == null) {
                     polygon = new Polygon();
 
-                    polygon.setFill(Color.rgb(255, 0, 0, 0.3)); // Red with 30% opacity
+                    polygon.setFill(Color.TRANSPARENT);
                     polygon.setStroke(Color.RED);
                     polygon.setStrokeWidth(2);
 
@@ -101,19 +107,26 @@ public class MappingController {
         };
 
         MapLayer markerLayer = new MapLayer() {
+
             @Override
             protected void layoutLayer() {
                 this.getChildren().clear();
 
                 for (BarangayPoint barangay : barangays) {
+
                     Point2D point = this.getMapPoint(barangay.lat, barangay.lon);
 
-                    Circle marker = new Circle(point.getX(), point.getY(), 6);
-                    marker.setFill(Color.BLUE);
-                    marker.setStroke(Color.WHITE);
-                    marker.setStrokeWidth(2);
+                    javafx.scene.image.Image icon = new javafx.scene.image.Image(
+                            getClass().getResourceAsStream("/images/person_marker.png"),
+                            32, 32, true, true
+                    );
 
-                    this.getChildren().addAll(marker);
+                    javafx.scene.image.ImageView iconView = new javafx.scene.image.ImageView(icon);
+
+                    iconView.setX(point.getX() - icon.getWidth() / 2);
+                    iconView.setY(point.getY() - icon.getHeight() / 2);
+
+                    this.getChildren().add(iconView);
                 }
             }
         };

@@ -11,4 +11,5 @@ public interface AdminService {
     String generateAdminID();
     boolean deleteAdmin(AdminModel admin);
     boolean updateAdmin(AdminModel admin);
+    public List<AdminModel> searchAdmin(String searchTxt);
 }

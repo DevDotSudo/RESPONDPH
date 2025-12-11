@@ -7,6 +7,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.time.LocalDate;
 import java.util.List;
@@ -126,4 +127,23 @@ public class AdminServiceImpl implements  AdminService{
             return  false;
         }
     }
+
+    @Override
+    public List<AdminModel> searchAdmin(String searchText) {
+
+        List<AdminModel> allAdmins = getAllAdmins();
+        List<AdminModel> filteredAdmins = new ArrayList<>();
+
+        for (AdminModel admin : allAdmins) {
+            if (admin.getUsername().toLowerCase().contains(searchText.toLowerCase()) ||
+                    admin.getFirstname().toLowerCase().contains(searchText.toLowerCase()) ||
+                    admin.getLastname().toLowerCase().contains(searchText.toLowerCase())) {
+                filteredAdmins.add(admin);
+            }
+        }
+        return filteredAdmins;
+    }
+
+
+
 }

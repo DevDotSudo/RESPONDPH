@@ -17,7 +17,11 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+
+import java.awt.event.ActionEvent;
+import java.beans.EventHandler;
 import java.io.IOException;
+import java.util.EventListener;
 import java.util.List;
 import com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController;
 import java.util.Optional;
@@ -73,11 +77,30 @@ public class AdminController {
         setupButtons();
         loadTable();
         actionButtons();
-    }
+        setSearchFld();
 
+    }
     @FXML
     private void handleSearch() {
-        System.out.println(searchFld.getText());
+        String searchText = searchFld.getText().trim();
+        if (searchText.isEmpty()) {
+           loadTable();
+        } else {
+            searchAdmins(searchText);
+        }
+    }
+    private void searchAdmins(String searchText) {
+        List<AdminModel> filteredAdmins = adminService.searchAdmin(searchText);
+        adminList = FXCollections.observableArrayList(filteredAdmins);
+        adminTable.setItems(adminList);
+    }
+
+    private void setSearchFld(){
+        searchFld.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.trim().isEmpty()) {
+                loadTable();
+            }
+        });
     }
 
     private void setupTableColumns() {
@@ -94,7 +117,7 @@ public class AdminController {
 
         refreshButton.setOnAction(event -> loadTable());
 
-        searchBtn.setOnAction(event -> System.out.println(searchFld.getText()));
+        searchBtn.setOnAction(event -> handleSearch());
     }
 
     public void loadTable() {
@@ -171,8 +194,6 @@ public class AdminController {
             alertDialog.showErrorAlert("Error", "Unable to load the Edit Admin dialog.");
         }
     }
-
-
 
 
     private void deleteById(AdminModel am){

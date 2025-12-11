@@ -30,7 +30,6 @@
     -fx-padding: 0 0 5 0;
 }
 
-/* ===== FORM GRID ===== */
 .form-grid {
     -fx-background-color: transparent;
 }
@@ -47,7 +46,6 @@
     -fx-fill: white;
 }
 
-/* ===== INPUT CONTAINERS ===== */
 .input-container {
     -fx-background-color: white;
     -fx-background-radius: 10px;
@@ -105,12 +103,10 @@
     -fx-effect: null;
 }
 
-/* Remove default PasswordField styling */
 .input-field.password-field {
     -fx-background-color: transparent;
 }
 
-/* ===== ERROR CONTAINER ===== */
 .error-container {
     -fx-background-color: #fef2f2;
     -fx-background-radius: 10px;
@@ -137,7 +133,6 @@
     -fx-line-spacing: 2px;
 }
 
-/* ===== BUTTON CONTAINER ===== */
 .button-container {
     -fx-background-color: transparent;
     -fx-padding: 10px 0 0 0;
@@ -145,7 +140,6 @@
     -fx-border-width: 1px 0 0 0;
 }
 
-/* ===== SAVE BUTTON ===== */
 .save-button {
     -fx-background-color: linear-gradient(to right, #f97316, #ea580c);
     -fx-background-radius: 10px;
@@ -243,7 +237,6 @@
     -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.1), 6, 0, 0, 2);
 }
 
-/* ===== PASSWORD STRENGTH INDICATOR ===== */
 .password-strength {
     -fx-padding: 5px 0 0 15px;
 }

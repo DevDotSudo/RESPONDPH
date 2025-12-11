@@ -53,6 +53,7 @@ public class MainFrameController {
         familyMembersBtn.setOnAction(handlers);
         sendSmsBtn.setOnAction(handlers);
         settingsBtn.setOnAction(handlers);
+        logoutBtn.setOnAction(handlers);
     }
 
     private void handleActions(ActionEvent event) {

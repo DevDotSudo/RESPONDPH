@@ -12,11 +12,11 @@
         <Insets bottom="25" left="25" right="25" top="25" />
     </padding>
 
-    <HBox VBox.vgrow="NEVER">
+    <HBox maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
         <VBox.margin>
             <Insets bottom="5.0" />
         </VBox.margin>
-        <Label prefHeight="35.0" prefWidth="933.0" styleClass="dialog-title" text="Add New Beneficiary" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+        <Label maxWidth="1.7976931348623157E308" styleClass="dialog-title" text="Add New Beneficiary" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
         <Button fx:id="exitBtn" alignment="CENTER" contentDisplay="RIGHT" maxHeight="49.0" maxWidth="54.0" prefHeight="49.0" prefWidth="54.0" styleClass="exit-button">
 
             <graphic>
@@ -31,7 +31,7 @@
     </HBox>
    <Separator prefWidth="200.0" />
 
-    <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="940.0" styleClass="dialog-subtitle" text="Complete all beneficiary information below">
+    <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all beneficiary information below">
       <VBox.margin>
          <Insets top="10.0" />
       </VBox.margin></Label>

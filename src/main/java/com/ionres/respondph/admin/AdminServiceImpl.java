@@ -21,6 +21,7 @@ public class AdminServiceImpl implements  AdminService{
     @Override
     public List<AdminModel> getAllAdmins() {
         List<AdminModel> admins = adminDao.getAll();
+        System.out.println(generateAdminID());
         return admins;
     }
 

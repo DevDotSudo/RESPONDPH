@@ -29,7 +29,7 @@
     </HBox>
     <Separator prefWidth="200.0" />
 
-    <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="604.0" styleClass="dialog-subtitle" text="Complete all admin information below">
+    <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all admin information below">
         <VBox.margin>
             <Insets top="10.0" />
         </VBox.margin>

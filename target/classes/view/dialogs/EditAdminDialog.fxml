@@ -26,7 +26,6 @@
         <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
 
-
         <columnConstraints>
             <ColumnConstraints percentWidth="50" />
             <ColumnConstraints percentWidth="50" />

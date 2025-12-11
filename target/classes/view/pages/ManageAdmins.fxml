@@ -1,48 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="rootPane" prefHeight="655.0" prefWidth="939.0" styleClass="root-pane" stylesheets="@/styles/pages/manageadmins.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.AdminController">
+<AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/pages/manageadmins.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.AdminController">
 
-    <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <VBox prefHeight="122.0" prefWidth="912.0" styleClass="header-section">
+        <VBox styleClass="header-section">
             <padding>
                 <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
             </padding>
 
-            <Label styleClass="page-title" text="Manage Admins" />
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <FontAwesomeIconView glyphName="USERS" size="36" styleClass="page-icon" />
+                <Label styleClass="page-title" text="Manage Admins" />
+            </HBox>
 
-            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
                 <VBox.margin>
                     <Insets top="20" />
                 </VBox.margin>
 
-                <TextField fx:id="searchFld" prefHeight="42.0" prefWidth="304.0" promptText="Search admins..." styleClass="search-field" />
-                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" text="Search" />
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                    <FontAwesomeIconView glyphName="SEARCH" size="16" styleClass="search-icon" />
+                    <TextField fx:id="searchFld" promptText="Search by username, name..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Search" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
                 <Region HBox.hgrow="ALWAYS" />
 
-                <Button fx:id="addButton" styleClass="add-button" text="+ Add Admin" />
-                <Button fx:id="refreshButton" styleClass="refresh-button" text="⟳ Refresh" />
+                <Button fx:id="addButton" styleClass="add-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="16" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Add Admin" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="refreshButton" styleClass="refresh-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="REFRESH" size="16" styleClass="refresh-icon" />
+                            <Label styleClass="button-label" text="Refresh" />
+                        </HBox>
+                    </graphic>
+                </Button>
             </HBox>
         </VBox>
 
-        <VBox prefHeight="398.0" prefWidth="900.0" styleClass="table-container" VBox.vgrow="ALWAYS">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
             <padding>
                 <Insets bottom="30.0" left="30.0" right="30.0" />
             </padding>
 
-            <TableView fx:id="adminTable" prefHeight="436.0" prefWidth="823.0" styleClass="admin-table" VBox.vgrow="ALWAYS">
+            <TableView fx:id="adminTable" styleClass="admin-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
-                    <TableColumn fx:id="usernameColumn" prefWidth="1" text="Username" />
-                    <TableColumn fx:id="fNameColumn" prefWidth="1" text="First Name" />
-                    <TableColumn fx:id="mNameColumn" prefWidth="1" text="Middle Name" />
-                    <TableColumn fx:id="lNameColumn"  prefWidth="1" text="Last Name" />
-                    <TableColumn fx:id="regDateColumn" prefWidth="1" text="Registered Date" />
-                    <TableColumn fx:id="actionsColumn" maxWidth="160" text="Actions" />
+                    <TableColumn fx:id="idColumn" text="ID" />
+                    <TableColumn fx:id="usernameColumn" prefWidth="150" text="Username" />
+                    <TableColumn fx:id="fNameColumn" prefWidth="150" text="First Name" />
+                    <TableColumn fx:id="mNameColumn" prefWidth="150" text="Middle Name" />
+                    <TableColumn fx:id="lNameColumn" prefWidth="150" text="Last Name" />
+                    <TableColumn fx:id="regDateColumn" prefWidth="180" text="Registered Date" />
+                    <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
                 </columns>
             </TableView>
         </VBox>

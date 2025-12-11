@@ -5,7 +5,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
 <BorderPane prefHeight="824.0" prefWidth="321.0" styleClass="dashboard-root" stylesheets="@/styles/pages/mainframe.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.main.MainFrameController">
     <left>
@@ -80,8 +79,8 @@
             <Button fx:id="settingsBtn" layoutX="10.0" layoutY="310.0" maxWidth="255.0" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
                <graphic>
                    <HBox alignment="CENTER_LEFT" spacing="15">
-                       <FontAwesomeIconView glyphName="GEAR" size="24" styleClass="nav-icon"/>
-                       <Label styleClass="nav-text" text="Settings"/>
+                       <FontAwesomeIconView glyphName="GEAR" size="24" styleClass="nav-icon" />
+                       <Label styleClass="nav-text" text="Settings" />
                    </HBox>
                </graphic>
             </Button>
@@ -104,7 +103,7 @@
     </left>
 
     <center>
-        <VBox fx:id="contentArea" styleClass="content-area">
+        <VBox fx:id="contentArea" styleClass="content-area" BorderPane.alignment="CENTER">
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>

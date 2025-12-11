@@ -234,7 +234,7 @@ public class AdminController {
                     private final Button deleteButton = new Button("", deleteIcon);
 
                     {
-                        editButton.getStyleClass().add("action-button");
+                        editButton.getStyleClass().add("edit-button");
                         deleteButton.getStyleClass().add("delete-button");
 
                         editButton.setOnAction(event -> {
@@ -255,7 +255,8 @@ public class AdminController {
                         if (empty) {
                             setGraphic(null);
                         } else {
-                            HBox box = new HBox(10, editButton, deleteButton);
+                            HBox box = new HBox(editButton, deleteButton);
+                            box.getStyleClass().add("button-box");
                             setGraphic(box);
                         }
                     }

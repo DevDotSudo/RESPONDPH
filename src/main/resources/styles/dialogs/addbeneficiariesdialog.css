@@ -2,6 +2,7 @@
     -fx-background-color: linear-gradient(to bottom, #1e293b, #0f172a);
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 40, 0, 0, 10);
     -fx-background-radius: 16;
+    -fx-border-radius: 16;
 }
 
 .dialog-title {

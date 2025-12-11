@@ -102,11 +102,6 @@ public class AdminDAOImpl implements AdminDAO {
     }
 
     @Override
-    public AdminModel login(String username, String password) {
-        return null;
-    }
-
-    @Override
     public boolean delete(AdminModel am) {
         String sql = "DELETE FROM admin WHERE admin_id = ?";
 

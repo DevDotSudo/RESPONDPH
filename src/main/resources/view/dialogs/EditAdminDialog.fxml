@@ -6,8 +6,6 @@
 
 <VBox prefHeight="476.0" prefWidth="654.0" spacing="20" styleClass="dialog-container" stylesheets="@/styles/dialogs/editadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController">
 
-
-
     <padding>
         <Insets bottom="30" left="30" right="30" top="30" />
     </padding>

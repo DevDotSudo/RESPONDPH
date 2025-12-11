@@ -14,6 +14,7 @@ public class RESPONDPH extends Application {
     
     @Override
     public void start(Stage primaryStage) {
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pages/LoginFrame.fxml"));
             Parent root = loader.load();

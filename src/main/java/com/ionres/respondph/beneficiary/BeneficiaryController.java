@@ -61,6 +61,8 @@ public class BeneficiaryController {
 
     @FXML
     private void initialize() {
+
+        Scene scene;
         beneficiaryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         loadTable();
     }
@@ -86,13 +88,7 @@ public class BeneficiaryController {
             Scene scene = new Scene(dialogRoot);
             dialogStage.setScene(scene);
 
-            dialogController.setDialogStage(dialogStage);
-
             dialogStage.showAndWait();
-
-            if (dialogController.isAdminAdded()) {
-                loadTable();
-            }
 
         } catch (IOException e) {
             e.printStackTrace();

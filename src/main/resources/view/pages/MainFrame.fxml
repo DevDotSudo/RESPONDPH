@@ -27,7 +27,7 @@
             </VBox>
 
             <VBox prefHeight="75.0" styleClass="nav-menu" VBox.vgrow="ALWAYS">
-                <Button fx:id="dashboardBtn" onAction="#handleDashboard" styleClass="nav-button">
+                <Button fx:id="dashboardBtn" styleClass="nav-button">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="15">
                             <FontAwesomeIconView glyphName="HOME" size="24.0" styleClass="nav-icon" text="" />
@@ -36,7 +36,7 @@
                     </graphic>
                 </Button>
 
-                <Button fx:id="manageAdminBtn" onAction="#handleManageAdmins" styleClass="nav-button">
+                <Button fx:id="manageAdminBtn" styleClass="nav-button">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="15">
                             <FontAwesomeIconView glyphName="USER" size="24.0" styleClass="nav-icon" />
@@ -45,16 +45,15 @@
                     </graphic>
                 </Button>
 
-                <Button fx:id="manageBeneficiariesBtn" maxWidth="255.0" onAction="#handleManageBeneficiaries" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
+                <Button fx:id="manageBeneficiariesBtn" maxWidth="255.0" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="15">
-                            <!-- USERS is correct for beneficiaries -->
                             <FontAwesomeIconView glyphName="USERS" size="24" styleClass="nav-icon" />
                             <Label styleClass="nav-text" text="Manage Beneficiaries" />
                         </HBox>
                     </graphic>
                 </Button>
-            <Button fx:id="aidsBtn" layoutX="10.0" layoutY="142.0" maxWidth="255.0" onAction="#handleAids" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
+            <Button fx:id="aidsBtn" layoutX="10.0" layoutY="142.0" maxWidth="255.0" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
                <graphic>
                    <HBox alignment="CENTER_LEFT" spacing="15">
                        <FontAwesomeIconView glyphName="MEDKIT" size="24" styleClass="nav-icon" />
@@ -62,7 +61,7 @@
                    </HBox>
                </graphic>
             </Button>
-            <Button fx:id="familyMembersBtn" layoutX="10.0" layoutY="198.0" maxWidth="255.0" onAction="#handleFamilyMembers" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
+            <Button fx:id="familyMembersBtn" layoutX="10.0" layoutY="198.0" maxWidth="255.0" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
                <graphic>
                    <HBox alignment="CENTER_LEFT" spacing="15">
                        <FontAwesomeIconView glyphName="USER_PLUS" size="24" styleClass="nav-icon" />
@@ -70,7 +69,7 @@
                    </HBox>
                </graphic>
             </Button>
-            <Button fx:id="sendSmsBtn" layoutX="10.0" layoutY="254.0" maxWidth="255.0" onAction="#handleSendSms" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
+            <Button fx:id="sendSmsBtn" layoutX="10.0" layoutY="254.0" maxWidth="255.0" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
                <graphic>
                    <HBox alignment="CENTER_LEFT" spacing="15">
                        <FontAwesomeIconView glyphName="PAPER_PLANE" size="24" styleClass="nav-icon" />
@@ -78,20 +77,18 @@
                    </HBox>
                </graphic>
             </Button>
-            <Button fx:id="settingsBtn" layoutX="10.0" layoutY="310.0" maxWidth="255.0" onAction="#handleSettings" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
+            <Button fx:id="settingsBtn" layoutX="10.0" layoutY="310.0" maxWidth="255.0" prefHeight="54.0" prefWidth="255.0" styleClass="nav-button">
                <graphic>
-                  <HBox alignment="CENTER_LEFT" spacing="15">
-                     <children>
-                        <FontAwesomeIconView glyphName="GEAR" size="24" styleClass="nav-icon" />
-                        <Label styleClass="nav-text" text="Settings" />
-                     </children>
-                  </HBox>
+                   <HBox alignment="CENTER_LEFT" spacing="15">
+                       <FontAwesomeIconView glyphName="GEAR" size="24" styleClass="nav-icon"/>
+                       <Label styleClass="nav-text" text="Settings"/>
+                   </HBox>
                </graphic>
             </Button>
 
             </VBox>
             <VBox prefWidth="300">
-                <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="logout-button">
+                <Button fx:id="logoutBtn" maxWidth="Infinity" styleClass="logout-button">
                     <VBox.margin>
                         <Insets bottom="20" left="20" right="20" top="20" />
                     </VBox.margin>

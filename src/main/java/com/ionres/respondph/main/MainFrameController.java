@@ -1,12 +1,14 @@
 package com.ionres.respondph.main;
 
 import java.io.IOException;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.event.EventHandler;
 
 public class MainFrameController {
     
@@ -25,6 +27,8 @@ public class MainFrameController {
     @FXML
     private Button aidsBtn;
 
+    @FXML Button logoutBtn;
+
     @FXML
     private Button familyMembersBtn;
 
@@ -39,51 +43,89 @@ public class MainFrameController {
     public void initialize() {
         loadPage("/view/pages/Dashboard.fxml");
         activeButton(dashboardBtn);
+
+        EventHandler<ActionEvent> handlers = this::handleActions;
+
+        dashboardBtn.setOnAction(handlers);
+        manageAdminBtn.setOnAction(handlers);
+        manageBeneficiariesBtn.setOnAction(handlers);
+        aidsBtn.setOnAction(handlers);
+        familyMembersBtn.setOnAction(handlers);
+        sendSmsBtn.setOnAction(handlers);
+        settingsBtn.setOnAction(handlers);
     }
 
-    @FXML
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+
+        if(src == dashboardBtn) {
+            handleDashboard();
+        }
+
+        else if(src == manageAdminBtn) {
+            handleManageAdmins();
+        }
+
+        else if(src == manageBeneficiariesBtn) {
+            handleManageBeneficiaries();
+        }
+
+        else if(src == aidsBtn) {
+            handleAids();
+        }
+
+        else if(src == familyMembersBtn) {
+            handleFamilyMembers();
+        }
+
+        else if(src == sendSmsBtn) {
+            handleSendSms();
+        }
+
+        else if(src == settingsBtn) {
+            handleSettings();
+        }
+
+        else if(src == logoutBtn) {
+            handleLogout();
+        }
+    }
+
     private void handleDashboard() {
         loadPage("/view/pages/Dashboard.fxml");
         activeButton(dashboardBtn);
     }
     
-    @FXML
     private void handleManageAdmins() {
         loadPage("/view/pages/ManageAdmins.fxml");
         activeButton(manageAdminBtn);
     }
     
-    @FXML
     private void handleManageBeneficiaries() {
         loadPage("/view/pages/ManageBeneficiaries.fxml");
         activeButton(manageBeneficiariesBtn);
     }
 
-    @FXML
     private void handleAids() {
         loadPage("/view/pages/Aids.fxml");
         activeButton(aidsBtn);
     }
 
-    @FXML
     private void handleFamilyMembers() {
         loadPage("/view/pages/FamilyMembers.fxml");
         activeButton(familyMembersBtn);
     }
 
-    @FXML
     private void handleSendSms() {
         loadPage("/view/pages/SendSMS.fxml");
         activeButton(sendSmsBtn);
     }
 
-    @FXML
     private void handleSettings() {
         loadPage("/view/pages/Settings.fxml");
         activeButton(settingsBtn);
     }
 
-    @FXML
     private void handleLogout() {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirm Logout");

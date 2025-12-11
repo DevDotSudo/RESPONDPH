@@ -3,14 +3,10 @@ package com.ionres.respondph.mapping;
 import com.gluonhq.maps.MapView;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapLayer;
-import javafx.animation.AnimationTimer;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Circle;
 import javafx.geometry.Point2D;
 
 public class MappingController {
@@ -46,9 +42,6 @@ public class MappingController {
             {11.0897, 122.7666},
             {11.0928, 122.7618}
     };
-
-
-    /* Sample this should be replaced by beneficiaries location */
 
     private final BarangayPoint[] barangays = {
             new BarangayPoint("Poblacion", 11.0021, 122.8196),

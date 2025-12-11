@@ -1,130 +1,70 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Pagination;
 
 public class AddBeneficiariesDialogController {
 
     @FXML
-    private TextField firstNameField;
+    private Pagination bene_pagination;
 
     @FXML
-    private TextField middleNameField;
+    private Button backBtn;
 
     @FXML
-    private TextField lastNameField;
-
-    @FXML
-    private DatePicker birthDatePicker;
-
-    @FXML
-    private ComboBox<String> genderSelection;
-
-    @FXML
-    private TextField maritalStatusFld;
-
-    @FXML
-    private Label errorLabel;
-
-    @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button saveButton;
-
-    private Stage dialogStage;
-    private boolean adminAdded = false;
+    private Button nextBtn;
 
     @FXML
     public void initialize() {
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleCancel();
-            }
-        });
+        bene_pagination.setPageFactory(this::createPage);
+        bene_pagination.setCurrentPageIndex(0);
 
-        saveButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleSave();
-            }
-        });
-
-        setupValidation();
+        nextBtn.setOnAction(event -> nextPage());
+        backBtn.setOnAction(event -> prevPage());
     }
 
-    private void setupValidation() {
-        firstNameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
+    private Node createPage(int pageIndex) {
+        try {
+            switch (pageIndex) {
+                case 0:
+                    return FXMLLoader.load(getClass().getResource(
+                            "/view/pages/add_beneficiaries_pagination/BeneficiaryProfile.fxml"));
+                case 1:
+                    return FXMLLoader.load(getClass().getResource(
+                            "/view/pages/add_beneficiaries_pagination/VulnerabilityIndicators.fxml"));
+                case 2:
+                    return FXMLLoader.load(getClass().getResource(
+                            "/view/pages/add_beneficiaries_pagination/HousingAndInfrastracture.fxml"));
+                case 3:
+                    return FXMLLoader.load(getClass().getResource(
+                            "/view/pages/add_beneficiaries_pagination/SocioEconomicStatus.fxml"));
+                default:
+                    return null;
             }
-        });
-
-        lastNameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
-    }
-
-    @FXML
-    private void handleSave() {
-        if (validateInput()) {
-            adminAdded = true;
-            dialogStage.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Button("Error loading page");
         }
     }
 
-    @FXML
-    private void handleCancel() {
-        adminAdded = false;
-        dialogStage.close();
-    }
+    private void nextPage() {
+        int current = bene_pagination.getCurrentPageIndex();
+        int total = bene_pagination.getPageCount();
 
-    private boolean validateInput() {
-        String firstName = firstNameField.getText().trim();
-        String lastName = lastNameField.getText().trim();
-
-
-        if (firstName.isEmpty()) {
-            showError("First name is required.");
-            firstNameField.requestFocus();
-            return false;
+        if (current < total - 1) {
+            bene_pagination.setCurrentPageIndex(current + 1);
         }
+    }
 
-        if (lastName.isEmpty()) {
-            showError("Last name is required.");
-            lastNameField.requestFocus();
-            return false;
+    private void prevPage() {
+        int current = bene_pagination.getCurrentPageIndex();
+
+        if (current > 0) {
+            bene_pagination.setCurrentPageIndex(current - 1);
         }
-
-        return true;
-    }
-
-    private void showError(String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
-    }
-
-    private void clearError() {
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
-    }
-
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
-
-    public boolean isAdminAdded() {
-        return adminAdded;
     }
 }

@@ -19,11 +19,7 @@
             <padding>
                 <Insets bottom="40" left="40" right="40" top="40"/>
             </padding>
-            <Label text="UNDER CONSTRUCTION">
-                <font>
-                    <Font name="System Bold" size="22.0"/>
-                </font>
-            </Label>
+            <Label styleClass="construction-label" text="UNDER CONSTRUCTION" />
         </VBox>
 
     </VBox>

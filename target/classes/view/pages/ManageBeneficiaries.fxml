@@ -21,7 +21,7 @@
                 </VBox.margin>
                 
                 <TextField fx:id="searchField" prefWidth="300" promptText="Search beneficiaries..." styleClass="search-field" />
-            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" stylesheets="@../../styles/pages/managebeneficiaries.css" text="Search" />
+            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" text="Search" />
                 
                 <Region HBox.hgrow="ALWAYS" />
                 <Button fx:id="addButton" onAction="#handleAddBeneficiary" styleClass="add-button" text="+ Add Beneficiary" />

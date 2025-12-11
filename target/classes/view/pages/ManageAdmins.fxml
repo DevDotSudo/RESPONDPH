@@ -21,7 +21,7 @@
                 </VBox.margin>
 
                 <TextField fx:id="searchFld" prefHeight="42.0" prefWidth="304.0" promptText="Search admins..." styleClass="search-field" />
-                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" stylesheets="@../../styles/pages/manageadmins.css" text="Search" />
+                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" text="Search" />
                 <Region HBox.hgrow="ALWAYS" />
 
                 <Button fx:id="addButton" styleClass="add-button" text="+ Add Admin" />
@@ -36,13 +36,13 @@
 
             <TableView fx:id="adminTable" prefHeight="436.0" prefWidth="823.0" styleClass="admin-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" styleClass="content"/>
-                    <TableColumn fx:id="usernameColumn" prefWidth="1" text="Username" styleClass="content"/>
-                    <TableColumn fx:id="fNameColumn" prefWidth="1" text="First Name" styleClass="content"/>
-                    <TableColumn fx:id="mNameColumn" prefWidth="1" text="Middle Name" styleClass="content"/>
-                    <TableColumn fx:id="lNameColumn"  prefWidth="1" text="Last Name" styleClass="content"/>
-                    <TableColumn fx:id="regDateColumn" prefWidth="1" text="Registered Date" styleClass="content"/>
-                    <TableColumn fx:id="actionsColumn" maxWidth="160" text="Actions" styleClass="content"/>
+                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="usernameColumn" prefWidth="1" text="Username" />
+                    <TableColumn fx:id="fNameColumn" prefWidth="1" text="First Name" />
+                    <TableColumn fx:id="mNameColumn" prefWidth="1" text="Middle Name" />
+                    <TableColumn fx:id="lNameColumn"  prefWidth="1" text="Last Name" />
+                    <TableColumn fx:id="regDateColumn" prefWidth="1" text="Registered Date" />
+                    <TableColumn fx:id="actionsColumn" maxWidth="160" text="Actions" />
                 </columns>
             </TableView>
         </VBox>

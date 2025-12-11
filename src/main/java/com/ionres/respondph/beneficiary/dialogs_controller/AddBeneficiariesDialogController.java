@@ -6,9 +6,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 
-public class AddBeneficiariesDialogController {
+import java.util.ArrayList;
 
-    // Beneficiary Profile Fields
+public class AddBeneficiariesDialogController {
     @FXML
     private TextField firstNameFld;
     @FXML
@@ -31,25 +31,20 @@ public class AddBeneficiariesDialogController {
     private TextField longitudeFld;
     @FXML
     private Button getLocationBtn;
-
     @FXML
     private ComboBox<String> disabilityTypeSelection;
-
     @FXML
     private ComboBox<String> healthConditionSelection;
-
     @FXML
     private ComboBox<String> cleanWaterAccessSelection;
     @FXML
     private ComboBox<String> sanitationFacilitiesSelection;
-
     @FXML
     private ComboBox<String> houseConstructionTypeSelection;
     @FXML
     private ComboBox<String> damageSeveritySelection;
     @FXML
     private ComboBox<String> ownershipStatusSelection;
-
     @FXML
     private ComboBox<String> employmentStatusSelection;
     @FXML
@@ -58,7 +53,6 @@ public class AddBeneficiariesDialogController {
     private ComboBox<String> educationLevelSelection;
     @FXML
     private ComboBox<String> digitalAccessSelection;
-
     @FXML
     private Button exitBtn;
     @FXML
@@ -67,13 +61,9 @@ public class AddBeneficiariesDialogController {
     @FXML
     public void initialize() {
         initializeBeneficiaryProfileDropdowns();
-
         initializeVulnerabilityIndicatorsDropdowns();
-
         initializeHousingAndInfrastructureDropdowns();
-
         initializeSocioEconomicStatusDropdowns();
-
         exitBtn.setOnAction(event -> closeDialog());
         addBeneficiaryBtn.setOnAction(event -> addBeneficiary());
     }
@@ -153,7 +143,6 @@ public class AddBeneficiariesDialogController {
     }
 
     private void initializeSocioEconomicStatusDropdowns() {
-        // Employment Status dropdown
         employmentStatusSelection.getItems().addAll(
             "Regular full-time employment",
             "Self-employed with stable income",
@@ -162,7 +151,6 @@ public class AddBeneficiariesDialogController {
             "Unemployed"
         );
 
-        // Monthly Income dropdown
         monthlyIncomeSelection.getItems().addAll(
             "12,030-30,000(Poor)",
             "12,030-24,480(Low-Income)",

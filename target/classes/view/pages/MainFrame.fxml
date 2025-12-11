@@ -94,11 +94,7 @@
                     </VBox.margin>
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="15">
-                            <FontAwesomeIconView fill="WHITE" glyphName="SIGN_OUT" size="16.0" styleClass="nav-icon">
-                                <font>
-                                    <Font size="18.0" />
-                                </font>
-                            </FontAwesomeIconView>
+                            <FontAwesomeIconView fill="WHITE" glyphName="SIGN_OUT" size="16.0" styleClass="nav-icon" />
                             <Label styleClass="nav-text" text="Logout" />
                         </HBox>
                     </graphic>

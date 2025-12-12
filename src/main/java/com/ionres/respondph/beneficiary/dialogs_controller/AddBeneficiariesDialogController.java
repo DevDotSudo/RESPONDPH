@@ -1,130 +1,187 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
+
+import java.util.ArrayList;
 
 public class AddBeneficiariesDialogController {
-
     @FXML
-    private TextField firstNameField;
-
+    private TextField firstNameFld;
     @FXML
-    private TextField middleNameField;
-
+    private TextField middleNameFld;
     @FXML
-    private TextField lastNameField;
-
+    private TextField lastNameFld;
     @FXML
     private DatePicker birthDatePicker;
-
     @FXML
     private ComboBox<String> genderSelection;
-
     @FXML
-    private TextField maritalStatusFld;
-
+    private TextField mobileNumberFld;
     @FXML
-    private Label errorLabel;
-
+    private ComboBox<String> maritalStatusSelection;
     @FXML
-    private Button cancelButton;
-
+    private ComboBox<String> soloParentStatusSelection;
     @FXML
-    private Button saveButton;
-
-    private Stage dialogStage;
-    private boolean adminAdded = false;
+    private TextField latitudeFld;
+    @FXML
+    private TextField longitudeFld;
+    @FXML
+    private Button getLocationBtn;
+    @FXML
+    private ComboBox<String> disabilityTypeSelection;
+    @FXML
+    private ComboBox<String> healthConditionSelection;
+    @FXML
+    private ComboBox<String> cleanWaterAccessSelection;
+    @FXML
+    private ComboBox<String> sanitationFacilitiesSelection;
+    @FXML
+    private ComboBox<String> houseConstructionTypeSelection;
+    @FXML
+    private ComboBox<String> damageSeveritySelection;
+    @FXML
+    private ComboBox<String> ownershipStatusSelection;
+    @FXML
+    private ComboBox<String> employmentStatusSelection;
+    @FXML
+    private ComboBox<String> monthlyIncomeSelection;
+    @FXML
+    private ComboBox<String> educationLevelSelection;
+    @FXML
+    private ComboBox<String> digitalAccessSelection;
+    @FXML
+    private Button exitBtn;
+    @FXML
+    private Button addBeneficiaryBtn;
 
     @FXML
     public void initialize() {
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleCancel();
-            }
-        });
-
-        saveButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleSave();
-            }
-        });
-
-        setupValidation();
+        initializeBeneficiaryProfileDropdowns();
+        initializeVulnerabilityIndicatorsDropdowns();
+        initializeHousingAndInfrastructureDropdowns();
+        initializeSocioEconomicStatusDropdowns();
+        exitBtn.setOnAction(event -> closeDialog());
+        addBeneficiaryBtn.setOnAction(event -> addBeneficiary());
     }
 
-    private void setupValidation() {
-        firstNameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
+    private void initializeBeneficiaryProfileDropdowns() {
+        genderSelection.getItems().addAll("Male", "Female", "Other");
 
-        lastNameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
+        maritalStatusSelection.getItems().addAll(
+            "Single",
+            "Married",
+            "Widowed",
+            "Separated",
+            "Divorced"
+        );
+
+        soloParentStatusSelection.getItems().addAll("Yes", "No");
     }
 
-    @FXML
-    private void handleSave() {
-        if (validateInput()) {
-            adminAdded = true;
-            dialogStage.close();
-        }
+    private void initializeVulnerabilityIndicatorsDropdowns() {
+        disabilityTypeSelection.getItems().addAll(
+            "None",
+            "Physical",
+            "Visual",
+            "Hearing",
+            "Speech",
+            "Intellectual",
+            "Mental/Psychosocial",
+            "Due to Chronic Illness"
+        );
+
+        healthConditionSelection.getItems().addAll(
+            "Healthy",
+            "Temporarily ill",
+            "Chronically ill",
+            "Immunocompromised",
+            "Terminally ill",
+            "With History of Hospitalization/ Long-term Medical Equipment Dependency"
+        );
+
+        cleanWaterAccessSelection.getItems().addAll(
+            "Yes",
+            "Occasionally",
+            "No"
+        );
+
+        sanitationFacilitiesSelection.getItems().addAll(
+            "Safely managed private toilet",
+            "Shared sanitation facility",
+            "Unimproved sanitation facility",
+            "No sanitation facility available"
+        );
     }
 
-    @FXML
-    private void handleCancel() {
-        adminAdded = false;
-        dialogStage.close();
+    private void initializeHousingAndInfrastructureDropdowns() {
+        houseConstructionTypeSelection.getItems().addAll(
+            "Reinforced concrete or masonry",
+            "Light materials (bamboo, nipa, thatch, cogon)",
+            "Semi-concrete with light roofing (GI, asbestos)",
+            "Makeshift shelter (wood, tarpaulin)"
+        );
+
+        damageSeveritySelection.getItems().addAll(
+            "No visible damage",
+            "Minor damage (non-structural)",
+            "Moderate damage (partially inhabitable)",
+            "Severe damage or partially collapsed (unsafe for use)",
+            "Destruction or collapse"
+        );
+
+        ownershipStatusSelection.getItems().addAll(
+            "Owned with formal title",
+            "Owned without formal title",
+            "Rented",
+            "Informal settler",
+            "Evicted or displaced"
+        );
     }
 
-    private boolean validateInput() {
-        String firstName = firstNameField.getText().trim();
-        String lastName = lastNameField.getText().trim();
+    private void initializeSocioEconomicStatusDropdowns() {
+        employmentStatusSelection.getItems().addAll(
+            "Regular full-time employment",
+            "Self-employed with stable income",
+            "Self-employed with unstable income",
+            "Irregular employment (odd jobs, seasonal work)",
+            "Unemployed"
+        );
 
+        monthlyIncomeSelection.getItems().addAll(
+            "12,030-30,000(Poor)",
+            "12,030-24,480(Low-Income)",
+            "24,061-84,120 (Lower Middle Income)",
+            "84,121-144,210(Middle Class)",
+            "144,211-244,350(Upper Middle Income)",
+            "At least 244,350(Rich)"
+        );
 
-        if (firstName.isEmpty()) {
-            showError("First name is required.");
-            firstNameField.requestFocus();
-            return false;
-        }
+        educationLevelSelection.getItems().addAll(
+            "No Formal Education",
+            "Elementary",
+            "High School",
+            "Vocational or technical training",
+            "College or university level",
+            "Graduate education"
+        );
 
-        if (lastName.isEmpty()) {
-            showError("Last name is required.");
-            lastNameField.requestFocus();
-            return false;
-        }
-
-        return true;
+        digitalAccessSelection.getItems().addAll(
+            "Reliable Internet and Device Access",
+            "Intermittent internet or device access",
+            "Device only",
+            "No digital access"
+        );
     }
 
-    private void showError(String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
+    private void addBeneficiary() {
+        System.out.println("Add Beneficiary button clicked");
     }
 
-    private void clearError() {
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
-    }
-
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
-
-    public boolean isAdminAdded() {
-        return adminAdded;
+    private void closeDialog() {
+        ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
     }
 }

@@ -9,3 +9,9 @@
     -fx-text-fill: #1f2937;
 }
 
+.construction-label {
+    -fx-font-family: "System";
+    -fx-font-weight: bold;
+    -fx-font-size: 22px;
+}
+

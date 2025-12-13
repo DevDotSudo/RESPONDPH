@@ -5,8 +5,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
-
+import com.ionres.respondph.admin.AdminController;
+import com.ionres.respondph.admin.AdminService;
+import com.ionres.respondph.beneficiary.BeneficiaryController;
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.beneficiary.BeneficiaryService;
+import com.ionres.respondph.util.AlertDialog;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import java.util.ArrayList;
+import javafx.stage.Stage;
 
 public class AddBeneficiariesDialogController {
     @FXML
@@ -57,6 +65,17 @@ public class AddBeneficiariesDialogController {
     private Button exitBtn;
     @FXML
     private Button addBeneficiaryBtn;
+    AlertDialog alertDialog = new AlertDialog();
+
+    private BeneficiaryService beneficiaryService;
+    private BeneficiaryController beneficiaryController;
+
+    public void setBeneficiaryService(BeneficiaryService beneficiaryService) {
+        this.beneficiaryService = beneficiaryService;
+    }
+    public void setBeneficiaryController(BeneficiaryController beneficiaryController) {
+        this.beneficiaryController = beneficiaryController;
+    }
 
     @FXML
     public void initialize() {
@@ -66,6 +85,23 @@ public class AddBeneficiariesDialogController {
         initializeSocioEconomicStatusDropdowns();
         exitBtn.setOnAction(event -> closeDialog());
         addBeneficiaryBtn.setOnAction(event -> addBeneficiary());
+
+        EventHandler<ActionEvent> handlers = this::handleActions;
+        exitBtn.setOnAction(handlers);
+        addBeneficiaryBtn.setOnAction(handlers);
+    }
+
+    private void handleActions(ActionEvent event){
+        Object src = event.getSource();
+
+        if(src == addBeneficiaryBtn){
+            addBeneficiary();
+            beneficiaryController.loadTable();
+            clearFields();
+        }
+        else if(src == exitBtn){
+            closeDialog();
+        }
     }
 
     private void initializeBeneficiaryProfileDropdowns() {
@@ -178,10 +214,182 @@ public class AddBeneficiariesDialogController {
     }
 
     private void addBeneficiary() {
-        System.out.println("Add Beneficiary button clicked");
+        try {
+            String firstname        = firstNameFld.getText().trim();
+            String middlename       = middleNameFld.getText().trim();
+            String lastname         = lastNameFld.getText().trim();
+            String birthDate        = birthDatePicker.getValue() != null
+                    ? birthDatePicker.getValue().toString()
+                    : "";
+            String gender           = genderSelection.getValue();
+            String mobileNumber     = mobileNumberFld.getText().trim();
+            String maritalStatus    = maritalStatusSelection.getValue();
+            String soloParentStatus = soloParentStatusSelection.getValue();
+            String latitude         = latitudeFld.getText().trim();
+            String longitude        = longitudeFld.getText().trim();
+            String disabilityType   = disabilityTypeSelection.getValue();
+            String healthCondition  = healthConditionSelection.getValue();
+            String cleanWaterAccess = cleanWaterAccessSelection.getValue();
+            String sanitationFacility = sanitationFacilitiesSelection.getValue();
+            String houseType        = houseConstructionTypeSelection.getValue();
+            String damageSeverity   = damageSeveritySelection.getValue();
+            String ownershipStatus  = ownershipStatusSelection.getValue();
+            String employmentStatus = employmentStatusSelection.getValue();
+            String monthlyIncome    = monthlyIncomeSelection.getValue();
+            String educationalLevel = educationLevelSelection.getValue();
+            String digitalAccess    = digitalAccessSelection.getValue();
+
+
+            if (firstname.isEmpty()) {
+                alertDialog.showWarning("First name is required");
+                return;
+            }
+            if (middlename.isEmpty()) {
+                alertDialog.showWarning("Middle name is required");
+                return;
+            }
+            if (lastname.isEmpty()) {
+                alertDialog.showWarning("Last name is required");
+                return;
+            }
+            if (birthDate.isEmpty()) {
+                alertDialog.showWarning("Birth date is required");
+                return;
+            }
+            if (gender == null) {
+                alertDialog.showWarning("Gender is required");
+                return;
+            }
+            if (mobileNumber.isEmpty()) {
+                alertDialog.showWarning("Mobile number is required");
+                return;
+            }
+            if (maritalStatus == null) {
+                alertDialog.showWarning("Marital status is required");
+                return;
+            }
+            if (soloParentStatus == null) {
+                alertDialog.showWarning("Solo parent status is required");
+                return;
+            }
+            if (latitude.isEmpty()) {
+                alertDialog.showWarning("Latitude is required");
+                return;
+            }
+            if (longitude.isEmpty()) {
+                alertDialog.showWarning("Longitude is required");
+                return;
+            }
+            if (disabilityType == null) {
+                alertDialog.showWarning("Disability type is required");
+                return;
+            }
+            if (healthCondition == null) {
+                alertDialog.showWarning("Health condition is required");
+                return;
+            }
+            if (cleanWaterAccess == null) {
+                alertDialog.showWarning("Clean water access is required");
+                return;
+            }
+            if (sanitationFacility == null) {
+                alertDialog.showWarning("Sanitation facility is required");
+                return;
+            }
+            if (houseType == null) {
+                alertDialog.showWarning("House type is required");
+                return;
+            }
+            if (damageSeverity == null) {
+                alertDialog.showWarning("Damage severity is required");
+                return;
+            }
+            if (ownershipStatus == null) {
+                alertDialog.showWarning("Ownership status is required");
+                return;
+            }
+            if (employmentStatus == null) {
+                alertDialog.showWarning("Employment status is required");
+                return;
+            }
+            if (monthlyIncome == null) {
+                alertDialog.showWarning("Monthly income is required");
+                return;
+            }
+            if (educationalLevel == null) {
+                alertDialog.showWarning("Educational level is required");
+                return;
+            }
+            if (digitalAccess == null) {
+                alertDialog.showWarning("Digital access is required");
+                return;
+            }
+
+            String regDate = java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+
+            BeneficiaryModel bm = new BeneficiaryModel(
+                    firstname, middlename, lastname, birthDate, gender,
+                    maritalStatus, soloParentStatus, latitude, longitude,
+                    mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
+                    sanitationFacility, houseType, ownershipStatus, employmentStatus,
+                    monthlyIncome, educationalLevel, digitalAccess, regDate
+            );
+
+            boolean success = beneficiaryService.createBeneficiary(bm);
+
+            if (success) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        null,
+                        "Beneficiary successfully added.",
+                        "Success",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(
+                        null,
+                        "Failed to add beneficiary.",
+                        "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+            }
+
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    null,
+                    e.getMessage(),
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace();
+        }
     }
 
     private void closeDialog() {
         ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
+    }
+
+    public void clearFields() {
+        firstNameFld.setText("");
+        middleNameFld.setText("");
+        lastNameFld.setText("");
+        mobileNumberFld.setText("");
+        latitudeFld.setText("");
+        longitudeFld.setText("");
+        birthDatePicker.setValue(null);
+        genderSelection.getSelectionModel().clearSelection();
+        maritalStatusSelection.getSelectionModel().clearSelection();
+        soloParentStatusSelection.getSelectionModel().clearSelection();
+        disabilityTypeSelection.getSelectionModel().clearSelection();
+        healthConditionSelection.getSelectionModel().clearSelection();
+        cleanWaterAccessSelection.getSelectionModel().clearSelection();
+        sanitationFacilitiesSelection.getSelectionModel().clearSelection();
+        houseConstructionTypeSelection.getSelectionModel().clearSelection();
+        damageSeveritySelection.getSelectionModel().clearSelection();
+        ownershipStatusSelection.getSelectionModel().clearSelection();
+        employmentStatusSelection.getSelectionModel().clearSelection();
+        monthlyIncomeSelection.getSelectionModel().clearSelection();
+        educationLevelSelection.getSelectionModel().clearSelection();
+        digitalAccessSelection.getSelectionModel().clearSelection();
     }
 }

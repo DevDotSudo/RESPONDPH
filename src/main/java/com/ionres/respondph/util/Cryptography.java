@@ -3,7 +3,6 @@ package com.ionres.respondph.util;
 
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -24,6 +23,20 @@ public class Cryptography {
         this.key = new SecretKeySpec(decodedKey, "AES");
     }
 
+    public String encryptWithOneParameter(String input) throws Exception {
+        byte[] iv = new byte[IV_SIZE];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec);
+
+        byte[] cipherText = cipher.doFinal(input.getBytes());
+
+        return Base64.getEncoder().encodeToString(iv) + ":" +
+                Base64.getEncoder().encodeToString(cipherText);
+    }
 
     public List<String> encrypt(String username, String firstname, String middlename,
                                 String lastname, String regDate) throws Exception {

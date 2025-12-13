@@ -37,11 +37,13 @@
             <TableView fx:id="beneficiaryTable" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
-                    <TableColumn fx:id="nameColumn" prefWidth="1" text="Full Name" />
-                    <TableColumn fx:id="ageColumn" prefWidth="1" text="Age" />
-                    <TableColumn fx:id="contactColumn" prefWidth="1" text="Contact" />
-                    <TableColumn fx:id="addressColumn" prefWidth="1" text="Address" />
-                    <TableColumn fx:id="statusColumn" prefWidth="1" text="Status" />
+                    <TableColumn fx:id="firstnameColumn" prefWidth="1" text="Firstname" />
+                    <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middlename" />
+                    <TableColumn fx:id="lastnameColumn" prefWidth="1" text="Lastname" />
+                    <TableColumn fx:id="birthdateColumn" prefWidth="1" text="Birthdate" />
+                    <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
+                    <TableColumn fx:id="statusColumn" prefWidth="1" text="Marital Status" />
+                    <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Number" />
                     <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered" />
                     <TableColumn fx:id="actionsColumn" prefWidth="1" text="Actions" />
                 </columns>

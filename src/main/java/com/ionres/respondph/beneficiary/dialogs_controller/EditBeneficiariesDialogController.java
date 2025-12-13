@@ -1,7 +1,5 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import com.ionres.respondph.admin.AdminController;
-import com.ionres.respondph.admin.AdminService;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
@@ -15,11 +13,11 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class AddBeneficiariesDialogController {
+import java.time.LocalDate;
+
+public class EditBeneficiariesDialogController {
 
     AlertDialog alertDialog = new AlertDialog();
-
-
 
     @FXML
     private TextField firstNameFld;
@@ -46,22 +44,18 @@ public class AddBeneficiariesDialogController {
 
     @FXML
     private ComboBox<String> disabilityTypeSelection;
-
     @FXML
     private ComboBox<String> healthConditionSelection;
-
     @FXML
     private ComboBox<String> cleanWaterAccessSelection;
     @FXML
     private ComboBox<String> sanitationFacilitiesSelection;
-
     @FXML
     private ComboBox<String> houseConstructionTypeSelection;
     @FXML
     private ComboBox<String> damageSeveritySelection;
     @FXML
     private ComboBox<String> ownershipStatusSelection;
-
     @FXML
     private ComboBox<String> employmentStatusSelection;
     @FXML
@@ -74,18 +68,28 @@ public class AddBeneficiariesDialogController {
     @FXML
     private Button exitBtn;
     @FXML
-    private Button addBeneficiaryBtn;
-
-
+    private Button updateBeneficiaryBtn;
 
     private BeneficiaryService beneficiaryService;
     private BeneficiaryController beneficiaryController;
+    private BeneficiaryModel currentBeneficiary;
+    private Stage dialogStage;
 
     public void setBeneficiaryService(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;
     }
+
     public void setBeneficiaryController(BeneficiaryController beneficiaryController) {
         this.beneficiaryController = beneficiaryController;
+    }
+
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
+    }
+
+    public void setBeneficiary(BeneficiaryModel bm) {
+        this.currentBeneficiary = bm;
+        populateFields(bm);
     }
 
     @FXML
@@ -97,25 +101,52 @@ public class AddBeneficiariesDialogController {
 
         EventHandler<ActionEvent> handlers = this::handleActions;
         exitBtn.setOnAction(handlers);
-        addBeneficiaryBtn.setOnAction(handlers);
+        updateBeneficiaryBtn.setOnAction(handlers);
     }
 
-    private void handleActions(ActionEvent event){
+    private void handleActions(ActionEvent event) {
         Object src = event.getSource();
 
-        if(src == addBeneficiaryBtn){
-            addBeneficiary();
+        if (src == updateBeneficiaryBtn) {
+            updateBeneficiary();
             beneficiaryController.loadTable();
-            clearFields();
-        }
-        else if(src == exitBtn){
+        } else if (src == exitBtn) {
             closeDialog();
         }
-
-
-
     }
 
+
+    private void populateFields(BeneficiaryModel bm) {
+        firstNameFld.setText(bm.getFirstname());
+        middleNameFld.setText(bm.getMiddlename());
+        lastNameFld.setText(bm.getLastname());
+        mobileNumberFld.setText(bm.getMobileNumber());
+        latitudeFld.setText(bm.getLatitude());
+        longitudeFld.setText(bm.getLongitude());
+
+        if (bm.getBirthDate() != null && !bm.getBirthDate().isEmpty()) {
+            try {
+                LocalDate birthDate = LocalDate.parse(bm.getBirthDate());
+                birthDatePicker.setValue(birthDate);
+            } catch (Exception e) {
+                System.out.println("Error parsing date: " + e.getMessage());
+            }
+        }
+
+        genderSelection.setValue(bm.getGender());
+        maritalStatusSelection.setValue(bm.getMaritalStatus());
+        soloParentStatusSelection.setValue(bm.getSoloParentStatus());
+        disabilityTypeSelection.setValue(bm.getDisabilityType());
+        healthConditionSelection.setValue(bm.getHealthCondition());
+        cleanWaterAccessSelection.setValue(bm.getCleanWaterAccess());
+        sanitationFacilitiesSelection.setValue(bm.getSanitationFacility());
+        houseConstructionTypeSelection.setValue(bm.getHouseType());
+        ownershipStatusSelection.setValue(bm.getOwnerShipStatus());
+        employmentStatusSelection.setValue(bm.getEmploymentStatus());
+        monthlyIncomeSelection.setValue(bm.getMonthlyIncome());
+        educationLevelSelection.setValue(bm.getEducationalLevel());
+        digitalAccessSelection.setValue(bm.getDigitalAccess());
+    }
 
     private void initializeBeneficiaryProfileDropdowns() {
         genderSelection.getItems().addAll("Male", "Female", "Other");
@@ -133,149 +164,126 @@ public class AddBeneficiariesDialogController {
 
     private void initializeVulnerabilityIndicatorsDropdowns() {
         disabilityTypeSelection.getItems().addAll(
-            "None",
-            "Physical",
-            "Visual",
-            "Hearing",
-            "Speech",
-            "Intellectual",
-            "Mental/Psychosocial",
-            "Due to Chronic Illness"
+                "None",
+                "Physical",
+                "Visual",
+                "Hearing",
+                "Speech",
+                "Intellectual",
+                "Mental/Psychosocial",
+                "Due to Chronic Illness"
         );
 
         healthConditionSelection.getItems().addAll(
-            "Healthy",
-            "Temporarily ill",
-            "Chronically ill",
-            "Immunocompromised",
-            "Terminally ill",
-            "With History of Hospitalization/ Long-term Medical Equipment Dependency"
+                "Healthy",
+                "Temporarily ill",
+                "Chronically ill",
+                "Immunocompromised",
+                "Terminally ill",
+                "With History of Hospitalization/ Long-term Medical Equipment Dependency"
         );
 
         cleanWaterAccessSelection.getItems().addAll(
-            "Yes",
-            "Occasionally",
-            "No"
+                "Yes",
+                "Occasionally",
+                "No"
         );
 
         sanitationFacilitiesSelection.getItems().addAll(
-            "Safely managed private toilet",
-            "Shared sanitation facility",
-            "Unimproved sanitation facility",
-            "No sanitation facility available"
+                "Safely managed private toilet",
+                "Shared sanitation facility",
+                "Unimproved sanitation facility",
+                "No sanitation facility available"
         );
     }
 
     private void initializeHousingAndInfrastructureDropdowns() {
         houseConstructionTypeSelection.getItems().addAll(
-            "Reinforced concrete or masonry",
-            "Light materials (bamboo, nipa, thatch, cogon)",
-            "Semi-concrete with light roofing (GI, asbestos)",
-            "Makeshift shelter (wood, tarpaulin)"
+                "Reinforced concrete or masonry",
+                "Light materials (bamboo, nipa, thatch, cogon)",
+                "Semi-concrete with light roofing (GI, asbestos)",
+                "Makeshift shelter (wood, tarpaulin)"
         );
 
         damageSeveritySelection.getItems().addAll(
-            "No visible damage",
-            "Minor damage (non-structural)",
-            "Moderate damage (partially inhabitable)",
-            "Severe damage or partially collapsed (unsafe for use)",
-            "Destruction or collapse"
+                "No visible damage",
+                "Minor damage (non-structural)",
+                "Moderate damage (partially inhabitable)",
+                "Severe damage or partially collapsed (unsafe for use)",
+                "Destruction or collapse"
         );
 
         ownershipStatusSelection.getItems().addAll(
-            "Owned with formal title",
-            "Owned without formal title",
-            "Rented",
-            "Informal settler",
-            "Evicted or displaced"
+                "Owned with formal title",
+                "Owned without formal title",
+                "Rented",
+                "Informal settler",
+                "Evicted or displaced"
         );
     }
 
     private void initializeSocioEconomicStatusDropdowns() {
         employmentStatusSelection.getItems().addAll(
-            "Regular full-time employment",
-            "Self-employed with stable income",
-            "Self-employed with unstable income",
-            "Irregular employment (odd jobs, seasonal work)",
-            "Unemployed"
+                "Regular full-time employment",
+                "Self-employed with stable income",
+                "Self-employed with unstable income",
+                "Irregular employment (odd jobs, seasonal work)",
+                "Unemployed"
         );
 
         monthlyIncomeSelection.getItems().addAll(
-            "12,030-30,000(Poor)",
-            "12,030-24,480(Low-Income)",
-            "24,061-84,120 (Lower Middle Income)",
-            "84,121-144,210(Middle Class)",
-            "144,211-244,350(Upper Middle Income)",
-            "At least 244,350(Rich)"
+                "12,030-30,000(Poor)",
+                "12,030-24,480(Low-Income)",
+                "24,061-84,120 (Lower Middle Income)",
+                "84,121-144,210(Middle Class)",
+                "144,211-244,350(Upper Middle Income)",
+                "At least 244,350(Rich)"
         );
 
         educationLevelSelection.getItems().addAll(
-            "No Formal Education",
-            "Elementary",
-            "High School",
-            "Vocational or technical training",
-            "College or university level",
-            "Graduate education"
+                "No Formal Education",
+                "Elementary",
+                "High School",
+                "Vocational or technical training",
+                "College or university level",
+                "Graduate education"
         );
 
         digitalAccessSelection.getItems().addAll(
-            "Reliable Internet and Device Access",
-            "Intermittent internet or device access",
-            "Device only",
-            "No digital access"
+                "Reliable Internet and Device Access",
+                "Intermittent internet or device access",
+                "Device only",
+                "No digital access"
         );
     }
 
-    public void clearFields() {
-        firstNameFld.setText("");
-        middleNameFld.setText("");
-        lastNameFld.setText("");
-        mobileNumberFld.setText("");
-        latitudeFld.setText("");
-        longitudeFld.setText("");
-        birthDatePicker.setValue(null);
-        genderSelection.getSelectionModel().clearSelection();
-        maritalStatusSelection.getSelectionModel().clearSelection();
-        soloParentStatusSelection.getSelectionModel().clearSelection();
-        disabilityTypeSelection.getSelectionModel().clearSelection();
-        healthConditionSelection.getSelectionModel().clearSelection();
-        cleanWaterAccessSelection.getSelectionModel().clearSelection();
-        sanitationFacilitiesSelection.getSelectionModel().clearSelection();
-        houseConstructionTypeSelection.getSelectionModel().clearSelection();
-        damageSeveritySelection.getSelectionModel().clearSelection();
-        ownershipStatusSelection.getSelectionModel().clearSelection();
-        employmentStatusSelection.getSelectionModel().clearSelection();
-        monthlyIncomeSelection.getSelectionModel().clearSelection();
-        educationLevelSelection.getSelectionModel().clearSelection();
-        digitalAccessSelection.getSelectionModel().clearSelection();
-    }
-
-    private void addBeneficiary() {
+    private void updateBeneficiary() {
         try {
-            String firstname        = firstNameFld.getText().trim();
-            String middlename       = middleNameFld.getText().trim();
-            String lastname         = lastNameFld.getText().trim();
-            String birthDate        = birthDatePicker.getValue() != null
+            String firstname = firstNameFld.getText().trim();
+            String middlename = middleNameFld.getText().trim();
+            String lastname = lastNameFld.getText().trim();
+            String birthDate = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
-            String gender           = genderSelection.getValue();
-            String mobileNumber     = mobileNumberFld.getText().trim();
-            String maritalStatus    = maritalStatusSelection.getValue();
+            String gender = genderSelection.getValue();
+            String mobileNumber = mobileNumberFld.getText().trim();
+            String maritalStatus = maritalStatusSelection.getValue();
             String soloParentStatus = soloParentStatusSelection.getValue();
-            String latitude         = latitudeFld.getText().trim();
-            String longitude        = longitudeFld.getText().trim();
-            String disabilityType   = disabilityTypeSelection.getValue();
-            String healthCondition  = healthConditionSelection.getValue();
+            String latitude = latitudeFld.getText().trim();
+            String longitude = longitudeFld.getText().trim();
+            String disabilityType = disabilityTypeSelection.getValue();
+            String healthCondition = healthConditionSelection.getValue();
             String cleanWaterAccess = cleanWaterAccessSelection.getValue();
             String sanitationFacility = sanitationFacilitiesSelection.getValue();
-            String houseType        = houseConstructionTypeSelection.getValue();
-            String damageSeverity   = damageSeveritySelection.getValue();
-            String ownershipStatus  = ownershipStatusSelection.getValue();
+            String houseType = houseConstructionTypeSelection.getValue();
+            String damageSeverity = damageSeveritySelection.getValue();
+            String ownershipStatus = ownershipStatusSelection.getValue();
             String employmentStatus = employmentStatusSelection.getValue();
-            String monthlyIncome    = monthlyIncomeSelection.getValue();
+            String monthlyIncome = monthlyIncomeSelection.getValue();
             String educationalLevel = educationLevelSelection.getValue();
-            String digitalAccess    = digitalAccessSelection.getValue();
-
+            String digitalAccess = digitalAccessSelection.getValue();
+            String regDate = java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
             if (firstname.isEmpty()) {
                 alertDialog.showWarning("First name is required");
@@ -362,49 +370,35 @@ public class AddBeneficiariesDialogController {
                 return;
             }
 
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
-
-            BeneficiaryModel bm = new BeneficiaryModel(
+            BeneficiaryModel updatedBm = new BeneficiaryModel(
                     firstname, middlename, lastname, birthDate, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess, regDate
+                    monthlyIncome, educationalLevel, digitalAccess,
+                    regDate
             );
+            updatedBm.setId(currentBeneficiary.getId());
 
-            boolean success = beneficiaryService.createBeneficiary(bm);
+            boolean success = beneficiaryService.updateBeneficiary(updatedBm);
 
             if (success) {
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Beneficiary successfully added.",
-                        "Success",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                alertDialog.showSuccess("Success", "Beneficiary updated successfully.");
             } else {
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Failed to add beneficiary.",
-                        "Error",
-                        javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                alertDialog.showErrorAlert("Error", "Failed to update beneficiary.");
             }
 
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    e.getMessage(),
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+            alertDialog.showErrorAlert("Error", e.getMessage());
             e.printStackTrace();
         }
     }
 
-
-
     private void closeDialog() {
-        ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
+        if (dialogStage != null) {
+            dialogStage.close();
+        } else {
+            ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
+        }
     }
 }

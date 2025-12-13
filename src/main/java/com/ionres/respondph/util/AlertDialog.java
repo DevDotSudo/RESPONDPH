@@ -17,4 +17,12 @@ public class AlertDialog {
         alert.setContentText(message);
         alert.showAndWait();
     }
+    public void showWarning(String message) {
+        javax.swing.JOptionPane.showMessageDialog(
+                null,
+                message,
+                "Validation Error",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+    }
 }

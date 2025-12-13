@@ -62,13 +62,6 @@ public class AdminServiceImpl implements  AdminService{
     }
 
     @Override
-    public String generateAdminID() {
-        String year = String.valueOf(LocalDate.now().getYear());
-        String random = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
-        return "ADMIN-" + year + "-" + random;
-    }
-
-    @Override
     public boolean deleteAdmin(AdminModel admin) {
         try {
             if (admin == null || admin.getId() <= 0) {

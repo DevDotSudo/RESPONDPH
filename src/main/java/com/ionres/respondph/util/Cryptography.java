@@ -1,12 +1,10 @@
 package com.ionres.respondph.util;
-
-
-
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -22,6 +20,21 @@ public class Cryptography {
     public Cryptography(String base64Key) {
         byte[] decodedKey = Base64.getDecoder().decode(base64Key);
         this.key = new SecretKeySpec(decodedKey, "AES");
+    }
+
+    public String encryptWithOneParameter(String input) throws Exception {
+        byte[] iv = new byte[IV_SIZE];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec);
+
+        byte[] cipherText = cipher.doFinal(input.getBytes());
+
+        return Base64.getEncoder().encodeToString(iv) + ":" +
+                Base64.getEncoder().encodeToString(cipherText);
     }
 
 

@@ -32,14 +32,11 @@ import java.util.Optional;
 
 public class BeneficiaryController {
 
-
-
-
-
     BeneficiaryService beneficiaryService = new BeneficiaryServiceImpl();
     ObservableList<BeneficiaryModel> beneficiaryList;
 
     AlertDialog alertDialog = new AlertDialog();
+
 
 
     @FXML
@@ -85,6 +82,9 @@ public class BeneficiaryController {
     private TableColumn<BeneficiaryModel, String> mobileNumberColumn;
 
     @FXML
+    private TableColumn<BeneficiaryModel, String> addedByColumn;
+
+    @FXML
     private TableColumn<BeneficiaryModel, String> registeredDateColumn;
 
     @FXML
@@ -99,15 +99,21 @@ public class BeneficiaryController {
         loadTable();
         actionButtons();
         EventHandler<ActionEvent> handlers = this::handleActions;
-    }
 
-    @FXML
-    private void handleSearch() {
-        System.out.println(searchField.getText());
+        refreshButton.setOnAction(handlers);
+        searchBtn.setOnAction(handlers);
     }
 
     private void handleActions(ActionEvent event){
         Object src = event.getSource();
+        
+        if (src == refreshButton){
+            loadTable();
+        } else if (src == searchBtn) {
+            handleSearch();
+            setSearchFld();
+            
+        }
 
     }
 
@@ -181,10 +187,7 @@ public class BeneficiaryController {
         }
     }
 
-    @FXML
-    private void handleRefresh() {
-        System.out.println("Refresh Beneficiaries");
-    }
+   
 
     public void loadTable() {
         List<BeneficiaryModel> admins = beneficiaryService.getAllBeneficiary();
@@ -206,6 +209,7 @@ public class BeneficiaryController {
         genderColumn.setCellValueFactory(new PropertyValueFactory<>("gender"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("maritalStatus"));
         mobileNumberColumn.setCellValueFactory(new PropertyValueFactory<>("mobileNumber"));
+        addedByColumn.setCellValueFactory(new PropertyValueFactory<>("addedBy"));
         registeredDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
     }
 
@@ -232,7 +236,27 @@ public class BeneficiaryController {
         }
 
     }
+    private void handleSearch() {
+        String searchText = searchField.getText().trim();
+        if (searchText.isEmpty()) {
+            loadTable();
+        } else {
+            searchAdmins(searchText);
+        }
+    }
+    private void searchAdmins(String searchText) {
+        List<BeneficiaryModel> filteredAdmins = beneficiaryService.searchBeneficiary(searchText);
+        beneficiaryList = FXCollections.observableArrayList(filteredAdmins);
+        beneficiaryTable.setItems(beneficiaryList);
+    }
 
+    private void setSearchFld(){
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.trim().isEmpty()) {
+                loadTable();
+            }
+        });
+    }
 
     private void actionButtons() {
         Callback<TableColumn<BeneficiaryModel, Void>, TableCell<BeneficiaryModel, Void>> cellFactory =

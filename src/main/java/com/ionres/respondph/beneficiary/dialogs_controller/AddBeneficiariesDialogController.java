@@ -365,12 +365,15 @@ public class AddBeneficiariesDialogController {
             String regDate = java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
+            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
+
+
             BeneficiaryModel bm = new BeneficiaryModel(
                     firstname, middlename, lastname, birthDate, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess, regDate
+                    monthlyIncome, educationalLevel, digitalAccess, addedBy,regDate
             );
 
             boolean success = beneficiaryService.createBeneficiary(bm);
@@ -382,6 +385,7 @@ public class AddBeneficiariesDialogController {
                         "Success",
                         javax.swing.JOptionPane.INFORMATION_MESSAGE
                 );
+                System.out.println("Firstname " + addedBy);
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,

@@ -17,8 +17,8 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
 
     @Override
     public boolean saving(BeneficiaryModel bm) {
-        String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, gender, marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, employment_status, monthly_income, education_level, digital_access, regDate)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
+        String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, gender, marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, employment_status, monthly_income, education_level, digital_access, added_by, regDate)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -43,7 +43,8 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
             ps.setString(18, bm.getMonthlyIncome());
             ps.setString(19, bm.getEducationalLevel());
             ps.setString(20, bm.getDigitalAccess());
-            ps.setString(21, bm.getRegDate());
+            ps.setString(21, bm.getAddedBy());
+            ps.setString(22, bm.getRegDate());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -58,7 +59,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
     @Override
     public List<BeneficiaryModel> getAll() {
         List<BeneficiaryModel> beneficiaries = new ArrayList<>();
-        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, birthdate, gender, marital_status, mobile_number, regDate FROM beneficiary";
+        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, birthdate, gender, marital_status, mobile_number, added_by, regDate FROM beneficiary";
 
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -78,6 +79,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 encrypted.add(rs.getString("gender"));
                 encrypted.add(rs.getString("marital_status"));
                 encrypted.add(rs.getString("mobile_number"));
+                encrypted.add(rs.getString("added_by"));
                 encrypted.add(rs.getString("regDate"));
 
 
@@ -91,7 +93,8 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 bm.setGender(decrypted.get(4));
                 bm.setMaritalStatus(decrypted.get(5));
                 bm.setMobileNumber(decrypted.get(6));
-                bm.setRegDate(decrypted.get(7));
+                bm.setAddedBy(decrypted.get(7));
+                bm.setRegDate(decrypted.get(8));
 
                 beneficiaries.add(bm);
             }
@@ -133,7 +136,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 "marital_status = ?, solo_parent_status = ?, latitude = ?, longitude = ?, " +
                 "mobile_number = ?, disability_type = ?, health_condition = ?, clean_water_access = ?, " +
                 "sanitation_facility = ?, house_type = ?, ownership_status = ?, employment_status = ?, " +
-                "monthly_income = ?, education_level = ?, digital_access = ?, regDate = ? " +
+                "monthly_income = ?, education_level = ?, digital_access = ?, added_by = ?, regDate = ? " +
                 "WHERE beneficiary_id = ?";
 
         try (Connection con = DBConnection.getInstance().getConnection();

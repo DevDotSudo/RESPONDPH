@@ -21,11 +21,11 @@
                 </VBox.margin>
                 
                 <TextField fx:id="searchField" prefWidth="300" promptText="Search beneficiaries..." styleClass="search-field" />
-            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button" stylesheets="@../../styles/pages/managebeneficiaries.css" text="Search" />
+            <Button fx:id="searchBtn" mnemonicParsing="false"  styleClass="search-button" stylesheets="@../../styles/pages/managebeneficiaries.css" text="Search" />
                 
                 <Region HBox.hgrow="ALWAYS" />
                 <Button fx:id="addButton" onAction="#handleAddBeneficiary" styleClass="add-button" text="+ Add Beneficiary" />
-                <Button fx:id="refreshButton" onAction="#handleRefresh" styleClass="refresh-button" text="⟳ Refresh" />
+                <Button fx:id="refreshButton" styleClass="refresh-button" text="⟳ Refresh" />
             </HBox>
         </VBox>
 
@@ -44,6 +44,7 @@
                     <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
                     <TableColumn fx:id="statusColumn" prefWidth="1" text="Marital Status" />
                     <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Number" />
+                    <TableColumn fx:id="addedByColumn" prefWidth="1" text="Added By" />
                     <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered" />
                     <TableColumn fx:id="actionsColumn" prefWidth="1" text="Actions" />
                 </columns>

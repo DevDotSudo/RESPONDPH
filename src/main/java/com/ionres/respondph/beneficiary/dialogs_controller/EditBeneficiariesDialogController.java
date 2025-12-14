@@ -369,13 +369,14 @@ public class EditBeneficiariesDialogController {
                 alertDialog.showWarning("Digital access is required");
                 return;
             }
+            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
 
             BeneficiaryModel updatedBm = new BeneficiaryModel(
                     firstname, middlename, lastname, birthDate, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess,
+                    monthlyIncome, educationalLevel, digitalAccess, addedBy,
                     regDate
             );
             updatedBm.setId(currentBeneficiary.getId());

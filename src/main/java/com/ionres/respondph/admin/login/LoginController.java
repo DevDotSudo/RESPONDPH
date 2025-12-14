@@ -1,6 +1,7 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.util.SessionManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -40,6 +41,9 @@ public class LoginController {
             admin = loginService.login(username, password);
 
             if (admin != null) {
+
+                SessionManager.getInstance().setCurrentAdmin(admin);
+
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
                 loginStage.close();
                 

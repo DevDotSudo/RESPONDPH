@@ -10,7 +10,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-//import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
+import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
 import com.ionres.respondph.util.AlertDialog;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -87,11 +87,8 @@ public class BeneficiaryController {
     @FXML
     private TableColumn<BeneficiaryModel, String> mobileNumberColumn;
 
-
     BeneficiaryService beneficiaryService = new BeneficiaryServiceImpl();
     ObservableList<BeneficiaryModel> beneficiaryList;
-
-
 
     AlertDialog alertDialog = new AlertDialog();
 
@@ -200,7 +197,7 @@ public class BeneficiaryController {
 
                                 editButton.setOnAction(event -> {
                                     BeneficiaryModel bm = getTableView().getItems().get(getIndex());
-//                                    showEditBeneficiaryDialog(bm);
+                                    showEditBeneficiaryDialog(bm);
                                 });
 
                                 deleteButton.setOnAction(event -> {
@@ -225,5 +222,40 @@ public class BeneficiaryController {
                 };
 
         actionsColumn.setCellFactory(cellFactory);
+    }
+
+    private void showEditBeneficiaryDialog(BeneficiaryModel beneficiaryModel) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/EditBeneficiariesDialog.fxml"));
+            Parent dialogRoot = loader.load();
+
+            EditBeneficiariesDialogController dialogController = loader.getController();
+
+            dialogController.setBeneficiaryService(this.beneficiaryService);
+            dialogController.setBeneficiaryController(this);
+
+            Stage dialogStage = new Stage();
+            dialogController.setDialogStage(dialogStage);
+
+            BeneficiaryModel fullBeneficiary = beneficiaryService.getBeneficiaryById(beneficiaryModel.getId());
+            if (fullBeneficiary != null) {
+                dialogController.setBeneficiary(fullBeneficiary);
+            } else {
+                alertDialog.showErrorAlert("Error", "Unable to load beneficiary data.");
+                return;
+            }
+
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initStyle(StageStyle.UNDECORATED);
+            dialogStage.setTitle("Update Beneficiary");
+
+            Scene scene = new Scene(dialogRoot);
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            alertDialog.showErrorAlert("Error", "Unable to load the Edit Beneficiary dialog.");
+        }
     }
 }

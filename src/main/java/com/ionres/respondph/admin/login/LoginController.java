@@ -1,6 +1,7 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.util.AppPreferences;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,6 +15,7 @@ import javafx.stage.Stage;
 public class LoginController {
     LoginService loginService = new LoginServiceImpl();
     private AdminModel admin = new AdminModel();
+    private AppPreferences prefs = new AppPreferences();
 
     @FXML
     private TextField usernameField;

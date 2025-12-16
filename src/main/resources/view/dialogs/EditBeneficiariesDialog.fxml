@@ -6,17 +6,17 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="CENTER" prefHeight="739.0" prefWidth="989.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
+<VBox alignment="CENTER" prefHeight="739.0" prefWidth="989.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController">
 
     <padding>
         <Insets bottom="25" left="25" right="25" top="25" />
     </padding>
 
-    <HBox maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
+    <HBox VBox.vgrow="NEVER">
         <VBox.margin>
             <Insets bottom="5.0" />
         </VBox.margin>
-        <Label maxWidth="1.7976931348623157E308" styleClass="dialog-title" text="Add New Beneficiary" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+        <Label prefHeight="35.0" prefWidth="933.0" styleClass="dialog-title" text="Update Beneficiary" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
         <Button fx:id="exitBtn" alignment="CENTER" contentDisplay="RIGHT" maxHeight="49.0" maxWidth="54.0" prefHeight="49.0" prefWidth="54.0" styleClass="exit-button">
 
             <graphic>
@@ -25,16 +25,16 @@
                 </HBox>
             </graphic>
         </Button>
-      <padding>
-         <Insets bottom="10.0" />
-      </padding>
+        <padding>
+            <Insets bottom="10.0" />
+        </padding>
     </HBox>
-   <Separator prefWidth="200.0" />
+    <Separator prefWidth="200.0" />
 
-    <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all beneficiary information below">
-      <VBox.margin>
-         <Insets top="10.0" />
-      </VBox.margin></Label>
+    <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="940.0" styleClass="dialog-subtitle" text="Complete all beneficiary information below">
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Label>
 
     <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
 
@@ -114,14 +114,14 @@
                         <ColumnConstraints percentWidth="33.33" />
                         <ColumnConstraints percentWidth="33.34" />
                     </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
 
                 <VBox spacing="6">
@@ -159,10 +159,10 @@
                         <ColumnConstraints percentWidth="33.33" />
                         <ColumnConstraints percentWidth="33.34" />
                     </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
             </VBox>
 
@@ -219,12 +219,12 @@
                         <ColumnConstraints percentWidth="33.33" />
                         <ColumnConstraints percentWidth="33.34" />
                     </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
             </VBox>
 
@@ -261,10 +261,10 @@
                         <ColumnConstraints percentWidth="33.33" />
                         <ColumnConstraints percentWidth="33.34" />
                     </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
             </VBox>
 
@@ -321,12 +321,12 @@
                         <ColumnConstraints percentWidth="33.33" />
                         <ColumnConstraints percentWidth="33.34" />
                     </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
             </VBox>
         </VBox>
@@ -336,6 +336,6 @@
         <VBox.margin>
             <Insets top="20.0" />
         </VBox.margin>
-        <Button fx:id="addBeneficiaryBtn" prefHeight="25.0" prefWidth="243.0" styleClass="add-button" text="Add Beneficiary" />
+        <Button fx:id="updateBeneficiaryBtn" prefHeight="25.0" prefWidth="243.0" styleClass="add-button" text="Update Beneficiary" />
     </HBox>
 </VBox>

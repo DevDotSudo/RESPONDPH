@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" prefHeight="739.0" prefWidth="989.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController">
+
+    <padding>
+        <Insets bottom="25" left="25" right="25" top="25" />
+    </padding>
+
+    <HBox VBox.vgrow="NEVER">
+        <VBox.margin>
+            <Insets bottom="5.0" />
+        </VBox.margin>
+        <Label prefHeight="35.0" prefWidth="933.0" styleClass="dialog-title" text="Update Beneficiary" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+        <Button fx:id="exitBtn" alignment="CENTER" contentDisplay="RIGHT" maxHeight="49.0" maxWidth="54.0" prefHeight="49.0" prefWidth="54.0" styleClass="exit-button">
+
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="TIMES" styleClass="button-icon" />
+                </HBox>
+            </graphic>
+        </Button>
+        <padding>
+            <Insets bottom="10.0" />
+        </padding>
+    </HBox>
+    <Separator prefWidth="200.0" />
+
+    <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="940.0" styleClass="dialog-subtitle" text="Complete all beneficiary information below">
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Label>
+
+    <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
+
+    <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="40.0" styleClass="forms-container">
+
+            <!-- Beneficiary Profile Form -->
+            <VBox spacing="12" styleClass="form-section">
+                <VBox spacing="6">
+                    <Label styleClass="section-title" text="Core Beneficiary Profile" />
+                    <Separator prefWidth="140" styleClass="section-separator" />
+                </VBox>
+
+                <GridPane hgap="12" vgap="12">
+                    <Label styleClass="field-label" text="First Name *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
+                        <TextField fx:id="firstNameFld" promptText="Enter first name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Middle Name" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
+                        <TextField fx:id="middleNameFld" promptText="Enter middle name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
+                        <TextField fx:id="lastNameFld" promptText="Enter last name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Birthdate *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                        <FontAwesomeIconView glyphName="CALENDAR" styleClass="field-icon" />
+                        <DatePicker fx:id="birthDatePicker" maxWidth="1.7976931348623157E308" styleClass="birthdate-picker" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Gender *" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <FontAwesomeIconView glyphName="VENUS_MARS" styleClass="field-icon" />
+                        <ComboBox fx:id="genderSelection" maxWidth="1.7976931348623157E308" promptText="Select gender" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Mobile Number" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                        <FontAwesomeIconView glyphName="PHONE" styleClass="field-icon" />
+                        <TextField fx:id="mobileNumberFld" promptText="Enter mobile number" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Marital Status *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="5">
+                        <FontAwesomeIconView glyphName="HEART" styleClass="field-icon" />
+                        <ComboBox fx:id="maritalStatusSelection" maxWidth="1.7976931348623157E308" promptText="Select marital status" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Solo Parent Status *" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                        <FontAwesomeIconView glyphName="CHILD" styleClass="field-icon" />
+                        <ComboBox fx:id="soloParentStatusSelection" maxWidth="1.7976931348623157E308" promptText="Select solo parent status" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.34" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+
+                <VBox spacing="6">
+                    <padding>
+                        <Insets top="10" />
+                    </padding>
+                    <Label styleClass="section-title" text="Geographical Location" />
+                    <Separator prefWidth="140" styleClass="section-separator" />
+                </VBox>
+
+                <GridPane hgap="12" vgap="12">
+                    <Label styleClass="field-label" text="Latitude" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="MAP_MARKER" styleClass="field-icon" />
+                        <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Longitude" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="MAP_MARKER" styleClass="field-icon" />
+                        <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Button fx:id="getLocationBtn" styleClass="location-button" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <graphic>
+                            <HBox alignment="CENTER" spacing="8">
+                                <FontAwesomeIconView glyphName="LOCATION_ARROW" styleClass="button-icon" />
+                                <Label styleClass="button-text" text="Get Location" />
+                            </HBox>
+                        </graphic>
+                    </Button>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.34" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <!-- Vulnerability Indicators Form -->
+            <VBox spacing="12" styleClass="form-section">
+                <VBox spacing="6">
+                    <Label styleClass="section-title" text="Vulnerability Indicators" />
+                    <Separator prefWidth="140" styleClass="section-separator" />
+                </VBox>
+
+                <GridPane hgap="12" vgap="12">
+                    <Label styleClass="field-label" text="Disability Type *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="WHEELCHAIR" styleClass="field-icon" />
+                        <ComboBox fx:id="disabilityTypeSelection" maxWidth="1.7976931348623157E308" promptText="Select disability type" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Health Condition *" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="HEARTBEAT" styleClass="field-icon" />
+                        <ComboBox fx:id="healthConditionSelection" maxWidth="1.7976931348623157E308" promptText="Select health condition" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Access to Clean Water *" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="TINT" styleClass="field-icon" />
+                        <ComboBox fx:id="cleanWaterAccessSelection" maxWidth="1.7976931348623157E308" promptText="Select clean water access" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Sanitation Facilities *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                        <FontAwesomeIconView glyphName="HOME" styleClass="field-icon" />
+                        <ComboBox fx:id="sanitationFacilitiesSelection" maxWidth="1.7976931348623157E308" promptText="Select sanitation facility" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.34" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <!-- Housing and Infrastructure Form -->
+            <VBox spacing="12" styleClass="form-section">
+                <VBox spacing="6">
+                    <Label styleClass="section-title" text="Housing and Infrastructure" />
+                    <Separator prefWidth="140" styleClass="section-separator" />
+                </VBox>
+
+                <GridPane hgap="12" vgap="12">
+                    <Label styleClass="field-label" text="House Construction Type *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="BUILDING" styleClass="field-icon" />
+                        <ComboBox fx:id="houseConstructionTypeSelection" maxWidth="1.7976931348623157E308" promptText="Select construction type" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Ownership Status *" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="KEY" styleClass="field-icon" />
+                        <ComboBox fx:id="ownershipStatusSelection" maxWidth="1.7976931348623157E308" promptText="Select ownership status" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.34" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <!-- Socio-Economic Status Form -->
+            <VBox spacing="12" styleClass="form-section">
+                <VBox spacing="6">
+                    <Label styleClass="section-title" text="Socio-Economic Status" />
+                    <Separator prefWidth="140" styleClass="section-separator" />
+                </VBox>
+
+                <GridPane hgap="12" vgap="12">
+                    <Label styleClass="field-label" text="Employment Status *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="BRIEFCASE" styleClass="field-icon" />
+                        <ComboBox fx:id="employmentStatusSelection" maxWidth="1.7976931348623157E308" promptText="Select employment status" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Monthly Income *" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="MONEY" styleClass="field-icon" />
+                        <ComboBox fx:id="monthlyIncomeSelection" maxWidth="1.7976931348623157E308" promptText="Select income range" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Education Level *" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="GRADUATION_CAP" styleClass="field-icon" />
+                        <ComboBox fx:id="educationLevelSelection" maxWidth="1.7976931348623157E308" promptText="Select education level" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Digital Access *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                        <FontAwesomeIconView glyphName="LAPTOP" styleClass="field-icon" />
+                        <ComboBox fx:id="digitalAccessSelection" maxWidth="1.7976931348623157E308" promptText="Select digital access" HBox.hgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="dropdown" />
+                            </styleClass>
+                        </ComboBox>
+                    </HBox>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.34" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="button-container">
+        <VBox.margin>
+            <Insets top="20.0" />
+        </VBox.margin>
+        <Button fx:id="updateBeneficiaryBtn" prefHeight="25.0" prefWidth="243.0" styleClass="add-button" text="Update Beneficiary" />
+    </HBox>
+</VBox>

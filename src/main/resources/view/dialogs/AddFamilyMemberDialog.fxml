@@ -179,7 +179,7 @@
             <graphic>
                 <HBox alignment="CENTER" spacing="8">
                     <FontAwesomeIconView glyphName="CHECK" styleClass="button-icon" />
-                    <Label styleClass="button-text" text="Save Admin" />
+                    <Label styleClass="button-text" text="Save" />
                 </HBox>
             </graphic>
         </Button>

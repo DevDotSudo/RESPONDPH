@@ -17,7 +17,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
 
     @Override
     public boolean saving(BeneficiaryModel bm) {
-        String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, gender, marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, employment_status, monthly_income, education_level, digital_access, added_by, regDate)" +
+        String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, gender, marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, employment_status, monthly_income, education_level, digital_access, added_by, reg_date)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
         try (Connection con = DBConnection.getInstance().getConnection();
@@ -59,7 +59,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
     @Override
     public List<BeneficiaryModel> getAll() {
         List<BeneficiaryModel> beneficiaries = new ArrayList<>();
-        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, birthdate, gender, marital_status, mobile_number, added_by, regDate FROM beneficiary";
+        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, birthdate, gender, marital_status, mobile_number, added_by, reg_date FROM beneficiary";
 
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -80,7 +80,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 encrypted.add(rs.getString("marital_status"));
                 encrypted.add(rs.getString("mobile_number"));
                 encrypted.add(rs.getString("added_by"));
-                encrypted.add(rs.getString("regDate"));
+                encrypted.add(rs.getString("reg_date"));
 
 
                 List<String> decrypted = cs.decrypt(encrypted);
@@ -136,7 +136,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 "marital_status = ?, solo_parent_status = ?, latitude = ?, longitude = ?, " +
                 "mobile_number = ?, disability_type = ?, health_condition = ?, clean_water_access = ?, " +
                 "sanitation_facility = ?, house_type = ?, ownership_status = ?, employment_status = ?, " +
-                "monthly_income = ?, education_level = ?, digital_access = ?, added_by = ?, regDate = ? " +
+                "monthly_income = ?, education_level = ?, digital_access = ?, added_by = ?, reg_date = ? " +
                 "WHERE beneficiary_id = ?";
 
         try (Connection con = DBConnection.getInstance().getConnection();

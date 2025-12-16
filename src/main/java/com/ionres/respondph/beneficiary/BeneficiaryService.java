@@ -9,5 +9,4 @@ public interface BeneficiaryService {
     boolean updateBeneficiary(BeneficiaryModel bm);
     public List<BeneficiaryModel> searchBeneficiary(String searchTxt);
     BeneficiaryModel getBeneficiaryById(int id);
-
 }

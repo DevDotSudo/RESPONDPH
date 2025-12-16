@@ -6,6 +6,7 @@ import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BeneficiaryServiceImpl implements  BeneficiaryService{
@@ -45,6 +46,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             String encryptedMonthlyIncome = cs.encryptWithOneParameter(bm.getMonthlyIncome());
             String encryptedEducationalLevel = cs.encryptWithOneParameter(bm.getEducationalLevel());
             String encryptedDigitalAccess = cs.encryptWithOneParameter(bm.getDigitalAccess());
+            String encryptedAddedBy = cs.encryptWithOneParameter(bm.getAddedBy());
             String encryptedRegDate = cs.encryptWithOneParameter(bm.getRegDate());
 
 
@@ -71,6 +73,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
                             encryptedMonthlyIncome,
                             encryptedEducationalLevel,
                             encryptedDigitalAccess,
+                            encryptedAddedBy,
                             encryptedRegDate
                     )
             );
@@ -138,6 +141,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             String encryptedMonthlyIncome = cs.encryptWithOneParameter(bm.getMonthlyIncome());
             String encryptedEducationalLevel = cs.encryptWithOneParameter(bm.getEducationalLevel());
             String encryptedDigitalAccess = cs.encryptWithOneParameter(bm.getDigitalAccess());
+            String encryptedAddedBy = cs.encryptWithOneParameter(bm.getAddedBy());
             String encryptedRegDate = cs.encryptWithOneParameter(bm.getRegDate());
 
             BeneficiaryModel encryptedBm = new BeneficiaryModel(
@@ -161,7 +165,8 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
                     encryptedMonthlyIncome,
                     encryptedEducationalLevel,
                     encryptedDigitalAccess,
-                    encryptedRegDate // Keep original registration date
+                    encryptedAddedBy,
+                    encryptedRegDate
             );
             encryptedBm.setId(bm.getId()); // Set the ID for update
 
@@ -195,7 +200,16 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
 
     @Override
     public List<BeneficiaryModel> searchBeneficiary(String searchTxt) {
-        return List.of();
-    }
+        List<BeneficiaryModel> allBeneficiary = getAllBeneficiary();
+        List<BeneficiaryModel> filtereBeneficiarys = new ArrayList<>();
 
+        for (BeneficiaryModel beneficiaryModel : allBeneficiary) {
+            if (beneficiaryModel.getFirstname().toLowerCase().contains(searchTxt.toLowerCase()) ||
+                    beneficiaryModel.getMiddlename().toLowerCase().contains(searchTxt.toLowerCase()) ||
+                    beneficiaryModel.getLastname().toLowerCase().contains(searchTxt.toLowerCase())) {
+                filtereBeneficiarys.add(beneficiaryModel);
+            }
+        }
+        return filtereBeneficiarys;
+    }
 }

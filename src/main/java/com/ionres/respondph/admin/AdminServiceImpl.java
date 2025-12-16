@@ -81,9 +81,7 @@ public class AdminServiceImpl implements  AdminService{
             if (!deleted) {
                 throw ExceptionFactory.failedToDelete("Admin");
             }
-
             return deleted;
-
         } catch (Exception ex) {
             System.out.println("Error: " + ex.getMessage());
             return false;

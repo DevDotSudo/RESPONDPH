@@ -29,7 +29,7 @@
                     <TextField fx:id="searchField" promptText="Search by name, contact, address..." styleClass="search-field" HBox.hgrow="ALWAYS" />
                 </HBox>
 
-                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="search-button">
+                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="search-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
@@ -40,7 +40,7 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <Button fx:id="addButton" onAction="#handleAddBeneficiary" styleClass="add-button">
+                <Button fx:id="addButton" styleClass="add-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="16" styleClass="button-icon" />
@@ -49,7 +49,7 @@
                     </graphic>
                 </Button>
 
-                <Button fx:id="refreshButton" onAction="#handleRefresh" styleClass="refresh-button">
+                <Button fx:id="refreshButton" styleClass="refresh-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="REFRESH" size="16" styleClass="refresh-icon" />
@@ -74,7 +74,8 @@
                     <TableColumn fx:id="birthdateColumn" prefWidth="1" text="Birthdate" />
                     <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
                     <TableColumn fx:id="statusColumn" prefWidth="1" text="Marital Status" />
-                    <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Number" />
+                    <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Numb er" />
+                    <TableColumn fx:id="addedByColumn" prefWidth="150"  text="Added By" />
                     <TableColumn fx:id="registeredDateColumn" prefWidth="150"  text="Registered" />
                     <TableColumn fx:id="actionsColumn" minWidth="120" maxWidth="120" text="Actions" />
                 </columns>

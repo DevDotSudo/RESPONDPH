@@ -1,25 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<AnchorPane styleClass="family-members-root" stylesheets="@/styles/pages/dashboard.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.FamilyMembersController">
+<AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/pages/familymembers.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.FamilyMembersController">
 
-    <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <Label styleClass="page-title" text="Family Members">
-            <VBox.margin>
-                <Insets bottom="10" left="30" right="30" top="20" />
-            </VBox.margin>
-        </Label>
-
-        <VBox styleClass="fam-container" VBox.vgrow="ALWAYS">
+        <VBox styleClass="header-section">
             <padding>
-                <Insets bottom="40" left="40" right="40" top="40"/>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
             </padding>
-            <Label styleClass="construction-label" text="UNDER CONSTRUCTION" />
+
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <FontAwesomeIconView glyphName="USERS" size="36" styleClass="page-icon" />
+                <Label styleClass="page-title" text="Manage Family Members" />
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
+                <VBox.margin>
+                    <Insets top="20" />
+                </VBox.margin>
+
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                    <FontAwesomeIconView glyphName="SEARCH" size="16" styleClass="search-icon" />
+                    <TextField fx:id="searchField" promptText="Search by name, relationship, beneficiary..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="search-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Search" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button fx:id="addButton" styleClass="add-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="16" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Add Family Member" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="refreshButton" styleClass="refresh-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="REFRESH" size="16" styleClass="refresh-icon" />
+                            <Label styleClass="button-label" text="Refresh" />
+                        </HBox>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" />
+            </padding>
+
+            <TableView fx:id="familyTable" styleClass="family-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="beneficiaryNameColumn" prefWidth="1" text="Beneficiary Name" />
+                    <TableColumn fx:id="firstnameColumn" prefWidth="1" text="First Name" />
+                    <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middle Name" />
+                    <TableColumn fx:id="lastnameColumn" prefWidth="1" text="Last Name" />
+                    <TableColumn fx:id="relationshipColumn" prefWidth="1" text="Relationship" />
+                    <TableColumn fx:id="birthdateColumn" prefWidth="1" text="Birthdate" />
+                    <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
+                    <TableColumn fx:id="maritalStatusColumn" prefWidth="1" text="Marital Status" />
+                    <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered" />
+                    <TableColumn fx:id="actionsColumn" minWidth="120" maxWidth="120" text="Actions" />
+                </columns>
+            </TableView>
         </VBox>
 
     </VBox>

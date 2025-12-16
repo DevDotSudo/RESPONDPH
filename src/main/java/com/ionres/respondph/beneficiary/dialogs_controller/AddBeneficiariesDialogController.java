@@ -49,8 +49,7 @@ public class AddBeneficiariesDialogController {
     private ComboBox<String> sanitationFacilitiesSelection;
     @FXML
     private ComboBox<String> houseConstructionTypeSelection;
-    @FXML
-    private ComboBox<String> damageSeveritySelection;
+
     @FXML
     private ComboBox<String> ownershipStatusSelection;
     @FXML
@@ -161,14 +160,6 @@ public class AddBeneficiariesDialogController {
             "Makeshift shelter (wood, tarpaulin)"
         );
 
-        damageSeveritySelection.getItems().addAll(
-            "No visible damage",
-            "Minor damage (non-structural)",
-            "Moderate damage (partially inhabitable)",
-            "Severe damage or partially collapsed (unsafe for use)",
-            "Destruction or collapse"
-        );
-
         ownershipStatusSelection.getItems().addAll(
             "Owned with formal title",
             "Owned without formal title",
@@ -232,7 +223,6 @@ public class AddBeneficiariesDialogController {
             String cleanWaterAccess = cleanWaterAccessSelection.getValue();
             String sanitationFacility = sanitationFacilitiesSelection.getValue();
             String houseType        = houseConstructionTypeSelection.getValue();
-            String damageSeverity   = damageSeveritySelection.getValue();
             String ownershipStatus  = ownershipStatusSelection.getValue();
             String employmentStatus = employmentStatusSelection.getValue();
             String monthlyIncome    = monthlyIncomeSelection.getValue();
@@ -300,10 +290,6 @@ public class AddBeneficiariesDialogController {
                 alertDialog.showWarning("House type is required");
                 return;
             }
-            if (damageSeverity == null) {
-                alertDialog.showWarning("Damage severity is required");
-                return;
-            }
             if (ownershipStatus == null) {
                 alertDialog.showWarning("Ownership status is required");
                 return;
@@ -328,12 +314,15 @@ public class AddBeneficiariesDialogController {
             String regDate = java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
+            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
+
+
             BeneficiaryModel bm = new BeneficiaryModel(
                     firstname, middlename, lastname, birthDate, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess, regDate
+                    monthlyIncome, educationalLevel, digitalAccess, addedBy,regDate
             );
 
             boolean success = beneficiaryService.createBeneficiary(bm);
@@ -345,6 +334,7 @@ public class AddBeneficiariesDialogController {
                         "Success",
                         javax.swing.JOptionPane.INFORMATION_MESSAGE
                 );
+                System.out.println("Firstname " + addedBy);
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,
@@ -385,7 +375,6 @@ public class AddBeneficiariesDialogController {
         cleanWaterAccessSelection.getSelectionModel().clearSelection();
         sanitationFacilitiesSelection.getSelectionModel().clearSelection();
         houseConstructionTypeSelection.getSelectionModel().clearSelection();
-        damageSeveritySelection.getSelectionModel().clearSelection();
         ownershipStatusSelection.getSelectionModel().clearSelection();
         employmentStatusSelection.getSelectionModel().clearSelection();
         monthlyIncomeSelection.getSelectionModel().clearSelection();

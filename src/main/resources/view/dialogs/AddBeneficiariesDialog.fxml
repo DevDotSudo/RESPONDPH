@@ -246,18 +246,8 @@
                         </ComboBox>
                     </HBox>
 
-                    <Label styleClass="field-label" text="Damage Severity *" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <Label styleClass="field-label" text="Ownership Status *" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                     <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="field-icon" />
-                        <ComboBox fx:id="damageSeveritySelection" maxWidth="1.7976931348623157E308" promptText="Select damage severity" HBox.hgrow="ALWAYS">
-                            <styleClass>
-                                <String fx:value="dropdown" />
-                            </styleClass>
-                        </ComboBox>
-                    </HBox>
-
-                    <Label styleClass="field-label" text="Ownership Status *" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
                         <FontAwesomeIconView glyphName="KEY" styleClass="field-icon" />
                         <ComboBox fx:id="ownershipStatusSelection" maxWidth="1.7976931348623157E308" promptText="Select ownership status" HBox.hgrow="ALWAYS">
                             <styleClass>

@@ -14,9 +14,13 @@ import com.ionres.respondph.util.AlertDialog;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import java.util.ArrayList;
+
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class AddBeneficiariesDialogController {
+    @FXML
+    private VBox root;
     @FXML
     private TextField firstNameFld;
     @FXML
@@ -65,8 +69,9 @@ public class AddBeneficiariesDialogController {
     private Button exitBtn;
     @FXML
     private Button addBeneficiaryBtn;
+    private double yOffset = 0;
+    private double xOffset = 0;
     AlertDialog alertDialog = new AlertDialog();
-
     private BeneficiaryService beneficiaryService;
     private BeneficiaryController beneficiaryController;
 
@@ -79,6 +84,15 @@ public class AddBeneficiariesDialogController {
 
     @FXML
     public void initialize() {
+        root.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+        root.setOnMouseDragged(event -> {
+            Stage dialogStage = (Stage) root.getScene().getWindow();
+            dialogStage.setX(event.getScreenX() - xOffset);
+            dialogStage.setY(event.getScreenY() - yOffset);
+        });
         initializeBeneficiaryProfileDropdowns();
         initializeVulnerabilityIndicatorsDropdowns();
         initializeHousingAndInfrastructureDropdowns();

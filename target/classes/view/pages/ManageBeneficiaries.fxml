@@ -67,7 +67,7 @@
 
             <TableView fx:id="beneficiaryTable" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idColumn" prefWidth="70"  text="ID" />
+                    <TableColumn fx:id="idColumn" minWidth="80" maxWidth="80"  text="ID" />
                     <TableColumn fx:id="firstnameColumn" prefWidth="1" text="Firstname" />
                     <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middlename" />
                     <TableColumn fx:id="lastnameColumn" prefWidth="1" text="Lastname" />
@@ -75,8 +75,8 @@
                     <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
                     <TableColumn fx:id="statusColumn" prefWidth="1" text="Marital Status" />
                     <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Numb er" />
-                    <TableColumn fx:id="addedByColumn" prefWidth="150"  text="Added By" />
-                    <TableColumn fx:id="registeredDateColumn" prefWidth="150"  text="Registered" />
+                    <TableColumn fx:id="addedByColumn" prefWidth="1"  text="Added By" />
+                    <TableColumn fx:id="registeredDateColumn" prefWidth="1"  text="Registered" />
                     <TableColumn fx:id="actionsColumn" minWidth="120" maxWidth="120" text="Actions" />
                 </columns>
             </TableView>

@@ -55,9 +55,10 @@ public class AddBeneficiariesDialogController {
     @FXML
     private ComboBox<String> employmentStatusSelection;
     @FXML
-    private ComboBox<String> monthlyIncomeSelection;
-    @FXML
     private ComboBox<String> educationLevelSelection;
+    @FXML
+    private ComboBox<String> monthlyIncomeSelection;
+
     @FXML
     private ComboBox<String> digitalAccessSelection;
     @FXML

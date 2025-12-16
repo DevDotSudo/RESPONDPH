@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="CENTER" prefHeight="664.0" prefWidth="702.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
+<VBox alignment="CENTER" prefHeight="660.0" prefWidth="1030.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
 
     <padding>
         <Insets bottom="25" left="25" right="25" top="25" />

@@ -47,70 +47,6 @@
     -fx-background-color: transparent;
 }
 
-.next-button {
-    -fx-background-color: linear-gradient(to right, #f97316, #fb923c);
-    -fx-text-fill: white;
-    -fx-font-family: "Segoe UI", "Arial", sans-serif;
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-padding: 12 28;
-    -fx-background-radius: 8;
-    -fx-cursor: hand;
-    -fx-border-width: 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.5), 12, 0, 0, 3);
-    -fx-transition: -fx-background-color 0.3s ease-out, -fx-scale-x 0.2s ease-out, -fx-scale-y 0.2s ease-out;
-}
-
-.next-button:hover {
-    -fx-background-color: linear-gradient(to right, #ea580c, #f97316);
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.7), 20, 0, 0, 6);
-}
-
-.next-button:pressed {
-    -fx-background-color: linear-gradient(to right, #c2410c, #ea580c);
-    -fx-scale-x: 0.96;
-    -fx-scale-y: 0.96;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.3), 8, 0, 0, 2);
-}
-
-.next-button:disabled {
-    -fx-background-color: linear-gradient(to right, #475569, #64748b);
-    -fx-text-fill: #94a3b8;
-    -fx-cursor: default;
-    -fx-effect: none;
-}
-
-.back-button {
-    -fx-background-color: rgba(100, 116, 139, 0.2);
-    -fx-text-fill: #f1f5f9;
-    -fx-font-family: "Segoe UI", "Arial", sans-serif;
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-padding: 12 28;
-    -fx-background-radius: 8;
-    -fx-border-color: #475569;
-    -fx-border-width: 2;
-    -fx-border-radius: 8;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 8, 0, 0, 2);
-    -fx-transition: -fx-background-color 0.3s ease-out, -fx-border-color 0.3s ease-out;
-}
-
-.back-button:hover {
-    -fx-background-color: rgba(148, 163, 184, 0.3);
-    -fx-border-color: #94a3b8;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 12, 0, 0, 3);
-}
-
-.back-button:pressed {
-    -fx-background-color: rgba(100, 116, 139, 0.4);
-    -fx-border-color: #64748b;
-    -fx-scale-x: 0.96;
-    -fx-scale-y: 0.96;
-}
-
 .dialog-subtitle {
     -fx-text-fill: #94a3b8;
     -fx-font-size: 18px;
@@ -293,35 +229,7 @@
     -fx-pref-height: 26px;
 }
 
-.location-button {
-    -fx-background-color: linear-gradient(to right, #f97316, #fb923c);
-    -fx-text-fill: white;
-    -fx-font-family: "Segoe UI", "Arial", sans-serif;
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-padding: 10 22;
-    -fx-min-height: 45px;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-    -fx-border-width: 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.4), 10, 0, 0, 2);
-}
-
-.location-button:hover {
-    -fx-background-color: linear-gradient(to right, #ea580c, #f97316);
-    -fx-scale-x: 1.04;
-    -fx-scale-y: 1.04;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.7), 16, 0, 0, 5);
-}
-
-.location-button:pressed {
-    -fx-background-color: linear-gradient(to right, #c2410c, #ea580c);
-    -fx-scale-x: 0.97;
-    -fx-scale-y: 0.97;
-    -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.3), 6, 0, 0, 2);
-}
-
-.add-button {
+.save-button {
     -fx-background-color: linear-gradient(to right, #f97316, #fb923c);
     -fx-text-fill: white;
     -fx-font-family: "Segoe UI", "Arial", sans-serif;
@@ -334,29 +242,16 @@
     -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.5), 12, 0, 0, 3);
 }
 
-.add-button:hover {
+.save-button:hover {
     -fx-background-color: linear-gradient(to right, #ea580c, #f97316);
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
     -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.7), 20, 0, 0, 6);
 }
 
-.add-button:pressed {
+.save-button:pressed {
     -fx-background-color: linear-gradient(to right, #c2410c, #ea580c);
     -fx-scale-x: 0.96;
     -fx-scale-y: 0.96;
     -fx-effect: dropshadow(three-pass-box, rgba(249, 115, 22, 0.3), 8, 0, 0, 2);
-}
-
-.button-icon {
-    -fx-fill: white;
-    -fx-font-size: 13px;
-    -fx-icon-size: 13px;
-}
-
-.button-text {
-    -fx-text-fill: white;
-    -fx-font-family: "Segoe UI", "Arial", sans-serif;
-    -fx-font-size: 13px;
-    -fx-font-weight: 600;
 }

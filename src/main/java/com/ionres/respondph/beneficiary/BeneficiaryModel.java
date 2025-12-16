@@ -22,11 +22,12 @@ public class BeneficiaryModel {
     private String monthlyIncome;
     private String educationalLevel;
     private String digitalAccess;
+    private String addedBy;
     private String regDate;
 
     public BeneficiaryModel(String firstname, String middlename, String lastname, String birthDate, String gender, String maritalStatus, String soloParentStatus, String latitude,
                             String longitude,String mobileNumber, String disabilityType, String healthCondition, String cleanWaterAccess, String sanitationFacility, String houseType,
-                            String ownerShipStatus, String employmentStatus, String monthlyIncome, String educationalLevel, String digitalAccess, String regDate){
+                            String ownerShipStatus, String employmentStatus, String monthlyIncome, String educationalLevel, String digitalAccess, String addedBy, String regDate){
         this.firstname = firstname;
         this.middlename = middlename;
         this.lastname = lastname;
@@ -47,6 +48,7 @@ public class BeneficiaryModel {
         this.monthlyIncome = monthlyIncome;
         this.educationalLevel = educationalLevel;
         this.digitalAccess = digitalAccess;
+        this.addedBy = addedBy;
         this.regDate = regDate;
     }
 
@@ -180,6 +182,12 @@ public class BeneficiaryModel {
     }
     public void setDigitalAccess(String newDigitalAccess){
         this.digitalAccess = newDigitalAccess;
+    }
+    public String getAddedBy(){
+        return addedBy;
+    }
+    public void setAddedBy(String newAddedBy){
+        this.addedBy = newAddedBy;
     }
     public String getRegDate(){
         return regDate;

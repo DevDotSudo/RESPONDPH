@@ -271,6 +271,7 @@ public class EditBeneficiariesDialogController {
             String monthlyIncome = monthlyIncomeSelection.getValue();
             String educationalLevel = educationLevelSelection.getValue();
             String digitalAccess = digitalAccessSelection.getValue();
+            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
             String regDate = java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
@@ -362,7 +363,7 @@ public class EditBeneficiariesDialogController {
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess,
+                    monthlyIncome, educationalLevel, digitalAccess, addedBy,
                     regDate
             );
             updatedBm.setId(currentBeneficiary.getId());

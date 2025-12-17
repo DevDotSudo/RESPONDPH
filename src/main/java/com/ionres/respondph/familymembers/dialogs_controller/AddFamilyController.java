@@ -1,10 +1,7 @@
 package com.ionres.respondph.familymembers.dialogs_controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -31,6 +28,12 @@ public class AddFamilyController {
     private ComboBox<String> employmentStatusSelection;
     @FXML
     private ComboBox<String> educationLevelSelection;
+    @FXML
+    private ComboBox<String> beneficiaryNameFld;
+    @FXML
+    private TextArea notesFld;
+    @FXML
+    private ComboBox<String> relationshipSelection;
     @FXML
     private Button saveBtn;
     @FXML

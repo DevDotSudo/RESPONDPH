@@ -167,6 +167,11 @@
     -fx-pref-height: 26px;
 }
 
+.dropdown .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1e293b;
+}
+
 .dropdown:focused {
     -fx-background-color: transparent;
     -fx-border-width: 0;

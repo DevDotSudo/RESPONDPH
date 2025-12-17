@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="CENTER" prefHeight="739.0" prefWidth="989.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
+<VBox fx:id="root" alignment="CENTER" prefHeight="660.0" prefWidth="1030.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
 
     <padding>
         <Insets bottom="25" left="25" right="25" top="25" />

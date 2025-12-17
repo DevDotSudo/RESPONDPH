@@ -12,12 +12,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javax.swing.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AddAdminDialogController {
+
+    @FXML
+    private VBox root;
 
     @FXML
     private TextField usernameField;
@@ -45,13 +49,12 @@ public class AddAdminDialogController {
 
     @FXML
     private Button saveButton;
-
     private Stage dialogStage;
     private boolean adminAdded = false;
-
     private AdminService adminService;
     private AdminController adminController;
-
+    private double xOffset = 0;
+    private  double yOffset = 0;
     public void setAdminService(AdminService adminService) {
         this.adminService = adminService;
     }
@@ -59,9 +62,17 @@ public class AddAdminDialogController {
         this.adminController = adminController;
     }
 
-
     @FXML
     public void initialize() {
+        root.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+        root.setOnMouseDragged(event -> {
+            Stage dialogStage = (Stage) root.getScene().getWindow();
+            dialogStage.setX(event.getScreenX() - xOffset);
+            dialogStage.setY(event.getScreenY() - yOffset);
+        });
         cancelButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {

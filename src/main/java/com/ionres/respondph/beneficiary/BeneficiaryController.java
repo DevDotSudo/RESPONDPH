@@ -223,10 +223,7 @@ public class BeneficiaryController {
                 boolean success = beneficiaryService.deleteBeneficiary(bm);
 
                 beneficiaryList.remove(bm);
-            } else {
-                alertDialog.showErrorAlert("Failed", "Unable to delete Beneficiary.");
             }
-
         }
 
         private void handleSearch() {

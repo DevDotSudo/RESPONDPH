@@ -46,7 +46,7 @@
     -fx-background-color: transparent;
     -fx-text-fill: #d1d5db;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 15px 20px;
+    -fx-padding: 12px 16px;
     -fx-cursor: hand;
     -fx-background-radius: 0;
     -fx-border-width: 0;
@@ -59,7 +59,7 @@
 .nav-button .text {
     -fx-fill: #d1d5db !important;
     -fx-font-family: "Segoe UI";
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
     -fx-font-weight: 500;
 }
 

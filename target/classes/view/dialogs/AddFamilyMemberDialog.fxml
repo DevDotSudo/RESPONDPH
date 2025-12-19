@@ -28,17 +28,36 @@
             <Insets bottom="10.0" />
         </padding>
     </HBox>
-    <Separator prefWidth="200.0" />
-
-    <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all family member information below">
-        <VBox.margin>
-            <Insets top="10.0" />
-        </VBox.margin></Label>
+    <Separator prefWidth="200.0">
+      <VBox.margin>
+         <Insets bottom="20.0" />
+      </VBox.margin></Separator>
 
     <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
 
     <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
-        <VBox spacing="40.0" styleClass="forms-container">
+        <VBox spacing="10.0" styleClass="forms-container">
+         <VBox spacing="10.0" styleClass="form-section">
+            <children>
+               <VBox spacing="6" />
+               <Label styleClass="field-label" text="Search beneficiary name *" />
+               <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="45.0" prefWidth="301.0" spacing="8" styleClass="input-container">
+                  <children>
+                     <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
+                     <ComboBox fx:id="maritalStatusSelection2" editable="true" maxWidth="1.7976931348623157E308" promptText="Search beneficiary name." styleClass="dropdown" HBox.hgrow="ALWAYS" />
+                  </children>
+               </HBox>
+            </children>
+            <VBox.margin>
+               <Insets />
+            </VBox.margin>
+         </VBox>
+      
+          <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all family member information below">
+              <VBox.margin>
+                  <Insets top="10.0" />
+              </VBox.margin>
+         </Label>
 
             <!-- Beneficiary Profile Form -->
             <VBox spacing="12" styleClass="form-section">
@@ -88,10 +107,12 @@
                         </ComboBox>
                     </HBox>
                <Label layoutX="634.0" layoutY="10.0" styleClass="field-label" text="Relationship to Beneficiary  *" GridPane.rowIndex="4" />
-                    <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="39.0" spacing="8" styleClass="input-container" GridPane.rowIndex="5">
-                        <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
-                        <TextField fx:id="relationshipFld" promptText="Enter relationship to beneficiary." styleClass="input-field" HBox.hgrow="ALWAYS" />
-                    </HBox>
+               <HBox alignment="CENTER_LEFT" layoutX="637.0" layoutY="135.0" spacing="8" styleClass="input-container" GridPane.rowIndex="5">
+                  <children>
+                     <FontAwesomeIconView glyphName="HEART" styleClass="field-icon" />
+                     <ComboBox fx:id="maritalStatusSelection1" maxWidth="1.7976931348623157E308" promptText="Select relationship to beneficiary" styleClass="dropdown" HBox.hgrow="ALWAYS" />
+                  </children>
+               </HBox>
 
                     <columnConstraints>
                         <ColumnConstraints percentWidth="33.33" />
@@ -168,6 +189,17 @@
                     </rowConstraints>
                 </GridPane>
             </VBox>
+         <VBox layoutX="10.0" layoutY="351.0" spacing="12" styleClass="form-section">
+            <children>
+               <VBox spacing="6">
+                  <children>
+                     <Separator prefWidth="140" styleClass="section-separator" />
+                  </children>
+               </VBox>
+               <Label styleClass="field-label" text="Notes *" />
+               <TextArea promptText="Enter a notes." />
+            </children>
+         </VBox>
         </VBox>
     </ScrollPane>
 

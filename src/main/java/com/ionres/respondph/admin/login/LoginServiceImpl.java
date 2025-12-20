@@ -1,11 +1,18 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.sql.SQLException;
+
 public class LoginServiceImpl implements LoginService{
-    private final LoginDAO adminDao = new LoginDAOImpl();
+    private final LoginDAO adminDao;
+
+    public LoginServiceImpl(DBConnection dbConnection) {
+        this.adminDao = new LoginDAOImpl(dbConnection);
+    }
 
     private final Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 

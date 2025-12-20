@@ -1,6 +1,7 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.AppPreferences;
 import com.ionres.respondph.util.SessionManager;
 import javafx.fxml.FXML;
@@ -14,7 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class LoginController {
-    LoginService loginService = new LoginServiceImpl();
+    private final LoginService loginService = AppContext.loginService;
     private AdminModel admin = new AdminModel();
     private AppPreferences prefs = new AppPreferences();
 
@@ -46,19 +47,19 @@ public class LoginController {
                 SessionManager.getInstance().setCurrentAdmin(admin);
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
                 loginStage.close();
-                
+
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pages/MainFrame.fxml"));
                 Parent root = loader.load();
-                
+
                 Stage stage = new Stage();
                 Scene scene = new Scene(root, 1200, 800);
                 scene.getStylesheets().add(getClass().getResource("/styles/pages/mainframe.css").toExternalForm());
-                
+
                 stage.setTitle("RespondPH - Dashboard");
                 stage.setScene(scene);
                 stage.setMinWidth(1600);
                 stage.setMinHeight(800);
-                stage.setMaximized(true); 
+                stage.setMaximized(true);
                 stage.show();
             }
             else {

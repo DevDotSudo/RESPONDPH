@@ -1,6 +1,7 @@
 package com.ionres.respondph.familymembers;
 
 import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.AppContext;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -40,7 +41,7 @@ public class FamilyMembersController {
     @FXML private Button addButton;
     @FXML private Button refreshButton;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-    private FamilyMemberService familyMembersService = new FamilyMemberService();
+    private final FamilyMemberService familyMembersService = AppContext.familyMemberService;
     AlertDialog alertDialog = new AlertDialog();
 
     public void initialize() {

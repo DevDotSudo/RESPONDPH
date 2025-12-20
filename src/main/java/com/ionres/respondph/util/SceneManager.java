@@ -1,5 +1,4 @@
 package com.ionres.respondph.util;
 
-public class Global {
-    
+public class SceneManager {
 }

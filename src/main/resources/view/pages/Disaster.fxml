@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="root" styleClass="root-pane" stylesheets="@/styles/pages/disaster.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster.DisasterController">
+
+    <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <VBox styleClass="header-section">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="36" styleClass="page-icon" />
+                <Label styleClass="page-title" text="Manage Disasters" />
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
+                <VBox.margin>
+                    <Insets top="20" />
+                </VBox.margin>
+
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                    <FontAwesomeIconView glyphName="SEARCH" size="16" styleClass="search-icon" />
+                    <TextField fx:id="searchField" promptText="Search disaster" styleClass="search-field" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="search-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Search" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button fx:id="addBtn" styleClass="add-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="16" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Add Disaster" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="refreshBtn" styleClass="refresh-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="REFRESH" size="16" styleClass="refresh-icon" />
+                            <Label styleClass="button-label" text="Refresh" />
+                        </HBox>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" />
+            </padding>
+
+            <TableView fx:id="disastersTbl" styleClass="family-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="disaster_id" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="type" prefWidth="1" text="Type" />
+                    <TableColumn fx:id="disasterColumn" prefWidth="1" text="Disaster Name" />
+                    <TableColumn fx:id="dateColumn" prefWidth="1" text="Date" />
+                    <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
+                </columns>
+            </TableView>
+        </VBox>
+
+    </VBox>
+</AnchorPane>

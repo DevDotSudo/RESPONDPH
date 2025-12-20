@@ -33,6 +33,12 @@ public class MainFrameController {
     private Button familyMembersBtn;
 
     @FXML
+    private Button disasterBtn;
+
+    @FXML
+    private Button disasterDamageBtn;
+
+    @FXML
     private Button sendSmsBtn;
 
     @FXML
@@ -49,6 +55,8 @@ public class MainFrameController {
         dashboardBtn.setOnAction(handlers);
         manageAdminBtn.setOnAction(handlers);
         manageBeneficiariesBtn.setOnAction(handlers);
+        disasterBtn.setOnAction(handlers);
+        disasterDamageBtn.setOnAction(handlers);
         aidsBtn.setOnAction(handlers);
         familyMembersBtn.setOnAction(handlers);
         sendSmsBtn.setOnAction(handlers);
@@ -77,6 +85,14 @@ public class MainFrameController {
 
         else if(src == familyMembersBtn) {
             handleFamilyMembers();
+        }
+
+        else if(src == disasterBtn) {
+            handleDisaster();
+        }
+
+        else if(src == disasterDamageBtn) {
+            handleDisasterDamage();
         }
 
         else if(src == sendSmsBtn) {
@@ -117,6 +133,16 @@ public class MainFrameController {
         activeButton(familyMembersBtn);
     }
 
+    private void handleDisaster() {
+        loadPage("/view/pages/Disaster.fxml");
+        activeButton(disasterBtn);
+    }
+
+    private void handleDisasterDamage() {
+        loadPage("/view/pages/DisasterDamage.fxml");
+        activeButton(disasterDamageBtn);
+    }
+
     private void handleSendSms() {
         loadPage("/view/pages/SendSMS.fxml");
         activeButton(sendSmsBtn);
@@ -134,7 +160,7 @@ public class MainFrameController {
             alert.setContentText("Do you want to logout?");
             alert.showAndWait();
     }
-    
+
     private void loadPage(String fxmlFile) {
         try {
             AnchorPane pane = FXMLLoader.load(getClass().getResource(fxmlFile));

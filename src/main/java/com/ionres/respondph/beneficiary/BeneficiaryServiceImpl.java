@@ -1,6 +1,7 @@
 package com.ionres.respondph.beneficiary;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
@@ -10,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BeneficiaryServiceImpl implements  BeneficiaryService{
+    private final BeneficiaryDAO beneficiaryDAO;
 
-    BeneficiaryDAO beneficiaryDAO = new BeneficiaryDAOImpl();
-
+    public BeneficiaryServiceImpl(DBConnection dbConnection) {
+        this.beneficiaryDAO = new BeneficiaryDAOImpl(dbConnection);
+    }
     @Override
     public List<BeneficiaryModel> getAllBeneficiary() {
         List<BeneficiaryModel> beneficiary = beneficiaryDAO.getAll();

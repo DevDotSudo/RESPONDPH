@@ -7,6 +7,7 @@ import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
 import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController;
 import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
 import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.AppContext;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
@@ -32,7 +33,7 @@ import java.util.Optional;
 
 public class BeneficiaryController {
 
-    BeneficiaryService beneficiaryService = new BeneficiaryServiceImpl();
+    BeneficiaryService beneficiaryService = AppContext.beneficiaryService;
     ObservableList<BeneficiaryModel> beneficiaryList;
 
     AlertDialog alertDialog = new AlertDialog();

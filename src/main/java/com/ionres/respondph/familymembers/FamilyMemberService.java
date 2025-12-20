@@ -1,4 +1,4 @@
 package com.ionres.respondph.familymembers;
 
-public class FamilyMemberService {
+public interface FamilyMemberService {
 }

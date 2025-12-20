@@ -1,6 +1,7 @@
 package com.ionres.respondph.admin;
 
 import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
+import com.ionres.respondph.util.AppContext;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -29,7 +30,7 @@ import com.ionres.respondph.util.AlertDialog;
 
 public class AdminController {
     AlertDialog alertDialog = new AlertDialog();
-    private AdminService adminService = new AdminServiceImpl();
+    private final AdminService adminService = AppContext.adminService;
     ObservableList<AdminModel> adminList;
     @FXML
     private AnchorPane rootPane;

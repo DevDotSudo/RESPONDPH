@@ -109,7 +109,12 @@
                     <Separator prefWidth="140" styleClass="section-separator" />
                 </VBox>
                 <Label styleClass="field-label" text="Notes *" />
-                <TextArea fx:id="notesFld" promptText="Enter a notes." />
+            <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container">
+               <children>
+                  <FontAwesomeIconView glyphName="STICKY_NOTE" styleClass="field-icon" />
+                  <TextField fx:id="notesFld" promptText="Enter a note." styleClass="input-field" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
             </VBox>
         </VBox>
     </ScrollPane>

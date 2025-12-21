@@ -2,6 +2,8 @@ package com.ionres.respondph.admin;
 
 import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
 import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DialogManager;
+import com.ionres.respondph.util.SceneManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -31,6 +33,7 @@ import com.ionres.respondph.util.AlertDialog;
 public class AdminController {
     AlertDialog alertDialog = new AlertDialog();
     private final AdminService adminService = AppContext.adminService;
+    private Stage dialogStage;
     ObservableList<AdminModel> adminList;
     @FXML
     private AnchorPane rootPane;
@@ -81,6 +84,15 @@ public class AdminController {
         setSearchFld();
 
     }
+
+    public void setDialogStage(Stage stage) {
+        this.dialogStage = stage;
+    }
+
+    public Stage getDialogStage() {
+        return dialogStage;
+    }
+
     @FXML
     private void handleSearch() {
         String searchText = searchFld.getText().trim();
@@ -134,31 +146,19 @@ public class AdminController {
 
     private void showAddAdminDialog() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/AddAdminDialog.fxml"));
-            Parent dialogRoot = loader.load();
+            AddAdminDialogController controller =
+                    DialogManager.getController("addAdmin", AddAdminDialogController.class);
 
-            AddAdminDialogController dialogController = loader.getController();
+            controller.setAdminService(adminService);
+            controller.setAdminController(this);
 
-            dialogController.setAdminService(this.adminService);
-            dialogController.setAdminController(this);
+            DialogManager.show("addAdmin");
 
-            Stage dialogStage = new Stage();
-            dialogStage.initModality(Modality.APPLICATION_MODAL);
-            dialogStage.initStyle(StageStyle.UNDECORATED);
-            dialogStage.setTitle("Add New Admin");
-
-            dialogController.setDialogStage(dialogStage);
-
-            Scene scene = new Scene(dialogRoot);
-            dialogStage.setScene(scene);
-
-            dialogStage.showAndWait();
-
-            if (dialogController.isAdminAdded()) {
+            if (controller.isAdminAdded()) {
                 loadTable();
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             alertDialog.showErrorAlert("Error", "Unable to load the Add Admin dialog.");
         }

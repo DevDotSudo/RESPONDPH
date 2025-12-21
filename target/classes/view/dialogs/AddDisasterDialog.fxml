@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" alignment="CENTER" prefHeight="660.0" prefWidth="1037.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/adddisasterdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogController">
+<VBox fx:id="root" alignment="CENTER" prefHeight="713.0" prefWidth="1037.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/adddisasterdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogController">
 
     <padding>
         <Insets bottom="25" left="25" right="25" top="25" />
@@ -109,7 +109,12 @@
                     <Separator prefWidth="140" styleClass="section-separator" />
                 </VBox>
                 <Label styleClass="field-label" text="Notes *" />
-                <TextArea fx:id="notesFld" promptText="Enter a notes." />
+            <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container">
+               <children>
+                  <FontAwesomeIconView glyphName="STICKY_NOTE" styleClass="field-icon" />
+                  <TextField fx:id="notesFld" promptText="Enter a note" styleClass="input-field" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
             </VBox>
         </VBox>
     </ScrollPane>

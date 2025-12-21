@@ -84,11 +84,11 @@ public class DisasterDamageController {
         } else if (src == searchBtn) {
 
         } else if(src == addBtn) {
-            handleAddBeneficiary();
+            handleAddDisasterDamage();
         }
     }
 
-    private void handleAddBeneficiary() {
+    private void handleAddDisasterDamage() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/AddDisasterDamageDialog.fxml"));
             Stage dialogStage = new Stage();

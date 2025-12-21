@@ -74,6 +74,7 @@ public class AddBeneficiariesDialogController {
     AlertDialog alertDialog = new AlertDialog();
     private BeneficiaryService beneficiaryService;
     private BeneficiaryController beneficiaryController;
+    private Stage dialogStage;
 
     public void setBeneficiaryService(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;
@@ -82,24 +83,21 @@ public class AddBeneficiariesDialogController {
         this.beneficiaryController = beneficiaryController;
     }
 
+    public void setDialogStage(Stage stage) {
+        this.dialogStage = stage;
+    }
+
+    public Stage getDialogStage() {
+        return dialogStage;
+    }
+
     @FXML
     public void initialize() {
-        root.setOnMousePressed(event -> {
-            xOffset = event.getSceneX();
-            yOffset = event.getSceneY();
-        });
-        root.setOnMouseDragged(event -> {
-            Stage dialogStage = (Stage) root.getScene().getWindow();
-            dialogStage.setX(event.getScreenX() - xOffset);
-            dialogStage.setY(event.getScreenY() - yOffset);
-        });
+        makeDraggable();
         initializeBeneficiaryProfileDropdowns();
         initializeVulnerabilityIndicatorsDropdowns();
         initializeHousingAndInfrastructureDropdowns();
         initializeSocioEconomicStatusDropdowns();
-        exitBtn.setOnAction(event -> closeDialog());
-        addBeneficiaryBtn.setOnAction(event -> addBeneficiary());
-
         EventHandler<ActionEvent> handlers = this::handleActions;
         exitBtn.setOnAction(handlers);
         addBeneficiaryBtn.setOnAction(handlers);
@@ -114,7 +112,7 @@ public class AddBeneficiariesDialogController {
             clearFields();
         }
         else if(src == exitBtn){
-            closeDialog();
+            close();
         }
     }
 
@@ -350,6 +348,7 @@ public class AddBeneficiariesDialogController {
                         javax.swing.JOptionPane.INFORMATION_MESSAGE
                 );
                 System.out.println("Firstname " + addedBy);
+                close();
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,
@@ -368,10 +367,6 @@ public class AddBeneficiariesDialogController {
             );
             e.printStackTrace();
         }
-    }
-
-    private void closeDialog() {
-        ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
     }
 
     public void clearFields() {
@@ -395,5 +390,25 @@ public class AddBeneficiariesDialogController {
         monthlyIncomeSelection.getSelectionModel().clearSelection();
         educationLevelSelection.getSelectionModel().clearSelection();
         digitalAccessSelection.getSelectionModel().clearSelection();
+    }
+
+    private void makeDraggable() {
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            if (dialogStage != null) {
+                dialogStage.setX(e.getScreenX() - xOffset);
+                dialogStage.setY(e.getScreenY() - yOffset);
+            }
+        });
+    }
+
+    private void close() {
+        if (dialogStage != null) {
+            dialogStage.hide();
+        }
     }
 }

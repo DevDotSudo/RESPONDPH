@@ -32,7 +32,7 @@ public class AddDisasterDialogController {
     private TextField radiusFld;
 
     @FXML
-    private TextArea notesFld;
+    private TextField notesFld;
 
     @FXML
     private void initialize() {

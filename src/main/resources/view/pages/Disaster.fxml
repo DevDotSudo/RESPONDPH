@@ -67,7 +67,7 @@
 
             <TableView fx:id="disastersTbl" styleClass="family-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="disaster_id" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="disaster_id" minWidth="80" maxWidth="80" text="ID" />
                     <TableColumn fx:id="type" prefWidth="1" text="Type" />
                     <TableColumn fx:id="disasterColumn" prefWidth="1" text="Disaster Name" />
                     <TableColumn fx:id="dateColumn" prefWidth="1" text="Date" />

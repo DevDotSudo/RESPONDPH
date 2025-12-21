@@ -167,10 +167,6 @@
     -fx-pref-height: 26px;
 }
 
-.dropdown .text {
-    -fx-fill: #9e9e9e;
-}
-
 .dropdown .text-field {
     -fx-background-color: transparent;
     -fx-text-fill: #1e293b;

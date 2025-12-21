@@ -1,6 +1,8 @@
 package com.ionres.respondph.main;
 
 import java.io.IOException;
+
+import com.ionres.respondph.util.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,7 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.event.EventHandler;
 
 public class MainFrameController {
-    
+
     @FXML
     private VBox contentArea;
 
@@ -112,12 +114,12 @@ public class MainFrameController {
         loadPage("/view/pages/Dashboard.fxml");
         activeButton(dashboardBtn);
     }
-    
+
     private void handleManageAdmins() {
         loadPage("/view/pages/ManageAdmins.fxml");
         activeButton(manageAdminBtn);
     }
-    
+
     private void handleManageBeneficiaries() {
         loadPage("/view/pages/ManageBeneficiaries.fxml");
         activeButton(manageBeneficiariesBtn);
@@ -161,13 +163,9 @@ public class MainFrameController {
             alert.showAndWait();
     }
 
-    private void loadPage(String fxmlFile) {
-        try {
-            AnchorPane pane = FXMLLoader.load(getClass().getResource(fxmlFile));
-            contentArea.getChildren().setAll(pane);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void loadPage(String fxml) {
+        SceneManager.SceneEntry<?> entry = SceneManager.load(fxml);
+        contentArea.getChildren().setAll(entry.getRoot());
     }
 
     private void activeButton(Button btnId) {

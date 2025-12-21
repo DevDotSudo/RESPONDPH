@@ -1,6 +1,7 @@
 package com.ionres.respondph.splash;
 
 import com.ionres.respondph.util.AppLoader;
+import com.ionres.respondph.util.SceneManager;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -69,8 +70,7 @@ public class SplashScreenController {
                 Stage splashStage = (Stage) loadingText.getScene().getWindow();
                 splashStage.close();
 
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pages/LoginFrame.fxml"));
-                Parent root = loader.load();
+                Parent root = SceneManager.load("/view/pages/LoginFrame.fxml").getRoot();
 
                 Scene scene = new Scene(root, 1200, 800);
                 scene.getStylesheets().add(getClass().getResource("/styles/pages/loginframe.css").toExternalForm());
@@ -82,15 +82,17 @@ public class SplashScreenController {
                 stage.setMinHeight(800);
                 stage.setMaximized(true);
                 stage.show();
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }));
 
         loadingTask.setOnFailed(event -> Platform.runLater(() -> {
+            loadingText.textProperty().unbind();
             loadingText.setText("Error loading application");
-            System.err.println("Loading failed: " + loadingTask.getException().getMessage());
+
+            System.err.println("Loading failed: " +
+                    loadingTask.getException().getMessage());
             loadingTask.getException().printStackTrace();
         }));
 

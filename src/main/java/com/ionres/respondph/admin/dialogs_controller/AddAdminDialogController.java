@@ -3,18 +3,11 @@ package com.ionres.respondph.admin.dialogs_controller;
 import com.ionres.respondph.admin.AdminController;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.admin.AdminService;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javax.swing.*;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -24,180 +17,130 @@ public class AddAdminDialogController {
     private VBox root;
 
     @FXML
-    private TextField usernameField;
+    private TextField usernameField, firstNameField, middleNameField, lastNameField;
 
     @FXML
-    private TextField firstNameField;
-
-    @FXML
-    private TextField middleNameField;
-
-    @FXML
-    private TextField lastNameField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private PasswordField confirmPasswordField;
+    private PasswordField passwordField, confirmPasswordField;
 
     @FXML
     private Label errorLabel;
 
     @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button saveButton;
+    private Button cancelButton, saveButton;
     private Stage dialogStage;
-    private boolean adminAdded = false;
     private AdminService adminService;
     private AdminController adminController;
-    private double xOffset = 0;
-    private  double yOffset = 0;
-    public void setAdminService(AdminService adminService) {
-        this.adminService = adminService;
-    }
-    public void setAdminController(AdminController adminController) {
-        this.adminController = adminController;
-    }
+    private boolean adminAdded;
+    private double xOffset, yOffset;
 
     @FXML
     public void initialize() {
-        root.setOnMousePressed(event -> {
-            xOffset = event.getSceneX();
-            yOffset = event.getSceneY();
-        });
-        root.setOnMouseDragged(event -> {
-            Stage dialogStage = (Stage) root.getScene().getWindow();
-            dialogStage.setX(event.getScreenX() - xOffset);
-            dialogStage.setY(event.getScreenY() - yOffset);
-        });
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleCancel();
-            }
-        });
-
-        saveButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleSave();
-            }
-        });
-
-        setupValidation();
+        makeDraggable();
+        cancelButton.setOnAction(e -> close());
+        saveButton.setOnAction(e -> handleSave());
+        clearError();
     }
 
-    private void setupValidation() {
-        usernameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
-
-        firstNameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
-
-        lastNameField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
-
-        passwordField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
-
-        confirmPasswordField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                clearError();
-            }
-        });
+    public void setDialogStage(Stage stage) {
+        this.dialogStage = stage;
     }
 
-    @FXML
+    public Stage getDialogStage() {
+        return dialogStage;
+    }
+
+    public void setAdminService(AdminService service) {
+        this.adminService = service;
+    }
+
+    public void setAdminController(AdminController controller) {
+        this.adminController = controller;
+    }
+
+    public void onShow() {
+        adminAdded = false;
+        clearFields();
+        clearError();
+    }
+
+    public boolean isAdminAdded() {
+        return adminAdded;
+    }
+
     private void handleSave() {
-        if (validateInput()) {
-            adminAdded = true;
-            createAdmin();
-            adminController.refreshAdminTable();
-            clearFields();
 
+        if (!validateInput()) return;
+
+        try {
+            AdminModel admin = new AdminModel(
+                    usernameField.getText().trim(),
+                    firstNameField.getText().trim(),
+                    middleNameField.getText().trim(),
+                    lastNameField.getText().trim(),
+                    LocalDateTime.now().format(
+                            DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a")
+                    ),
+                    passwordField.getText()
+            );
+
+            adminService.createAdmin(admin);
+
+            adminAdded = true;
+            adminController.refreshAdminTable();
+            close();
+
+        } catch (Exception e) {
+            showError(e.getMessage());
         }
     }
 
-    @FXML
-    private void handleCancel() {
-        adminAdded = false;
-        dialogStage.close();
+    private void close() {
+        if (dialogStage != null) {
+            dialogStage.hide();
+        }
     }
 
     private boolean validateInput() {
-        String username = usernameField.getText().trim();
-        String firstName = firstNameField.getText().trim();
-        String lastName = lastNameField.getText().trim();
-        String password = passwordField.getText();
-        String confirmPassword = confirmPasswordField.getText();
 
-        if (username.isEmpty()) {
-            showError("Username is required.");
-            usernameField.requestFocus();
+        if (usernameField.getText().trim().length() < 4) {
+            showError("Username must be at least 4 characters.");
             return false;
         }
 
-        if (username.length() < 4) {
-            showError("Username must be at least 4 characters long.");
-            usernameField.requestFocus();
-            return false;
-        }
-
-        if (firstName.isEmpty()) {
+        if (firstNameField.getText().trim().isEmpty()) {
             showError("First name is required.");
-            firstNameField.requestFocus();
             return false;
         }
 
-        if (lastName.isEmpty()) {
+        if (lastNameField.getText().trim().isEmpty()) {
             showError("Last name is required.");
-            lastNameField.requestFocus();
             return false;
         }
 
-        if (password.isEmpty()) {
-            showError("Password is required.");
-            passwordField.requestFocus();
+        if (passwordField.getText().length() < 6) {
+            showError("Password must be at least 6 characters.");
             return false;
         }
 
-        if (password.length() < 6) {
-            showError("Password must be at least 6 characters long.");
-            passwordField.requestFocus();
-            return false;
-        }
-
-        if (confirmPassword.isEmpty()) {
-            showError("Please confirm your password.");
-            confirmPasswordField.requestFocus();
+        if (!passwordField.getText().equals(confirmPasswordField.getText())) {
+            showError("Passwords do not match.");
             return false;
         }
 
         return true;
     }
 
-    private void showError(String message) {
-        errorLabel.setText(message);
+    private void clearFields() {
+        usernameField.clear();
+        firstNameField.clear();
+        middleNameField.clear();
+        lastNameField.clear();
+        passwordField.clear();
+        confirmPasswordField.clear();
+    }
+
+    private void showError(String msg) {
+        errorLabel.setText(msg);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
     }
@@ -207,50 +150,17 @@ public class AddAdminDialogController {
         errorLabel.setManaged(false);
     }
 
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
+    private void makeDraggable() {
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
 
-    public boolean isAdminAdded() {
-        return adminAdded;
-    }
-
-    public void clearFields(){
-        usernameField.setText("");
-        firstNameField.setText("");
-        middleNameField.setText("");
-        lastNameField.setText("");
-        passwordField.setText("");
-        confirmPasswordField.setText("");
-    }
-
-    private void createAdmin() {
-        String username = usernameField.getText();
-        String fname = firstNameField.getText();
-        String mname = middleNameField.getText();
-        String lname = lastNameField.getText();
-        String redDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
-        String password = passwordField.getText();
-        String confirmPass = confirmPasswordField.getText();
-
-        if (!password.equals(confirmPass)) {
-            JOptionPane.showMessageDialog(null, "Passwords do not match");
-            passwordField.requestFocus();
-            return;
-        }
-
-        try {
-            AdminModel adminModel = new AdminModel(username, fname, mname, lname, redDate, password);
-
-            adminService.createAdmin(adminModel);
-
-            JOptionPane.showMessageDialog(null,
-                    "Admin successfully created.",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        root.setOnMouseDragged(e -> {
+            if (dialogStage != null) {
+                dialogStage.setX(e.getScreenX() - xOffset);
+                dialogStage.setY(e.getScreenY() - yOffset);
+            }
+        });
     }
 }

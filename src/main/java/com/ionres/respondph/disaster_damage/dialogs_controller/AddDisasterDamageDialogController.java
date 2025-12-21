@@ -27,7 +27,7 @@ public class AddDisasterDamageDialogController {
     private DatePicker birthDatePicker;
 
     @FXML
-    private TextArea notesFld;
+    private TextField notesFld;
 
     @FXML
     private Button saveBtn, exitBtn;

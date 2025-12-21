@@ -70,9 +70,10 @@ public class SplashScreenController {
                 Stage splashStage = (Stage) loadingText.getScene().getWindow();
                 splashStage.close();
 
-                Parent root = SceneManager.load("/view/pages/LoginFrame.fxml").getRoot();
+                SceneManager.SceneEntry<?> entry =
+                        SceneManager.load("/view/pages/LoginFrame.fxml");
 
-                Scene scene = new Scene(root, 1200, 800);
+                Scene scene = new Scene(entry.getRoot(), 1200, 800);
                 scene.getStylesheets().add(getClass().getResource("/styles/pages/loginframe.css").toExternalForm());
 
                 Stage stage = new Stage();

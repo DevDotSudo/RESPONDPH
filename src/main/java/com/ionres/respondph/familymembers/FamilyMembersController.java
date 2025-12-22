@@ -22,8 +22,7 @@ import java.time.format.DateTimeFormatter;
 
 public class FamilyMembersController {
     @FXML private AnchorPane rootPane;
-    @FXML
-    private TableView<FamilyMembersModel> familyTable;
+    @FXML private TableView<FamilyMembersModel> familyTable;
     @FXML private TableColumn<FamilyMembersModel, Integer> idColumn;
     @FXML private TableColumn<FamilyMembersModel, String> beneficiaryNameColumn;
     @FXML private TableColumn<FamilyMembersModel, String> firstnameColumn;

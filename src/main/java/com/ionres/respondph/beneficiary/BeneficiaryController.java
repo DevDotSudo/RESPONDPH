@@ -34,6 +34,9 @@ public class BeneficiaryController {
 
     BeneficiaryService beneficiaryService = new BeneficiaryServiceImpl();
     ObservableList<BeneficiaryModel> beneficiaryList;
+    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/AddBeneficiariesDialog.fxml"));
+    Stage dialogStage = new Stage();
+    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
 
     AlertDialog alertDialog = new AlertDialog();
 
@@ -119,10 +122,6 @@ public class BeneficiaryController {
         private void handleAddBeneficiary() {
 
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/AddBeneficiariesDialog.fxml"));
-                Stage dialogStage = new Stage();
-
-
                 Parent dialogRoot = loader.load();
 
 
@@ -211,7 +210,7 @@ public class BeneficiaryController {
                 alertDialog.showErrorAlert("Invalid Selection", "Admin ID is missing or invalid.");
                 return;
             }
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+
             confirm.setTitle("Confirm Delete");
             confirm.setHeaderText("Are you sure you want to delete this Beneficiary?");
             confirm.setContentText("Username: " + bm.getFirstname());

@@ -1,14 +1,10 @@
 package com.ionres.respondph.main;
 
-import java.io.IOException;
-
 import com.ionres.respondph.util.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.event.EventHandler;
 

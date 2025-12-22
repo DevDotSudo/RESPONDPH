@@ -1,7 +1,6 @@
-package com.ionres.respondph.familymembers;
+package com.ionres.respondph.common.model;
 
 public class BeneficiaryModel {
-
     private int beneficiaryId;
     private String firstName;
 

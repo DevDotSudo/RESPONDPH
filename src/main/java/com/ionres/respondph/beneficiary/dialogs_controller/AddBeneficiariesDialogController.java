@@ -16,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class AddBeneficiariesDialogController {
+
     @FXML
     private VBox root;
     @FXML
@@ -66,13 +67,12 @@ public class AddBeneficiariesDialogController {
     private Button exitBtn;
     @FXML
     private Button addBeneficiaryBtn;
+    AlertDialog alertDialog = new AlertDialog();
     private double yOffset = 0;
     private double xOffset = 0;
-    AlertDialog alertDialog = new AlertDialog();
     private BeneficiaryService beneficiaryService;
     private BeneficiaryController beneficiaryController;
     private Stage dialogStage;
-
     public void setBeneficiaryService(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;
     }
@@ -82,6 +82,7 @@ public class AddBeneficiariesDialogController {
 
     public void setDialogStage(Stage stage) {
         this.dialogStage = stage;
+        onShow();
     }
 
     public Stage getDialogStage() {
@@ -312,10 +313,12 @@ public class AddBeneficiariesDialogController {
                 alertDialog.showWarning("Monthly income is required");
                 return;
             }
+
             if (educationalLevel == null) {
                 alertDialog.showWarning("Educational level is required");
                 return;
             }
+
             if (digitalAccess == null) {
                 alertDialog.showWarning("Digital access is required");
                 return;
@@ -407,5 +410,9 @@ public class AddBeneficiariesDialogController {
         if (dialogStage != null) {
             dialogStage.hide();
         }
+    }
+
+    public void onShow() {
+        clearFields();
     }
 }

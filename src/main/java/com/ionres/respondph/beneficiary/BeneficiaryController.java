@@ -1,11 +1,8 @@
 package com.ionres.respondph.beneficiary;
 
-import com.ionres.respondph.admin.AdminController;
-import com.ionres.respondph.admin.AdminModel;
-import com.ionres.respondph.admin.AdminService;
-import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
 import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController;
 import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
+import com.ionres.respondph.familymembers.FamilyMembersModel;
 import com.ionres.respondph.util.AlertDialog;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DialogManager;
@@ -16,19 +13,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,24 +107,31 @@ public class BeneficiaryController {
             }
         }
 
-            @FXML
-            private void handleAddBeneficiary() {
-                try {
-                    AddBeneficiariesDialogController controller = DialogManager.getController("addBeneficiary", AddBeneficiariesDialogController.class);
-                    controller.setBeneficiaryService(beneficiaryService);
-                    controller.setBeneficiaryController(this);
-                    DialogManager.show("addBeneficiary");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    alertDialog.showErrorAlert("Error", "Unable to load the Add Admin dialog.");
-                }
+        @FXML
+        private void handleAddBeneficiary() {
+            try {
+                AddBeneficiariesDialogController controller = DialogManager.getController("addBeneficiary", AddBeneficiariesDialogController.class);
+                controller.setBeneficiaryService(beneficiaryService);
+                controller.setBeneficiaryController(this);
+                DialogManager.show("addBeneficiary");
+            } catch (Exception e) {
+                e.printStackTrace();
+                alertDialog.showErrorAlert("Error", "Unable to load the Add Admin dialog.");
             }
+        }
 
-        private void showEditBeneficiaryDialog(BeneficiaryModel beneficiaryModel) {
+        private void showEditBeneficiaryDialog(BeneficiaryModel bm) {
             try {
                 EditBeneficiariesDialogController controller = DialogManager.getController("editBeneficiary", EditBeneficiariesDialogController.class);
                 controller.setBeneficiaryService(beneficiaryService);
                 controller.setBeneficiaryController(this);
+                BeneficiaryModel beneficiaryModel = beneficiaryService.getBeneficiaryById(bm.getId());
+                if (beneficiaryModel != null) {
+                    controller.setBeneficiary(beneficiaryModel);
+                } else {
+                    alertDialog.showErrorAlert("Error", "Unable to load Family Member data.");
+                    return;
+                }
                 DialogManager.show("editBeneficiary");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -217,12 +214,13 @@ public class BeneficiaryController {
                                 private final Button deleteButton = new Button("", deleteIcon);
 
                                 {
-                                    editButton.getStyleClass().add("action-button");
+                                    editIcon.getStyleClass().add("edit-icon");
+                                    deleteIcon.getStyleClass().add("delete-icon");
+                                    editButton.getStyleClass().add("edit-button");
                                     deleteButton.getStyleClass().add("delete-button");
 
                                     editButton.setOnAction(event -> {
                                         BeneficiaryModel bm = getTableView().getItems().get(getIndex());
-
                                         showEditBeneficiaryDialog(bm);
                                     });
 
@@ -239,14 +237,16 @@ public class BeneficiaryController {
                                     if (empty) {
                                         setGraphic(null);
                                     } else {
-                                        HBox box = new HBox(5, editButton, deleteButton);
+                                        HBox box = new HBox(10, editButton, deleteButton);
+                                        box.setAlignment(Pos.CENTER);
+                                        box.getStyleClass().add("action-buttons-container");
                                         setGraphic(box);
+                                        setAlignment(Pos.CENTER);
                                     }
                                 }
                             };
                         }
                     };
-
             actionsColumn.setCellFactory(cellFactory);
         }
     }

@@ -1,8 +1,5 @@
 package com.ionres.respondph.familymembers;
 
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
-import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController;
-import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
 import com.ionres.respondph.familymembers.dialogs_controller.AddFamilyController;
 import com.ionres.respondph.familymembers.dialogs_controller.EditFamilyController;
 import com.ionres.respondph.util.AlertDialog;
@@ -15,14 +12,13 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
-
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -201,7 +197,9 @@ public class FamilyMembersController {
                                 private final Button deleteButton = new Button("", deleteIcon);
 
                                 {
-                                    editButton.getStyleClass().add("action-button");
+                                    editIcon.getStyleClass().add("edit-icon");
+                                    deleteIcon.getStyleClass().add("delete-icon");
+                                    editButton.getStyleClass().add("edit-button");
                                     deleteButton.getStyleClass().add("delete-button");
 
                                     editButton.setOnAction(event -> {
@@ -222,8 +220,11 @@ public class FamilyMembersController {
                                     if (empty) {
                                         setGraphic(null);
                                     } else {
-                                        HBox box = new HBox(5, editButton, deleteButton);
+                                        HBox box = new HBox(10, editButton, deleteButton);
+                                        box.setAlignment(Pos.CENTER);
+                                        box.getStyleClass().add("action-buttons-container");
                                         setGraphic(box);
+                                        setAlignment(Pos.CENTER);
                                     }
                                 }
                             };

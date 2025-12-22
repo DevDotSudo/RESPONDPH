@@ -53,7 +53,6 @@ public class FamilyMembersModel {
 
         }
 
-        // Getters
         public int getFamilyId() {
             return familyId;
         }
@@ -61,6 +60,7 @@ public class FamilyMembersModel {
         public int getBeneficiaryId() {
             return beneficiaryId;
         }
+
         public String getBeneficiaryName(){return  beneficiaryName;}
 
         public String getFirstName() {
@@ -114,7 +114,6 @@ public class FamilyMembersModel {
             return regDate;
         }
 
-        // Setters
         public void setFamilyId(int familyId) {
             this.familyId = familyId;
         }

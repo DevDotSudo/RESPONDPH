@@ -7,15 +7,15 @@
 
 <AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/pages/managebeneficiaries.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.BeneficiaryController">
 
-    <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <VBox styleClass="header-section">
+        <VBox spacing="0" styleClass="header-section">
             <padding>
-                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                <Insets bottom="24" left="24" right="24" top="24" />
             </padding>
 
-            <HBox alignment="CENTER_LEFT" spacing="15">
-                <FontAwesomeIconView glyphName="USER_MD" size="36" styleClass="page-icon" />
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <FontAwesomeIconView glyphName="USER_MD" size="24" styleClass="page-icon" />
                 <Label styleClass="page-title" text="Manage Beneficiaries" />
             </HBox>
 
@@ -25,11 +25,11 @@
                 </VBox.margin>
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
-                    <FontAwesomeIconView glyphName="SEARCH" size="16" styleClass="search-icon" />
+                    <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />
                     <TextField fx:id="searchField" promptText="Search by name, contact, address..." styleClass="search-field" HBox.hgrow="ALWAYS" />
                 </HBox>
 
-                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="search-button">
+                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
@@ -40,19 +40,19 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <Button fx:id="addButton" styleClass="add-button">
+                <Button fx:id="addButton" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
-                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="16" styleClass="button-icon" />
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon" />
                             <Label styleClass="button-label" text="Add Beneficiary" />
                         </HBox>
                     </graphic>
                 </Button>
 
-                <Button fx:id="refreshButton" styleClass="refresh-button">
+                <Button fx:id="refreshButton" styleClass="secondary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
-                            <FontAwesomeIconView glyphName="REFRESH" size="16" styleClass="refresh-icon" />
+                            <FontAwesomeIconView glyphName="REFRESH" size="14" styleClass="refresh-icon" />
                             <Label styleClass="button-label" text="Refresh" />
                         </HBox>
                     </graphic>
@@ -62,23 +62,26 @@
 
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets bottom="30.0" left="30.0" right="30.0" />
+                <Insets bottom="24" left="24" right="24" top="18" />
             </padding>
 
             <TableView fx:id="beneficiaryTable" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idColumn" minWidth="80" maxWidth="80"  text="ID" />
-                    <TableColumn fx:id="firstnameColumn" prefWidth="1" text="Firstname" />
-                    <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middlename" />
-                    <TableColumn fx:id="lastnameColumn" prefWidth="1" text="Lastname" />
+                    <TableColumn fx:id="idColumn" maxWidth="80" minWidth="80" text="ID" />
+                    <TableColumn fx:id="firstnameColumn" prefWidth="1" text="First Name" />
+                    <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middle Name" />
+                    <TableColumn fx:id="lastnameColumn" prefWidth="1" text="Last Name" />
                     <TableColumn fx:id="birthdateColumn" prefWidth="1" text="Birthdate" />
                     <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
                     <TableColumn fx:id="statusColumn" prefWidth="1" text="Marital Status" />
                     <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Number" />
-                    <TableColumn fx:id="addedByColumn" prefWidth="1"  text="Added By" />
-                    <TableColumn fx:id="registeredDateColumn" prefWidth="1"  text="Registered" />
-                    <TableColumn fx:id="actionsColumn" minWidth="120" maxWidth="120" text="Actions" />
+                    <TableColumn fx:id="addedByColumn" prefWidth="1" text="Added By" />
+                    <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered Date" />
+                    <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
                 </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
             </TableView>
         </VBox>
 

@@ -1,5 +1,6 @@
     package com.ionres.respondph.familymembers;
 
+    import com.ionres.respondph.common.model.BeneficiaryModel;
     import com.ionres.respondph.database.DBConnection;
     import com.ionres.respondph.exception.ExceptionFactory;
     import com.ionres.respondph.util.Cryptography;

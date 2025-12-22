@@ -1,7 +1,8 @@
 package com.ionres.respondph.familymembers;
 
 
-import java.sql.SQLException;
+import com.ionres.respondph.common.model.BeneficiaryModel;
+
 import java.util.List;
 
 public interface FamilyMemberDAO {

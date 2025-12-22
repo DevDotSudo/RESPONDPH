@@ -14,13 +14,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdminDAOImpl implements AdminDAO {
+    private final DBConnection dbConnection;
+
+    public AdminDAOImpl(DBConnection dbConnection) {
+        this.dbConnection = dbConnection;
+    }
 
     @Override
     public boolean saving(AdminModel am) {
         String sql = "INSERT INTO admin (username, first_name, middle_name, last_name, reg_date, hash) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, am.getUsername());
             ps.setString(2, am.getFirstname());
@@ -43,8 +49,9 @@ public class AdminDAOImpl implements AdminDAO {
     public boolean existsByUsername(String encryptedUsername) {
         String sql = "SELECT COUNT(*) FROM admin WHERE username = ?";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, encryptedUsername);
 
@@ -63,8 +70,9 @@ public class AdminDAOImpl implements AdminDAO {
         List<AdminModel> admins = new ArrayList<>();
         String query = "SELECT * FROM admin";
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -105,8 +113,9 @@ public class AdminDAOImpl implements AdminDAO {
     public boolean delete(AdminModel am) {
         String sql = "DELETE FROM admin WHERE admin_id = ?";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try{
+            Connection conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setInt(1, am.getId());
 
@@ -125,8 +134,9 @@ public class AdminDAOImpl implements AdminDAO {
     public boolean update(AdminModel am) {
         String sql = "UPDATE admin set username = ?, first_name = ?, middle_name = ?, last_name = ?, reg_date = ? WHERE admin_id = ?";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, am.getUsername());
             ps.setString(2, am.getFirstname());

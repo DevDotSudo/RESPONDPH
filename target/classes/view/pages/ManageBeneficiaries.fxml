@@ -74,7 +74,7 @@
                     <TableColumn fx:id="birthdateColumn" prefWidth="1" text="Birthdate" />
                     <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
                     <TableColumn fx:id="statusColumn" prefWidth="1" text="Marital Status" />
-                    <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Numb er" />
+                    <TableColumn fx:id="mobileNumberColumn" prefWidth="1" text="Mobile Number" />
                     <TableColumn fx:id="addedByColumn" prefWidth="1"  text="Added By" />
                     <TableColumn fx:id="registeredDateColumn" prefWidth="1"  text="Registered" />
                     <TableColumn fx:id="actionsColumn" minWidth="120" maxWidth="120" text="Actions" />

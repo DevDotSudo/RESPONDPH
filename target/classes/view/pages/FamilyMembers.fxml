@@ -66,7 +66,7 @@
 
             <TableView fx:id="familyTable" styleClass="family-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idColumn" prefWidth="1" text="ID" />
+                    <TableColumn fx:id="idColumn" minWidth="80" maxWidth="80" text="ID" />
                     <TableColumn fx:id="beneficiaryNameColumn" prefWidth="1" text="Beneficiary Name" />
                     <TableColumn fx:id="firstnameColumn" prefWidth="1" text="First Name" />
                     <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middle Name" />

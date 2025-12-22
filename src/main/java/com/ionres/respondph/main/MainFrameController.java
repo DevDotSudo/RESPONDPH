@@ -1,6 +1,8 @@
 package com.ionres.respondph.main;
 
 import java.io.IOException;
+
+import com.ionres.respondph.util.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,7 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.event.EventHandler;
 
 public class MainFrameController {
-    
+
     @FXML
     private VBox contentArea;
 
@@ -33,6 +35,12 @@ public class MainFrameController {
     private Button familyMembersBtn;
 
     @FXML
+    private Button disasterBtn;
+
+    @FXML
+    private Button disasterDamageBtn;
+
+    @FXML
     private Button sendSmsBtn;
 
     @FXML
@@ -49,6 +57,8 @@ public class MainFrameController {
         dashboardBtn.setOnAction(handlers);
         manageAdminBtn.setOnAction(handlers);
         manageBeneficiariesBtn.setOnAction(handlers);
+        disasterBtn.setOnAction(handlers);
+        disasterDamageBtn.setOnAction(handlers);
         aidsBtn.setOnAction(handlers);
         familyMembersBtn.setOnAction(handlers);
         sendSmsBtn.setOnAction(handlers);
@@ -79,6 +89,14 @@ public class MainFrameController {
             handleFamilyMembers();
         }
 
+        else if(src == disasterBtn) {
+            handleDisaster();
+        }
+
+        else if(src == disasterDamageBtn) {
+            handleDisasterDamage();
+        }
+
         else if(src == sendSmsBtn) {
             handleSendSms();
         }
@@ -96,12 +114,12 @@ public class MainFrameController {
         loadPage("/view/pages/Dashboard.fxml");
         activeButton(dashboardBtn);
     }
-    
+
     private void handleManageAdmins() {
         loadPage("/view/pages/ManageAdmins.fxml");
         activeButton(manageAdminBtn);
     }
-    
+
     private void handleManageBeneficiaries() {
         loadPage("/view/pages/ManageBeneficiaries.fxml");
         activeButton(manageBeneficiariesBtn);
@@ -115,6 +133,16 @@ public class MainFrameController {
     private void handleFamilyMembers() {
         loadPage("/view/pages/FamilyMembers.fxml");
         activeButton(familyMembersBtn);
+    }
+
+    private void handleDisaster() {
+        loadPage("/view/pages/Disaster.fxml");
+        activeButton(disasterBtn);
+    }
+
+    private void handleDisasterDamage() {
+        loadPage("/view/pages/DisasterDamage.fxml");
+        activeButton(disasterDamageBtn);
     }
 
     private void handleSendSms() {
@@ -134,14 +162,10 @@ public class MainFrameController {
             alert.setContentText("Do you want to logout?");
             alert.showAndWait();
     }
-    
-    private void loadPage(String fxmlFile) {
-        try {
-            AnchorPane pane = FXMLLoader.load(getClass().getResource(fxmlFile));
-            contentArea.getChildren().setAll(pane);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+    private void loadPage(String fxml) {
+        SceneManager.SceneEntry<?> entry = SceneManager.load(fxml);
+        contentArea.getChildren().setAll(entry.getRoot());
     }
 
     private void activeButton(Button btnId) {

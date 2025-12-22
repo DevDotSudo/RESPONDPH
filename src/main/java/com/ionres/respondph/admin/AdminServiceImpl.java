@@ -1,12 +1,10 @@
 
 package com.ionres.respondph.admin;
 
+import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.*;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.time.LocalDate;
@@ -14,9 +12,12 @@ import java.util.List;
 import java.sql.SQLException;
 
 
-public class AdminServiceImpl implements  AdminService{
-    AdminDAO adminDao = new AdminDAOImpl();
+public class AdminServiceImpl implements AdminService{
+    private final AdminDAO adminDao;
 
+    public AdminServiceImpl(DBConnection dbConnection) {
+        this.adminDao = new AdminDAOImpl(dbConnection);
+    }
 
     @Override
     public List<AdminModel> getAllAdmins() {

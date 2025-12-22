@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane prefHeight="800.0" prefWidth="1600.0" styleClass="root" stylesheets="@/styles/pages/splashscreen.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.splash.SplashScreenController">
+
+    <VBox alignment="CENTER" styleClass="content-container">
+         <ImageView fitHeight="250.0" fitWidth="250.0" preserveRatio="true">
+             <Image url="@/images/respondph_logo.png" />
+         </ImageView>
+      <HBox alignment="CENTER">
+         <children>
+      
+              <Label styleClass="brand-text" text="RESPOND" />
+              <Label styleClass="brand-text-sub" text="PH" />
+         </children>
+      </HBox>
+
+        <VBox alignment="BOTTOM_CENTER" prefHeight="448.0" prefWidth="1520.0" spacing="10" styleClass="progress-container">
+            <Label fx:id="loadingText" maxWidth="1.7976931348623157E308" styleClass="loading-text" text="Loading..." />
+            <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0" styleClass="custom-progress-bar" />
+        </VBox>
+
+    </VBox>
+
+</StackPane>

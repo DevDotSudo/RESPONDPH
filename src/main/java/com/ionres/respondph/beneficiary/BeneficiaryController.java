@@ -7,6 +7,8 @@ import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
 import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController;
 import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
 import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
@@ -32,11 +34,8 @@ import java.util.Optional;
 
 public class BeneficiaryController {
 
-    BeneficiaryService beneficiaryService = new BeneficiaryServiceImpl();
+    BeneficiaryService beneficiaryService = AppContext.beneficiaryService;
     ObservableList<BeneficiaryModel> beneficiaryList;
-    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/AddBeneficiariesDialog.fxml"));
-    Stage dialogStage = new Stage();
-    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
 
     AlertDialog alertDialog = new AlertDialog();
 
@@ -118,66 +117,26 @@ public class BeneficiaryController {
             }
         }
 
-        @FXML
-        private void handleAddBeneficiary() {
-
-            try {
-                Parent dialogRoot = loader.load();
-
-
-                AddBeneficiariesDialogController dialogController = loader.getController();
-
-
-                dialogController.setBeneficiaryService(this.beneficiaryService);
-                dialogController.setBeneficiaryController(this);
-
-
-                dialogStage.initModality(Modality.APPLICATION_MODAL);
-                dialogStage.initStyle(StageStyle.UNDECORATED);
-                dialogStage.setTitle("Add New Beneficiary");
-
-
-                Scene scene = new Scene(dialogRoot);
-
-                dialogStage.setScene(scene);
-                dialogStage.showAndWait();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                alertDialog.showErrorAlert("Error", "Unable to load the Add Admin dialog.");
+            @FXML
+            private void handleAddBeneficiary() {
+                try {
+                    AddBeneficiariesDialogController controller = DialogManager.getController("addBeneficiary", AddBeneficiariesDialogController.class);
+                    controller.setBeneficiaryService(beneficiaryService);
+                    controller.setBeneficiaryController(this);
+                    DialogManager.show("addBeneficiary");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    alertDialog.showErrorAlert("Error", "Unable to load the Add Admin dialog.");
+                }
             }
-        }
 
         private void showEditBeneficiaryDialog(BeneficiaryModel beneficiaryModel) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/EditBeneficiariesDialog.fxml"));
-                Parent dialogRoot = loader.load();
-
-                EditBeneficiariesDialogController dialogController = loader.getController();
-
-                dialogController.setBeneficiaryService(this.beneficiaryService);
-                dialogController.setBeneficiaryController(this);
-
-                Stage dialogStage = new Stage();
-                dialogController.setDialogStage(dialogStage);
-
-                BeneficiaryModel fullBeneficiary = beneficiaryService.getBeneficiaryById(beneficiaryModel.getId());
-                if (fullBeneficiary != null) {
-                    dialogController.setBeneficiary(fullBeneficiary);
-                } else {
-                    alertDialog.showErrorAlert("Error", "Unable to load beneficiary data.");
-                    return;
-                }
-
-                dialogStage.initModality(Modality.APPLICATION_MODAL);
-                dialogStage.initStyle(StageStyle.UNDECORATED);
-                dialogStage.setTitle("Update Beneficiary");
-
-                Scene scene = new Scene(dialogRoot);
-                dialogStage.setScene(scene);
-                dialogStage.showAndWait();
-
-            } catch (IOException e) {
+                EditBeneficiariesDialogController controller = DialogManager.getController("editBeneficiary", EditBeneficiariesDialogController.class);
+                controller.setBeneficiaryService(beneficiaryService);
+                controller.setBeneficiaryController(this);
+                DialogManager.show("editBeneficiary");
+            } catch (Exception e) {
                 e.printStackTrace();
                 alertDialog.showErrorAlert("Error", "Unable to load the Edit Beneficiary dialog.");
             }
@@ -210,7 +169,7 @@ public class BeneficiaryController {
                 alertDialog.showErrorAlert("Invalid Selection", "Admin ID is missing or invalid.");
                 return;
             }
-
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Confirm Delete");
             confirm.setHeaderText("Are you sure you want to delete this Beneficiary?");
             confirm.setContentText("Username: " + bm.getFirstname());
@@ -218,9 +177,7 @@ public class BeneficiaryController {
             Optional<ButtonType> result = confirm.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
-
                 boolean success = beneficiaryService.deleteBeneficiary(bm);
-
                 beneficiaryList.remove(bm);
             }
         }

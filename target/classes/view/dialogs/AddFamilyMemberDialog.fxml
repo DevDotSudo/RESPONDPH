@@ -37,21 +37,19 @@
 
     <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
         <VBox spacing="10.0" styleClass="forms-container">
-         <VBox spacing="10.0" styleClass="form-section">
-            <children>
-               <VBox spacing="6" />
-               <Label styleClass="field-label" text="Search beneficiary name *" />
+            <VBox spacing="10.0" styleClass="form-section">
+                <VBox.margin>
+                    <Insets/>
+                </VBox.margin>
+                <VBox spacing="6"/>
+                <Label styleClass="field-label" text="Search beneficiary name *"/>
                 <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="45.0"
                       prefWidth="301.0" spacing="8" styleClass="input-container">
                     <FontAwesomeIconView glyphName="USER" styleClass="field-icon"/>
                     <ComboBox fx:id="beneficiaryNameFld" editable="true" maxWidth="1.7976931348623157E308"
                               promptText="Search beneficiary name." styleClass="dropdown" HBox.hgrow="ALWAYS"/>
                 </HBox>
-            </children>
-            <VBox.margin>
-               <Insets />
-            </VBox.margin>
-         </VBox>
+            </VBox>
       
           <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all family member information below">
               <VBox.margin>
@@ -59,7 +57,6 @@
               </VBox.margin>
          </Label>
 
-            <!-- Beneficiary Profile Form -->
             <VBox spacing="12" styleClass="form-section">
 
                 <GridPane hgap="12" vgap="12">
@@ -192,9 +189,7 @@
             </VBox>
             <VBox layoutX="10.0" layoutY="351.0" spacing="12" styleClass="form-section">
                 <VBox spacing="6">
-                    <children>
-                        <Separator prefWidth="140" styleClass="section-separator"/>
-                    </children>
+                    <Separator prefWidth="140" styleClass="section-separator"/>
                 </VBox>
                 <Label styleClass="field-label" text="Notes *"/>
                 <TextArea fx:id="notesFld" promptText="Enter a notes."/>

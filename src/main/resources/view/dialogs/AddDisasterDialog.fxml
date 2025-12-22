@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" alignment="CENTER" prefHeight="713.0" prefWidth="1037.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/adddisasterdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogController">
+
+    <padding>
+        <Insets bottom="25" left="25" right="25" top="25" />
+    </padding>
+
+    <HBox maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
+        <VBox.margin>
+            <Insets bottom="5.0" />
+        </VBox.margin>
+        <Label maxWidth="1.7976931348623157E308" styleClass="dialog-title" text="Add Disaster" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+        <Button fx:id="exitBtn" alignment="CENTER" contentDisplay="RIGHT" maxHeight="49.0" maxWidth="54.0" prefHeight="49.0" prefWidth="54.0" styleClass="exit-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="TIMES" styleClass="button-icon" />
+                </HBox>
+            </graphic>
+        </Button>
+        <padding>
+            <Insets bottom="10.0" />
+        </padding>
+    </HBox>
+    <Separator prefWidth="200.0">
+        <VBox.margin>
+            <Insets bottom="20.0" />
+        </VBox.margin></Separator>
+
+    <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="10.0" styleClass="forms-container">
+            <VBox styleClass="form-section">
+                <VBox.margin>
+                    <Insets />
+                </VBox.margin>
+                <VBox spacing="6" />
+                <GridPane hgap="12.0" vgap="12.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <Label styleClass="field-label" text="Disaster Type *" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="FIRE" styleClass="field-icon" />
+                        <ComboBox fx:id="disasterType" maxWidth="1.7976931348623157E308" promptText="Select disaster type" styleClass="dropdown" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                    <Label layoutX="10.0" layoutY="14.0" styleClass="field-label" text="Disaster name *" GridPane.columnIndex="1" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="FIRE" styleClass="field-icon" />
+                        <TextField fx:id="disasterNameFld" promptText="Enter disaster name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </GridPane>
+            </VBox>
+
+            <VBox styleClass="form-section">
+
+                <GridPane hgap="12" vgap="12">
+
+                    <Label styleClass="field-label" text="Longitude *" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="GLOBE" styleClass="field-icon" />
+                        <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <Label styleClass="field-label" text="Disaster Date *" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="CALENDAR" styleClass="field-icon" />
+                        <DatePicker fx:id="datePicker" maxWidth="1.7976931348623157E308" styleClass="birthdate-picker" HBox.hgrow="ALWAYS" />
+                    </HBox>
+               <Label layoutX="637.0" layoutY="10.0" styleClass="field-label" text="Latitude *" GridPane.columnIndex="1" />
+                    <HBox alignment="CENTER_LEFT" layoutX="637.0" layoutY="44.0" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <FontAwesomeIconView glyphName="GLOBE" styleClass="field-icon" />
+                        <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+               <Label layoutX="10.0" layoutY="10.0" styleClass="field-label" text="Radius *" GridPane.rowIndex="2" />
+                    <HBox alignment="CENTER_LEFT" layoutX="323.0" layoutY="44.0" spacing="8" styleClass="input-container" GridPane.rowIndex="3">
+                        <FontAwesomeIconView glyphName="GLOBE" styleClass="field-icon" />
+                        <TextField fx:id="radiusFld" promptText="Enter radius" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.33" />
+                        <ColumnConstraints percentWidth="33.34" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+            <VBox layoutX="10.0" layoutY="351.0" styleClass="form-section">
+                <VBox spacing="6">
+                    <Separator prefWidth="140" styleClass="section-separator" />
+                </VBox>
+                <Label styleClass="field-label" text="Notes *" />
+            <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container">
+               <children>
+                  <FontAwesomeIconView glyphName="STICKY_NOTE" styleClass="field-icon" />
+                  <TextField fx:id="notesFld" promptText="Enter a note" styleClass="input-field" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="button-container">
+        <VBox.margin>
+            <Insets top="20.0" />
+        </VBox.margin>
+        <Button fx:id="saveBtn" prefHeight="43.0" prefWidth="192.0" styleClass="save-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="CHECK" styleClass="button-icon" />
+                    <Label styleClass="button-text" text="Save" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+</VBox>

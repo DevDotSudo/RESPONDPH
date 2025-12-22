@@ -12,16 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
+    private final DBConnection dbConnection;
     Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
+    public BeneficiaryDAOImpl(DBConnection dbConnection) {
+        this.dbConnection = dbConnection;
+    }
 
     @Override
     public boolean saving(BeneficiaryModel bm) {
         String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, gender, marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, employment_status, monthly_income, education_level, digital_access, added_by, reg_date)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, bm.getFirstname());
             ps.setString(2, bm.getMiddlename());
@@ -61,11 +66,10 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
         List<BeneficiaryModel> beneficiaries = new ArrayList<>();
         String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, birthdate, gender, marital_status, mobile_number, added_by, reg_date FROM beneficiary";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-
+        try {
+            Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
@@ -113,8 +117,10 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
     public boolean delete(BeneficiaryModel bm) {
         String sql = "DELETE FROM beneficiary WHERE beneficiary_id = ?";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setInt(1, bm.getId());
 
@@ -139,8 +145,9 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 "monthly_income = ?, education_level = ?, digital_access = ?, added_by = ?, reg_date = ? " +
                 "WHERE beneficiary_id = ?";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, bm.getFirstname());
             ps.setString(2, bm.getMiddlename());
@@ -181,8 +188,10 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
         BeneficiaryModel bm = null;
         String sql = "SELECT * FROM beneficiary WHERE beneficiary_id = ?";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try {
+            Connection conn = dbConnection.getConnection();
+
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -212,7 +221,7 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 encrypted.add(rs.getString("education_level"));
                 encrypted.add(rs.getString("digital_access"));
                 encrypted.add(rs.getString("added_by"));
-                encrypted.add(rs.getString("regDate"));
+                encrypted.add(rs.getString("reg_date"));
 
                 List<String> decrypted = cs.decrypt(encrypted);
 

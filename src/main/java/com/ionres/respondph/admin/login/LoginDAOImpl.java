@@ -12,13 +12,19 @@ import java.util.List;
 
 public class LoginDAOImpl implements LoginDAO{
 
+    private final DBConnection dbConnection;
+    public LoginDAOImpl(DBConnection dbConnection) {
+        this.dbConnection = dbConnection;
+    }
+
     @Override
     public AdminModel findByUsernameToLogin(String usernameInput, Cryptography cs) {
         String sql = "SELECT admin_id, username, first_name, middle_name, last_name, hash FROM admin";
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+             Connection conn = dbConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
                 String encryptedUsername = rs.getString("username");
@@ -45,7 +51,6 @@ public class LoginDAOImpl implements LoginDAO{
                     return admin;
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }

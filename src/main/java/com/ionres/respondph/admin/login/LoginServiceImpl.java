@@ -2,6 +2,7 @@ package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -9,12 +10,15 @@ import java.sql.SQLException;
 
 public class LoginServiceImpl implements LoginService{
     private final LoginDAO adminDao;
+    private final Cryptography cs;
 
     public LoginServiceImpl(DBConnection dbConnection) {
+
         this.adminDao = new LoginDAOImpl(dbConnection);
+        String secretKey = ConfigLoader.get("secretKey");
+        this.cs = new Cryptography(secretKey);
     }
 
-    private final Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
     @Override
     public AdminModel login(String usernameInput, String passwordInput) throws Exception {

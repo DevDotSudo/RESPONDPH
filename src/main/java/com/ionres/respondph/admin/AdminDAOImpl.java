@@ -67,45 +67,32 @@ public class AdminDAOImpl implements AdminDAO {
 
     @Override
     public List<AdminModel> getAll() {
+
         List<AdminModel> admins = new ArrayList<>();
         String query = "SELECT * FROM admin";
 
-        try {
-            Connection conn = dbConnection.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
-                    List<String> encrypted = new ArrayList();
-                    encrypted.add(rs.getString(2));
-                    encrypted.add(rs.getString(3));
-                    encrypted.add(rs.getString(4));
-                    encrypted.add(rs.getString(5));
-                    encrypted.add(rs.getString(6));
+            while (rs.next()) {
 
-                    List<String> decrypted = cs.decrypt(encrypted);
+                AdminModel admin = new AdminModel();
+                admin.setId(rs.getInt("admin_id"));
 
-                    AdminModel admin = new AdminModel();
-                    admin.setId(rs.getInt("admin_id"));
-                    admin.setUsername(decrypted.get(0));
-                    admin.setFirstname(decrypted.get(1));
-                    admin.setMiddlename(decrypted.get(2));
-                    admin.setLastname(decrypted.get(3));
-                    admin.setRegDate(decrypted.get(4));
+                admin.setUsername(rs.getString("username"));
+                admin.setFirstname(rs.getString("first_name"));
+                admin.setMiddlename(rs.getString("middle_name"));
+                admin.setLastname(rs.getString("last_name"));
+                admin.setRegDate(rs.getString("reg_date"));
 
-                    admins.add(admin);
-                }
-            }
-
-            catch (Exception ex)
-            {
-                Logger.getLogger(AdminDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+                admins.add(admin);
             }
 
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+
         return admins;
     }
 

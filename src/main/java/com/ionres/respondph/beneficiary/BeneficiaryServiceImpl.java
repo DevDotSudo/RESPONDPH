@@ -3,6 +3,7 @@ package com.ionres.respondph.beneficiary;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
+import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -12,22 +13,61 @@ import java.util.List;
 
 public class BeneficiaryServiceImpl implements  BeneficiaryService{
     private final BeneficiaryDAO beneficiaryDAO;
+    private final Cryptography cs;
 
     public BeneficiaryServiceImpl(DBConnection dbConnection) {
         this.beneficiaryDAO = new BeneficiaryDAOImpl(dbConnection);
+        String secretKey = ConfigLoader.get("secretKey");
+        this.cs = new Cryptography(secretKey);
     }
     @Override
     public List<BeneficiaryModel> getAllBeneficiary() {
-        List<BeneficiaryModel> beneficiary = beneficiaryDAO.getAll();
-        return beneficiary;
-    }
 
+        try {
+            List<BeneficiaryModel> encryptedList = beneficiaryDAO.getAll();
+            List<BeneficiaryModel> decryptedList = new ArrayList<>();
+
+            for (BeneficiaryModel bm : encryptedList) {
+
+                List<String> decrypted = cs.decrypt(List.of(
+                        bm.getFirstname(),
+                        bm.getMiddlename(),
+                        bm.getLastname(),
+                        bm.getBirthDate(),
+                        bm.getGender(),
+                        bm.getMaritalStatus(),
+                        bm.getMobileNumber(),
+                        bm.getAddedBy(),
+                        bm.getRegDate()
+                ));
+
+                BeneficiaryModel d = new BeneficiaryModel();
+                d.setId(bm.getId());
+                d.setFirstname(decrypted.get(0));
+                d.setMiddlename(decrypted.get(1));
+                d.setLastname(decrypted.get(2));
+                d.setBirthDate(decrypted.get(3));
+                d.setGender(decrypted.get(4));
+                d.setMaritalStatus(decrypted.get(5));
+                d.setMobileNumber(decrypted.get(6));
+                d.setAddedBy(decrypted.get(7));
+                d.setRegDate(decrypted.get(8));
+
+                decryptedList.add(d);
+            }
+
+            return decryptedList;
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return List.of();
+        }
+    }
 
     @Override
     public boolean createBeneficiary(BeneficiaryModel bm) {
         try {
 
-            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
             String encryptedFirstname = cs.encryptWithOneParameter(bm.getFirstname());
             String encryptedMiddlename = cs.encryptWithOneParameter(bm.getMiddlename());
@@ -121,8 +161,6 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             if (bm == null || bm.getId() <= 0) {
                 throw ExceptionFactory.missingField("Beneficiary ID");
             }
-
-            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
             String encryptedFirstname = cs.encryptWithOneParameter(bm.getFirstname());
             String encryptedMiddlename = cs.encryptWithOneParameter(bm.getMiddlename());

@@ -63,53 +63,42 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
 
     @Override
     public List<BeneficiaryModel> getAll() {
-        List<BeneficiaryModel> beneficiaries = new ArrayList<>();
-        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, birthdate, gender, marital_status, mobile_number, added_by, reg_date FROM beneficiary";
 
-        try {
-            Connection conn = dbConnection.getConnection();
+        List<BeneficiaryModel> beneficiaries = new ArrayList<>();
+        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, " +
+                "birthdate, gender, marital_status, mobile_number, added_by, reg_date " +
+                "FROM beneficiary";
+
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery();
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
 
                 BeneficiaryModel bm = new BeneficiaryModel();
 
-                List<String> encrypted = new ArrayList<>();
-                encrypted.add(rs.getString("first_name"));
-                encrypted.add(rs.getString("middle_name"));
-                encrypted.add(rs.getString("last_name"));
-                encrypted.add(rs.getString("birthdate"));
-                encrypted.add(rs.getString("gender"));
-                encrypted.add(rs.getString("marital_status"));
-                encrypted.add(rs.getString("mobile_number"));
-                encrypted.add(rs.getString("added_by"));
-                encrypted.add(rs.getString("reg_date"));
-
-
-                List<String> decrypted = cs.decrypt(encrypted);
-
                 bm.setId(rs.getInt("beneficiary_id"));
-                bm.setFirstname(decrypted.get(0));
-                bm.setMiddlename(decrypted.get(1));
-                bm.setLastname(decrypted.get(2));
-                bm.setBirthDate(decrypted.get(3));
-                bm.setGender(decrypted.get(4));
-                bm.setMaritalStatus(decrypted.get(5));
-                bm.setMobileNumber(decrypted.get(6));
-                bm.setAddedBy(decrypted.get(7));
-                bm.setRegDate(decrypted.get(8));
+
+                bm.setFirstname(rs.getString("first_name"));
+                bm.setMiddlename(rs.getString("middle_name"));
+                bm.setLastname(rs.getString("last_name"));
+                bm.setBirthDate(rs.getString("birthdate"));
+                bm.setGender(rs.getString("gender"));
+                bm.setMaritalStatus(rs.getString("marital_status"));
+                bm.setMobileNumber(rs.getString("mobile_number"));
+                bm.setAddedBy(rs.getString("added_by"));
+                bm.setRegDate(rs.getString("reg_date"));
 
                 beneficiaries.add(bm);
             }
 
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             ex.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(null, "Error fetching data: " + ex.getMessage());
         }
 
         return beneficiaries;
     }
+
 
 
 

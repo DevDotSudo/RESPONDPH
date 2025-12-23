@@ -1,6 +1,6 @@
 package com.ionres.respondph.familymembers.dialogs_controller;
 
-import com.ionres.respondph.familymembers.BeneficiaryModel;
+import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.familymembers.FamilyMemberService;
 import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
@@ -165,8 +165,6 @@ public class EditFamilyController {
                 "Brother",
                 "Sister"
         );
-
-
     }
 
     private void initializeVulnerabilityIndicatorsDropdowns() {
@@ -207,8 +205,6 @@ public class EditFamilyController {
                 "Graduate education"
         );
     }
-
-
 
     private void populateFields(FamilyMembersModel fm) {
         if (fm == null) return;

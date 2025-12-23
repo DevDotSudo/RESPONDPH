@@ -1,17 +1,31 @@
+/* ===== DASHBOARD ROOT ===== */
 .dashboard-root {
-    -fx-background-color: #e5e7eb;
+    -fx-background-color: #0f172a;
+    -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.dashboard-header {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #334155;
+    -fx-border-width: 0 0 4px 0;
 }
 
 .page-title {
-    -fx-font-family: "Arial";
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: 800;
     -fx-font-size: 32px;
-    -fx-text-fill: #1f2937;
+    -fx-text-fill: #f8fafc;
+    -fx-letter-spacing: -0.5px;
 }
 
-.construction-label {
-    -fx-font-family: "System";
-    -fx-font-weight: bold;
-    -fx-font-size: 22px;
+.map-container {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 12px;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 2);
 }
-

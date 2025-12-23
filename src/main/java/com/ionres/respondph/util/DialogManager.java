@@ -53,15 +53,16 @@ public final class DialogManager {
             try {
                 controller.getClass().getMethod("setDialogStage", Stage.class)
                         .invoke(controller, stage);
-            } catch (NoSuchMethodException ignored) {}
+            }
+            catch (NoSuchMethodException ignored) {
+
+            }
+
             catch (InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
-
             stages.put(key, stage);
         }
-
         stage.showAndWait();
     }
-
 }

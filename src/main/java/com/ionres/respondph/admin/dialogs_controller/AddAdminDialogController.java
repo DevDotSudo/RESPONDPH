@@ -7,26 +7,20 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AddAdminDialogController {
-
     @FXML
     private VBox root;
-
     @FXML
     private TextField usernameField, firstNameField, middleNameField, lastNameField;
-
     @FXML
     private PasswordField passwordField, confirmPasswordField;
-
     @FXML
     private Label errorLabel;
-
     @FXML
-    private Button cancelButton, saveButton;
+    private Button closeButton, saveButton;
     private Stage dialogStage;
     private AdminService adminService;
     private AdminController adminController;
@@ -36,7 +30,7 @@ public class AddAdminDialogController {
     @FXML
     public void initialize() {
         makeDraggable();
-        cancelButton.setOnAction(e -> close());
+        closeButton.setOnAction(e -> close());
         saveButton.setOnAction(e -> handleSave());
         clearError();
     }
@@ -55,6 +49,7 @@ public class AddAdminDialogController {
 
     public void setAdminController(AdminController controller) {
         this.adminController = controller;
+        onShow();
     }
 
     public void onShow() {

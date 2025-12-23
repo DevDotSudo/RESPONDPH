@@ -1,6 +1,8 @@
 package com.ionres.respondph.familymembers;
 
 
+import com.ionres.respondph.common.model.BeneficiaryModel;
+
 import java.util.List;
 
 public interface FamilyMemberService {

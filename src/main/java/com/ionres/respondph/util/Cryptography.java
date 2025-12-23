@@ -63,6 +63,38 @@ public class Cryptography {
         return encryptedList;
     }
 
+    public String encryptDouble(double value) throws Exception {
+        String valueAsString = Double.toString(value);
+
+        byte[] iv = new byte[IV_SIZE];
+        new SecureRandom().nextBytes(iv);
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec);
+
+        byte[] ciphertext = cipher.doFinal(valueAsString.getBytes());
+
+        return Base64.getEncoder().encodeToString(iv) + ":"
+                + Base64.getEncoder().encodeToString(ciphertext);
+    }
+
+    public double decryptDouble(String encryptedValue) throws Exception {
+        if (!encryptedValue.contains(":")) {
+            throw new IllegalArgumentException("Invalid encrypted double format");
+        }
+
+        String[] parts = encryptedValue.split(":");
+        byte[] iv = Base64.getDecoder().decode(parts[0]);
+        byte[] ciphertext = Base64.getDecoder().decode(parts[1]);
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.DECRYPT_MODE, key, spec);
+
+        byte[] decrypted = cipher.doFinal(ciphertext);
+        return Double.parseDouble(new String(decrypted));
+    }
 
     public List<String> decrypt(List<String> encryptedList) throws Exception {
         List<String> decryptedList = new ArrayList<>();
@@ -120,9 +152,9 @@ public class Cryptography {
     }
 
     public List<String> encryptUpdate(String username, String firstname, String middlename,
-                                      String lastname, String regDate) throws Exception {
+                                      String lastname) throws Exception {
 
-        String[] inputs = {username, firstname, middlename, lastname, regDate};
+        String[] inputs = {username, firstname, middlename, lastname};
         List<String> encryptedList = new ArrayList<>();
 
         for (String input : inputs) {

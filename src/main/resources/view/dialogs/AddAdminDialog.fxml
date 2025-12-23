@@ -5,115 +5,96 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" alignment="CENTER" prefHeight="660.0" prefWidth="1030.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
+<VBox fx:id="root" prefHeight="550.0" prefWidth="800.0" styleClass="dialog-container" stylesheets="@/styles/dialogs/addadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
 
-    <padding>
-        <Insets bottom="25" left="25" right="25" top="25" />
-    </padding>
-
-    <HBox maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
-        <VBox.margin>
-            <Insets bottom="5.0" />
-        </VBox.margin>
-        <Label maxWidth="1.7976931348623157E308" styleClass="dialog-title" text="Add New Admin" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
-        <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="RIGHT" maxHeight="49.0" maxWidth="54.0" prefHeight="49.0" prefWidth="54.0" styleClass="exit-button">
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
+        <FontAwesomeIconView glyphName="USER_PLUS" size="24" styleClass="header-icon" />
+        <Label styleClass="dialog-title" text="Add New Admin" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="closeButton" styleClass="close-button">
             <graphic>
-                <HBox alignment="CENTER" spacing="8">
-                    <FontAwesomeIconView glyphName="TIMES" styleClass="button-icon" />
-                </HBox>
+                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="close-icon" />
             </graphic>
         </Button>
-        <padding>
-            <Insets bottom="10.0" />
-        </padding>
     </HBox>
-    <Separator prefWidth="200.0" />
-
-    <Label alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" styleClass="dialog-subtitle" text="Complete all admin information below">
-        <VBox.margin>
-            <Insets top="10.0" />
-        </VBox.margin>
-    </Label>
-
-    <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
 
     <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
-        <VBox spacing="40.0" styleClass="forms-container">
+        <VBox spacing="24" styleClass="form-container">
+            <padding>
+                <Insets bottom="32" left="32" right="32" top="32" />
+            </padding>
 
-            <!-- Admin Profile Form -->
-            <VBox spacing="12" styleClass="form-section">
-                <VBox spacing="6">
-                    <Label styleClass="section-title" text="Admin Profile" />
-                    <Separator prefWidth="140" styleClass="section-separator" />
-                </VBox>
+            <VBox spacing="8">
+                <Label styleClass="field-label" text="Username *" />
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                    <FontAwesomeIconView glyphName="USER" size="16" styleClass="input-icon" />
+                    <TextField fx:id="usernameField" promptText="Enter username" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                </HBox>
+            </VBox>
 
-                <GridPane hgap="12" vgap="12">
-                    <Label styleClass="field-label" text="Username *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                        <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
-                        <TextField fx:id="usernameField" promptText="Enter username" styleClass="input-field" HBox.hgrow="ALWAYS" />
-                    </HBox>
-
-                    <Label styleClass="field-label" text="First Name *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="3">
-                        <FontAwesomeIconView glyphName="ADDRESS_CARD" styleClass="field-icon" />
+            <HBox spacing="24">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="First Name *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
                         <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="input-field" HBox.hgrow="ALWAYS" />
                     </HBox>
+                </VBox>
 
-                    <Label styleClass="field-label" text="Middle Name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                        <FontAwesomeIconView glyphName="ADDRESS_CARD" styleClass="field-icon" />
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="Middle Name" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
                         <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" HBox.hgrow="ALWAYS" />
                     </HBox>
+                </VBox>
 
-                    <Label styleClass="field-label" text="Last Name *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5">
-                        <FontAwesomeIconView glyphName="ADDRESS_CARD" styleClass="field-icon" />
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="Last Name *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
                         <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" HBox.hgrow="ALWAYS" />
                     </HBox>
+                </VBox>
+            </HBox>
 
-                    <Label styleClass="field-label" text="Password *" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="0" GridPane.rowIndex="7">
-                        <FontAwesomeIconView glyphName="LOCK" styleClass="field-icon" />
+            <HBox spacing="24">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="Password *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="LOCK" size="16" styleClass="input-icon" />
                         <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="input-field" HBox.hgrow="ALWAYS" />
                     </HBox>
+                </VBox>
 
-                    <Label styleClass="field-label" text="Confirm Password *" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="input-container" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                        <FontAwesomeIconView glyphName="LOCK" styleClass="field-icon" />
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="Confirm Password *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="LOCK" size="16" styleClass="input-icon" />
                         <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" styleClass="input-field" HBox.hgrow="ALWAYS" />
                     </HBox>
+                </VBox>
+            </HBox>
 
-                    <columnConstraints>
-                        <ColumnConstraints percentWidth="50" />
-                        <ColumnConstraints percentWidth="50" />
-                    </columnConstraints>
-                    <rowConstraints>
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                    </rowConstraints>
-                </GridPane>
-            </VBox>
         </VBox>
     </ScrollPane>
 
-    <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="button-container">
-        <VBox.margin>
-            <Insets top="20.0" />
-        </VBox.margin>
-        <Button fx:id="saveButton" prefHeight="25.0" prefWidth="243.0" styleClass="add-button">
+    <VBox alignment="CENTER" styleClass="error-container">
+        <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
+    </VBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="button-container">
+        <padding>
+            <Insets bottom="32" left="32" right="32" top="24" />
+        </padding>
+        <Button fx:id="saveButton" styleClass="primary-button">
             <graphic>
-                <HBox alignment="CENTER" spacing="8">
-                    <FontAwesomeIconView glyphName="CHECK" styleClass="button-icon" />
-                    <Label styleClass="button-text" text="Save Admin" />
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="button-icon" />
+                    <Label styleClass="button-label" text="Save Admin" />
                 </HBox>
             </graphic>
         </Button>
     </HBox>
+
 </VBox>

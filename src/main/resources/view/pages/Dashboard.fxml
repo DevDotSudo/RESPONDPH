@@ -6,15 +6,16 @@
 
 <AnchorPane styleClass="dashboard-root" stylesheets="@/styles/pages/dashboard.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.mapping.MappingController">
 
-    <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <Label styleClass="page-title" text="Dashboard">
-            <VBox.margin>
-                <Insets bottom="10" left="30" right="30" top="20" />
-            </VBox.margin>
-        </Label>
+        <HBox alignment="CENTER_LEFT" styleClass="dashboard-header">
+            <padding>
+                <Insets bottom="30" left="30" right="30" top="30" />
+            </padding>
+            <Label styleClass="page-title" text="Dashboard" />
+        </HBox>
 
-        <VBox fx:id="mapContainer" VBox.vgrow="ALWAYS">
+        <VBox fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS">
             <padding>
                 <Insets bottom="40" left="40" right="40" top="40" />
             </padding>

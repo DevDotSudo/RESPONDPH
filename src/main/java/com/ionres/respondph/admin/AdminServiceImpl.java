@@ -98,19 +98,17 @@ public class AdminServiceImpl implements AdminService{
 
             Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
-            List<String> encryptedData = cs.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
+            List<String> encryptedData = cs.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname());
 
             String encryptedUsername = encryptedData.get(0);
             String encryptedFname = encryptedData.get(1);
             String encryptedMname = encryptedData.get(2);
             String encryptedLname = encryptedData.get(3);
-            String encryptedRegDate = encryptedData.get(4);
 
             admin.setUsername(encryptedUsername);
             admin.setFirstname(encryptedFname);
             admin.setMiddlename(encryptedMname);
             admin.setLastname(encryptedLname);
-            admin.setRegDate(encryptedRegDate);
 
 
             boolean flag = adminDao.update(admin);

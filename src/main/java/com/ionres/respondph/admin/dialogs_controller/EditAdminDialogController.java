@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class EditAdminDialogController {
-
+    AlertDialog alertDialog = new AlertDialog();
     @FXML
     private TextField usernameField;
 
@@ -32,16 +32,12 @@ public class EditAdminDialogController {
     private Label errorLabel;
 
     @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button updateButton;
+    private Button updateBtn;
 
     private AdminService adminService;
     private AdminController adminController;
     private Stage dialogStage;
     private boolean adminEdit = false;
-
 
     public void setAdminService(AdminService adminService) {
         this.adminService = adminService;
@@ -52,31 +48,29 @@ public class EditAdminDialogController {
 
     private AdminModel selectedAdmin;
 
+    public void setDialogStage(Stage stage) {
+        this.dialogStage = stage;
+    }
+
+    public Stage getDialogStage() {
+        return dialogStage;
+    }
+
     public void setAdminData(AdminModel admin) {
         this.selectedAdmin = admin;
-
         usernameField.setText(admin.getUsername());
         firstNameField.setText(admin.getFirstname());
         middleNameField.setText(admin.getMiddlename());
         lastNameField.setText(admin.getLastname());
     }
 
-
     public void initialize() {
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                handleCancel();
-            }
-        });
-
-        updateButton.setOnAction(new EventHandler<ActionEvent>() {
+        updateBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 handleEdit();
             }
         });
-
     }
 
     @FXML
@@ -86,12 +80,10 @@ public class EditAdminDialogController {
             updateAdminInfo();
             adminController.refreshAdminTable();
             clearFields();
-
         }
     }
 
     private boolean validateInput() {
-        AlertDialog alertDialog = new AlertDialog();
         String username = usernameField.getText().trim();
         String firstName = firstNameField.getText().trim();
         String lastName = lastNameField.getText().trim();
@@ -119,28 +111,7 @@ public class EditAdminDialogController {
             lastNameField.requestFocus();
             return false;
         }
-
-
-
         return true;
-    }
-
-    @FXML
-    private void handleCancel() {
-        adminEdit = false;
-        dialogStage.close();
-    }
-
-
-
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-
-    }
-
-    public boolean isAdminEdit() {
-        return adminEdit;
-
     }
 
     public void clearFields(){
@@ -148,11 +119,9 @@ public class EditAdminDialogController {
         firstNameField.setText("");
         middleNameField.setText("");
         lastNameField.setText("");
-
     }
 
     public void updateAdminInfo() {
-        AlertDialog alertDialog = new AlertDialog();
         try {
             AdminModel admin = selectedAdmin;
 
@@ -160,13 +129,11 @@ public class EditAdminDialogController {
             String fname = firstNameField.getText().trim();
             String mname = middleNameField.getText().trim();
             String lname = lastNameField.getText().trim();
-            String redDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
             admin.setUsername(username);
             admin.setFirstname(fname);
             admin.setMiddlename(mname);
             admin.setLastname(lname);
-            admin.setRegDate(redDate);
 
             boolean updated = adminService.updateAdmin(admin);
 
@@ -181,5 +148,4 @@ public class EditAdminDialogController {
             alertDialog.showErrorAlert("Failed", "Error updating admin: " + ex.getMessage());
         }
     }
-
 }

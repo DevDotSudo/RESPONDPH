@@ -3,28 +3,18 @@ package com.ionres.respondph.admin;
 import com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DialogManager;
-import com.ionres.respondph.util.SceneManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-
-import java.awt.event.ActionEvent;
-import java.beans.EventHandler;
-import java.io.IOException;
-import java.util.EventListener;
 import java.util.List;
 import com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController;
 import java.util.Optional;
@@ -35,6 +25,7 @@ public class AdminController {
     private final AdminService adminService = AppContext.adminService;
     private Stage dialogStage;
     ObservableList<AdminModel> adminList;
+
     @FXML
     private AnchorPane rootPane;
 
@@ -82,7 +73,6 @@ public class AdminController {
         loadTable();
         actionButtons();
         setSearchFld();
-
     }
 
     public void setDialogStage(Stage stage) {
@@ -97,11 +87,12 @@ public class AdminController {
     private void handleSearch() {
         String searchText = searchFld.getText().trim();
         if (searchText.isEmpty()) {
-           loadTable();
+            loadTable();
         } else {
             searchAdmins(searchText);
         }
     }
+
     private void searchAdmins(String searchText) {
         List<AdminModel> filteredAdmins = adminService.searchAdmin(searchText);
         adminList = FXCollections.observableArrayList(filteredAdmins);
@@ -123,6 +114,15 @@ public class AdminController {
         mNameColumn.setCellValueFactory(new PropertyValueFactory<>("middlename"));
         lNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastname"));
         regDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
+
+        // Center align all columns
+        idColumn.setStyle("-fx-alignment: CENTER;");
+        usernameColumn.setStyle("-fx-alignment: CENTER;");
+        fNameColumn.setStyle("-fx-alignment: CENTER;");
+        mNameColumn.setStyle("-fx-alignment: CENTER;");
+        lNameColumn.setStyle("-fx-alignment: CENTER;");
+        regDateColumn.setStyle("-fx-alignment: CENTER;");
+        actionsColumn.setStyle("-fx-alignment: CENTER;");
     }
 
     private void setupButtons() {
@@ -166,31 +166,12 @@ public class AdminController {
 
     private void showEditAdminDialog(AdminModel selectedAdmin) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/dialogs/EditAdminDialog.fxml"));
-            Parent dialogRoot = loader.load();
-
-            EditAdminDialogController dialogController = loader.getController();
-
-            dialogController.setAdminService(this.adminService);
-            dialogController.setAdminController(this);
-
-            dialogController.setAdminData(selectedAdmin);
-
-            Stage dialogStage = new Stage();
-            dialogStage.initModality(Modality.APPLICATION_MODAL);
-            dialogStage.initStyle(StageStyle.UNDECORATED);
-            dialogStage.setTitle("Edit Admin Info");
-
-            dialogController.setDialogStage(dialogStage);
-
-            Scene scene = new Scene(dialogRoot);
-            dialogStage.setScene(scene);
-
-            dialogStage.showAndWait();
-
-            loadTable();
-
-        } catch (IOException e) {
+            EditAdminDialogController editAdminDialogController = DialogManager.getController("editAdmin", EditAdminDialogController.class);
+            editAdminDialogController.setAdminService(adminService);
+            editAdminDialogController.setAdminController(this);
+            editAdminDialogController.setAdminData(selectedAdmin);
+            DialogManager.show("editAdmin");
+        } catch (Exception e) {
             e.printStackTrace();
             alertDialog.showErrorAlert("Error", "Unable to load the Edit Admin dialog.");
         }
@@ -221,7 +202,6 @@ public class AdminController {
                 alertDialog.showErrorAlert("Failed", "Unable to delete admin.");
             }
         }
-
     }
 
     private void actionButtons() {
@@ -235,6 +215,8 @@ public class AdminController {
                     private final Button deleteButton = new Button("", deleteIcon);
 
                     {
+                        editIcon.getStyleClass().add("edit-icon");
+                        deleteIcon.getStyleClass().add("delete-icon");
                         editButton.getStyleClass().add("edit-button");
                         deleteButton.getStyleClass().add("delete-button");
 
@@ -246,7 +228,6 @@ public class AdminController {
                         deleteButton.setOnAction(event -> {
                             AdminModel admin = getTableView().getItems().get(getIndex());
                             deleteById(admin);
-                            loadTable();
                         });
                     }
 
@@ -256,9 +237,11 @@ public class AdminController {
                         if (empty) {
                             setGraphic(null);
                         } else {
-                            HBox box = new HBox(editButton, deleteButton);
-                            box.getStyleClass().add("button-box");
+                            HBox box = new HBox(10, editButton, deleteButton);
+                            box.setAlignment(Pos.CENTER);
+                            box.getStyleClass().add("action-buttons-container");
                             setGraphic(box);
+                            setAlignment(Pos.CENTER);
                         }
                     }
                 };
@@ -267,4 +250,3 @@ public class AdminController {
         actionsColumn.setCellFactory(cellFactory);
     }
 }
-

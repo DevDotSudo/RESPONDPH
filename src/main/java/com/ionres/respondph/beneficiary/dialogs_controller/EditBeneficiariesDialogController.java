@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.time.LocalDate;
@@ -18,6 +19,8 @@ import java.time.LocalDate;
 public class EditBeneficiariesDialogController {
 
     AlertDialog alertDialog = new AlertDialog();
+    @FXML
+    private VBox root;
 
     @FXML
     private TextField firstNameFld;
@@ -67,7 +70,8 @@ public class EditBeneficiariesDialogController {
     private Button exitBtn;
     @FXML
     private Button updateBeneficiaryBtn;
-
+    private double yOffset = 0;
+    private double xOffset = 0;
     private BeneficiaryService beneficiaryService;
     private BeneficiaryController beneficiaryController;
     private BeneficiaryModel currentBeneficiary;
@@ -96,7 +100,7 @@ public class EditBeneficiariesDialogController {
         initializeVulnerabilityIndicatorsDropdowns();
         initializeHousingAndInfrastructureDropdowns();
         initializeSocioEconomicStatusDropdowns();
-
+        makeDraggable();
         EventHandler<ActionEvent> handlers = this::handleActions;
         exitBtn.setOnAction(handlers);
         updateBeneficiaryBtn.setOnAction(handlers);
@@ -382,11 +386,23 @@ public class EditBeneficiariesDialogController {
         }
     }
 
+    private void makeDraggable() {
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            if (dialogStage != null) {
+                dialogStage.setX(e.getScreenX() - xOffset);
+                dialogStage.setY(e.getScreenY() - yOffset);
+            }
+        });
+    }
+
     private void closeDialog() {
         if (dialogStage != null) {
-            dialogStage.close();
-        } else {
-            ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
+            dialogStage.hide();
         }
     }
 }

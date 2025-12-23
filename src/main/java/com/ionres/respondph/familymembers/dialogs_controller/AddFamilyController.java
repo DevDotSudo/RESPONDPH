@@ -1,21 +1,18 @@
 package com.ionres.respondph.familymembers.dialogs_controller;
 
+import com.ionres.respondph.common.model.BeneficiaryModel;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.input.KeyCode;
 import javafx.util.StringConverter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.ionres.respondph.beneficiary.BeneficiaryController;
-import com.ionres.respondph.beneficiary.BeneficiaryService;
+
 import com.ionres.respondph.familymembers.FamilyMemberService;
-import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
 import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
-import com.ionres.respondph.familymembers.BeneficiaryModel;
 import com.ionres.respondph.util.AlertDialog;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

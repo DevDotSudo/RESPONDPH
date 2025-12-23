@@ -32,7 +32,7 @@ public class EditAdminDialogController {
     private Label errorLabel;
 
     @FXML
-    private Button updateBtn;
+    private Button updateBtn, closeButton;
 
     private AdminService adminService;
     private AdminController adminController;
@@ -69,6 +69,13 @@ public class EditAdminDialogController {
             @Override
             public void handle(ActionEvent event) {
                 handleEdit();
+            }
+        });
+
+        closeButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                closeDialog();
             }
         });
     }
@@ -146,6 +153,12 @@ public class EditAdminDialogController {
         } catch (Exception ex) {
             ex.printStackTrace();
             alertDialog.showErrorAlert("Failed", "Error updating admin: " + ex.getMessage());
+        }
+    }
+
+    private void closeDialog() {
+        if (dialogStage != null) {
+            dialogStage.hide();
         }
     }
 }

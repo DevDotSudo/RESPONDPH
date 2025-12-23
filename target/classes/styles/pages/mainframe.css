@@ -99,9 +99,11 @@
 .nav-text {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
-    -fx-text-fill: #ffffff;
+    -fx-font-weight: inherit;
+    -fx-text-fill: inherit;
 }
 
+/* Logout Section */
 .logout-section {
     -fx-padding: 16px;
     -fx-border-color: #334155;

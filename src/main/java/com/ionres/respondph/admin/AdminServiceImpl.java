@@ -3,6 +3,7 @@ package com.ionres.respondph.admin;
 
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.*;
+import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
 import java.util.ArrayList;
@@ -14,16 +15,50 @@ import java.sql.SQLException;
 
 public class AdminServiceImpl implements AdminService{
     private final AdminDAO adminDao;
+    private final Cryptography cs;
 
     public AdminServiceImpl(DBConnection dbConnection) {
         this.adminDao = new AdminDAOImpl(dbConnection);
+        String secretKey = ConfigLoader.get("secretKey");
+        this.cs = new Cryptography(secretKey);
     }
 
     @Override
     public List<AdminModel> getAllAdmins() {
-        List<AdminModel> admins = adminDao.getAll();
-        System.out.println(generateAdminID());
-        return admins;
+
+        try {
+            List<AdminModel> encryptedAdmins = adminDao.getAll();
+            List<AdminModel> decryptedAdmins = new ArrayList<>();
+
+            for (AdminModel a : encryptedAdmins) {
+
+                List<String> encrypted = List.of(
+                        a.getUsername(),
+                        a.getFirstname(),
+                        a.getMiddlename(),
+                        a.getLastname(),
+                        a.getRegDate()
+                );
+
+                List<String> decrypted = cs.decrypt(encrypted);
+
+                AdminModel d = new AdminModel();
+                d.setId(a.getId());
+                d.setUsername(decrypted.get(0));
+                d.setFirstname(decrypted.get(1));
+                d.setMiddlename(decrypted.get(2));
+                d.setLastname(decrypted.get(3));
+                d.setRegDate(decrypted.get(4));
+
+                decryptedAdmins.add(d);
+            }
+
+            return decryptedAdmins;
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return List.of();
+        }
     }
 
     @Override
@@ -33,7 +68,6 @@ public class AdminServiceImpl implements AdminService{
                 throw ExceptionFactory.missingField("Username");
             }
 
-            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
             List<String> encryptedData = cs.encrypt(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
             String hashedPassword = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
@@ -96,7 +130,6 @@ public class AdminServiceImpl implements AdminService{
                 throw ExceptionFactory.missingField("Username");
             }
 
-            Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
             List<String> encryptedData = cs.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname());
 

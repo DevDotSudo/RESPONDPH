@@ -11,7 +11,6 @@ import com.ionres.respondph.beneficiary.BeneficiaryService;
 import com.ionres.respondph.util.AlertDialog;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 

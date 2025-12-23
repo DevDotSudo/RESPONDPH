@@ -3,24 +3,70 @@
     import com.ionres.respondph.common.model.BeneficiaryModel;
     import com.ionres.respondph.database.DBConnection;
     import com.ionres.respondph.exception.ExceptionFactory;
+    import com.ionres.respondph.util.ConfigLoader;
     import com.ionres.respondph.util.Cryptography;
     import java.sql.SQLException;
     import java.util.ArrayList;
     import java.util.List;
 
     public class FamilyMemberServiceImpl implements FamilyMemberService{
-        Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
         private final FamilyMemberDAO familyMemberDAO;
+        private final Cryptography cs;
 
         public FamilyMemberServiceImpl(DBConnection dbConnection) {
             this.familyMemberDAO = new FamilyMemberDAOImpl(dbConnection);
+            String secretKey = ConfigLoader.get("secretKey");
+            this.cs = new Cryptography(secretKey);
         }
 
         @Override
         public List<FamilyMembersModel> getAllFamilyMembers() {
-            List<FamilyMembersModel> familyMembersModels = familyMemberDAO.getAll();
-            return familyMembersModels;
+
+            try {
+                List<FamilyMembersModel> encryptedList = familyMemberDAO.getAll();
+                List<FamilyMembersModel> decryptedList = new ArrayList<>();
+
+                for (FamilyMembersModel fm : encryptedList) {
+
+                    List<String> encrypted = List.of(
+                            fm.getFirstName(),
+                            fm.getMiddleName(),
+                            fm.getLastName(),
+                            fm.getRelationshipToBeneficiary(),
+                            fm.getBirthDate(),
+                            fm.getGender(),
+                            fm.getMaritalStatus(),
+                            fm.getNotes(),
+                            fm.getRegDate(),
+                            fm.getBeneficiaryName()
+                    );
+
+                    List<String> decrypted = cs.decrypt(encrypted);
+
+                    FamilyMembersModel d = new FamilyMembersModel();
+                    d.setFamilyId(fm.getFamilyId());
+                    d.setFirstName(decrypted.get(0));
+                    d.setMiddleName(decrypted.get(1));
+                    d.setLastName(decrypted.get(2));
+                    d.setRelationshipToBeneficiary(decrypted.get(3));
+                    d.setBirthDate(decrypted.get(4));
+                    d.setGender(decrypted.get(5));
+                    d.setMaritalStatus(decrypted.get(6));
+                    d.setNotes(decrypted.get(7));
+                    d.setRegDate(decrypted.get(8));
+                    d.setBeneficiaryName(decrypted.get(9));
+
+                    decryptedList.add(d);
+                }
+
+                return decryptedList;
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return List.of();
+            }
         }
+
 
         @Override
         public boolean createfamilyMember(FamilyMembersModel fm) {

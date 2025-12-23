@@ -11,8 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class EditAdminDialogController {
     AlertDialog alertDialog = new AlertDialog();
@@ -32,7 +30,7 @@ public class EditAdminDialogController {
     private Label errorLabel;
 
     @FXML
-    private Button updateBtn;
+    private Button updateBtn, closeButton;
 
     private AdminService adminService;
     private AdminController adminController;
@@ -69,6 +67,13 @@ public class EditAdminDialogController {
             @Override
             public void handle(ActionEvent event) {
                 handleEdit();
+            }
+        });
+
+        closeButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                closeDialog();
             }
         });
     }
@@ -146,6 +151,12 @@ public class EditAdminDialogController {
         } catch (Exception ex) {
             ex.printStackTrace();
             alertDialog.showErrorAlert("Failed", "Error updating admin: " + ex.getMessage());
+        }
+    }
+
+    private void closeDialog() {
+        if (dialogStage != null) {
+            dialogStage.hide();
         }
     }
 }

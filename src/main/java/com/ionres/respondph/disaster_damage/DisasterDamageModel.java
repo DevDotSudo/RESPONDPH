@@ -18,7 +18,6 @@ public class DisasterDamageModel {
     }
 
     public DisasterDamageModel(
-
             int beneficiaryId,
             int disasterId,
             String houseDamageSeverity,
@@ -43,7 +42,6 @@ public class DisasterDamageModel {
     public void setBeneficiaryDisasterDamageId(int beneficiaryDisasterDamageId) {
         this.beneficiaryDisasterDamageId = beneficiaryDisasterDamageId;
     }
-
 
     public int getBeneficiaryId() {
         return beneficiaryId;

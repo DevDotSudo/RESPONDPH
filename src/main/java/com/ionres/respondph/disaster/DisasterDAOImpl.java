@@ -1,6 +1,7 @@
 package com.ionres.respondph.disaster;
 
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 import javax.swing.*;
 import java.sql.Connection;
@@ -12,11 +13,13 @@ import java.util.List;
 
 public class DisasterDAOImpl implements DisasterDAO{
     private final DBConnection dbConnection;
+    private final Cryptography cs;
 
-    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
     public DisasterDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
+        String secretKey = ConfigLoader.get("secretKey");
+        this.cs = new Cryptography(secretKey);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.ionres.respondph.disaster_damage;
 
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.disaster_damage.dialogs_controller.AddDisasterDamageDialogController;
 import com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamageDialogController;
 import com.ionres.respondph.util.AlertDialog;
@@ -13,21 +12,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
-
-import javax.print.attribute.standard.DialogOwner;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -176,7 +166,8 @@ public class DisasterDamageController {
     private void showEditDisasterDialog(DisasterDamageModel disasterModel) {
         try {
             EditDisasterDamageDialogController editDisasterDamageDialogController = DialogManager.getController("editDisasterDamage",  EditDisasterDamageDialogController.class);
-
+            editDisasterDamageDialogController.setDisasterDamageService(this.disasterDamageService);
+            editDisasterDamageDialogController.setDisasterDamageController(this);
             DisasterDamageModel fullDisasterDamage = disasterDamageService.getDisasterDamageId(
                     disasterModel.getBeneficiaryDisasterDamageId()
             );

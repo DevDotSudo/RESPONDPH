@@ -74,64 +74,42 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
                 "ON fm.beneficiary_id = b.beneficiary_id";
 
         try {
-            conn =  dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery();
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
                 FamilyMembersModel fm = new FamilyMembersModel();
 
-
-                List<String> encrypted = new ArrayList<>();
-                encrypted.add(rs.getString("first_name"));
-                encrypted.add(rs.getString("middle_name"));
-                encrypted.add(rs.getString("last_name"));
-                encrypted.add(rs.getString("relationshiptobene"));
-                encrypted.add(rs.getString("birthdate"));
-                encrypted.add(rs.getString("gender"));
-                encrypted.add(rs.getString("marital_status"));
-                encrypted.add(rs.getString("notes"));
-                encrypted.add(rs.getString("reg_date"));
-                encrypted.add(rs.getString("beneficiary_firstname")); // JOINED FIELD
-
-
-                List<String> decrypted = cs.decrypt(encrypted);
-
-
                 fm.setFamilyId(rs.getInt("familymember_id"));
-
-
-                fm.setFirstName(decrypted.get(0));
-                fm.setMiddleName(decrypted.get(1));
-                fm.setLastName(decrypted.get(2));
-                fm.setRelationshipToBeneficiary(decrypted.get(3));
-                fm.setBirthDate(decrypted.get(4));
-                fm.setGender(decrypted.get(5));
-                fm.setMaritalStatus(decrypted.get(6));
-                fm.setNotes(decrypted.get(7));
-                fm.setRegDate(decrypted.get(8));
-                fm.setBeneficiaryName(decrypted.get(9));
+                fm.setFirstName(rs.getString("first_name"));
+                fm.setMiddleName(rs.getString("middle_name"));
+                fm.setLastName(rs.getString("last_name"));
+                fm.setRelationshipToBeneficiary(rs.getString("relationshiptobene"));
+                fm.setBirthDate(rs.getString("birthdate"));
+                fm.setGender(rs.getString("gender"));
+                fm.setMaritalStatus(rs.getString("marital_status"));
+                fm.setNotes(rs.getString("notes"));
+                fm.setRegDate(rs.getString("reg_date"));
+                fm.setBeneficiaryName(rs.getString("beneficiary_firstname")); // encrypted pa rin
 
                 list.add(fm);
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    "Error fetching family members: " + ex.getMessage()
-            );
-        }
-        finally {
+        } finally {
             try {
                 conn.close();
-            }catch(SQLException e){
+            } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }
         }
+
         return list;
     }
+
 
 
     @Override

@@ -10,7 +10,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;

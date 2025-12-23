@@ -18,8 +18,50 @@
 
         @Override
         public List<FamilyMembersModel> getAllFamilyMembers() {
-            List<FamilyMembersModel> familyMembersModels = familyMemberDAO.getAll();
-            return familyMembersModels;
+
+            try {
+                List<FamilyMembersModel> encryptedList = familyMemberDAO.getAll();
+                List<FamilyMembersModel> decryptedList = new ArrayList<>();
+
+                for (FamilyMembersModel fm : encryptedList) {
+
+                    List<String> encrypted = List.of(
+                            fm.getFirstName(),
+                            fm.getMiddleName(),
+                            fm.getLastName(),
+                            fm.getRelationshipToBeneficiary(),
+                            fm.getBirthDate(),
+                            fm.getGender(),
+                            fm.getMaritalStatus(),
+                            fm.getNotes(),
+                            fm.getRegDate(),
+                            fm.getBeneficiaryName()
+                    );
+
+                    List<String> decrypted = cs.decrypt(encrypted);
+
+                    FamilyMembersModel d = new FamilyMembersModel();
+                    d.setFamilyId(fm.getFamilyId());
+                    d.setFirstName(decrypted.get(0));
+                    d.setMiddleName(decrypted.get(1));
+                    d.setLastName(decrypted.get(2));
+                    d.setRelationshipToBeneficiary(decrypted.get(3));
+                    d.setBirthDate(decrypted.get(4));
+                    d.setGender(decrypted.get(5));
+                    d.setMaritalStatus(decrypted.get(6));
+                    d.setNotes(decrypted.get(7));
+                    d.setRegDate(decrypted.get(8));
+                    d.setBeneficiaryName(decrypted.get(9));
+
+                    decryptedList.add(d);
+                }
+
+                return decryptedList;
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return List.of();
+            }
         }
 
         @Override

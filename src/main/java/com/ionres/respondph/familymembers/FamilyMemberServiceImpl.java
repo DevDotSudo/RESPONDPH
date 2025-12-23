@@ -3,17 +3,20 @@
     import com.ionres.respondph.common.model.BeneficiaryModel;
     import com.ionres.respondph.database.DBConnection;
     import com.ionres.respondph.exception.ExceptionFactory;
+    import com.ionres.respondph.util.ConfigLoader;
     import com.ionres.respondph.util.Cryptography;
     import java.sql.SQLException;
     import java.util.ArrayList;
     import java.util.List;
 
     public class FamilyMemberServiceImpl implements FamilyMemberService{
-        Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
         private final FamilyMemberDAO familyMemberDAO;
+        private final Cryptography cs;
 
         public FamilyMemberServiceImpl(DBConnection dbConnection) {
             this.familyMemberDAO = new FamilyMemberDAOImpl(dbConnection);
+            String secretKey = ConfigLoader.get("secretKey");
+            this.cs = new Cryptography(secretKey);
         }
 
         @Override

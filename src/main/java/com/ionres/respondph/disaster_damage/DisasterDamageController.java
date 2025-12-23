@@ -176,7 +176,8 @@ public class DisasterDamageController {
     private void showEditDisasterDialog(DisasterDamageModel disasterModel) {
         try {
             EditDisasterDamageDialogController editDisasterDamageDialogController = DialogManager.getController("editDisasterDamage",  EditDisasterDamageDialogController.class);
-
+            editDisasterDamageDialogController.setDisasterDamageService(this.disasterDamageService);
+            editDisasterDamageDialogController.setDisasterDamageController(this);
             DisasterDamageModel fullDisasterDamage = disasterDamageService.getDisasterDamageId(
                     disasterModel.getBeneficiaryDisasterDamageId()
             );

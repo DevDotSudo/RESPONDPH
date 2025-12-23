@@ -4,17 +4,20 @@ import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.common.model.DisasterModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
+import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DisasterDamageServiceImpl implements DisasterDamageService {
-    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
     private final DisasterDamageDAO disasterDamageDAO;
+    private final  Cryptography cs;
 
     public DisasterDamageServiceImpl(DBConnection dbConnection) {
         this.disasterDamageDAO = new DisasterDamageDAOImpl(dbConnection);
+        String secretKey = ConfigLoader.get("secretKey");
+        this.cs = new Cryptography(secretKey);
     }
     @Override
     public List<DisasterDamageModel> getAllDisasterDamage() {

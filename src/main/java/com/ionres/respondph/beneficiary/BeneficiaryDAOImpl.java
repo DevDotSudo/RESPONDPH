@@ -2,7 +2,6 @@ package com.ionres.respondph.beneficiary;
 
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.Cryptography;
-
 import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +12,8 @@ import java.util.List;
 
 public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
     private final DBConnection dbConnection;
+    private Connection conn;
+
     Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
     public BeneficiaryDAOImpl(DBConnection dbConnection) {
@@ -21,11 +22,13 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
 
     @Override
     public boolean saving(BeneficiaryModel bm) {
+
         String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, gender, marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, employment_status, monthly_income, education_level, digital_access, added_by, reg_date)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
+
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, bm.getFirstname());
@@ -59,6 +62,14 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
             e.printStackTrace();
             return false;
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -78,7 +89,6 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 BeneficiaryModel bm = new BeneficiaryModel();
 
                 bm.setId(rs.getInt("beneficiary_id"));
-
                 bm.setFirstname(rs.getString("first_name"));
                 bm.setMiddlename(rs.getString("middle_name"));
                 bm.setLastname(rs.getString("last_name"));
@@ -94,6 +104,14 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
 
         } catch (SQLException ex) {
             ex.printStackTrace();
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
 
         return beneficiaries;
@@ -121,6 +139,14 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
             JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return false;
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
     }
 
@@ -169,6 +195,14 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
             JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return false;
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
     }
 
@@ -242,6 +276,14 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
         } catch (Exception ex) {
             ex.printStackTrace();
             javax.swing.JOptionPane.showMessageDialog(null, "Error fetching beneficiary: " + ex.getMessage());
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
 
         return bm;

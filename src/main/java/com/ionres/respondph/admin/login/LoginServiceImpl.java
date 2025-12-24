@@ -6,8 +6,6 @@ import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.SQLException;
-
 public class LoginServiceImpl implements LoginService{
     private final LoginDAO adminDao;
     private final Cryptography cs;

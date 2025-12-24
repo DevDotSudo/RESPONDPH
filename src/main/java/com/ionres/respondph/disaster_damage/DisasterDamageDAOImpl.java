@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
     private final DBConnection dbConnection;
-
+    private Connection conn;
     public DisasterDamageDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
     }
@@ -24,7 +24,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                 " VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setInt(1, ddm.getBeneficiaryId());
@@ -42,6 +42,14 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return false;
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
     }
 
@@ -67,8 +75,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                         "   ON dmd.disaster_id = d.disaster_id";
 
         try  {
-            Connection con = dbConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement(sql);
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -131,6 +139,14 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                     JOptionPane.ERROR_MESSAGE
             );
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
 
         return list;
     }
@@ -140,7 +156,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
         String sql = "DELETE FROM beneficiary_disaster_damage WHERE beneficiary_disaster_damage_id = ?";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
 
             PreparedStatement ps = conn.prepareStatement(sql);
 
@@ -154,6 +170,14 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return false;
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
     }
 
@@ -171,7 +195,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                 "WHERE beneficiary_disaster_damage_id = ?";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setInt(1, ddm.getBeneficiaryId());
@@ -194,6 +218,14 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             );
             e.printStackTrace();
             return false;
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
     }
 
@@ -220,7 +252,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                         "WHERE dmd.beneficiary_disaster_damage_id = ?";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
 
@@ -273,29 +305,46 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             );
             e.printStackTrace();
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
 
         return ddm;
     }
-
 
     @Override
     public List<BeneficiaryModel> getAllBeneficiaryByFirstname() {
         List<BeneficiaryModel> list = new ArrayList<>();
         String sql = "SELECT beneficiary_id, first_name FROM beneficiary";
 
-        try (Connection con = dbConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try {
+            conn = dbConnection.getConnection();
 
-            while (rs.next()) {
-                list.add(new BeneficiaryModel(
-                        rs.getInt("beneficiary_id"),
-                        rs.getString("first_name")
-                ));
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery();
+
+                while (rs.next()) {
+                    list.add(new BeneficiaryModel(
+                            rs.getInt("beneficiary_id"),
+                            rs.getString("first_name")
+                    ));
             }
 
         } catch (Exception e) {
             throw new RuntimeException("Error fetching beneficiaries", e);
+        }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
         }
 
         return list;
@@ -306,9 +355,11 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
         List<DisasterModel> list = new ArrayList<>();
         String sql = "SELECT disaster_id, type, name FROM disaster";
 
-        try (Connection con = dbConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try {
+            conn = dbConnection.getConnection();
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 list.add(new DisasterModel(
@@ -321,7 +372,14 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
         } catch (Exception e) {
             throw new RuntimeException("Error fetching Disaster", e);
         }
-
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
         return list;
     }
 }

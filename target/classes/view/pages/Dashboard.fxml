@@ -15,11 +15,7 @@
             <Label styleClass="page-title" text="Dashboard" />
         </HBox>
 
-        <VBox fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS">
-            <padding>
-                <Insets bottom="40" left="40" right="40" top="40" />
-            </padding>
-        </VBox>
+        <VBox fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
 
     </VBox>
 </AnchorPane>

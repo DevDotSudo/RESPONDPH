@@ -14,7 +14,7 @@ import java.util.List;
 public class DisasterDAOImpl implements DisasterDAO{
     private final DBConnection dbConnection;
     private final Cryptography cs;
-
+    private Connection conn;
 
     public DisasterDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
@@ -28,7 +28,7 @@ public class DisasterDAOImpl implements DisasterDAO{
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1,dm.getDisasterType());
@@ -48,6 +48,14 @@ public class DisasterDAOImpl implements DisasterDAO{
             e.printStackTrace();
             return false;
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -56,7 +64,7 @@ public class DisasterDAOImpl implements DisasterDAO{
         String sql = "SELECT disaster_id, type, name, date, notes, reg_date  FROM disaster";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -92,6 +100,14 @@ public class DisasterDAOImpl implements DisasterDAO{
             ex.printStackTrace();
             javax.swing.JOptionPane.showMessageDialog(null, "Error fetching data: " + ex.getMessage());
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
 
         return disaster;
     }
@@ -101,7 +117,7 @@ public class DisasterDAOImpl implements DisasterDAO{
         String sql = "DELETE FROM disaster WHERE disaster_id = ?";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
 
             PreparedStatement ps = conn.prepareStatement(sql);
 
@@ -116,6 +132,14 @@ public class DisasterDAOImpl implements DisasterDAO{
             e.printStackTrace();
             return false;
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -125,7 +149,7 @@ public class DisasterDAOImpl implements DisasterDAO{
                 "WHERE disaster_id = ?";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, dm.getDisasterType());
@@ -146,6 +170,14 @@ public class DisasterDAOImpl implements DisasterDAO{
             e.printStackTrace();
             return false;
         }
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -154,7 +186,7 @@ public class DisasterDAOImpl implements DisasterDAO{
         String sql = "SELECT * FROM disaster WHERE disaster_id = ?";
 
         try {
-            Connection conn = dbConnection.getConnection();
+            conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -189,8 +221,14 @@ public class DisasterDAOImpl implements DisasterDAO{
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error fetching disaster: " + ex.getMessage());
         }
-
+        finally {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                System.out.println("Error: " +  e.getMessage());
+            }
+        }
         return dm;
     }
-
 }

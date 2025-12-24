@@ -14,8 +14,6 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
     private final DBConnection dbConnection;
     private Connection conn;
 
-    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
-
     public BeneficiaryDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
     }
@@ -80,9 +78,10 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
                 "birthdate, gender, marital_status, mobile_number, added_by, reg_date " +
                 "FROM beneficiary";
 
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
@@ -222,55 +221,31 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
             if (rs.next()) {
                 bm = new BeneficiaryModel();
 
-                List<String> encrypted = new ArrayList<>();
-                encrypted.add(rs.getString("first_name"));
-                encrypted.add(rs.getString("middle_name"));
-                encrypted.add(rs.getString("last_name"));
-                encrypted.add(rs.getString("birthdate"));
-                encrypted.add(rs.getString("gender"));
-                encrypted.add(rs.getString("marital_status"));
-                encrypted.add(rs.getString("solo_parent_status"));
-                encrypted.add(rs.getString("latitude"));
-                encrypted.add(rs.getString("longitude"));
-                encrypted.add(rs.getString("mobile_number"));
-                encrypted.add(rs.getString("disability_type"));
-                encrypted.add(rs.getString("health_condition"));
-                encrypted.add(rs.getString("clean_water_access"));
-                encrypted.add(rs.getString("sanitation_facility"));
-                encrypted.add(rs.getString("house_type"));
-                encrypted.add(rs.getString("ownership_status"));
-                encrypted.add(rs.getString("employment_status"));
-                encrypted.add(rs.getString("monthly_income"));
-                encrypted.add(rs.getString("education_level"));
-                encrypted.add(rs.getString("digital_access"));
-                encrypted.add(rs.getString("added_by"));
-                encrypted.add(rs.getString("reg_date"));
-
-                List<String> decrypted = cs.decrypt(encrypted);
-
+                bm = new BeneficiaryModel();
                 bm.setId(rs.getInt("beneficiary_id"));
-                bm.setFirstname(decrypted.get(0));
-                bm.setMiddlename(decrypted.get(1));
-                bm.setLastname(decrypted.get(2));
-                bm.setBirthDate(decrypted.get(3));
-                bm.setGender(decrypted.get(4));
-                bm.setMaritalStatus(decrypted.get(5));
-                bm.setSoloParentStatus(decrypted.get(6));
-                bm.setLatitude(decrypted.get(7));
-                bm.setLongitude(decrypted.get(8));
-                bm.setMobileNumber(decrypted.get(9));
-                bm.setDisabilityType(decrypted.get(10));
-                bm.setHealthCondition(decrypted.get(11));
-                bm.setCleanWaterAccess(decrypted.get(12));
-                bm.setSanitationFacility(decrypted.get(13));
-                bm.setHouseType(decrypted.get(14));
-                bm.setOwnerShipStatus(decrypted.get(15));
-                bm.setEmploymentStatus(decrypted.get(16));
-                bm.setMonthlyIncome(decrypted.get(17));
-                bm.setEducationalLevel(decrypted.get(18));
-                bm.setDigitalAccess(decrypted.get(19));
-                bm.setAddedBy(decrypted.get(20));
-                bm.setRegDate(decrypted.get(21));
+
+                bm.setFirstname(rs.getString("first_name"));
+                bm.setMiddlename(rs.getString("middle_name"));
+                bm.setLastname(rs.getString("last_name"));
+                bm.setBirthDate(rs.getString("birthdate"));
+                bm.setGender(rs.getString("gender"));
+                bm.setMaritalStatus(rs.getString("marital_status"));
+                bm.setSoloParentStatus(rs.getString("solo_parent_status"));
+                bm.setLatitude(rs.getString("latitude"));
+                bm.setLongitude(rs.getString("longitude"));
+                bm.setMobileNumber(rs.getString("mobile_number"));
+                bm.setDisabilityType(rs.getString("disability_type"));
+                bm.setHealthCondition(rs.getString("health_condition"));
+                bm.setCleanWaterAccess(rs.getString("clean_water_access"));
+                bm.setSanitationFacility(rs.getString("sanitation_facility"));
+                bm.setHouseType(rs.getString("house_type"));
+                bm.setOwnerShipStatus(rs.getString("ownership_status"));
+                bm.setEmploymentStatus(rs.getString("employment_status"));
+                bm.setMonthlyIncome(rs.getString("monthly_income"));
+                bm.setEducationalLevel(rs.getString("education_level"));
+                bm.setDigitalAccess(rs.getString("digital_access"));
+                bm.setAddedBy(rs.getString("added_by"));
+                bm.setRegDate(rs.getString("reg_date"));
             }
 
         } catch (Exception ex) {

@@ -223,14 +223,68 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
 
     @Override
     public BeneficiaryModel getBeneficiaryById(int id) {
+
         try {
-            BeneficiaryModel bm = beneficiaryDAO.getById(id);
-            if (bm == null) {
-                System.out.println("Not Found");
+            BeneficiaryModel encrypted = beneficiaryDAO.getById(id);
+
+            if (encrypted == null) {
+                return null;
             }
-            return bm;
+
+            List<String> decrypted = cs.decrypt(List.of(
+                    encrypted.getFirstname(),
+                    encrypted.getMiddlename(),
+                    encrypted.getLastname(),
+                    encrypted.getBirthDate(),
+                    encrypted.getGender(),
+                    encrypted.getMaritalStatus(),
+                    encrypted.getSoloParentStatus(),
+                    encrypted.getLatitude(),
+                    encrypted.getLongitude(),
+                    encrypted.getMobileNumber(),
+                    encrypted.getDisabilityType(),
+                    encrypted.getHealthCondition(),
+                    encrypted.getCleanWaterAccess(),
+                    encrypted.getSanitationFacility(),
+                    encrypted.getHouseType(),
+                    encrypted.getOwnerShipStatus(),
+                    encrypted.getEmploymentStatus(),
+                    encrypted.getMonthlyIncome(),
+                    encrypted.getEducationalLevel(),
+                    encrypted.getDigitalAccess(),
+                    encrypted.getAddedBy(),
+                    encrypted.getRegDate()
+            ));
+
+            BeneficiaryModel d = new BeneficiaryModel();
+            d.setId(encrypted.getId());
+            d.setFirstname(decrypted.get(0));
+            d.setMiddlename(decrypted.get(1));
+            d.setLastname(decrypted.get(2));
+            d.setBirthDate(decrypted.get(3));
+            d.setGender(decrypted.get(4));
+            d.setMaritalStatus(decrypted.get(5));
+            d.setSoloParentStatus(decrypted.get(6));
+            d.setLatitude(decrypted.get(7));
+            d.setLongitude(decrypted.get(8));
+            d.setMobileNumber(decrypted.get(9));
+            d.setDisabilityType(decrypted.get(10));
+            d.setHealthCondition(decrypted.get(11));
+            d.setCleanWaterAccess(decrypted.get(12));
+            d.setSanitationFacility(decrypted.get(13));
+            d.setHouseType(decrypted.get(14));
+            d.setOwnerShipStatus(decrypted.get(15));
+            d.setEmploymentStatus(decrypted.get(16));
+            d.setMonthlyIncome(decrypted.get(17));
+            d.setEducationalLevel(decrypted.get(18));
+            d.setDigitalAccess(decrypted.get(19));
+            d.setAddedBy(decrypted.get(20));
+            d.setRegDate(decrypted.get(21));
+
+            return d;
+
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            ex.printStackTrace();
             return null;
         }
     }

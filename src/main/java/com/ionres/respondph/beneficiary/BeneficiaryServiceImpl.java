@@ -1,12 +1,9 @@
 package com.ionres.respondph.beneficiary;
 
-import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
 import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
-import org.mindrot.jbcrypt.BCrypt;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +17,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
         String secretKey = ConfigLoader.get("secretKey");
         this.cs = new Cryptography(secretKey);
     }
+
     @Override
     public List<BeneficiaryModel> getAllBeneficiary() {
 
@@ -67,8 +65,6 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
     @Override
     public boolean createBeneficiary(BeneficiaryModel bm) {
         try {
-
-
             String encryptedFirstname = cs.encryptWithOneParameter(bm.getFirstname());
             String encryptedMiddlename = cs.encryptWithOneParameter(bm.getMiddlename());
             String encryptedLastname = cs.encryptWithOneParameter(bm.getLastname());

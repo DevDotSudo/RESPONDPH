@@ -11,12 +11,30 @@
     -fx-spacing: 0;
 }
 
-/* Logo Section */
 .logo-section {
     -fx-background-color: transparent;
-    -fx-padding: 32px 0 24px 0;
     -fx-border-color: #334155;
-    -fx-border-width: 0 0 1px 0;
+    -fx-border-width: 0 0 2px 0;
+    -fx-padding: 20px;
+}
+
+.logo-container {
+    -fx-background-color: white;
+    -fx-background-image: url(/images/respondph_logo_.png);
+    -fx-border-image-repeat: no repeat;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
+    -fx-background-radius: 16;
+    -fx-padding: 20px 0;
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0,0,0,0.25),
+            20,
+            0.2,
+            0,
+            6
+    );
 }
 
 .brand-container {
@@ -99,8 +117,8 @@
 .nav-text {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
-    -fx-font-weight: inherit;
-    -fx-text-fill: inherit;
+    -fx-text-fill: #ffffff;
+
 }
 
 /* Logout Section */

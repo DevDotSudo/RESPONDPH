@@ -206,14 +206,50 @@
 
         @Override
         public FamilyMembersModel getfamilyMemberId(int id) {
+
             try {
-                FamilyMembersModel bm = familyMemberDAO.getById(id);
-                if (bm == null) {
-                    System.out.println("Not Found");
+                FamilyMembersModel encrypted = familyMemberDAO.getById(id);
+
+                if (encrypted == null) {
+                    return null;
                 }
-                return bm;
+
+                List<String> decrypted = cs.decrypt(List.of(
+                        encrypted.getFirstName(),
+                        encrypted.getMiddleName(),
+                        encrypted.getLastName(),
+                        encrypted.getRelationshipToBeneficiary(),
+                        encrypted.getBirthDate(),
+                        encrypted.getGender(),
+                        encrypted.getMaritalStatus(),
+                        encrypted.getDisabilityType(),
+                        encrypted.getHealthCondition(),
+                        encrypted.getEmploymentStatus(),
+                        encrypted.getEducationalLevel(),
+                        encrypted.getNotes(),
+                        encrypted.getRegDate()
+                ));
+
+                FamilyMembersModel d = new FamilyMembersModel();
+                d.setFamilyId(encrypted.getFamilyId());
+                d.setFirstName(decrypted.get(0));
+                d.setMiddleName(decrypted.get(1));
+                d.setLastName(decrypted.get(2));
+                d.setRelationshipToBeneficiary(decrypted.get(3));
+                d.setBirthDate(decrypted.get(4));
+                d.setGender(decrypted.get(5));
+                d.setMaritalStatus(decrypted.get(6));
+                d.setDisabilityType(decrypted.get(7));
+                d.setHealthCondition(decrypted.get(8));
+                d.setEmploymentStatus(decrypted.get(9));
+                d.setEducationalLevel(decrypted.get(10));
+                d.setNotes(decrypted.get(11));
+                d.setRegDate(decrypted.get(12));
+
+                return d;
+
             } catch (Exception ex) {
-                System.out.println("Error: " + ex.getMessage());
+                ex.printStackTrace();
                 return null;
             }
         }

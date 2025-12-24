@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FamilyMemberDAOImpl implements FamilyMemberDAO {
-    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
     private final DBConnection dbConnection;
     private Connection conn;
 
@@ -201,38 +200,21 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
 
             if (rs.next()) {
                 fm = new FamilyMembersModel();
-
-                List<String> encrypted = new ArrayList<>();
-                encrypted.add(rs.getString("first_name"));
-                encrypted.add(rs.getString("middle_name"));
-                encrypted.add(rs.getString("last_name"));
-                encrypted.add(rs.getString("relationshiptobene"));
-                encrypted.add(rs.getString("birthdate"));
-                encrypted.add(rs.getString("gender"));
-                encrypted.add(rs.getString("marital_status"));
-                encrypted.add(rs.getString("disability_type"));
-                encrypted.add(rs.getString("health_condition"));
-                encrypted.add(rs.getString("employment_status"));
-                encrypted.add(rs.getString("education_level"));
-                encrypted.add(rs.getString("notes"));
-                encrypted.add(rs.getString("reg_date"));
-
-                List<String> decrypted = cs.decrypt(encrypted);
-
                 fm.setFamilyId(rs.getInt("familymember_id"));
-                fm.setFirstName(decrypted.get(0));
-                fm.setMiddleName(decrypted.get(1));
-                fm.setLastName(decrypted.get(2));
-                fm.setRelationshipToBeneficiary(decrypted.get(3));
-                fm.setBirthDate(decrypted.get(4));
-                fm.setGender(decrypted.get(5));
-                fm.setMaritalStatus(decrypted.get(6));
-                fm.setDisabilityType(decrypted.get(7));
-                fm.setHealthCondition(decrypted.get(8));
-                fm.setEmploymentStatus(decrypted.get(9));
-                fm.setEducationalLevel(decrypted.get(10));
-                fm.setNotes(decrypted.get(11));
-                fm.setRegDate(decrypted.get(12));
+
+                fm.setFirstName(rs.getString("first_name"));
+                fm.setMiddleName(rs.getString("middle_name"));
+                fm.setLastName(rs.getString("last_name"));
+                fm.setRelationshipToBeneficiary(rs.getString("relationshiptobene"));
+                fm.setBirthDate(rs.getString("birthdate"));
+                fm.setGender(rs.getString("gender"));
+                fm.setMaritalStatus(rs.getString("marital_status"));
+                fm.setDisabilityType(rs.getString("disability_type"));
+                fm.setHealthCondition(rs.getString("health_condition"));
+                fm.setEmploymentStatus(rs.getString("employment_status"));
+                fm.setEducationalLevel(rs.getString("education_level"));
+                fm.setNotes(rs.getString("notes"));
+                fm.setRegDate(rs.getString("reg_date"));
 
             }
 

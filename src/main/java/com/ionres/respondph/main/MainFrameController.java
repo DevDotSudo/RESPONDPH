@@ -45,7 +45,7 @@ public class MainFrameController {
     private Button activeBtn;
 
     public void initialize() {
-        loadPage("/view/pages/Dashboard.fxml");
+        loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
 
         EventHandler<ActionEvent> handlers = this::handleActions;
@@ -107,47 +107,47 @@ public class MainFrameController {
     }
 
     private void handleDashboard() {
-        loadPage("/view/pages/Dashboard.fxml");
+        loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
     }
 
     private void handleManageAdmins() {
-        loadPage("/view/pages/ManageAdmins.fxml");
+        loadPage("/view/admin/ManageAdmins.fxml");
         activeButton(manageAdminBtn);
     }
 
     private void handleManageBeneficiaries() {
-        loadPage("/view/pages/ManageBeneficiaries.fxml");
+        loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
         activeButton(manageBeneficiariesBtn);
     }
 
     private void handleAids() {
-        loadPage("/view/pages/Aids.fxml");
+        loadPage("/view/aids/Aids.fxml");
         activeButton(aidsBtn);
     }
 
     private void handleFamilyMembers() {
-        loadPage("/view/pages/FamilyMembers.fxml");
+        loadPage("/view/family/FamilyMembers.fxml");
         activeButton(familyMembersBtn);
     }
 
     private void handleDisaster() {
-        loadPage("/view/pages/Disaster.fxml");
+        loadPage("/view/disaster/Disaster.fxml");
         activeButton(disasterBtn);
     }
 
     private void handleDisasterDamage() {
-        loadPage("/view/pages/DisasterDamage.fxml");
+        loadPage("/view/disaster_damage/DisasterDamage.fxml");
         activeButton(disasterDamageBtn);
     }
 
     private void handleSendSms() {
-        loadPage("/view/pages/SendSMS.fxml");
+        loadPage("/view/send_sms/SendSMS.fxml");
         activeButton(sendSmsBtn);
     }
 
     private void handleSettings() {
-        loadPage("/view/pages/Settings.fxml");
+        loadPage("/view/settings/Settings.fxml");
         activeButton(settingsBtn);
     }
 

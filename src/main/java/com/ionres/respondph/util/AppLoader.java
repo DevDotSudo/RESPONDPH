@@ -34,28 +34,28 @@
         public static void prepareUI() throws Exception {
 
             //load pages
-            SceneManager.preload("/view/pages/LoginFrame.fxml");
-            SceneManager.preload("/view/pages/MainFrame.fxml");
-            SceneManager.preload("/view/pages/Dashboard.fxml");
-            SceneManager.preload("/view/pages/ManageAdmins.fxml");
-            SceneManager.preload("/view/pages/ManageBeneficiaries.fxml");
-            SceneManager.preload("/view/pages/Aids.fxml");
-            SceneManager.preload("/view/pages/FamilyMembers.fxml");
-            SceneManager.preload("/view/pages/Disaster.fxml");
-            SceneManager.preload("/view/pages/DisasterDamage.fxml");
-            SceneManager.preload("/view/pages/SendSMS.fxml");
-            SceneManager.preload("/view/pages/Settings.fxml");
+            SceneManager.preload("/view/auth/Login.fxml");
+            SceneManager.preload("/view/main/MainScreen.fxml");
+            SceneManager.preload("/view/dashboard/Dashboard.fxml");
+            SceneManager.preload("/view/admin/ManageAdmins.fxml");
+            SceneManager.preload("/view/beneficiary/ManageBeneficiaries.fxml");
+            SceneManager.preload("/view/aids/Aids.fxml");
+            SceneManager.preload("/view/family/FamilyMembers.fxml");
+            SceneManager.preload("/view/disaster/Disaster.fxml");
+            SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");
+            SceneManager.preload("/view/send_sms/SendSMS.fxml");
+            SceneManager.preload("/view/settings/Settings.fxml");
 
-            //load dialogs
-            DialogManager.preload("addAdmin", "/view/dialogs/AddAdminDialog.fxml");
-            DialogManager.preload("editAdmin", "/view/dialogs/EditAdminDialog.fxml");
-            DialogManager.preload("addDisasterDamage","/view/dialogs/AddDisasterDamageDialog.fxml");
-            DialogManager.preload("editDisasterDamage","/view/dialogs/EditDisasterDamageDialog.fxml");
-            DialogManager.preload("addDisaster","/view/dialogs/AddDisasterDialog.fxml");
-            DialogManager.preload("editDisaster","/view/dialogs/EditDisasterDialog.fxml");
-            DialogManager.preload("addBeneficiary","/view/dialogs/AddBeneficiariesDialog.fxml");
-            DialogManager.preload("editBeneficiary","/view/dialogs/EditBeneficiariesDialog.fxml");
-            DialogManager.preload("addFamilyMember","/view/dialogs/AddFamilyMemberDialog.fxml");
-            DialogManager.preload("editFamilyMember","/view/dialogs/EditFamilyMemberDialog.fxml");
+            //load dialog
+            DialogManager.preload("addAdmin", "/view/admin/dialog/AddAdminDialog.fxml");
+            DialogManager.preload("editAdmin", "/view/admin/dialog/EditAdminDialog.fxml");
+            DialogManager.preload("addDisasterDamage", "/view/disaster_damage/dialog/AddDisasterDamageDialog.fxml");
+            DialogManager.preload("editDisasterDamage", "/view/disaster_damage/dialog/EditDisasterDamageDialog.fxml");
+            DialogManager.preload("addDisaster", "/view/disaster/dialog/AddDisasterDialog.fxml");
+            DialogManager.preload("editDisaster", "/view/disaster/dialog/EditDisasterDialog.fxml");
+            DialogManager.preload("addBeneficiary", "/view/beneficiary/dialog/AddBeneficiariesDialog.fxml");
+            DialogManager.preload("editBeneficiary", "/view/beneficiary/dialog/EditBeneficiariesDialog.fxml");
+            DialogManager.preload("addFamilyMember", "/view/family/dialog/AddFamilyMemberDialog.fxml");
+            DialogManager.preload("editFamilyMember", "/view/family/dialog/EditFamilyMemberDialog.fxml");
         }
     }

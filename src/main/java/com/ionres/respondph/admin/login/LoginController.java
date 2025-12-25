@@ -6,8 +6,6 @@ import com.ionres.respondph.util.AppPreferences;
 import com.ionres.respondph.util.SceneManager;
 import com.ionres.respondph.util.SessionManager;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
@@ -51,12 +49,12 @@ public class LoginController {
                 loginStage.close();
 
                 SceneManager.SceneEntry<?> entry =
-                        SceneManager.load("/view/pages/MainFrame.fxml");
+                        SceneManager.load("/view/main/MainScreen.fxml");
 
                 Stage stage = new Stage();
                 Scene scene = new Scene(entry.getRoot(), 1200, 800);
                 scene.getStylesheets().add(
-                        getClass().getResource("/styles/pages/mainframe.css").toExternalForm()
+                        getClass().getResource("/styles/main/mainframe.css").toExternalForm()
                 );
 
                 stage.setTitle("RespondPH - Dashboard");

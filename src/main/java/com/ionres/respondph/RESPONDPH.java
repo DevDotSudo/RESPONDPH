@@ -16,11 +16,11 @@ public class RESPONDPH extends Application {
     public void start(Stage primaryStage) {
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pages/SplashScreen.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/auth/SplashScreen.fxml"));
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1200, 800);
-            scene.getStylesheets().add(getClass().getResource("/styles/pages/splashscreen.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/auth/splashscreen.css").toExternalForm());
 
             primaryStage.setTitle("RespondPH - Login");
             primaryStage.setScene(scene);

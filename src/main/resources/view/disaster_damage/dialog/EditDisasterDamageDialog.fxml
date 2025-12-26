@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="edit-damage-dialog-container" stylesheets="@/styles/disaster_damage/dialog/editdisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamageDialogController">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-dialog-header">
+        <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="edit-damage-header-icon" />
+        <Label styleClass="edit-damage-dialog-title" text="Edit Disaster Damage" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="exitBtn" styleClass="edit-damage-close-button">
+            <graphic>
+                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="edit-damage-close-icon" />
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- Error Message -->
+    <VBox alignment="CENTER" styleClass="edit-damage-error-container">
+        <Label fx:id="errorLabel" managed="false" styleClass="edit-damage-error-label" visible="false" />
+    </VBox>
+
+    <!-- Scrollable Form Content -->
+    <ScrollPane fitToWidth="true" styleClass="edit-damage-form-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="24" styleClass="edit-damage-forms-container">
+            <padding>
+                <Insets bottom="32" left="32" right="32" top="32" />
+            </padding>
+
+            <!-- Damage Assessment Information -->
+            <VBox spacing="20" styleClass="edit-damage-form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-section-header">
+                    <FontAwesomeIconView glyphName="CLIPBOARD_CHECK" size="20" styleClass="edit-damage-section-icon" />
+                    <Label styleClass="edit-damage-section-title" text="Damage Assessment" />
+                </HBox>
+
+                <!-- First Row: Damage Severity and Assessment Date -->
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- House Damage Severity -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="edit-damage-field-label" text="House Damage Severity *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="FIRE" size="16" styleClass="edit-damage-field-icon" />
+                            <ComboBox fx:id="damageSeverityFld" promptText="Select damage severity" styleClass="edit-damage-dropdown" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Assessment Date -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="edit-damage-field-label" text="Assessment Date *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="CALENDAR" size="16" styleClass="edit-damage-field-icon" />
+                            <DatePicker fx:id="assessmentDatePicker" styleClass="edit-damage-date-picker" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Verified By -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="edit-damage-field-label" text="Verified By *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="CHECK" size="16" styleClass="edit-damage-field-icon" />
+                            <TextField fx:id="verifiedByFld" promptText="Enter verifier name" styleClass="edit-damage-input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Notes Section -->
+            <VBox spacing="20" styleClass="edit-damage-form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-section-header">
+                    <FontAwesomeIconView glyphName="STICKY_NOTE" size="20" styleClass="edit-damage-section-icon" />
+                    <Label styleClass="edit-damage-section-title" text="Additional Information" />
+                </HBox>
+
+                <VBox spacing="8">
+                    <Label styleClass="edit-damage-field-label" text="Notes" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS">
+                        <FontAwesomeIconView glyphName="STICKY_NOTE" size="16" styleClass="edit-damage-field-icon" />
+                        <TextField fx:id="notesFld" promptText="Enter notes about the damage assessment" styleClass="edit-damage-input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- Action Buttons -->
+    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="edit-damage-button-container" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="32.0" left="32.0" right="32.0" top="32.0" />
+        </padding>
+        <Button fx:id="cancelBtn" styleClass="edit-damage-cancel-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="edit-damage-button-icon" />
+                    <Label styleClass="edit-damage-button-label" text="Cancel" />
+                </HBox>
+            </graphic>
+        </Button>
+        <Button fx:id="updateBtn" styleClass="edit-damage-update-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="edit-damage-button-icon" />
+                    <Label styleClass="edit-damage-button-label" text="Update" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

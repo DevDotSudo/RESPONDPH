@@ -5,8 +5,6 @@ import com.ionres.respondph.util.SceneManager;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -71,10 +69,10 @@ public class SplashScreenController {
                 splashStage.close();
 
                 SceneManager.SceneEntry<?> entry =
-                        SceneManager.load("/view/pages/LoginFrame.fxml");
+                        SceneManager.load("/view/auth/Login.fxml");
 
                 Scene scene = new Scene(entry.getRoot(), 1200, 800);
-                scene.getStylesheets().add(getClass().getResource("/styles/pages/loginframe.css").toExternalForm());
+                scene.getStylesheets().add(getClass().getResource("/styles/auth/login_screen.css").toExternalForm());
 
                 Stage stage = new Stage();
                 stage.setTitle("RespondPH - Login");

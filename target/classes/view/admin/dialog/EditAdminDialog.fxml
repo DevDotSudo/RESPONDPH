@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="550.0" prefWidth="800.0" spacing="0" styleClass="dialog-container" stylesheets="@/styles/admin/dialog/editadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController">
+
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
+        <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="header-icon" />
+        <Label styleClass="dialog-title" text="Edit Administrator" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="closeButton" styleClass="close-button">
+            <graphic>
+                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="close-icon" />
+            </graphic>
+        </Button>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="24" styleClass="form-container">
+            <padding>
+                <Insets bottom="32" left="32" right="32" top="32" />
+            </padding>
+
+            <VBox spacing="8">
+                <Label styleClass="field-label" text="Username *" />
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                    <FontAwesomeIconView glyphName="USER" size="16" styleClass="input-icon" />
+                    <TextField fx:id="usernameField" promptText="Enter username" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                </HBox>
+            </VBox>
+
+            <HBox spacing="24">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="First Name *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
+                        <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="Middle Name" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
+                        <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="Last Name *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
+                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
+                        <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <VBox alignment="CENTER" styleClass="error-container">
+        <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
+    </VBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="button-container">
+        <padding>
+            <Insets bottom="32" left="32" right="32" top="24" />
+        </padding>
+        <Button fx:id="updateBtn" styleClass="primary-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="button-icon" />
+                    <Label styleClass="button-label" text="Update Admin" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

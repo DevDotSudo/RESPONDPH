@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="dialog-container" stylesheets="@/styles/beneficiary/dialog/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
+
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
+        <FontAwesomeIconView glyphName="USER_PLUS" size="24" styleClass="header-icon" />
+        <Label styleClass="dialog-title" text="Add New Beneficiary" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="exitBtn" styleClass="close-button">
+            <graphic>
+                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="close-icon" />
+            </graphic>
+        </Button>
+    </HBox>
+
+    <VBox alignment="CENTER" styleClass="error-container">
+        <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
+    </VBox>
+
+    <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="24" styleClass="form-container">
+            <padding>
+                <Insets bottom="32" left="32" right="32" top="32" />
+            </padding>
+
+            <VBox spacing="20" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="USER" size="20" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Core Beneficiary Profile" />
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- First Name -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="First Name *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="USER" size="16" styleClass="input-icon" />
+                            <TextField fx:id="firstNameFld" promptText="Enter first name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Middle Name" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="USER" size="16" styleClass="input-icon" />
+                            <TextField fx:id="middleNameFld" promptText="Enter middle name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Last Name *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="USER" size="16" styleClass="input-icon" />
+                            <TextField fx:id="lastNameFld" promptText="Enter last name" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- Birthdate -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Birthdate *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="CALENDAR" size="16" styleClass="input-icon" />
+                            <DatePicker fx:id="birthDatePicker" styleClass="date-picker" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Gender *" />
+                        <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="230.0" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="VENUS_MARS" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="genderSelection" promptText="Select gender" styleClass="combo-box short-values" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Mobile Number" />
+                        <HBox alignment="CENTER_LEFT" prefHeight="59.0" prefWidth="145.0" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="PHONE" size="16" styleClass="input-icon" />
+                            <TextField fx:id="mobileNumberFld" promptText="Enter mobile number" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- Marital Status (Medium values: Single/Married/Divorced/Widowed) -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Marital Status *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="HEART" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="maritalStatusSelection" promptText="Select marital status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Solo Parent Status *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="CHILD" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="soloParentStatusSelection" promptText="Select solo parent status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="20" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="MAP_MARKER" size="20" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Geographical Location" />
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- Latitude -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Latitude" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="MAP_MARKER" size="16" styleClass="input-icon" />
+                            <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Longitude" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="MAP_MARKER" size="16" styleClass="input-icon" />
+                            <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="input-field" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Action" />
+                        <Button fx:id="getLocationBtn" styleClass="secondary-button" HBox.hgrow="ALWAYS">
+                            <graphic>
+                                <HBox alignment="CENTER" spacing="8">
+                                    <FontAwesomeIconView glyphName="LOCATION_ARROW" size="14" styleClass="button-icon" />
+                                    <Label styleClass="button-label" text="Get Location" />
+                                </HBox>
+                            </graphic>
+                        </Button>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="20" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="20" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Vulnerability Indicators" />
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- Disability Type (Potentially long values) -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Disability Type *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="WHEELCHAIR" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="disabilityTypeSelection" promptText="Select disability type" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Health Condition *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="HEARTBEAT" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="healthConditionSelection" promptText="Select health condition" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Clean Water Access *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="TINT" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="cleanWaterAccessSelection" promptText="Select clean water access" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="8">
+                    <Label styleClass="field-label" text="Sanitation Facilities *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                        <FontAwesomeIconView glyphName="HOME" size="16" styleClass="input-icon" />
+                        <ComboBox fx:id="sanitationFacilitiesSelection" promptText="Select sanitation facility" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <VBox spacing="20" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="BUILDING" size="20" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Housing and Infrastructure" />
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="House Construction *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="BUILDING" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="houseConstructionTypeSelection" promptText="Select construction type" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Ownership Status *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="KEY" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="ownershipStatusSelection" promptText="Select ownership status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="20" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="CHART_LINE" size="20" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Socio-Economic Status" />
+                </HBox>
+
+                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- Employment Status (Medium values) -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Employment Status *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="BRIEFCASE" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="employmentStatusSelection" promptText="Select employment status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Monthly Income *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="MONEY" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="monthlyIncomeSelection" promptText="Select income range" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Education Level *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="GRADUATION_CAP" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="educationLevelSelection" promptText="Select education level" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="8">
+                    <Label styleClass="field-label" text="Digital Access *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                        <FontAwesomeIconView glyphName="LAPTOP" size="16" styleClass="input-icon" />
+                        <ComboBox fx:id="digitalAccessSelection" promptText="Select digital access" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="button-container">
+        <padding>
+            <Insets bottom="32" left="32" right="32" top="24" />
+        </padding>
+        <Button fx:id="addBeneficiaryBtn" styleClass="primary-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="button-icon" />
+                    <Label styleClass="button-label" text="Add Beneficiary" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

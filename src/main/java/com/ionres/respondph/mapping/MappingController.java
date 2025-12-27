@@ -70,7 +70,7 @@ public class MappingController {
 
     private void loadMap() {
         MapView mapView = new MapView();
-        mapView.setZoom(10);
+        mapView.setZoom(13);
 
         MapPoint center = new MapPoint(11.0450, 122.7950);
         mapView.setCenter(center);

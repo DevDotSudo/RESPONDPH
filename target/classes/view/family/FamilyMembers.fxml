@@ -6,9 +6,9 @@
 
 <AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/family/familymembers.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.FamilyMembersController">
 
-    <VBox spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <VBox spacing="0" styleClass="header-section">
+        <VBox styleClass="header-section">
             <padding>
                 <Insets bottom="24" left="24" right="24" top="24" />
             </padding>

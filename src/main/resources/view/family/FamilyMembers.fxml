@@ -8,7 +8,7 @@
 
     <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <VBox spacing="0" styleClass="header-section">
+        <VBox styleClass="header-section">
             <padding>
                 <Insets bottom="24" left="24" right="24" top="24" />
             </padding>

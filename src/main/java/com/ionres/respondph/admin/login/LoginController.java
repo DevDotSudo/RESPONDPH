@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -26,6 +27,20 @@ public class LoginController {
     
     @FXML
     private CheckBox rememberMeCheck;
+
+    @FXML
+    public void initialize() {
+        if (usernameField != null) {
+            usernameField.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ENTER) handleLogin();
+            });
+        }
+        if (passwordField != null) {
+            passwordField.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ENTER) handleLogin();
+            });
+        }
+    }
     
     @FXML
     private void handleLogin() {

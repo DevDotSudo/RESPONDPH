@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/family/familymembers.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.FamilyMembersController">
+<AnchorPane fx:id="root" styleClass="root-pane" stylesheets="@/styles/disaster/disaster.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster.DisasterController">
 
-    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <VBox spacing="0" styleClass="header-section">
             <padding>
@@ -14,8 +15,8 @@
             </padding>
 
             <HBox alignment="CENTER_LEFT" spacing="16">
-                <FontAwesomeIconView glyphName="USERS" size="24" styleClass="page-icon" />
-                <Label styleClass="page-title" text="Manage Family Members" />
+                <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="24" styleClass="page-icon" />
+                <Label styleClass="page-title" text="Manage Disasters" />
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
@@ -25,7 +26,7 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                     <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />
-                    <TextField fx:id="searchField" promptText="Search by name, relationship, beneficiary..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="searchField" promptText="Search disaster" styleClass="search-field" HBox.hgrow="ALWAYS" />
                 </HBox>
 
                 <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="primary-button">
@@ -39,16 +40,16 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <Button fx:id="addButton" styleClass="primary-button">
+                <Button fx:id="addBtn" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon" />
-                            <Label styleClass="button-label" text="Add Family Member" />
+                            <Label styleClass="button-label" text="Add Disaster" />
                         </HBox>
                     </graphic>
                 </Button>
 
-                <Button fx:id="refreshButton" styleClass="secondary-button">
+                <Button fx:id="refreshBtn" styleClass="secondary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="REFRESH" size="14" styleClass="refresh-icon" />
@@ -64,18 +65,14 @@
                 <Insets bottom="24" left="24" right="24" top="18" />
             </padding>
 
-            <TableView fx:id="familyTable" styleClass="family-table" VBox.vgrow="ALWAYS">
+            <TableView fx:id="disastersTbl" styleClass="disaster-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idColumn" maxWidth="80" minWidth="80" text="ID" />
-                    <TableColumn fx:id="beneficiaryNameColumn" prefWidth="1" text="Beneficiary Name" />
-                    <TableColumn fx:id="firstnameColumn" prefWidth="1" text="First Name" />
-                    <TableColumn fx:id="middlenameColumn" prefWidth="1" text="Middle Name" />
-                    <TableColumn fx:id="lastnameColumn" prefWidth="1" text="Last Name" />
-                    <TableColumn fx:id="relationshipColumn" prefWidth="1" text="Relationship" />
-                    <TableColumn fx:id="birthdateColumn" prefWidth="1" text="Birthdate" />
-                    <TableColumn fx:id="genderColumn" prefWidth="1" text="Gender" />
-                    <TableColumn fx:id="maritalStatusColumn" prefWidth="1" text="Marital Status" />
-                    <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered Date" />
+                    <TableColumn fx:id="disaster_id" maxWidth="80" minWidth="80" text="ID" />
+                    <TableColumn fx:id="type" prefWidth="1" text="Type" />
+                    <TableColumn fx:id="disasterColumn" prefWidth="1" text="Disaster Name" />
+                    <TableColumn fx:id="dateColumn" prefWidth="1" text="Date" />
+                    <TableColumn fx:id="notesColumn" prefWidth="1" text="Notes" />
+                    <TableColumn fx:id="regDateColumn" prefWidth="1" text="Registered Date" />
                     <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
                 </columns>
                 <columnResizePolicy>

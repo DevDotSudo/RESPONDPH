@@ -1,9 +1,8 @@
 package com.ionres.respondph.disaster;
 
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogController;
 import com.ionres.respondph.disaster.dialogs_controller.EditDisasterDialogController;
-import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -11,7 +10,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -19,161 +17,173 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
-
 import java.util.List;
-import java.util.Optional;
 
 public class DisasterController {
-    AlertDialog alertDialog = new AlertDialog();
-    DisasterService disasterService = AppContext.disasterService;
-    ObservableList<DisasterModel> disasterList;
 
-    @FXML
-    private AnchorPane root;
-    @FXML
-    private TextField searchField;
-    @FXML
-    private Button searchBtn, addBtn, refreshBtn;
-    @FXML
-    private TableView disastersTbl;
-    @FXML
-    private TableColumn<DisasterModel, String> disaster_id;
-    @FXML
-    private TableColumn<DisasterModel, String> type;
-    @FXML
-    private TableColumn<DisasterModel, String> disasterColumn;
-    @FXML
-    private TableColumn<DisasterModel, String> dateColumn;
-    @FXML
-    private  TableColumn<DisasterModel, String> regDateColumn;
-    @FXML
-    private  TableColumn<DisasterModel, String> notesColumn;
-    @FXML
-    private TableColumn<DisasterModel, Void> actionsColumn;
+    private final DisasterService disasterService = AppContext.disasterService;
+    private ObservableList<DisasterModel> disasterList;
+
+    @FXML private AnchorPane root;
+    @FXML private TextField searchField;
+    @FXML private Button searchBtn, addBtn, refreshBtn;
+    @FXML private TableView<DisasterModel> disastersTbl;
+    @FXML private TableColumn<DisasterModel, String> disaster_id;
+    @FXML private TableColumn<DisasterModel, String> type;
+    @FXML private TableColumn<DisasterModel, String> disasterColumn;
+    @FXML private TableColumn<DisasterModel, String> dateColumn;
+    @FXML private TableColumn<DisasterModel, String> regDateColumn;
+    @FXML private TableColumn<DisasterModel, String> notesColumn;
+    @FXML private TableColumn<DisasterModel, Void> actionsColumn;
 
     @FXML
     private void initialize() {
         disastersTbl.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         setupTableColumns();
-        actionButtons();
-        setSearchFld();
+        setupActionButtons();
+        setupSearchListener();
         loadTable();
-        EventHandler<ActionEvent> handlers = this::handleActions;
-        refreshBtn.setOnAction(handlers);
-        searchBtn.setOnAction(handlers);
-        addBtn.setOnAction(handlers);
+        setupEventHandlers();
+    }
+
+    private void setupEventHandlers() {
+        refreshBtn.setOnAction(this::handleRefresh);
+        searchBtn.setOnAction(this::handleSearch);
+        addBtn.setOnAction(this::handleAddDisaster);
+    }
+
+    private void handleRefresh(ActionEvent event) {
+        loadTable();
+    }
+
+    private void handleSearch(ActionEvent event) {
+        String searchText = searchField.getText().trim();
+        if (searchText.isEmpty()) {
+            loadTable();
+        } else {
+            searchDisasters(searchText);
+        }
+    }
+
+    private void handleAddDisaster(ActionEvent event) {
+        showAddDisasterDialog();
     }
 
     private void setupTableColumns() {
-        disaster_id.setCellValueFactory(
-                new PropertyValueFactory<>("disasterId")
-        );
-
-        type.setCellValueFactory(
-                new PropertyValueFactory<>("disasterType")
-        );
-
-        disasterColumn.setCellValueFactory(
-                new PropertyValueFactory<>("disasterName")
-        );
-
-        dateColumn.setCellValueFactory(
-                new PropertyValueFactory<>("date")
-        );
-
-        notesColumn.setCellValueFactory(
-                new PropertyValueFactory<>("notes")
-        );
-
-        regDateColumn.setCellValueFactory(
-                new PropertyValueFactory<>("regDate")
-        );
-    }
-
-    private void handleActions(ActionEvent event) {
-        Object src = event.getSource();
-
-        if (src == refreshBtn) {
-            loadTable();
-        } else if (src == searchBtn) {
-            handleSearch();
-        } else if(src == addBtn) {
-            handleAddBeneficiary();
-        }
+        disaster_id.setCellValueFactory(new PropertyValueFactory<>("disasterId"));
+        type.setCellValueFactory(new PropertyValueFactory<>("disasterType"));
+        disasterColumn.setCellValueFactory(new PropertyValueFactory<>("disasterName"));
+        dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+        notesColumn.setCellValueFactory(new PropertyValueFactory<>("notes"));
+        regDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
     }
 
     public void loadTable() {
-        List<DisasterModel> disaster = disasterService.getAllDisaster();
+        try {
+            List<DisasterModel> disasters = disasterService.getAllDisaster();
+            disasterList = FXCollections.observableArrayList(disasters);
+            disastersTbl.setItems(disasterList);
 
-        disasterList = FXCollections.observableArrayList(disaster);
-        disastersTbl.setItems(disasterList);
+            if (disasters.isEmpty()) {
+                disastersTbl.setPlaceholder(new Label("No disasters found"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Load Error",
+                    "Failed to load disasters: " + e.getMessage());
+        }
     }
 
-    private void deleteById(DisasterModel dm) {
-        if (dm == null || dm.getDisasterId() <= 0) {
-            alertDialog.showErrorAlert("Invalid Selection", "Disaster ID is missing or invalid.");
+    private void deleteDisaster(DisasterModel disaster) {
+        if (disaster == null || disaster.getDisasterId() <= 0) {
+            AlertDialogManager.showError("Invalid Selection",
+                    "Disaster ID is missing or invalid. Please select a valid disaster.");
             return;
         }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirm Delete");
-        confirm.setHeaderText("Are you sure you want to delete this Disaster?");
 
-        Optional<ButtonType> result = confirm.showAndWait();
+        String disasterName = disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
 
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        boolean confirm = AlertDialogManager.showConfirmation(
+                "Delete Disaster",
+                "Are you sure you want to delete disaster:\n" +
+                        disasterName + "?\n\n" +
+                        "This action cannot be undone."
+        );
 
-            boolean success = disasterService.deleteDisaster(dm);
+        if (confirm) {
+            try {
+                boolean success = disasterService.deleteDisaster(disaster);
 
-            disasterList.remove(dm);
+                if (success) {
+                    disasterList.remove(disaster);
+                    AlertDialogManager.showSuccess("Delete Successful",
+                            "Disaster has been successfully deleted.");
+                } else {
+                    AlertDialogManager.showError("Delete Failed",
+                            "Failed to delete disaster. Please try again.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                AlertDialogManager.showError("Delete Error",
+                        "An error occurred while deleting disaster: " + e.getMessage());
+            }
         }
     }
 
-    private void handleAddBeneficiary() {
+    private void showAddDisasterDialog() {
         try {
-            AddDisasterDialogController disasterDialogController = DialogManager.getController("addDisaster", AddDisasterDialogController.class);
-            disasterDialogController.setDisasterService(this.disasterService);
-            disasterDialogController.setDisasterController(this);
+            AddDisasterDialogController controller = DialogManager.getController(
+                    "addDisaster", AddDisasterDialogController.class);
+            controller.setDisasterService(this.disasterService);
+            controller.setDisasterController(this);
             DialogManager.show("addDisaster");
         } catch (Exception e) {
             e.printStackTrace();
+            AlertDialogManager.showError("Dialog Error",
+                    "Unable to load Add Disaster dialog: " + e.getMessage());
         }
     }
 
-    private void showEditDisasterDialog(DisasterModel disasterModel) {
+    private void showEditDisasterDialog(DisasterModel disaster) {
         try {
-            EditDisasterDialogController editDisasterDialogController = DialogManager.getController("editDisaster", EditDisasterDialogController.class);
-            editDisasterDialogController.setDisasterService(disasterService);
-            editDisasterDialogController.setDisasterController(this);
-            DisasterModel fullDisaster = disasterService.getDisasterById(disasterModel.getDisasterId());
+            EditDisasterDialogController controller = DialogManager.getController(
+                    "editDisaster", EditDisasterDialogController.class);
+            controller.setDisasterService(disasterService);
+            controller.setDisasterController(this);
+
+            DisasterModel fullDisaster = disasterService.getDisasterById(disaster.getDisasterId());
             if (fullDisaster != null) {
-                editDisasterDialogController.setDisaster(fullDisaster);
+                controller.setDisaster(fullDisaster);
             } else {
-                alertDialog.showErrorAlert("Error", "Unable to load disaster data.");
+                AlertDialogManager.showError("Data Error",
+                        "Unable to load disaster data. The record may have been deleted.");
                 return;
             }
             DialogManager.show("editDisaster");
         } catch (Exception e) {
             e.printStackTrace();
-            alertDialog.showErrorAlert("Error", "Unable to load the Edit Disaster dialog.");
+            AlertDialogManager.showError("Dialog Error",
+                    "Unable to load Edit Disaster dialog: " + e.getMessage());
         }
     }
 
-    private void handleSearch() {
-        String searchText = searchField.getText().trim();
-        if (searchText.isEmpty()) {
-            loadTable();
-        } else {
-            searchAdmins(searchText);
+    private void searchDisasters(String searchText) {
+        try {
+            List<DisasterModel> filteredDisasters = disasterService.searchDisaster(searchText);
+            disasterList = FXCollections.observableArrayList(filteredDisasters);
+            disastersTbl.setItems(disasterList);
+
+            if (filteredDisasters.isEmpty()) {
+                disastersTbl.setPlaceholder(new Label("No disasters found for: " + searchText));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Search Error",
+                    "Failed to search disasters: " + e.getMessage());
         }
     }
 
-    private void searchAdmins(String searchText) {
-        List<DisasterModel> filteredDisaster = disasterService.searchDisaster(searchText);
-        disasterList = FXCollections.observableArrayList(filteredDisaster);
-        disastersTbl.setItems(disasterList);
-    }
-
-    private void setSearchFld() {
+    private void setupSearchListener() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.trim().isEmpty()) {
                 loadTable();
@@ -181,10 +191,7 @@ public class DisasterController {
         });
     }
 
-
-
-
-    private void actionButtons() {
+    private void setupActionButtons() {
         Callback<TableColumn<DisasterModel, Void>, TableCell<DisasterModel, Void>> cellFactory =
                 new Callback<>() {
                     @Override
@@ -202,15 +209,13 @@ public class DisasterController {
                                 deleteButton.getStyleClass().add("delete-button");
 
                                 editButton.setOnAction(event -> {
-                                    DisasterModel dm = getTableView().getItems().get(getIndex());
-
-                                    showEditDisasterDialog(dm);
+                                    DisasterModel disaster = getTableView().getItems().get(getIndex());
+                                    showEditDisasterDialog(disaster);
                                 });
 
                                 deleteButton.setOnAction(event -> {
-                                    DisasterModel dm = getTableView().getItems().get(getIndex());
-                                    deleteById(dm);
-                                    loadTable();
+                                    DisasterModel disaster = getTableView().getItems().get(getIndex());
+                                    deleteDisaster(disaster);
                                 });
                             }
 

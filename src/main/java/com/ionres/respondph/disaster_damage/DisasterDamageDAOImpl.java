@@ -229,7 +229,6 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
         }
     }
 
-
     @Override
     public DisasterDamageModel getById(int id) {
         DisasterDamageModel ddm = null;

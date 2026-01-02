@@ -3,7 +3,7 @@ package com.ionres.respondph.beneficiary.dialogs_controller;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
-import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.CustomAlertDialog;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 public class EditBeneficiariesDialogController {
 
-    AlertDialog alertDialog = new AlertDialog();
+    CustomAlertDialog customAlertDialog = new CustomAlertDialog();
     @FXML
     private VBox root;
 
@@ -279,85 +279,85 @@ public class EditBeneficiariesDialogController {
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
             if (firstname.isEmpty()) {
-                alertDialog.showWarning("First name is required");
+                customAlertDialog.showWarning("First name is required");
                 return;
             }
             if (middlename.isEmpty()) {
-                alertDialog.showWarning("Middle name is required");
+                customAlertDialog.showWarning("Middle name is required");
                 return;
             }
             if (lastname.isEmpty()) {
-                alertDialog.showWarning("Last name is required");
+                customAlertDialog.showWarning("Last name is required");
                 return;
             }
             if (birthDate.isEmpty()) {
-                alertDialog.showWarning("Birth date is required");
+                customAlertDialog.showWarning("Birth date is required");
                 return;
             }
             if (gender == null) {
-                alertDialog.showWarning("Gender is required");
+                customAlertDialog.showWarning("Gender is required");
                 return;
             }
             if (mobileNumber.isEmpty()) {
-                alertDialog.showWarning("Mobile number is required");
+                customAlertDialog.showWarning("Mobile number is required");
                 return;
             }
             if (maritalStatus == null) {
-                alertDialog.showWarning("Marital status is required");
+                customAlertDialog.showWarning("Marital status is required");
                 return;
             }
             if (soloParentStatus == null) {
-                alertDialog.showWarning("Solo parent status is required");
+                customAlertDialog.showWarning("Solo parent status is required");
                 return;
             }
             if (latitude.isEmpty()) {
-                alertDialog.showWarning("Latitude is required");
+                customAlertDialog.showWarning("Latitude is required");
                 return;
             }
             if (longitude.isEmpty()) {
-                alertDialog.showWarning("Longitude is required");
+                customAlertDialog.showWarning("Longitude is required");
                 return;
             }
             if (disabilityType == null) {
-                alertDialog.showWarning("Disability type is required");
+                customAlertDialog.showWarning("Disability type is required");
                 return;
             }
             if (healthCondition == null) {
-                alertDialog.showWarning("Health condition is required");
+                customAlertDialog.showWarning("Health condition is required");
                 return;
             }
             if (cleanWaterAccess == null) {
-                alertDialog.showWarning("Clean water access is required");
+                customAlertDialog.showWarning("Clean water access is required");
                 return;
             }
             if (sanitationFacility == null) {
-                alertDialog.showWarning("Sanitation facility is required");
+                customAlertDialog.showWarning("Sanitation facility is required");
                 return;
             }
             if (houseType == null) {
-                alertDialog.showWarning("House type is required");
+                customAlertDialog.showWarning("House type is required");
                 return;
             }
 
             if (ownershipStatus == null) {
-                alertDialog.showWarning("Ownership status is required");
+                customAlertDialog.showWarning("Ownership status is required");
                 return;
             }
 
             if (employmentStatus == null) {
-                alertDialog.showWarning("Employment status is required");
+                customAlertDialog.showWarning("Employment status is required");
                 return;
             }
             if (monthlyIncome == null) {
-                alertDialog.showWarning("Monthly income is required");
+                customAlertDialog.showWarning("Monthly income is required");
                 return;
             }
             if (educationalLevel == null) {
-                alertDialog.showWarning("Educational level is required");
+                customAlertDialog.showWarning("Educational level is required");
                 return;
             }
             if (digitalAccess == null) {
-                alertDialog.showWarning("Digital access is required");
+                customAlertDialog.showWarning("Digital access is required");
                 return;
             }
 
@@ -369,18 +369,20 @@ public class EditBeneficiariesDialogController {
                     monthlyIncome, educationalLevel, digitalAccess, addedBy,
                     regDate
             );
+
             updatedBm.setId(currentBeneficiary.getId());
 
             boolean success = beneficiaryService.updateBeneficiary(updatedBm);
 
             if (success) {
-                alertDialog.showSuccess("Success", "Beneficiary updated successfully.");
+                customAlertDialog.showSuccess("Success", "Beneficiary updated successfully.");
+                clearFields();
             } else {
-                alertDialog.showErrorAlert("Error", "Failed to update beneficiary.");
+                customAlertDialog.showErrorAlert("Error", "Failed to update beneficiary.");
             }
-
+            dialogStage.hide();
         } catch (Exception e) {
-            alertDialog.showErrorAlert("Error", e.getMessage());
+            customAlertDialog.showErrorAlert("Error", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -403,5 +405,28 @@ public class EditBeneficiariesDialogController {
         if (dialogStage != null) {
             dialogStage.hide();
         }
+    }
+
+    public void clearFields() {
+        firstNameFld.setText("");
+        middleNameFld.setText("");
+        lastNameFld.setText("");
+        mobileNumberFld.setText("");
+        latitudeFld.setText("");
+        longitudeFld.setText("");
+        birthDatePicker.setValue(null);
+        genderSelection.getSelectionModel().clearSelection();
+        maritalStatusSelection.getSelectionModel().clearSelection();
+        soloParentStatusSelection.getSelectionModel().clearSelection();
+        disabilityTypeSelection.getSelectionModel().clearSelection();
+        healthConditionSelection.getSelectionModel().clearSelection();
+        cleanWaterAccessSelection.getSelectionModel().clearSelection();
+        sanitationFacilitiesSelection.getSelectionModel().clearSelection();
+        houseConstructionTypeSelection.getSelectionModel().clearSelection();
+        ownershipStatusSelection.getSelectionModel().clearSelection();
+        employmentStatusSelection.getSelectionModel().clearSelection();
+        monthlyIncomeSelection.getSelectionModel().clearSelection();
+        educationLevelSelection.getSelectionModel().clearSelection();
+        digitalAccessSelection.getSelectionModel().clearSelection();
     }
 }

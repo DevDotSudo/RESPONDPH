@@ -2,55 +2,45 @@ package com.ionres.respondph.disaster_damage.dialogs_controller;
 
 import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.common.model.DisasterModel;
-import com.ionres.respondph.disaster_damage.*;
-import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.disaster_damage.DisasterDamageController;
+import com.ionres.respondph.disaster_damage.DisasterDamageModel;
+import com.ionres.respondph.disaster_damage.DisasterDamageService;
+import com.ionres.respondph.util.AlertDialogManager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class EditDisasterDamageDialogController {
 
-    @FXML
-    private VBox root;
+    @FXML private VBox root;
+    @FXML private ComboBox<BeneficiaryModel> beneficiaryNameFld;
+    @FXML private ComboBox<DisasterModel> disasterFld;
+    @FXML private ComboBox<String> damageSeverityFld;
+    @FXML private TextField verifiedByFld;
+    @FXML private DatePicker assessmentDatePicker;
+    @FXML private TextField notesFld;
+    @FXML private Button updateBtn, exitBtn;
 
-    @FXML
-    private ComboBox<BeneficiaryModel> beneficiaryNameFld;
     private List<BeneficiaryModel> allBeneficiaries;
-
-    @FXML
-    private ComboBox<DisasterModel> disasterFld;
     private List<DisasterModel> allDisaster;
-
-    @FXML
-    private ComboBox<String> damageSeverityFld;
-
-    @FXML
-    private TextField verifiedByFld;
-
-    @FXML
-    private DatePicker birthDatePicker;
-
-    @FXML
-    private TextField notesFld;
-
-    @FXML
-    private Button updateBtn, exitBtn;
-
     private DisasterDamageService disasterDamageService;
     private DisasterDamageController disasterDamageController;
-    private DisasterDamageModel currentDisaster;
+    private DisasterDamageModel currentDisasterDamage;
     private Stage dialogStage;
 
-    AlertDialog alertDialog = new AlertDialog();
+    private boolean isPopulatingFields = false;
+    private boolean isSelectingFromDropdown = false;
 
     public void setDisasterDamageService(DisasterDamageService service) {
         this.disasterDamageService = service;
@@ -66,54 +56,47 @@ public class EditDisasterDamageDialogController {
         this.dialogStage = stage;
     }
 
-    public void setDisasterDamage(DisasterDamageModel ddm) {
-        this.currentDisaster = ddm;
+    public void setDisasterDamage(DisasterDamageModel disasterDamage) {
+        this.currentDisasterDamage = disasterDamage;
         Platform.runLater(() -> {
-            if (allBeneficiaries != null && !allBeneficiaries.isEmpty()
-                    && allDisaster != null && !allDisaster.isEmpty()) {
-                populateFields(ddm);
-            } else {
-                System.err.println("Warning: Data not loaded when trying to populate fields");
+            if (allBeneficiaries != null && !allBeneficiaries.isEmpty() &&
+                    allDisaster != null && !allDisaster.isEmpty()) {
+                populateFields(disasterDamage);
             }
         });
     }
 
     @FXML
     private void initialize() {
-        initializeDamageSeverityDropDowns();
-        setupActionHandlers();
+        initializeDamageSeverityDropdown();
+        setupEventHandlers();
         setupKeyHandlers();
     }
 
     private void setupKeyHandlers() {
         root.setOnKeyPressed(event -> {
             switch (event.getCode()) {
-                case ENTER:
-                    updateBtn.fire();
-                    break;
-                case ESCAPE:
-                    closeDialog();
-                    break;
+                case ENTER: updateBtn.fire(); break;
+                case ESCAPE: closeDialog(); break;
             }
         });
         root.requestFocus();
     }
 
-    private void setupActionHandlers() {
-        EventHandler<ActionEvent> handler = this::handleActions;
-        updateBtn.setOnAction(handler);
-        exitBtn.setOnAction(handler);
+    private void setupEventHandlers() {
+        updateBtn.setOnAction(this::handleUpdate);
+        exitBtn.setOnAction(this::handleExit);
     }
 
-    private void handleActions(ActionEvent event) {
-        if (event.getSource() == updateBtn) {
-            updateDisasterDamage();
-        } else {
-            closeDialog();
-        }
+    private void handleUpdate(ActionEvent event) {
+        updateDisasterDamage();
     }
 
-    private void initializeDamageSeverityDropDowns() {
+    private void handleExit(ActionEvent event) {
+        closeDialog();
+    }
+
+    private void initializeDamageSeverityDropdown() {
         damageSeverityFld.getItems().addAll(
                 "No visible damage",
                 "Minor damage (non-structural)",
@@ -123,24 +106,17 @@ public class EditDisasterDamageDialogController {
         );
     }
 
-    private boolean isPopulatingFields = false;
-    private boolean isSelectingFromDropdown = false;
-
-    public void loadBeneficiaries() {
+    private void loadBeneficiaries() {
         try {
             allBeneficiaries = disasterDamageService.getAllBeneficiaries();
 
             if (allBeneficiaries == null || allBeneficiaries.isEmpty()) {
-                System.err.println("No beneficiaries loaded!");
-                alertDialog.showWarning("No beneficiaries found in the system.");
+                AlertDialogManager.showWarning("Data Warning",
+                        "No beneficiaries found in the system.");
                 return;
             }
 
-            System.out.println("Loaded " + allBeneficiaries.size() + " beneficiaries");
-
-            allBeneficiaries.sort(
-                    Comparator.comparing(b -> b.getFirstName().toLowerCase())
-            );
+            allBeneficiaries.sort(Comparator.comparing(b -> b.getFirstName().toLowerCase()));
 
             beneficiaryNameFld.setEditable(true);
             beneficiaryNameFld.getItems().setAll(allBeneficiaries);
@@ -155,10 +131,8 @@ public class EditDisasterDamageDialogController {
                 @Override
                 public BeneficiaryModel fromString(String text) {
                     return allBeneficiaries.stream()
-                            .filter(b ->
-                                    (b.getBeneficiaryId() + " - " + b.getFirstName())
-                                            .equalsIgnoreCase(text)
-                            )
+                            .filter(b -> (b.getBeneficiaryId() + " - " + b.getFirstName())
+                                    .equalsIgnoreCase(text))
                             .findFirst()
                             .orElse(null);
                 }
@@ -168,9 +142,8 @@ public class EditDisasterDamageDialogController {
                 @Override
                 protected void updateItem(BeneficiaryModel item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null
-                            ? ""
-                            : item.getBeneficiaryId() + " - " + item.getFirstName());
+                    setText(empty || item == null ? "" :
+                            item.getBeneficiaryId() + " - " + item.getFirstName());
                 }
             });
 
@@ -178,68 +151,66 @@ public class EditDisasterDamageDialogController {
                 @Override
                 protected void updateItem(BeneficiaryModel item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null
-                            ? ""
-                            : item.getBeneficiaryId() + " - " + item.getFirstName());
+                    setText(empty || item == null ? "" :
+                            item.getBeneficiaryId() + " - " + item.getFirstName());
                 }
             });
 
-            beneficiaryNameFld.valueProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    isSelectingFromDropdown = true;
-                    Platform.runLater(() -> isSelectingFromDropdown = false);
-                }
-            });
-
-            beneficiaryNameFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
-                if (isPopulatingFields || isSelectingFromDropdown) {
-                    return;
-                }
-
-                String search = newText == null ? "" : newText.toLowerCase().trim();
-
-                List<BeneficiaryModel> filtered;
-                if (search.isEmpty()) {
-                    filtered = allBeneficiaries;
-                } else {
-                    filtered = allBeneficiaries.stream()
-                            .filter(b ->
-                                    String.valueOf(b.getBeneficiaryId()).contains(search)
-                                            || b.getFirstName().toLowerCase().contains(search)
-                            )
-                            .sorted(Comparator.comparing(b -> b.getFirstName().toLowerCase()))
-                            .collect(Collectors.toList());
-                }
-
-                beneficiaryNameFld.getItems().setAll(filtered);
-
-                if (!beneficiaryNameFld.isShowing() && !filtered.isEmpty() &&
-                        beneficiaryNameFld.getEditor().isFocused()) {
-                    beneficiaryNameFld.show();
-                }
-            });
+            setupBeneficiaryListeners();
 
         } catch (Exception e) {
             e.printStackTrace();
-            alertDialog.showWarning("Error loading beneficiaries: " + e.getMessage());
+            AlertDialogManager.showError("Load Error",
+                    "Error loading beneficiaries: " + e.getMessage());
         }
     }
 
-    public void loadDisaster() {
+    private void setupBeneficiaryListeners() {
+        beneficiaryNameFld.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                isSelectingFromDropdown = true;
+                Platform.runLater(() -> isSelectingFromDropdown = false);
+            }
+        });
+
+        beneficiaryNameFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
+            if (isPopulatingFields || isSelectingFromDropdown) {
+                return;
+            }
+
+            String search = newText == null ? "" : newText.toLowerCase().trim();
+
+            List<BeneficiaryModel> filtered;
+            if (search.isEmpty()) {
+                filtered = allBeneficiaries;
+            } else {
+                filtered = allBeneficiaries.stream()
+                        .filter(b -> String.valueOf(b.getBeneficiaryId()).contains(search) ||
+                                b.getFirstName().toLowerCase().contains(search))
+                        .sorted(Comparator.comparing(b -> b.getFirstName().toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+
+            beneficiaryNameFld.getItems().setAll(filtered);
+
+            if (!beneficiaryNameFld.isShowing() && !filtered.isEmpty() &&
+                    beneficiaryNameFld.getEditor().isFocused()) {
+                beneficiaryNameFld.show();
+            }
+        });
+    }
+
+    private void loadDisaster() {
         try {
             allDisaster = disasterDamageService.getALlDisaster();
 
             if (allDisaster == null || allDisaster.isEmpty()) {
-                System.err.println("No disasters loaded!");
-                alertDialog.showWarning("No disasters found in the system.");
+                AlertDialogManager.showWarning("Data Warning",
+                        "No disasters found in the system.");
                 return;
             }
 
-            System.out.println("Loaded " + allDisaster.size() + " disasters");
-
-            allDisaster.sort(
-                    Comparator.comparing(d -> d.getDisasterType().toLowerCase())
-            );
+            allDisaster.sort(Comparator.comparing(d -> d.getDisasterType().toLowerCase()));
 
             disasterFld.setEditable(true);
             disasterFld.getItems().setAll(allDisaster);
@@ -248,20 +219,17 @@ public class EditDisasterDamageDialogController {
                 @Override
                 public String toString(DisasterModel d) {
                     if (d == null) return "";
-                    return d.getDisasterId() + " - "
-                            + d.getDisasterType() + " - "
-                            + d.getDisasterName();
+                    return d.getDisasterId() + " - " +
+                            d.getDisasterType() + " - " +
+                            d.getDisasterName();
                 }
 
                 @Override
                 public DisasterModel fromString(String text) {
                     return allDisaster.stream()
-                            .filter(d ->
-                                    (d.getDisasterId() + " - "
-                                            + d.getDisasterType() + " - "
-                                            + d.getDisasterName())
-                                            .equalsIgnoreCase(text)
-                            )
+                            .filter(d -> (d.getDisasterId() + " - " +
+                                    d.getDisasterType() + " - " +
+                                    d.getDisasterName()).equalsIgnoreCase(text))
                             .findFirst()
                             .orElse(null);
                 }
@@ -271,11 +239,10 @@ public class EditDisasterDamageDialogController {
                 @Override
                 protected void updateItem(DisasterModel item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null
-                            ? ""
-                            : item.getDisasterId() + " - "
-                            + item.getDisasterType() + " - "
-                            + item.getDisasterName());
+                    setText(empty || item == null ? "" :
+                            item.getDisasterId() + " - " +
+                                    item.getDisasterType() + " - " +
+                                    item.getDisasterName());
                 }
             });
 
@@ -283,77 +250,73 @@ public class EditDisasterDamageDialogController {
                 @Override
                 protected void updateItem(DisasterModel item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null
-                            ? ""
-                            : item.getDisasterId() + " - "
-                            + item.getDisasterType() + " - "
-                            + item.getDisasterName());
+                    setText(empty || item == null ? "" :
+                            item.getDisasterId() + " - " +
+                                    item.getDisasterType() + " - " +
+                                    item.getDisasterName());
                 }
             });
 
-            disasterFld.valueProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    isSelectingFromDropdown = true;
-                    Platform.runLater(() -> isSelectingFromDropdown = false);
-                }
-            });
-
-            disasterFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
-                if (isPopulatingFields || isSelectingFromDropdown) {
-                    return;
-                }
-
-                String search = newText == null ? "" : newText.toLowerCase().trim();
-
-                List<DisasterModel> filtered;
-                if (search.isEmpty()) {
-                    filtered = allDisaster;
-                } else {
-                    filtered = allDisaster.stream()
-                            .filter(d ->
-                                    String.valueOf(d.getDisasterId()).contains(search)
-                                            || d.getDisasterType().toLowerCase().contains(search)
-                                            || d.getDisasterName().toLowerCase().contains(search)
-                            )
-                            .sorted(Comparator.comparing(d -> d.getDisasterType().toLowerCase()))
-                            .collect(Collectors.toList());
-                }
-
-                disasterFld.getItems().setAll(filtered);
-
-                if (!disasterFld.isShowing() && !filtered.isEmpty() &&
-                        disasterFld.getEditor().isFocused()) {
-                    disasterFld.show();
-                }
-            });
+            setupDisasterListeners();
 
         } catch (Exception e) {
             e.printStackTrace();
-            alertDialog.showWarning("Error loading disasters: " + e.getMessage());
+            AlertDialogManager.showError("Load Error",
+                    "Error loading disasters: " + e.getMessage());
         }
     }
 
-    private void populateFields(DisasterDamageModel ddm) {
+    private void setupDisasterListeners() {
+        disasterFld.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                isSelectingFromDropdown = true;
+                Platform.runLater(() -> isSelectingFromDropdown = false);
+            }
+        });
+
+        disasterFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
+            if (isPopulatingFields || isSelectingFromDropdown) {
+                return;
+            }
+
+            String search = newText == null ? "" : newText.toLowerCase().trim();
+
+            List<DisasterModel> filtered;
+            if (search.isEmpty()) {
+                filtered = allDisaster;
+            } else {
+                filtered = allDisaster.stream()
+                        .filter(d -> String.valueOf(d.getDisasterId()).contains(search) ||
+                                d.getDisasterType().toLowerCase().contains(search) ||
+                                d.getDisasterName().toLowerCase().contains(search))
+                        .sorted(Comparator.comparing(d -> d.getDisasterType().toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+
+            disasterFld.getItems().setAll(filtered);
+
+            if (!disasterFld.isShowing() && !filtered.isEmpty() &&
+                    disasterFld.getEditor().isFocused()) {
+                disasterFld.show();
+            }
+        });
+    }
+
+    private void populateFields(DisasterDamageModel disasterDamage) {
         if (allBeneficiaries == null || allBeneficiaries.isEmpty()) {
-            System.err.println("ERROR: Beneficiaries list is null or empty!");
-            alertDialog.showErrorAlert("Error", "Beneficiaries data not loaded.");
+            AlertDialogManager.showError("Data Error", "Beneficiaries data not loaded.");
             return;
         }
 
         if (allDisaster == null || allDisaster.isEmpty()) {
-            System.err.println("ERROR: Disasters list is null or empty!");
-            alertDialog.showErrorAlert("Error", "Disasters data not loaded.");
+            AlertDialogManager.showError("Data Error", "Disasters data not loaded.");
             return;
         }
 
         isPopulatingFields = true;
 
-        System.out.println("Populating fields for damage ID: " + ddm.getBeneficiaryDisasterDamageId());
-        System.out.println("Looking for beneficiary ID: " + ddm.getBeneficiaryId());
-        System.out.println("Looking for disaster ID: " + ddm.getDisasterId());
-
         BeneficiaryModel foundBeneficiary = allBeneficiaries.stream()
-                .filter(b -> b.getBeneficiaryId() == ddm.getBeneficiaryId())
+                .filter(b -> b.getBeneficiaryId() == disasterDamage.getBeneficiaryId())
                 .findFirst()
                 .orElse(null);
 
@@ -362,13 +325,13 @@ public class EditDisasterDamageDialogController {
             beneficiaryNameFld.getEditor().setText(
                     foundBeneficiary.getBeneficiaryId() + " - " + foundBeneficiary.getFirstName()
             );
-            System.out.println("Beneficiary found and set: " + foundBeneficiary.getFirstName());
         } else {
-            System.err.println("Beneficiary with ID " + ddm.getBeneficiaryId() + " not found!");
+            AlertDialogManager.showWarning("Data Warning",
+                    "Beneficiary with ID " + disasterDamage.getBeneficiaryId() + " not found.");
         }
 
         DisasterModel foundDisaster = allDisaster.stream()
-                .filter(d -> d.getDisasterId() == ddm.getDisasterId())
+                .filter(d -> d.getDisasterId() == disasterDamage.getDisasterId())
                 .findFirst()
                 .orElse(null);
 
@@ -379,75 +342,45 @@ public class EditDisasterDamageDialogController {
                             foundDisaster.getDisasterType() + " - " +
                             foundDisaster.getDisasterName()
             );
-            System.out.println("Disaster found and set: " + foundDisaster.getDisasterType());
         } else {
-            System.err.println("Disaster with ID " + ddm.getDisasterId() + " not found!");
+            AlertDialogManager.showWarning("Data Warning",
+                    "Disaster with ID " + disasterDamage.getDisasterId() + " not found.");
         }
 
-        damageSeverityFld.setValue(ddm.getHouseDamageSeverity());
-        verifiedByFld.setText(ddm.getVerifiedBy());
-        notesFld.setText(ddm.getNotes());
+        damageSeverityFld.setValue(disasterDamage.getHouseDamageSeverity());
+        verifiedByFld.setText(disasterDamage.getVerifiedBy());
+        notesFld.setText(disasterDamage.getNotes());
 
-        if (ddm.getAssessmentDate() != null && !ddm.getAssessmentDate().isEmpty()) {
+        if (disasterDamage.getAssessmentDate() != null && !disasterDamage.getAssessmentDate().isEmpty()) {
             try {
-                birthDatePicker.setValue(LocalDate.parse(ddm.getAssessmentDate()));
-            } catch (Exception e) {
-                System.err.println("Error parsing date: " + ddm.getAssessmentDate());
-                e.printStackTrace();
+                assessmentDatePicker.setValue(LocalDate.parse(disasterDamage.getAssessmentDate()));
+            } catch (DateTimeParseException e) {
+                System.err.println("Error parsing date: " + disasterDamage.getAssessmentDate());
             }
         }
 
         Platform.runLater(() -> isPopulatingFields = false);
-
-        System.out.println("All fields populated successfully!");
     }
 
     private void updateDisasterDamage() {
         try {
+            if (!validateInput()) {
+                return;
+            }
+
             BeneficiaryModel beneficiary = beneficiaryNameFld.getValue();
             DisasterModel disaster = disasterFld.getValue();
             String damageSeverity = damageSeverityFld.getValue();
             String verifiedBy = verifiedByFld.getText().trim();
             String notes = notesFld.getText().trim();
 
-            String assessmentDate = birthDatePicker.getValue() != null
-                    ? birthDatePicker.getValue().toString()
-                    : "";
+            String assessmentDate = assessmentDatePicker.getValue() != null ?
+                    assessmentDatePicker.getValue().toString() : "";
 
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+            String regDate = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
-            if (beneficiary == null) {
-                alertDialog.showWarning("Beneficiary is required");
-                return;
-            }
-
-            if (disaster == null) {
-                alertDialog.showWarning("Disaster is required");
-                return;
-            }
-
-            if (damageSeverity == null || damageSeverity.isEmpty()) {
-                alertDialog.showWarning("Damage severity is required");
-                return;
-            }
-
-            if (assessmentDate.isEmpty()) {
-                alertDialog.showWarning("Assessment date is required");
-                return;
-            }
-
-            if (verifiedBy.isEmpty()) {
-                alertDialog.showWarning("Verified by is required");
-                return;
-            }
-
-            if (notes.isEmpty()) {
-                alertDialog.showWarning("Notes are required");
-                return;
-            }
-
-            DisasterDamageModel ddm = new DisasterDamageModel(
+            DisasterDamageModel updatedDisasterDamage = new DisasterDamageModel(
                     beneficiary.getBeneficiaryId(),
                     disaster.getDisasterId(),
                     damageSeverity,
@@ -457,38 +390,76 @@ public class EditDisasterDamageDialogController {
                     regDate
             );
 
-            ddm.setBeneficiaryDisasterDamageId(currentDisaster.getBeneficiaryDisasterDamageId());
+            updatedDisasterDamage.setBeneficiaryDisasterDamageId(
+                    currentDisasterDamage.getBeneficiaryDisasterDamageId());
 
-            boolean success = disasterDamageService.updateDisasterDamage(ddm);
+            boolean success = disasterDamageService.updateDisasterDamage(updatedDisasterDamage);
 
             if (success) {
-                alertDialog.showSuccess(
-                        "Success",
-                        "Disaster damage updated successfully."
-                );
+                AlertDialogManager.showSuccess("Update Successful",
+                        "Disaster damage record has been successfully updated.");
 
                 if (disasterDamageController != null) {
                     disasterDamageController.loadTable();
                 }
-
+                closeDialog();
             } else {
-                alertDialog.showErrorAlert(
-                        "Error",
-                        "Failed to update disaster damage."
-                );
+                AlertDialogManager.showError("Update Failed",
+                        "Failed to update disaster damage record. Please try again.");
             }
 
         } catch (Exception e) {
-            alertDialog.showErrorAlert("Error", e.getMessage());
             e.printStackTrace();
+            AlertDialogManager.showError("Update Error",
+                    "An error occurred while updating disaster damage: " + e.getMessage());
         }
+    }
+
+    private boolean validateInput() {
+        if (beneficiaryNameFld.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error", "Beneficiary is required.");
+            beneficiaryNameFld.requestFocus();
+            return false;
+        }
+
+        if (disasterFld.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error", "Disaster is required.");
+            disasterFld.requestFocus();
+            return false;
+        }
+
+        if (damageSeverityFld.getValue() == null || damageSeverityFld.getValue().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Damage severity is required.");
+            damageSeverityFld.requestFocus();
+            return false;
+        }
+
+        if (assessmentDatePicker.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error", "Assessment date is required.");
+            assessmentDatePicker.requestFocus();
+            return false;
+        }
+
+        if (verifiedByFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Verified by is required.");
+            verifiedByFld.requestFocus();
+            return false;
+        }
+
+        if (notesFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Notes are required.");
+            notesFld.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
     private void closeDialog() {
         if (dialogStage != null) {
-            dialogStage.close();
-        } else {
-            ((Stage) exitBtn.getScene().getWindow()).close();
+            dialogStage.hide();
+        } else if (exitBtn.getScene() != null && exitBtn.getScene().getWindow() instanceof Stage) {
+            ((Stage) exitBtn.getScene().getWindow()).hide();
         }
     }
 }

@@ -1,60 +1,43 @@
 package com.ionres.respondph.familymembers.dialogs_controller;
 
 import com.ionres.respondph.common.model.BeneficiaryModel;
+import com.ionres.respondph.familymembers.FamilyMemberService;
+import com.ionres.respondph.familymembers.FamilyMembersController;
+import com.ionres.respondph.familymembers.FamilyMembersModel;
+import com.ionres.respondph.util.AlertDialogManager;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.ionres.respondph.familymembers.FamilyMemberService;
-import com.ionres.respondph.familymembers.FamilyMembersController;
-import com.ionres.respondph.familymembers.FamilyMembersModel;
-import com.ionres.respondph.util.AlertDialog;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-
 public class AddFamilyController {
-    @FXML
-    private VBox root;
-    @FXML
-    private TextField firstNameFld;
-    @FXML
-    private TextField middleNameFld;
-    @FXML
-    private TextField lastNameFld;
-    @FXML
-    private DatePicker birthDatePicker;
-    @FXML
-    private ComboBox<String> genderSelection;
-    @FXML
-    private ComboBox<String> maritalStatusSelection;
-    @FXML
-    private ComboBox<String> disabilityTypeSelection;
-    @FXML
-    private ComboBox<String> healthConditionSelection;
-    @FXML
-    private ComboBox<String> employmentStatusSelection;
-    @FXML
-    private ComboBox<String> educationLevelSelection;
 
-    @FXML
-    private ComboBox<BeneficiaryModel> beneficiaryNameFld;
+    @FXML private VBox root;
+    @FXML private TextField firstNameFld;
+    @FXML private TextField middleNameFld;
+    @FXML private TextField lastNameFld;
+    @FXML private DatePicker birthDatePicker;
+    @FXML private ComboBox<String> genderSelection;
+    @FXML private ComboBox<String> maritalStatusSelection;
+    @FXML private ComboBox<String> disabilityTypeSelection;
+    @FXML private ComboBox<String> healthConditionSelection;
+    @FXML private ComboBox<String> employmentStatusSelection;
+    @FXML private ComboBox<String> educationLevelSelection;
+    @FXML private ComboBox<BeneficiaryModel> beneficiaryNameFld;
+    @FXML private TextArea notesFld;
+    @FXML private ComboBox<String> relationshipSelection;
+    @FXML private Button saveBtn;
+    @FXML private Button exitBtn;
 
-    @FXML
-    private TextArea notesFld;
-    @FXML
-    private ComboBox<String> relationshipSelection;
-    @FXML
-    private Button saveBtn;
-    @FXML
-    private Button exitBtn;
-    AlertDialog alertDialog = new AlertDialog();
     private double xOffset = 0;
-    private  double yOffset = 0;
+    private double yOffset = 0;
     private List<BeneficiaryModel> allBeneficiaries;
     private FamilyMemberService familyMemberService;
     private FamilyMembersController familyMembersController;
@@ -63,49 +46,46 @@ public class AddFamilyController {
         this.familyMemberService = familyMemberService;
         loadBeneficiaries();
     }
+
     public void setFamilyMemberController(FamilyMembersController familyMembersController) {
         this.familyMembersController = familyMembersController;
     }
 
-    public void initialize(){
+    @FXML
+    public void initialize() {
         makeDraggable();
-        initializeFamilyMemberProfileDropdowns();
-        initializeVulnerabilityIndicatorsDropdowns();
-        setupActionHandlers();
+        initializeDropdowns();
+        setupEventHandlers();
         setupKeyHandlers();
     }
 
     private void setupKeyHandlers() {
         root.setOnKeyPressed(event -> {
             switch (event.getCode()) {
-                case ENTER: saveBtn.fire();
-                case ESCAPE: exitBtn.fire();
+                case ENTER: saveBtn.fire(); break;
+                case ESCAPE: exitBtn.fire(); break;
             }
         });
         root.requestFocus();
     }
 
-    private void setupActionHandlers() {
-        EventHandler<ActionEvent> handlers = this::handleActions;
-        saveBtn.setOnAction(handlers);
-        exitBtn.setOnAction(handlers);
+    private void setupEventHandlers() {
+        saveBtn.setOnAction(this::handleSave);
+        exitBtn.setOnAction(this::handleExit);
     }
 
-
-    private void handleActions(ActionEvent event){
-        Object src = event.getSource();
-
-        if (src == saveBtn){
-            addFamilyMembers();
-            familyMembersController.loadTable();
-            clearFields();
-        }
-        else if(src == exitBtn){
-            closeDialog();
-        }
-
+    private void handleSave(ActionEvent event) {
+        addFamilyMember();
     }
 
+    private void handleExit(ActionEvent event) {
+        closeDialog();
+    }
+
+    private void initializeDropdowns() {
+        initializeFamilyMemberProfileDropdowns();
+        initializeVulnerabilityIndicatorsDropdowns();
+    }
 
     private void initializeFamilyMemberProfileDropdowns() {
         genderSelection.getItems().addAll("Male", "Female", "Other");
@@ -117,6 +97,7 @@ public class AddFamilyController {
                 "Separated",
                 "Divorced"
         );
+
         relationshipSelection.getItems().addAll(
                 "Son",
                 "Daughter",
@@ -126,8 +107,6 @@ public class AddFamilyController {
                 "Brother",
                 "Sister"
         );
-
-
     }
 
     private void initializeVulnerabilityIndicatorsDropdowns() {
@@ -170,13 +149,14 @@ public class AddFamilyController {
     }
 
     private void closeDialog() {
-        ((javafx.stage.Stage) exitBtn.getScene().getWindow()).close();
+        Stage stage = (Stage) exitBtn.getScene().getWindow();
+        stage.hide();
     }
 
-    public void clearFields() {
-        firstNameFld.setText("");
-        middleNameFld.setText("");
-        lastNameFld.setText("");
+    private void clearFields() {
+        firstNameFld.clear();
+        middleNameFld.clear();
+        lastNameFld.clear();
         relationshipSelection.getSelectionModel().clearSelection();
         birthDatePicker.setValue(null);
         genderSelection.getSelectionModel().clearSelection();
@@ -186,106 +166,158 @@ public class AddFamilyController {
         employmentStatusSelection.getSelectionModel().clearSelection();
         educationLevelSelection.getSelectionModel().clearSelection();
         beneficiaryNameFld.getSelectionModel().clearSelection();
-        beneficiaryNameFld.getEditor().setText("");
-        notesFld.setText("");
-
+        beneficiaryNameFld.getEditor().clear();
+        notesFld.clear();
     }
 
-    private void addFamilyMembers(){
-        String firstname        = firstNameFld.getText().trim();
-        String middlename       = middleNameFld.getText().trim();
-        String lastname         = lastNameFld.getText().trim();
-        String relationshipToBene = relationshipSelection.getValue();
-        String birthDate        = birthDatePicker.getValue() != null
-                ? birthDatePicker.getValue().toString()
-                : "";
-        String gender           = genderSelection.getValue();
-        String maritalStatus    = maritalStatusSelection.getValue();
-        String disabilityType   = disabilityTypeSelection.getValue();
-        String healthCondition  = healthConditionSelection.getValue();
-        String employmentStatus = employmentStatusSelection.getValue();
-        String educationalLevel = educationLevelSelection.getValue();
-        String notes = notesFld.getText().trim();
-        String regDate = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+    private void addFamilyMember() {
+        try {
+            // Validate input
+            if (!validateInput()) {
+                return;
+            }
 
-        BeneficiaryModel selected = beneficiaryNameFld.getValue();
+            // Get values
+            String firstName = firstNameFld.getText().trim();
+            String middleName = middleNameFld.getText().trim();
+            String lastName = lastNameFld.getText().trim();
+            String relationship = relationshipSelection.getValue();
+            String birthDate = birthDatePicker.getValue() != null ? birthDatePicker.getValue().toString() : "";
+            String gender = genderSelection.getValue();
+            String maritalStatus = maritalStatusSelection.getValue();
+            String disabilityType = disabilityTypeSelection.getValue();
+            String healthCondition = healthConditionSelection.getValue();
+            String employmentStatus = employmentStatusSelection.getValue();
+            String educationalLevel = educationLevelSelection.getValue();
+            String notes = notesFld.getText().trim();
 
-        if (selected == null) {
-            alertDialog.showWarning("Please select a beneficiary");
-            return;
-        }
-        int beneficiaryId = selected.getBeneficiaryId();
+            String regDate = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
-        if (firstname.isEmpty()) {
-            alertDialog.showWarning("First name is required");
-            return;
-        }
-        if (middlename.isEmpty()) {
-            alertDialog.showWarning("Middle name is required");
-            return;
-        }
-        if (lastname.isEmpty()) {
-            alertDialog.showWarning("Last name is required");
-            return;
-        }
-        if(relationshipToBene.isEmpty()){
-            alertDialog.showWarning("Relationship to Beneficiary is required");
-            return;
-        }
-        if (birthDate.isEmpty()) {
-            alertDialog.showWarning("Birth date is required");
-            return;
-        }
-        if (gender == null) {
-            alertDialog.showWarning("Gender is required");
-            return;
-        }
-        if(maritalStatus == null){
-            alertDialog.showWarning("Marital Status is Required");
-            return;
-        }
-        if (disabilityType == null) {
-            alertDialog.showWarning("Disability type is required");
-            return;
-        }
-        if (healthCondition == null) {
-            alertDialog.showWarning("Health condition is required");
-            return;
-        }
-        if (employmentStatus == null) {
-            alertDialog.showWarning("Employment status is required");
-            return;
-        }
-        if (educationalLevel == null) {
-            alertDialog.showWarning("Educational level is required");
-            return;
-        }
-        if (notes.isEmpty()){
-            alertDialog.showWarning("Notes is required");
-            return;
-        }
+            BeneficiaryModel selectedBeneficiary = beneficiaryNameFld.getValue();
+            int beneficiaryId = selectedBeneficiary.getBeneficiaryId();
 
-        FamilyMembersModel familyMembersModel = new FamilyMembersModel(firstname, middlename, lastname, relationshipToBene, birthDate, gender, maritalStatus,
-                disabilityType, healthCondition, employmentStatus, educationalLevel, beneficiaryId, notes, regDate);
-
-        boolean success = familyMemberService.createfamilyMember(familyMembersModel);
-
-        if (success) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    "Family Member successfully added.",
-                    "Success",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+            // Create family member model
+            FamilyMembersModel familyMember = new FamilyMembersModel(
+                    firstName, middleName, lastName, relationship, birthDate, gender, maritalStatus,
+                    disabilityType, healthCondition, employmentStatus, educationalLevel,
+                    beneficiaryId, notes, regDate
             );
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    "Failed to add Family Member.",
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+
+            // Save family member
+            boolean success = familyMemberService.createfamilyMember(familyMember);
+
+            if (success) {
+                AlertDialogManager.showSuccess("Success",
+                        "Family member has been successfully added.");
+                familyMembersController.loadTable();
+                clearFields();
+                closeDialog();
+            } else {
+                AlertDialogManager.showError("Error",
+                        "Failed to add family member. Please try again.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Error",
+                    "An error occurred while adding family member: " + e.getMessage());
         }
+    }
+
+    private boolean validateInput() {
+        if (beneficiaryNameFld.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Please select a beneficiary.");
+            beneficiaryNameFld.requestFocus();
+            return false;
+        }
+
+        if (firstNameFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "First name is required.");
+            firstNameFld.requestFocus();
+            return false;
+        }
+
+        if (middleNameFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Middle name is required.");
+            middleNameFld.requestFocus();
+            return false;
+        }
+
+        if (lastNameFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Last name is required.");
+            lastNameFld.requestFocus();
+            return false;
+        }
+
+        if (relationshipSelection.getValue() == null || relationshipSelection.getValue().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Relationship to beneficiary is required.");
+            relationshipSelection.requestFocus();
+            return false;
+        }
+
+        if (birthDatePicker.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Birth date is required.");
+            birthDatePicker.requestFocus();
+            return false;
+        }
+
+        if (genderSelection.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Gender is required.");
+            genderSelection.requestFocus();
+            return false;
+        }
+
+        if (maritalStatusSelection.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Marital status is required.");
+            maritalStatusSelection.requestFocus();
+            return false;
+        }
+
+        if (disabilityTypeSelection.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Disability type is required.");
+            disabilityTypeSelection.requestFocus();
+            return false;
+        }
+
+        if (healthConditionSelection.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Health condition is required.");
+            healthConditionSelection.requestFocus();
+            return false;
+        }
+
+        if (employmentStatusSelection.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Employment status is required.");
+            employmentStatusSelection.requestFocus();
+            return false;
+        }
+
+        if (educationLevelSelection.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Educational level is required.");
+            educationLevelSelection.requestFocus();
+            return false;
+        }
+
+        if (notesFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Notes are required.");
+            notesFld.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
     private void loadBeneficiaries() {
@@ -347,15 +379,17 @@ public class AddFamilyController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            alertDialog.showWarning("Error loading beneficiaries: " + e.getMessage());
+            AlertDialogManager.showError("Load Error",
+                    "Error loading beneficiaries: " + e.getMessage());
         }
     }
 
-    public void makeDraggable() {
+    private void makeDraggable() {
         root.setOnMousePressed(event -> {
             xOffset = event.getSceneX();
             yOffset = event.getSceneY();
         });
+
         root.setOnMouseDragged(event -> {
             Stage dialogStage = (Stage) root.getScene().getWindow();
             dialogStage.setX(event.getScreenX() - xOffset);

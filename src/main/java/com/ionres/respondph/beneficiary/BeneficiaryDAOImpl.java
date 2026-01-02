@@ -212,7 +212,6 @@ public class BeneficiaryDAOImpl implements  BeneficiaryDAO{
 
         try {
             Connection conn = dbConnection.getConnection();
-
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setInt(1, id);

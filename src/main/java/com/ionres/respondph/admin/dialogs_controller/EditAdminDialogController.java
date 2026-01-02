@@ -3,47 +3,37 @@ package com.ionres.respondph.admin.dialogs_controller;
 import com.ionres.respondph.admin.AdminController;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.admin.AdminService;
-import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.AlertDialogManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class EditAdminDialogController {
-    AlertDialog alertDialog = new AlertDialog();
-    @FXML
-    private TextField usernameField;
+    @FXML private VBox root;
 
-    @FXML
-    private TextField firstNameField;
+    @FXML private TextField usernameField;
 
-    @FXML
-    private TextField middleNameField;
+    @FXML private TextField firstNameField;
 
-    @FXML
-    private TextField lastNameField;
+    @FXML private TextField middleNameField;
 
-    @FXML
-    private Label errorLabel;
+    @FXML private TextField lastNameField;
 
-    @FXML
-    private Button updateBtn, closeButton;
+    @FXML private Label errorLabel;
+
+    @FXML private Button updateBtn, closeButton;
 
     private AdminService adminService;
     private AdminController adminController;
     private Stage dialogStage;
     private boolean adminEdit = false;
-
-    public void setAdminService(AdminService adminService) {
-        this.adminService = adminService;
-    }
-    public void setAdminController(AdminController adminController) {
-        this.adminController = adminController;
-    }
-
+    private double yOffset = 0;
+    private double xOffset = 0;
     private AdminModel selectedAdmin;
 
     public void setDialogStage(Stage stage) {
@@ -62,6 +52,14 @@ public class EditAdminDialogController {
         lastNameField.setText(admin.getLastname());
     }
 
+    public void setAdminService(AdminService adminService) {
+        this.adminService = adminService;
+    }
+
+    public void setAdminController(AdminController adminController) {
+        this.adminController = adminController;
+    }
+
     public void initialize() {
         updateBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -76,15 +74,19 @@ public class EditAdminDialogController {
                 closeDialog();
             }
         });
+        makeDraggable();
     }
 
     @FXML
     private void handleEdit() {
         if (validateInput()) {
             adminEdit = true;
-            updateAdminInfo();
-            adminController.refreshAdminTable();
-            clearFields();
+            boolean updated = updateAdminInfo();
+            if (updated) {
+                adminController.refreshAdminTable();
+                clearFields();
+                closeDialog();
+            }
         }
     }
 
@@ -94,39 +96,41 @@ public class EditAdminDialogController {
         String lastName = lastNameField.getText().trim();
 
         if (username.isEmpty()) {
-            alertDialog.showErrorAlert("Failed","Username is required.");
+            AlertDialogManager.showError("Validation Error", "Username is required.");
             usernameField.requestFocus();
             return false;
         }
 
         if (username.length() < 4) {
-            alertDialog.showErrorAlert("Failed","Username must be at least 4 characters long.");
+            AlertDialogManager.showWarning("Validation Error",
+                    "Username must be at least 4 characters long.");
             usernameField.requestFocus();
             return false;
         }
 
         if (firstName.isEmpty()) {
-            alertDialog.showErrorAlert("Failed", "First name is required.");
+            AlertDialogManager.showError("Validation Error", "First name is required.");
             firstNameField.requestFocus();
             return false;
         }
 
         if (lastName.isEmpty()) {
-            alertDialog.showErrorAlert("Failed","Last name is required.");
+            AlertDialogManager.showError("Validation Error", "Last name is required.");
             lastNameField.requestFocus();
             return false;
         }
+
         return true;
     }
 
-    public void clearFields(){
+    public void clearFields() {
         usernameField.setText("");
         firstNameField.setText("");
         middleNameField.setText("");
         lastNameField.setText("");
     }
 
-    public void updateAdminInfo() {
+    public boolean updateAdminInfo() {
         try {
             AdminModel admin = selectedAdmin;
 
@@ -143,14 +147,20 @@ public class EditAdminDialogController {
             boolean updated = adminService.updateAdmin(admin);
 
             if (updated) {
-                alertDialog.showSuccess("Success", "Admin updated successfully!");
+                AlertDialogManager.showSuccess("Update Successful",
+                        "Admin information has been successfully updated.");
+                return true;
             } else {
-                alertDialog.showErrorAlert("Failed", "Failed to update admin.");
+                AlertDialogManager.showError("Update Failed",
+                        "Failed to update admin information. Please try again.");
+                return false;
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            alertDialog.showErrorAlert("Failed", "Error updating admin: " + ex.getMessage());
+            AlertDialogManager.showError("Update Error",
+                    "An error occurred while updating admin: " + ex.getMessage());
+            return false;
         }
     }
 
@@ -158,5 +168,19 @@ public class EditAdminDialogController {
         if (dialogStage != null) {
             dialogStage.hide();
         }
+    }
+
+    private void makeDraggable() {
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            if (dialogStage != null) {
+                dialogStage.setX(e.getScreenX() - xOffset);
+                dialogStage.setY(e.getScreenY() - yOffset);
+            }
+        });
     }
 }

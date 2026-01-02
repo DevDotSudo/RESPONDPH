@@ -7,7 +7,6 @@
 
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="edit-damage-dialog-container" stylesheets="@/styles/disaster_damage/dialog/editdisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamageDialogController">
 
-    <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-dialog-header">
         <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="edit-damage-header-icon" />
         <Label styleClass="edit-damage-dialog-title" text="Edit Disaster Damage" />
@@ -19,28 +18,47 @@
         </Button>
     </HBox>
 
-    <!-- Error Message -->
     <VBox alignment="CENTER" styleClass="edit-damage-error-container">
         <Label fx:id="errorLabel" managed="false" styleClass="edit-damage-error-label" visible="false" />
     </VBox>
 
-    <!-- Scrollable Form Content -->
     <ScrollPane fitToWidth="true" styleClass="edit-damage-form-scroll-pane" VBox.vgrow="ALWAYS">
         <VBox spacing="24" styleClass="edit-damage-forms-container">
             <padding>
                 <Insets bottom="32" left="32" right="32" top="32" />
             </padding>
 
-            <!-- Damage Assessment Information -->
             <VBox spacing="20" styleClass="edit-damage-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-section-header">
-                    <FontAwesomeIconView glyphName="CLIPBOARD_CHECK" size="20" styleClass="edit-damage-section-icon" />
+                    <FontAwesomeIconView glyphName="SEARCH" size="20" styleClass="edit-damage-section-icon" />
+                    <Label styleClass="edit-damage-section-title" text="Search" />
+                </HBox>
+                <HBox spacing="12.0" VBox.vgrow="ALWAYS">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="edit-damage-field-label" text="Search Beneficiary *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="USER" size="16" styleClass="edit-damage-field-icon" />
+                            <ComboBox fx:id="beneficiaryNameFld" editable="true" promptText="Search beneficiary name" styleClass="edit-damage-dropdown" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="edit-damage-field-label" text="Search Disaster *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="FIRE" size="16" styleClass="edit-damage-field-icon" />
+                            <ComboBox fx:id="disasterFld" editable="true" promptText="Search disaster name" styleClass="edit-damage-dropdown" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="20" styleClass="edit-damage-form-section">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-section-header">
+                    <FontAwesomeIconView glyphName="CLIPBOARD" size="20" styleClass="edit-damage-section-icon" />
                     <Label styleClass="edit-damage-section-title" text="Damage Assessment" />
                 </HBox>
 
-                <!-- First Row: Damage Severity and Assessment Date -->
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- House Damage Severity -->
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-damage-field-label" text="House Damage Severity *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
@@ -49,7 +67,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Assessment Date -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-damage-field-label" text="Assessment Date *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
@@ -58,7 +75,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Verified By -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-damage-field-label" text="Verified By *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
@@ -69,7 +85,6 @@
                 </HBox>
             </VBox>
 
-            <!-- Notes Section -->
             <VBox spacing="20" styleClass="edit-damage-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-damage-section-header">
                     <FontAwesomeIconView glyphName="STICKY_NOTE" size="20" styleClass="edit-damage-section-icon" />
@@ -88,7 +103,6 @@
         </VBox>
     </ScrollPane>
 
-    <!-- Action Buttons -->
     <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="edit-damage-button-container" VBox.vgrow="ALWAYS">
         <padding>
             <Insets bottom="32.0" left="32.0" right="32.0" top="32.0" />

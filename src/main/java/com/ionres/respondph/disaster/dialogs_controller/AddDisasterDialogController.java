@@ -3,107 +3,62 @@ package com.ionres.respondph.disaster.dialogs_controller;
 import com.ionres.respondph.disaster.DisasterController;
 import com.ionres.respondph.disaster.DisasterModel;
 import com.ionres.respondph.disaster.DisasterService;
-import com.ionres.respondph.util.AlertDialog;
+import com.ionres.respondph.util.AlertDialogManager;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AddDisasterDialogController {
 
-    @FXML
-    private VBox root;
-
-    @FXML
-    private Button exitBtn, saveBtn;
-
-    @FXML
-    private ComboBox<String> disasterType;
-
-    @FXML
-    private TextField disasterNameFld;
-
-    @FXML
-    private DatePicker datePicker;
-    @FXML
-    private TextField latitudeFld;
-
-    @FXML
-    private TextField longitudeFld;
-
-    @FXML
-    private TextField radiusFld;
-
-    @FXML
-    private TextField notesFld;
+    @FXML private VBox root;
+    @FXML private Button exitBtn, saveBtn;
+    @FXML private ComboBox<String> disasterType;
+    @FXML private TextField disasterNameFld;
+    @FXML private DatePicker datePicker;
+    @FXML private TextField latitudeFld;
+    @FXML private TextField longitudeFld;
+    @FXML private TextField radiusFld;
+    @FXML private TextField notesFld;
 
     private Stage dialogStage;
-
-    public void setDialogStage(Stage stage) {
-        this.dialogStage = stage;
-        onShow();
-    }
-
-    public Stage getDialogStage() {
-        return dialogStage;
-    }
-
-    AlertDialog alertDialog = new AlertDialog();
-
     private DisasterService disasterService;
     private DisasterController disasterController;
-
-    public void setDisasterService(DisasterService disasterService) {
-        this.disasterService = disasterService;
-    }
-    public void setDisasterController(DisasterController disasterController) {
-        this.disasterController = disasterController;
-    }
 
     @FXML
     private void initialize() {
         initializeDisasterTypeDropdowns();
-
         setupKeyHandlers();
         setupActionHandlers();
-
     }
+
     private void setupKeyHandlers() {
         root.setOnKeyPressed(event -> {
             switch (event.getCode()) {
-                case ENTER: saveBtn.fire();
-                case ESCAPE: exitBtn.fire();
+                case ENTER: saveBtn.fire(); break;
+                case ESCAPE: exitBtn.fire(); break;
             }
         });
-
         root.requestFocus();
     }
+
     private void setupActionHandlers() {
-        EventHandler<ActionEvent> handlers = this::handleActions;
-        saveBtn.setOnAction(handlers);
-        exitBtn.setOnAction(handlers);
+        saveBtn.setOnAction(this::handleSave);
+        exitBtn.setOnAction(this::handleExit);
     }
 
-
-    private void handleActions(ActionEvent event){
-        Object src = event.getSource();
-
-        if (src == saveBtn){
-            addDisaster();
-            disasterController.loadTable();
-            clearFields();
-
-        }
-        else if(src == exitBtn){
-            closeDialog();
-        }
-
+    private void handleSave(ActionEvent event) {
+        addDisaster();
     }
 
-    private void initializeDisasterTypeDropdowns(){
+    private void handleExit(ActionEvent event) {
+        closeDialog();
+    }
 
+    private void initializeDisasterTypeDropdowns() {
         disasterType.getItems().addAll(
                 "Earthquake",
                 "Tsunami",
@@ -115,98 +70,98 @@ public class AddDisasterDialogController {
                 "Wildfire",
                 "Heat wave"
         );
-
-
     }
 
-    private void addDisaster(){
+    private void addDisaster() {
         try {
-            String type = disasterType.getValue().trim();
-            String disasterName       = disasterNameFld.getText().trim();
-            String date        = datePicker.getValue() != null
-                    ? datePicker.getValue().toString()
-                    : "";
-            String latitude         = latitudeFld.getText().trim();
-            String longitude         = longitudeFld.getText().trim();
-            String radius         = radiusFld.getText().trim();
+            if (!validateInput()) {
+                return;
+            }
+
+            String type = disasterType.getValue();
+            String disasterName = disasterNameFld.getText().trim();
+            String date = datePicker.getValue() != null ? datePicker.getValue().toString() : "";
+            String latitude = latitudeFld.getText().trim();
+            String longitude = longitudeFld.getText().trim();
+            String radius = radiusFld.getText().trim();
             String notes = notesFld.getText().trim();
 
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+            String regDate = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
+            DisasterModel disaster = new DisasterModel(type, disasterName, date, latitude, longitude, radius, notes, regDate);
 
-            if (type.isEmpty()) {
-                alertDialog.showWarning("Disaster Type is required");
-                return;
-            }
-            if (disasterName.isEmpty()) {
-                alertDialog.showWarning("Disaster Name is required");
-                return;
-            }
-            if (date.isEmpty()) {
-                alertDialog.showWarning("Date is required");
-                return;
-            }
-            if (latitude.isEmpty()) {
-                alertDialog.showWarning("Latitude is required");
-                return;
-            }
-
-            if (longitude.isEmpty()) {
-                alertDialog.showWarning("Longitude is required");
-                return;
-            }
-
-            if (radius.isEmpty()) {
-                alertDialog.showWarning("Radius is required");
-                return;
-            }
-            if (notes.isEmpty()) {
-                alertDialog.showWarning("Notes is required");
-                return;
-            }
-
-            boolean success = disasterService.createDisaster(new DisasterModel(type, disasterName, date, latitude, longitude, radius, notes, regDate));
+            boolean success = disasterService.createDisaster(disaster);
 
             if (success) {
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Disaster successfully added.",
-                        "Success",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                AlertDialogManager.showSuccess("Success", "Disaster has been successfully added.");
+                disasterController.loadTable();
+                clearFields();
+                closeDialog();
             } else {
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Disaster to add beneficiary.",
-                        "Error",
-                        javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                AlertDialogManager.showError("Error", "Failed to add disaster. Please try again.");
             }
 
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    e.getMessage(),
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
             e.printStackTrace();
+            AlertDialogManager.showError("Error", "An error occurred: " + e.getMessage());
+        }
+    }
+
+    private boolean validateInput() {
+        if (disasterType.getValue() == null || disasterType.getValue().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Disaster type is required.");
+            disasterType.requestFocus();
+            return false;
         }
 
+        if (disasterNameFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Disaster name is required.");
+            disasterNameFld.requestFocus();
+            return false;
+        }
+
+        if (datePicker.getValue() == null) {
+            AlertDialogManager.showWarning("Validation Error", "Date is required.");
+            datePicker.requestFocus();
+            return false;
+        }
+
+        if (latitudeFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Latitude is required.");
+            latitudeFld.requestFocus();
+            return false;
+        }
+
+        if (longitudeFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Longitude is required.");
+            longitudeFld.requestFocus();
+            return false;
+        }
+
+        if (radiusFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Radius is required.");
+            radiusFld.requestFocus();
+            return false;
+        }
+
+        if (notesFld.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error", "Notes are required.");
+            notesFld.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
     private void clearFields() {
         disasterType.getSelectionModel().clearSelection();
-        disasterType.setValue(null);
-
-        disasterNameFld.setText("");
+        disasterNameFld.clear();
         datePicker.setValue(null);
-
-        latitudeFld.setText("");
-        longitudeFld.setText("");
-        radiusFld.setText("");
-        notesFld.setText("");
+        latitudeFld.clear();
+        longitudeFld.clear();
+        radiusFld.clear();
+        notesFld.clear();
     }
 
     private void closeDialog() {
@@ -215,7 +170,24 @@ public class AddDisasterDialogController {
         }
     }
 
-    public void onShow() {
+    public void setDialogStage(Stage stage) {
+        this.dialogStage = stage;
+    }
 
+    public Stage getDialogStage() {
+        return dialogStage;
+    }
+
+    public void setDisasterService(DisasterService disasterService) {
+        this.disasterService = disasterService;
+    }
+
+    public void setDisasterController(DisasterController disasterController) {
+        this.disasterController = disasterController;
+    }
+
+    public void onShow() {
+        clearFields();
+        root.requestFocus();
     }
 }

@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="family-dialog-container" stylesheets="@/styles/family/dialog/addfamilydialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.dialogs_controller.AddFamilyController">
+<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" styleClass="family-dialog-container" stylesheets="@/styles/family/dialog/addfamilydialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.dialogs_controller.AddFamilyController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="family-dialog-header">
         <FontAwesomeIconView glyphName="USER_PLUS" size="24" styleClass="family-header-icon" />
@@ -137,7 +137,7 @@
 
             <VBox spacing="20" styleClass="family-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="family-section-header">
-                    <FontAwesomeIconView glyphName="CHART_LINE" size="20" styleClass="family-section-icon" />
+                    <FontAwesomeIconView glyphName="LINE_CHART" size="20" styleClass="family-section-icon" />
                     <Label styleClass="family-section-title" text="Education and Employment" />
                 </HBox>
 

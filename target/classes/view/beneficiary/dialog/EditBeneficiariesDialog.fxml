@@ -8,7 +8,7 @@
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="edit-dialog-container" stylesheets="@/styles/beneficiary/dialog/editbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-dialog-header">
-        <FontAwesomeIconView glyphName="USER_EDIT" size="24" styleClass="edit-header-icon" />
+        <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="edit-header-icon" />
         <Label styleClass="edit-dialog-title" text="Update Beneficiary" />
         <Region HBox.hgrow="ALWAYS" />
         <Button fx:id="exitBtn" styleClass="edit-close-button">
@@ -211,7 +211,7 @@
 
             <VBox spacing="20" styleClass="edit-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-section-header">
-                    <FontAwesomeIconView glyphName="CHART_LINE" size="20" styleClass="edit-section-icon" />
+                    <FontAwesomeIconView glyphName="LINE_CHART" size="20" styleClass="edit-section-icon" />
                     <Label styleClass="edit-section-title" text="Socio-Economic Status" />
                 </HBox>
 

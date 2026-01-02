@@ -9,7 +9,6 @@
 .logo-container {
     -fx-background-color: white;
     -fx-background-image: url(/images/respondph_logo_.png);
-    -fx-border-image-repeat: no repeat;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-background-size: contain;

@@ -1,13 +1,9 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.AppPreferences;
-import com.ionres.respondph.util.SceneManager;
-import com.ionres.respondph.util.SessionManager;
+import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.*;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -21,10 +17,10 @@ public class LoginController {
 
     @FXML
     private TextField usernameField;
-    
+
     @FXML
     private PasswordField passwordField;
-    
+
     @FXML
     private CheckBox rememberMeCheck;
 
@@ -41,7 +37,7 @@ public class LoginController {
             });
         }
     }
-    
+
     @FXML
     private void handleLogin() {
         String username = usernameField.getText();
@@ -50,7 +46,7 @@ public class LoginController {
 
         try {
             if (username.isEmpty() || password.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Validation Error",
+                AlertDialogManager.showWarning("Validation Error",
                         "Please enter both username and password.");
                 return;
             }
@@ -58,43 +54,24 @@ public class LoginController {
             admin = loginService.login(username, password);
 
             if (admin != null) {
-                SessionManager.getInstance().setCurrentAdmin(admin);
+                AlertDialogManager.showSuccess("Login Successful",
+                        "Welcome back. You are now logged in.");
 
+                SessionManager.getInstance().setCurrentAdmin(admin);
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
                 loginStage.close();
-
-                SceneManager.SceneEntry<?> entry =
-                        SceneManager.load("/view/main/MainScreen.fxml");
-
-                Stage stage = new Stage();
-                Scene scene = new Scene(entry.getRoot(), 1200, 800);
-                scene.getStylesheets().add(
-                        getClass().getResource("/styles/main/mainframe.css").toExternalForm()
-                );
-
-                stage.setTitle("RespondPH - Dashboard");
-                stage.setScene(scene);
-                stage.setMinWidth(1600);
-                stage.setMinHeight(800);
-                stage.setMaximized(true);
-                stage.show();
+                SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
             }
             else {
-                showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.");
+                AlertDialogManager.showError("Login Failed",
+                        "Incorrect username or password.");
                 passwordField.clear();
             }
         }
         catch (Exception e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load mapping: " + e.getMessage());
+            AlertDialogManager.showError("Error",
+                    "Failed to load mapping: " + e.getMessage());
         }
-    }
-    
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }

@@ -21,7 +21,7 @@
 }
 
 .edit-damage-header-icon {
-    -fx-fill: #3b82f6;
+    -fx-fill: #f97316;
 }
 
 .edit-damage-dialog-title {
@@ -62,11 +62,11 @@
 .edit-damage-error-label {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
-    -fx-text-fill: #ef4444;
+    -fx-text-fill: #f97316;
     -fx-padding: 14px 24px;
     -fx-background-color: rgba(239, 68, 68, 0.1);
     -fx-background-radius: 10px;
-    -fx-border-color: #ef4444;
+    -fx-border-color: #f97316;
     -fx-border-width: 1px;
     -fx-border-radius: 10px;
     -fx-text-alignment: center;
@@ -124,7 +124,7 @@
 }
 
 .edit-damage-section-icon {
-    -fx-fill: #3b82f6;
+    -fx-fill: #f97316;
 }
 
 .edit-damage-section-title {
@@ -154,7 +154,7 @@
 }
 
 .edit-damage-input-container:focused {
-    -fx-border-color: #3b82f6;
+    -fx-border-color: #f97316;
     -fx-background-color: #0f172a;
 }
 
@@ -163,7 +163,7 @@
 }
 
 .edit-damage-input-container:focused .edit-damage-field-icon {
-    -fx-fill: #3b82f6;
+    -fx-fill: #f97316;
 }
 
 /* ===== EDIT DAMAGE INPUT FIELDS ===== */
@@ -309,7 +309,7 @@
 }
 
 .edit-damage-update-button {
-    -fx-background-color: #3b82f6;
+    -fx-background-color: #f97316;
     -fx-background-radius: 10px;
     -fx-border-radius: 10px;
     -fx-cursor: hand;
@@ -323,11 +323,11 @@
 }
 
 .edit-damage-update-button:hover {
-    -fx-background-color: #2563eb;
+    -fx-background-color: #f97316;
 }
 
 .edit-damage-update-button:pressed {
-    -fx-background-color: #1d4ed8;
+    -fx-background-color: #f56602;
 }
 
 .edit-damage-button-container {
@@ -403,7 +403,7 @@
 }
 
 .edit-damage-date-picker-popup .selected {
-    -fx-background-color: #3b82f6 !important;
+    -fx-background-color: #f97316 !important;
     -fx-text-fill: #ffffff !important;
 }
 

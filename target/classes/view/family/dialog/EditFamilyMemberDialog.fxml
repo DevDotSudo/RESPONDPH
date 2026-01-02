@@ -5,9 +5,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="edit-family-dialog-container" stylesheets="@/styles/family/dialog/editfamilymemberdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.dialogs_controller.EditFamilyController">
+<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" styleClass="edit-family-dialog-container" stylesheets="@/styles/family/dialog/editfamilymemberdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.familymembers.dialogs_controller.EditFamilyController">
 
-    <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-dialog-header">
         <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="edit-family-header-icon" />
         <Label styleClass="edit-family-dialog-title" text="Edit Family Member" />
@@ -19,26 +18,22 @@
         </Button>
     </HBox>
 
-    <!-- Error Message -->
     <VBox alignment="CENTER" styleClass="edit-family-error-container">
         <Label fx:id="errorLabel" managed="false" styleClass="edit-family-error-label" visible="false" />
     </VBox>
 
-    <!-- Scrollable Form Content -->
     <ScrollPane fitToWidth="true" styleClass="edit-family-form-scroll-pane" VBox.vgrow="ALWAYS">
         <VBox spacing="24" styleClass="edit-family-forms-container">
             <padding>
                 <Insets bottom="32" left="32" right="32" top="32" />
             </padding>
 
-            <!-- Family Member Information -->
             <VBox spacing="20" styleClass="edit-family-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-section-header">
                     <FontAwesomeIconView glyphName="USERS" size="20" styleClass="edit-family-section-icon" />
                     <Label styleClass="edit-family-section-title" text="Family Member Information" />
                 </HBox>
 
-                <!-- Name Fields (3 columns) -->
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
                     <!-- First Name -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
@@ -49,7 +44,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Middle Name -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Middle Name" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -58,7 +52,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Last Name -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Last Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -68,7 +61,6 @@
                     </VBox>
                 </HBox>
 
-                <!-- Second Row: Birthdate, Gender, Marital Status -->
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
                     <!-- Birthdate -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
@@ -79,7 +71,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Gender -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Gender *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -88,7 +79,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Marital Status -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Marital Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -98,7 +88,6 @@
                     </VBox>
                 </HBox>
 
-                <!-- Third Row: Relationship -->
                 <VBox spacing="8">
                     <Label styleClass="edit-family-field-label" text="Relationship to Beneficiary *" />
                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -108,7 +97,6 @@
                 </VBox>
             </VBox>
 
-            <!-- Vulnerability Indicators -->
             <VBox spacing="20" styleClass="edit-family-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-section-header">
                     <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="20" styleClass="edit-family-section-icon" />
@@ -116,7 +104,6 @@
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Disability Type -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Disability Type *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -125,7 +112,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Health Condition -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Health Condition *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -136,15 +122,13 @@
                 </HBox>
             </VBox>
 
-            <!-- Education and Employment -->
             <VBox spacing="20" styleClass="edit-family-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-section-header">
-                    <FontAwesomeIconView glyphName="CHART_LINE" size="20" styleClass="edit-family-section-icon" />
+                    <FontAwesomeIconView glyphName="LINE_CHART" size="20" styleClass="edit-family-section-icon" />
                     <Label styleClass="edit-family-section-title" text="Education and Employment" />
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Employment Status -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Employment Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -153,7 +137,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Education Level -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-family-field-label" text="Education Level *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-input-container" HBox.hgrow="ALWAYS">
@@ -164,7 +147,6 @@
                 </HBox>
             </VBox>
 
-            <!-- Notes Section -->
             <VBox spacing="20" styleClass="edit-family-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-family-section-header">
                     <FontAwesomeIconView glyphName="STICKY_NOTE" size="20" styleClass="edit-family-section-icon" />
@@ -180,7 +162,6 @@
         </VBox>
     </ScrollPane>
 
-    <!-- Action Buttons -->
     <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="edit-family-button-container">
         <padding>
             <Insets bottom="32" left="32" right="32" top="24" />

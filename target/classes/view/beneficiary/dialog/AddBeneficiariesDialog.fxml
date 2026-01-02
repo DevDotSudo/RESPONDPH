@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="dialog-container" stylesheets="@/styles/beneficiary/dialog/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
+<VBox fx:id="root" prefHeight="915.0" prefWidth="1000.0" spacing="0" styleClass="dialog-container" stylesheets="@/styles/beneficiary/dialog/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
         <FontAwesomeIconView glyphName="USER_PLUS" size="24" styleClass="header-icon" />
@@ -215,7 +215,7 @@
 
             <VBox spacing="20" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="CHART_LINE" size="20" styleClass="section-icon" />
+                    <FontAwesomeIconView glyphName="LINE_CHART" size="20" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Socio-Economic Status" />
                 </HBox>
 

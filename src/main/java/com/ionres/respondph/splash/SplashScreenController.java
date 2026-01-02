@@ -68,19 +68,8 @@ public class SplashScreenController {
                 Stage splashStage = (Stage) loadingText.getScene().getWindow();
                 splashStage.close();
 
-                SceneManager.SceneEntry<?> entry =
-                        SceneManager.load("/view/auth/Login.fxml");
+                SceneManager.showStage("/view/auth/Login.fxml", "ResponPH - Login");
 
-                Scene scene = new Scene(entry.getRoot(), 1200, 800);
-                scene.getStylesheets().add(getClass().getResource("/styles/auth/login_screen.css").toExternalForm());
-
-                Stage stage = new Stage();
-                stage.setTitle("RespondPH - Login");
-                stage.setScene(scene);
-                stage.setMinWidth(1600);
-                stage.setMinHeight(800);
-                stage.setMaximized(true);
-                stage.show();
             } catch (Exception e) {
                 e.printStackTrace();
             }

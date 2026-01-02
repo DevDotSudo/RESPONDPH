@@ -3,6 +3,7 @@ package com.ionres.respondph.admin.dialogs_controller;
 import com.ionres.respondph.admin.AdminController;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.admin.AdminService;
+import com.ionres.respondph.util.AlertDialogManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -63,7 +64,6 @@ public class AddAdminDialogController {
     }
 
     private void handleSave() {
-
         if (!validateInput()) return;
 
         try {
@@ -80,11 +80,16 @@ public class AddAdminDialogController {
 
             adminService.createAdmin(admin);
 
+            AlertDialogManager.showSuccess("Admin Created",
+                    "New administrator has been successfully added to the system.");
+
             adminAdded = true;
             adminController.refreshAdminTable();
             close();
 
         } catch (Exception e) {
+            AlertDialogManager.showError("Create Admin Failed",
+                    "Failed to create admin: " + e.getMessage());
             showError(e.getMessage());
         }
     }
@@ -96,28 +101,37 @@ public class AddAdminDialogController {
     }
 
     private boolean validateInput() {
-
         if (usernameField.getText().trim().length() < 4) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Username must be at least 4 characters.");
             showError("Username must be at least 4 characters.");
             return false;
         }
 
         if (firstNameField.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "First name is required.");
             showError("First name is required.");
             return false;
         }
 
         if (lastNameField.getText().trim().isEmpty()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Last name is required.");
             showError("Last name is required.");
             return false;
         }
 
         if (passwordField.getText().length() < 6) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Password must be at least 6 characters.");
             showError("Password must be at least 6 characters.");
             return false;
         }
 
         if (!passwordField.getText().equals(confirmPasswordField.getText())) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Passwords do not match.");
             showError("Passwords do not match.");
             return false;
         }

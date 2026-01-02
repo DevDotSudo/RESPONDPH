@@ -21,7 +21,7 @@
 }
 
 .edit-disaster-header-icon {
-    -fx-fill: #ef4444;
+    -fx-fill: #f97316;
 }
 
 .edit-disaster-dialog-title {
@@ -50,7 +50,7 @@
 }
 
 .edit-disaster-close-button:hover .edit-disaster-close-icon {
-    -fx-fill: #ef4444;
+    -fx-fill: #f97316;
 }
 
 /* ===== EDIT DISASTER ERROR CONTAINER ===== */
@@ -62,11 +62,11 @@
 .edit-disaster-error-label {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
-    -fx-text-fill: #ef4444;
+    -fx-text-fill: #f97316;
     -fx-padding: 14px 24px;
     -fx-background-color: rgba(239, 68, 68, 0.1);
     -fx-background-radius: 10px;
-    -fx-border-color: #ef4444;
+    -fx-border-color: #f97316;
     -fx-border-width: 1px;
     -fx-border-radius: 10px;
     -fx-text-alignment: center;
@@ -124,7 +124,7 @@
 }
 
 .edit-disaster-section-icon {
-    -fx-fill: #ef4444;
+    -fx-fill: #f97316;
 }
 
 .edit-disaster-section-title {
@@ -154,7 +154,7 @@
 }
 
 .edit-disaster-input-container:focused {
-    -fx-border-color: #ef4444;
+    -fx-border-color: #f97316;
     -fx-background-color: #0f172a;
 }
 
@@ -163,7 +163,7 @@
 }
 
 .edit-disaster-input-container:focused .edit-disaster-field-icon {
-    -fx-fill: #ef4444;
+    -fx-fill: #f97316;
 }
 
 /* ===== EDIT DISASTER INPUT FIELDS ===== */
@@ -319,12 +319,12 @@
 .date-picker-popup .today {
     -fx-background-color: #475569 !important;
     -fx-text-fill: #f8fafc !important;
-    -fx-border-color: #ef4444 !important;
+    -fx-border-color: #f97316 !important;
     -fx-border-width: 1px !important;
 }
 
 .date-picker-popup .selected {
-    -fx-background-color: #ef4444 !important;
+    -fx-background-color: #f97316 !important;
     -fx-text-fill: #ffffff !important;
 }
 
@@ -374,12 +374,12 @@
 
 .edit-disaster-location-button:hover {
     -fx-background-color: #475569;
-    -fx-border-color: #ef4444;
+    -fx-border-color: #f97316;
 }
 
 /* Update button */
 .edit-disaster-update-button {
-    -fx-background-color: #ef4444;
+    -fx-background-color: #f97316;
     -fx-background-radius: 10px;
     -fx-border-radius: 10px;
     -fx-cursor: hand;
@@ -393,11 +393,11 @@
 }
 
 .edit-disaster-update-button:hover {
-    -fx-background-color: #dc2626;
+    -fx-background-color: #f97316;
 }
 
 .edit-disaster-update-button:pressed {
-    -fx-background-color: #b91c1c;
+    -fx-background-color: #f97316;
 }
 
 /* ===== EDIT DISASTER BUTTON CONTAINER ===== */

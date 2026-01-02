@@ -8,7 +8,7 @@
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="damage-dialog-container" stylesheets="@/styles/disaster_damage/dialog/adddisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.AddDisasterDamageDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="damage-dialog-header">
-        <FontAwesomeIconView glyphName="BAN" size="24" styleClass="damage-header-icon" />
+        <FontAwesomeIconView glyphName="FIRE" size="24" styleClass="damage-header-icon" />
         <Label styleClass="damage-dialog-title" text="Add Disaster Damage" />
         <Region HBox.hgrow="ALWAYS" />
         <Button fx:id="exitBtn" styleClass="damage-close-button">
@@ -57,7 +57,7 @@
 
             <VBox spacing="20" styleClass="damage-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="damage-section-header">
-                    <FontAwesomeIconView glyphName="CLIPBOARD_CHECK" size="20" styleClass="damage-section-icon" />
+                    <FontAwesomeIconView glyphName="CLIPBOARD" size="20" styleClass="damage-section-icon" />
                     <Label styleClass="damage-section-title" text="Damage Assessment" />
                 </HBox>
 

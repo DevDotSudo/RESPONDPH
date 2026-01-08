@@ -1,9 +1,9 @@
 package com.ionres.respondph.main;
 
+import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.event.EventHandler;
@@ -122,7 +122,7 @@ public class MainFrameController {
     }
 
     private void handleAids() {
-        loadPage("/view/aids/Aids.fxml");
+        loadPage("/view/aid_type/AidType.fxml");
         activeButton(aidsBtn);
     }
 
@@ -152,11 +152,7 @@ public class MainFrameController {
     }
 
     private void handleLogout() {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Logout");
-            alert.setHeaderText(null);
-            alert.setContentText("Do you want to logout?");
-            alert.showAndWait();
+
     }
 
     private void loadPage(String fxml) {

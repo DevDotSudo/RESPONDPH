@@ -1,8 +1,10 @@
+/* ===== ROOT STYLES ===== */
 .dashboard-root {
     -fx-background-color: #0f172a;
     -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
 }
 
+/* ===== SIDEBAR STYLES ===== */
 .sidebar {
     -fx-background-color: #1e293b;
     -fx-pref-width: 280px;
@@ -15,9 +17,10 @@
     -fx-border-width: 0 0 2px 0;
     -fx-padding: 20px;
 }
+
 .logo-container {
     -fx-background-color: white;
-    -fx-background-image: url("/images/respondph_logo_.png");
+    -fx-background-image: url(/images/respondph_logo_.png);
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-background-size: contain;
@@ -32,7 +35,6 @@
             6
     );
 }
-
 
 .brand-container {
     -fx-padding: 16px 0 0 0;
@@ -54,6 +56,7 @@
     -fx-letter-spacing: 1px;
 }
 
+/* Navigation Menu */
 .nav-menu {
     -fx-spacing: 4px;
     -fx-padding: 16px;
@@ -117,6 +120,7 @@
 
 }
 
+/* Logout Section */
 .logout-section {
     -fx-padding: 16px;
     -fx-border-color: #334155;
@@ -165,6 +169,7 @@
     -fx-text-fill: inherit;
 }
 
+/* ===== CONTENT AREA ===== */
 .content-area {
     -fx-background-color: #0f172a;
     -fx-padding: 15px;

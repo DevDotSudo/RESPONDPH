@@ -62,12 +62,14 @@ public class LoginController {
                 loginStage.close();
                 SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
             }
+
             else {
                 AlertDialogManager.showError("Login Failed",
                         "Incorrect username or password.");
                 passwordField.clear();
             }
         }
+
         catch (Exception e) {
             e.printStackTrace();
             AlertDialogManager.showError("Error",

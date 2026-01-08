@@ -4,7 +4,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +15,6 @@ public final class SceneManager {
 
     private SceneManager() {}
 
-    // existing
     public static <T> SceneEntry<T> load(String fxmlPath) {
         if (CACHE.containsKey(fxmlPath)) {
             return (SceneEntry<T>) CACHE.get(fxmlPath);

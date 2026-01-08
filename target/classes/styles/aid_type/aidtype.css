@@ -1,4 +1,3 @@
-/* ===== ROOT PANE ===== */
 .root-pane {
     -fx-background-color: #0f172a;
     -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
@@ -6,10 +5,10 @@
 
 .header-section {
     -fx-background-color: #1e293b;
+    -fx-background-radius: 10px;
     -fx-border-color: #334155;
     -fx-border-width: 0 0 4px 0;
     -fx-pref-width: 100%;
-    -fx-background-radius: 10px;
     -fx-border-radius: 10px;
 }
 
@@ -24,13 +23,11 @@
     -fx-text-fill: #f8fafc;
 }
 
-/* ===== TOOLBAR ===== */
 .toolbar {
     -fx-background-color: transparent;
     -fx-padding: 0;
 }
 
-/* ===== SEARCH BOX ===== */
 .search-box {
     -fx-background-color: #334155;
     -fx-background-radius: 8px;
@@ -127,10 +124,11 @@
 .table-container {
     -fx-background-color: transparent;
     -fx-padding: 18 0 0 0;
+
 }
 
-/* ===== DAMAGE TABLE ===== */
-.damage-table {
+/* ===== ADMIN TABLE ===== */
+.admin-table {
     -fx-background-color: #1e293b;
     -fx-background-radius: 10px;
     -fx-border-color: #334155;
@@ -140,73 +138,76 @@
     -fx-padding: 0;
 }
 
-/* Column Headers */
-.damage-table .column-header-background {
+.admin-table .virtual-flow {
+    -fx-pref-height: 100%;
+}
+
+.admin-table .column-header-background {
     -fx-background-color: #334155;
     -fx-background-radius: 8px 8px 0 0;
 }
 
-.damage-table .column-header {
+.admin-table .column-header {
     -fx-background-color: transparent;
     -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #f8fafc;
-    -fx-alignment: CENTER;
+    -fx-font-weight: 700; /* BOLD */
+    -fx-text-fill: #f8fafc; /* WHITE TEXT */
+    -fx-alignment: CENTER; /* CENTER ALIGNMENT */
     -fx-padding: 16px 12px;
     -fx-border-color: #475569;
     -fx-border-width: 0 1px 0 0;
 }
 
-.damage-table .filler {
+.admin-table .column-header .label {
+    -fx-text-fill: #f8fafc; /* WHITE TEXT */
+    -fx-font-weight: 700; /* BOLD */
+}
+
+.admin-table .filler {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
-.damage-table .column-header .label {
-    -fx-text-fill: #f8fafc;
-    -fx-font-weight: 700;
-}
-
 /* Table Cells */
-.damage-table .table-cell {
+.admin-table .table-cell {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #e2e8f0;
+    -fx-font-weight: 700; /* BOLD TABLE VALUES */
+    -fx-text-fill: #e2e8f0; /* LIGHT GRAY TEXT */
     -fx-padding: 14px 12px;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER; /* CENTER ALIGNMENT */
     -fx-border-color: #475569;
     -fx-border-width: 0 1px 0 0;
     -fx-background-color: transparent;
 }
 
 /* Table Rows */
-.damage-table .table-row-cell {
+.admin-table .table-row-cell {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
-.damage-table .table-row-cell:odd {
+.admin-table .table-row-cell:odd {
     -fx-background-color: #1e293b;
 }
 
-.damage-table .table-row-cell:even {
+.admin-table .table-row-cell:even {
     -fx-background-color: #1e293b;
 }
 
-.damage-table .table-row-cell:hover {
+.admin-table .table-row-cell:hover {
     -fx-background-color: #334155;
     -fx-cursor: hand;
 }
 
-.damage-table .table-row-cell:selected {
+.admin-table .table-row-cell:selected {
     -fx-background-color: #334155;
     -fx-border-color: #f97316;
     -fx-border-width: 0 0 0 3px;
 }
 
-/* Actions Column */
+/* Actions Column - Centered Buttons */
 .actions-column .table-cell {
     -fx-alignment: CENTER;
     -fx-padding: 8px 0px;
@@ -281,40 +282,40 @@
 }
 
 /* Scrollbars */
-.damage-table .scroll-bar:vertical .track {
+.admin-table .scroll-bar:vertical .track {
     -fx-background-color: #334155;
     -fx-background-radius: 0;
 }
 
-.damage-table .scroll-bar:vertical .thumb {
+.admin-table .scroll-bar:vertical .thumb {
     -fx-background-color: #475569;
     -fx-background-radius: 0;
 }
 
-.damage-table .scroll-bar:vertical .thumb:hover {
+.admin-table .scroll-bar:vertical .thumb:hover {
     -fx-background-color: #64748b;
 }
 
-.damage-table .scroll-bar:horizontal .track {
+.admin-table .scroll-bar:horizontal .track {
     -fx-background-color: #334155;
     -fx-background-radius: 0;
 }
 
-.damage-table .scroll-bar:horizontal .thumb {
+.admin-table .scroll-bar:horizontal .thumb {
     -fx-background-color: #475569;
     -fx-background-radius: 0;
 }
 
-.damage-table .scroll-bar:horizontal .thumb:hover {
+.admin-table .scroll-bar:horizontal .thumb:hover {
     -fx-background-color: #64748b;
 }
 
 /* Empty Table State */
-.damage-table:empty .table-cell {
+.admin-table:empty .table-cell {
     -fx-alignment: CENTER;
 }
 
-.damage-table .placeholder .label {
+.admin-table .placeholder .label {
     -fx-text-fill: #94a3b8;
     -fx-font-size: 14px;
     -fx-font-weight: 500;

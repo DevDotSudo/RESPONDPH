@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="edit-dialog-container" stylesheets="@/styles/beneficiary/dialog/editbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController">
+<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" styleClass="edit-dialog-container" stylesheets="@/styles/beneficiary/dialog/editbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-dialog-header">
         <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="edit-header-icon" />
@@ -34,8 +34,7 @@
                     <Label styleClass="edit-section-title" text="Core Beneficiary Profile" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- First Name -->
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="First Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">
@@ -61,7 +60,7 @@
                     </VBox>
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="Birthdate *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">
@@ -87,7 +86,7 @@
                     </VBox>
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="Marital Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">
@@ -112,7 +111,7 @@
                     <Label styleClass="edit-section-title" text="Geographical Location" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="Latitude" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">
@@ -149,7 +148,7 @@
                     <Label styleClass="edit-section-title" text="Vulnerability Indicators" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="Disability Type *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">
@@ -190,7 +189,7 @@
                     <Label styleClass="edit-section-title" text="Housing and Infrastructure" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="House Construction *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">
@@ -215,8 +214,7 @@
                     <Label styleClass="edit-section-title" text="Socio-Economic Status" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Employment Status -->
+                <HBox  spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-field-label" text="Employment Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-input-container" HBox.hgrow="ALWAYS">

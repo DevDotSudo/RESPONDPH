@@ -4,7 +4,6 @@
     -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
 }
 
-/* ===== HEADER SECTION ===== */
 .header-section {
     -fx-background-color: #1e293b;
     -fx-border-color: #334155;

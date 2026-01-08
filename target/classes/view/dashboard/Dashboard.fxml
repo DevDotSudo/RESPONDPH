@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -9,11 +10,70 @@
     <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <HBox alignment="CENTER_LEFT" styleClass="dashboard-header">
-            <padding>
-                <Insets bottom="30" left="30" right="30" top="30" />
-            </padding>
             <Label styleClass="page-title" text="Dashboard" />
         </HBox>
+
+        <GridPane hgap="15" vgap="15" VBox.vgrow="NEVER">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
+            </columnConstraints>
+
+            <StackPane styleClass="beneficiary-card" GridPane.columnIndex="0">
+                <VBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-container">
+                    <padding>
+                        <Insets bottom="20" left="20" right="20" top="20" />
+                    </padding>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="beneficiary-icon">
+                            <FontAwesomeIconView glyphName="USERS" styleClass="card-icon" />
+                        </StackPane>
+                        <VBox spacing="2">
+                            <Label styleClass="card-title" text="Total Beneficiary" />
+                            <Label styleClass="card-value" text="0" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </StackPane>
+
+            <StackPane styleClass="disasters-card" GridPane.columnIndex="1">
+                <VBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-container">
+                    <padding>
+                        <Insets bottom="20" left="20" right="20" top="20" />
+                    </padding>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="disasters-icon">
+                            <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="card-icon" />
+                        </StackPane>
+                        <VBox spacing="2">
+                            <Label styleClass="card-title" text="Total Disasters" />
+                            <Label styleClass="card-value" text="0" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </StackPane>
+
+            <StackPane styleClass="aids-card" GridPane.columnIndex="2">
+                <VBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-container">
+                    <padding>
+                        <Insets bottom="20" left="20" right="20" top="20" />
+                    </padding>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="aids-icon">
+                            <FontAwesomeIconView glyphName="MEDKIT" styleClass="card-icon" />
+                        </StackPane>
+                        <VBox spacing="2">
+                            <Label styleClass="card-title" text="Total Aids" />
+                            <Label styleClass="card-value" text="0" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </StackPane>
+            <rowConstraints>
+                <RowConstraints />
+            </rowConstraints>
+        </GridPane>
 
         <VBox fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
 

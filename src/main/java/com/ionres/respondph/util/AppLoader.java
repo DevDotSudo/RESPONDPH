@@ -39,7 +39,7 @@
             SceneManager.preload("/view/dashboard/Dashboard.fxml");
             SceneManager.preload("/view/admin/ManageAdmins.fxml");
             SceneManager.preload("/view/beneficiary/ManageBeneficiaries.fxml");
-            SceneManager.preload("/view/aids/Aids.fxml");
+            SceneManager.preload("/view/aid_type/AidType.fxml");
             SceneManager.preload("/view/family/FamilyMembers.fxml");
             SceneManager.preload("/view/disaster/Disaster.fxml");
             SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");
@@ -57,6 +57,6 @@
             DialogManager.preload("editBeneficiary", "/view/beneficiary/dialog/EditBeneficiariesDialog.fxml");
             DialogManager.preload("addFamilyMember", "/view/family/dialog/AddFamilyMemberDialog.fxml");
             DialogManager.preload("editFamilyMember", "/view/family/dialog/EditFamilyMemberDialog.fxml");
-
+            DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
         }
     }

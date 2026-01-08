@@ -102,7 +102,6 @@ public class BeneficiaryController {
         }
     }
 
-    @FXML
     private void handleAddBeneficiary() {
         try {
             AddBeneficiariesDialogController controller = DialogManager.getController("addBeneficiary", AddBeneficiariesDialogController.class);

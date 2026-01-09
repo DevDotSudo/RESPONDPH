@@ -1,5 +1,6 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
+import com.ionres.respondph.util.AlertDialogManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -8,7 +9,6 @@ import javafx.scene.control.TextField;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
-import com.ionres.respondph.util.CustomAlertDialog;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.VBox;
@@ -66,7 +66,6 @@ public class AddBeneficiariesDialogController {
     private Button exitBtn;
     @FXML
     private Button addBeneficiaryBtn;
-    CustomAlertDialog customAlertDialog = new CustomAlertDialog();
     private double yOffset = 0;
     private double xOffset = 0;
     private BeneficiaryService beneficiaryService;
@@ -106,7 +105,6 @@ public class AddBeneficiariesDialogController {
         if(src == addBeneficiaryBtn){
             addBeneficiary();
             beneficiaryController.loadTable();
-            clearFields();
         }
         else if(src == exitBtn){
             close();
@@ -241,85 +239,85 @@ public class AddBeneficiariesDialogController {
 
 
             if (firstname.isEmpty()) {
-                customAlertDialog.showWarning("First name is required");
+                AlertDialogManager.showWarning("Warning","First name is required");
                 return;
             }
             if (middlename.isEmpty()) {
-                customAlertDialog.showWarning("Middle name is required");
+                AlertDialogManager.showWarning("Warning","Middle name is required");
                 return;
             }
             if (lastname.isEmpty()) {
-                customAlertDialog.showWarning("Last name is required");
+                AlertDialogManager.showWarning("Warning","Last name is required");
                 return;
             }
             if (birthDate.isEmpty()) {
-                customAlertDialog.showWarning("Birth date is required");
+                AlertDialogManager.showWarning("Warning","Birth date is required");
                 return;
             }
             if (gender == null) {
-                customAlertDialog.showWarning("Gender is required");
+                AlertDialogManager.showWarning("Warning","Gender is required");
                 return;
             }
             if (mobileNumber.isEmpty()) {
-                customAlertDialog.showWarning("Mobile number is required");
+                AlertDialogManager.showWarning("Warning","Mobile number is required");
                 return;
             }
             if (maritalStatus == null) {
-                customAlertDialog.showWarning("Marital status is required");
+                AlertDialogManager.showWarning("Warning","Marital status is required");
                 return;
             }
             if (soloParentStatus == null) {
-                customAlertDialog.showWarning("Solo parent status is required");
+                AlertDialogManager.showWarning("Warning","Solo parent status is required");
                 return;
             }
             if (latitude.isEmpty()) {
-                customAlertDialog.showWarning("Latitude is required");
+                AlertDialogManager.showWarning("Warning","Latitude is required");
                 return;
             }
             if (longitude.isEmpty()) {
-                customAlertDialog.showWarning("Longitude is required");
+                AlertDialogManager.showWarning("Warning","Longitude is required");
                 return;
             }
             if (disabilityType == null) {
-                customAlertDialog.showWarning("Disability type is required");
+                AlertDialogManager.showWarning("Warning","Disability type is required");
                 return;
             }
             if (healthCondition == null) {
-                customAlertDialog.showWarning("Health condition is required");
+                AlertDialogManager.showWarning("Warning","Health condition is required");
                 return;
             }
             if (cleanWaterAccess == null) {
-                customAlertDialog.showWarning("Clean water access is required");
+                AlertDialogManager.showWarning("Warning","Clean water access is required");
                 return;
             }
             if (sanitationFacility == null) {
-                customAlertDialog.showWarning("Sanitation facility is required");
+                AlertDialogManager.showWarning("Warning","Sanitation facility is required");
                 return;
             }
             if (houseType == null) {
-                customAlertDialog.showWarning("House type is required");
+                AlertDialogManager.showWarning("Warning","House type is required");
                 return;
             }
             if (ownershipStatus == null) {
-                customAlertDialog.showWarning("Ownership status is required");
+                AlertDialogManager.showWarning("Warning","Ownership status is required");
                 return;
             }
             if (employmentStatus == null) {
-                customAlertDialog.showWarning("Employment status is required");
+                AlertDialogManager.showWarning("Warning","Employment status is required");
                 return;
             }
             if (monthlyIncome == null) {
-                customAlertDialog.showWarning("Monthly income is required");
+                AlertDialogManager.showWarning("Warning","Monthly income is required");
                 return;
             }
 
             if (educationalLevel == null) {
-                customAlertDialog.showWarning("Educational level is required");
+                AlertDialogManager.showWarning("Warning","Educational level is required");
                 return;
             }
 
             if (digitalAccess == null) {
-                customAlertDialog.showWarning("Digital access is required");
+                AlertDialogManager.showWarning("Warning","Digital access is required");
                 return;
             }
 
@@ -347,6 +345,7 @@ public class AddBeneficiariesDialogController {
                         javax.swing.JOptionPane.INFORMATION_MESSAGE
                 );
                 System.out.println("Firstname " + addedBy);
+                clearFields();
                 close();
             } else {
                 javax.swing.JOptionPane.showMessageDialog(

@@ -38,6 +38,14 @@ public class SessionManager {
         return "Unknown";
     }
 
+    public int getCurrentAdminId(){
+        if (currentAdmin != null){
+            return  currentAdmin.getId();
+        }
+
+        throw  new IllegalStateException("No Admin is currently  loggen in");
+    }
+
     public void clearSession() {
         currentAdmin = null;
     }

@@ -2,6 +2,7 @@ package com.ionres.respondph.util;
 
 import com.ionres.respondph.admin.AdminService;
 import com.ionres.respondph.admin.login.LoginService;
+import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterService;
@@ -16,6 +17,7 @@ public final class AppContext {
     public static FamilyMemberService familyMemberService;
     public static DisasterService disasterService;
     public static DisasterDamageService disasterDamageService;
+    public static AidTypeService aidTypeService;
 
     private AppContext() {}
 }

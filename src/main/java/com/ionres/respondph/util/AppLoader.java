@@ -2,6 +2,7 @@
 
     import com.ionres.respondph.admin.AdminServiceImpl;
     import com.ionres.respondph.admin.login.LoginServiceImpl;
+    import com.ionres.respondph.aid_type.AidTypeServiceImpl;
     import com.ionres.respondph.beneficiary.BeneficiaryServiceImpl;
     import com.ionres.respondph.database.DBConnection;
     import com.ionres.respondph.disaster.DisasterServiceImpl;
@@ -25,7 +26,8 @@
             AppContext.familyMemberService = new FamilyMemberServiceImpl(AppContext.db);
             AppContext.disasterService  = new DisasterServiceImpl(AppContext.db);
             AppContext.disasterDamageService = new DisasterDamageServiceImpl(AppContext.db);
-        }
+            AppContext.aidTypeService = new AidTypeServiceImpl(AppContext.db);
+         }
 
         public static void configureSettings() {
             // Configuration and mapping setup
@@ -58,5 +60,6 @@
             DialogManager.preload("addFamilyMember", "/view/family/dialog/AddFamilyMemberDialog.fxml");
             DialogManager.preload("editFamilyMember", "/view/family/dialog/EditFamilyMemberDialog.fxml");
             DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
+            DialogManager.preload("editAidType", "/view/aid_type/dialog/EditAidTypeDialog.fxml");
         }
     }

@@ -1,66 +1,59 @@
 .root {
-    -fx-background-color: linear-gradient(to bottom, #1e3a5f 0%, #2c5282 100%);
+    -fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b, #334155);
 }
 
 .content-container {
-    -fx-padding: 40px 140px;
+    -fx-padding: 60px;
 }
 
-.logo-container {
-    -fx-background-color: white;
-    -fx-background-image: url(/images/respondph_logo_.png);
-    -fx-border-image-repeat: no repeat;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-background-size: contain;
-    -fx-background-radius: 16;
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(0,0,0,0.25),
-            20,
-            0.2,
-            0,
-            6
-    );
+.branding-section {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 30, 0, 0, 5);
 }
 
-.brand-text {
-    -fx-font-size: 48px;
+.brand-title {
+    -fx-font-size: 56px;
     -fx-font-weight: bold;
     -fx-text-fill: white;
-    -fx-font-family: "Arial", "Helvetica", sans-serif;
-    -fx-letter-spacing: 3px;
+    -fx-font-family: "Segoe UI", "Arial", "Helvetica", sans-serif;
+    -fx-letter-spacing: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
 }
 
-.brand-text-sub {
-    -fx-font-size: 48px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #f59e42;
-    -fx-font-family: "Arial", "Helvetica", sans-serif;
-    -fx-letter-spacing: 2px;
+.brand-subtitle {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-font-family: "Segoe UI", "Arial", "Helvetica", sans-serif;
+    -fx-letter-spacing: 1px;
+}
+
+.progress-section {
+    -fx-padding: 20px;
 }
 
 .custom-progress-bar {
-    -fx-pref-height: 12px;
-    -fx-background-color: rgba(255, 255, 255, 0.2);
-    -fx-background-radius: 6px;
+    -fx-pref-height: 8px;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 4px;
 }
 
 .custom-progress-bar .track {
-    -fx-background-color: rgba(255, 255, 255, 0.2);
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
 }
 
 .custom-progress-bar .bar {
-    -fx-background-color: linear-gradient(to right, #f59e42 0%, #ff8c42 50%, #f59e42 100%);
-    -fx-background-radius: 6px;
+    -fx-background-color: linear-gradient(to right, #f97316 0%, #fb923c 50%, #f97316 100%);
+    -fx-background-radius: 4px;
     -fx-background-insets: 0;
     -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.6), 8, 0, 0, 0);
 }
 
 .loading-text {
-    -fx-font-size: 18px;
-    -fx-text-fill: rgba(255, 255, 255, 0.8);
-    -fx-font-family: "Arial", "Helvetica", sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+    -fx-font-family: "Segoe UI", "Arial", "Helvetica", sans-serif;
+    -fx-font-weight: 500;
 }

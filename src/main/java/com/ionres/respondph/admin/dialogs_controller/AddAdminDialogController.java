@@ -20,8 +20,7 @@ public class AddAdminDialogController {
     private PasswordField passwordField, confirmPasswordField;
     @FXML
     private Label errorLabel;
-    @FXML
-    private Button closeButton, saveButton;
+    @FXML private Button closeButton, saveButton;
     private Stage dialogStage;
     private AdminService adminService;
     private AdminController adminController;

@@ -12,38 +12,51 @@
            styleClass="root-pane"
            stylesheets="@/styles/auth/login_screen.css">
 
-    <VBox styleClass="login-panel" maxWidth="450" maxHeight="450" alignment="CENTER">
+    <VBox fx:id="loginPanel" styleClass="login-panel" maxWidth="480" maxHeight="600" alignment="CENTER">
         <padding>
-            <Insets top="40" right="40" bottom="40" left="40"/>
+            <Insets top="40" right="50" bottom="40" left="50"/>
         </padding>
 
         <!-- Logo Section -->
         <VBox alignment="CENTER" spacing="10" styleClass="logo-box">
-            <ImageView fitWidth="80" fitHeight="80" preserveRatio="true">
+            <ImageView fitWidth="120" fitHeight="120" preserveRatio="true">
                 <Image url="@/images/respondph_logo_.png" />
             </ImageView>
+            <Label text="RespondPH" styleClass="brand-name"/>
         </VBox>
 
-        <Label text="LOGIN TO YOUR ACCOUNT" styleClass="title-label">
+        <Label text="Welcome Back" styleClass="title-label">
             <VBox.margin>
-                <Insets top="20" bottom="20"/>
+                <Insets top="25" bottom="8"/>
+            </VBox.margin>
+        </Label>
+
+        <Label text="Please login to your account" styleClass="subtitle-text">
+            <VBox.margin>
+                <Insets bottom="25"/>
             </VBox.margin>
         </Label>
 
         <!-- Username Field -->
-        <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="10">
-            <FontAwesomeIconView glyphName="USER" size="20" styleClass="icon-label"/>
-            <TextField fx:id="usernameField" promptText="USERNAME" styleClass="input-field" HBox.hgrow="ALWAYS"/>
+        <VBox spacing="8">
+            <Label text="Username" styleClass="field-label"/>
+            <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="12">
+                <FontAwesomeIconView glyphName="USER" size="18" styleClass="icon-label"/>
+                <TextField fx:id="usernameField" promptText="Enter your username" styleClass="input-field" HBox.hgrow="ALWAYS"/>
+            </HBox>
             <VBox.margin>
-                <Insets bottom="15"/>
+                <Insets bottom="10"/>
             </VBox.margin>
-        </HBox>
+        </VBox>
 
         <!-- Password Field -->
-        <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="10">
-            <FontAwesomeIconView glyphName="LOCK" size="20" styleClass="icon-label"/>
-            <PasswordField fx:id="passwordField" promptText="PASSWORD" styleClass="input-field" HBox.hgrow="ALWAYS"/>
-        </HBox>
+        <VBox spacing="8">
+            <Label text="Password" styleClass="field-label"/>
+            <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="12">
+                <FontAwesomeIconView glyphName="LOCK" size="18" styleClass="icon-label"/>
+                <PasswordField fx:id="passwordField" promptText="Enter your password" styleClass="input-field" HBox.hgrow="ALWAYS"/>
+            </HBox>
+        </VBox>
 
         <!-- Remember Me Checkbox -->
         <HBox alignment="CENTER_LEFT">

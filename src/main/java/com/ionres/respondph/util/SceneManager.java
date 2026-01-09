@@ -8,10 +8,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class SceneManager {
+public final class  SceneManager {
 
     private static final Map<String, SceneEntry<?>> CACHE =
             new ConcurrentHashMap<>();
+
+    private static Stage currentStage;
 
     private SceneManager() {}
 
@@ -39,23 +41,26 @@ public final class SceneManager {
         load(fxmlPath);
     }
 
-    public static Stage showStage(
+    public static void showStage(
             String fxmlPath,
             String title
     ) {
         SceneEntry<?> entry = load(fxmlPath);
+        Parent root = entry.getRoot();
 
-        Stage stage = new Stage();
-        Scene scene = new Scene(entry.getRoot(), 1600, 800);
+        if (currentStage == null) {
+            currentStage = new Stage();
+            Scene scene = new Scene(root, 1600, 800);
+            currentStage.setScene(scene);
+            currentStage.setMinWidth(1600);
+            currentStage.setMinHeight(800);
+            currentStage.setMaximized(true);
+        } else {
+            currentStage.getScene().setRoot(root);
+        }
 
-        stage.setTitle(title);
-        stage.setScene(scene);
-        stage.setMinWidth(1600);
-        stage.setMinHeight(800);
-        stage.setMaximized(true);
-        stage.show();
-
-        return stage;
+        currentStage.setTitle(title);
+        currentStage.show();
     }
 
     public static class SceneEntry<T> {

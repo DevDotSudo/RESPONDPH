@@ -1,12 +1,12 @@
 .root-pane {
-    -fx-background-color: linear-gradient(to bottom right, #1a2942, #2d4a6f);
+    -fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b, #334155);
 }
 
 .login-panel {
-    -fx-background-color: white;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 20, 0, 0, 5);
-    -fx-padding: 40;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 30, 0, 0, 8);
+    -fx-padding: 50;
 }
 
 .logo-box {
@@ -14,56 +14,65 @@
     -fx-spacing: 15;
 }
 
-/* Updated for ImageView logo */
-.logo-box ImageView {
-    -fx-fit-width: 100;
-    -fx-fit-height: 100;
-    -fx-preserve-ratio: true;
-}
-
 .brand-name {
-    -fx-font-family: "Arial";
+    -fx-font-family: "Segoe UI", "Arial";
     -fx-font-weight: bold;
-    -fx-font-size: 24px; /* Increased from 20px */
-    -fx-text-fill: #d97706;
+    -fx-font-size: 24px;
+    -fx-text-fill: #f97316;
+    -fx-letter-spacing: 1px;
 }
 
 .title-label {
-    -fx-font-family: "Arial";
+    -fx-font-family: "Segoe UI", "Arial";
     -fx-font-weight: bold;
-    -fx-font-size: 16px;
-    -fx-text-fill: #1a2942;
+    -fx-font-size: 24px;
+    -fx-text-fill: #1e293b;
+}
+
+.subtitle-text {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748b;
+}
+
+.field-label {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
 }
 
 .input-box {
-    -fx-background-color: #f3f4f6;
-    -fx-background-radius: 5;
-    -fx-border-color: #e5e7eb;
-    -fx-border-radius: 5;
-    -fx-padding: 5 10;
-    -fx-pref-height: 40;
-    -fx-min-height: 40;
-    -fx-max-height: 40;
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-padding: 12 15;
+    -fx-pref-height: 48;
+    -fx-min-height: 48;
+    -fx-max-height: 48;
 }
 
 .input-box:focused {
     -fx-border-color: #f97316;
+    -fx-background-color: white;
 }
 
-/* Updated for FontAwesomeIconView */
 .icon-label {
-    -fx-fill: #9ca3af;
-    -fx-glyph-size: 16px;
+    -fx-fill: #94a3b8;
+    -fx-glyph-size: 18px;
 }
 
 .input-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-font-family: "Segoe UI", "Arial";
     -fx-font-size: 14px;
-    -fx-text-fill: #1f2937;
-    -fx-prompt-text-fill: #9ca3af;
+    -fx-text-fill: #1e293b;
+    -fx-prompt-text-fill: #94a3b8;
     -fx-pref-height: 30;
-    -fx-padding: 0 0 5 0;
+    -fx-padding: 0;
 }
 
 .input-field:focused {
@@ -75,15 +84,17 @@
 }
 
 .remember-checkbox {
-    -fx-text-fill: #6b7280;
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-text-fill: #64748b;
     -fx-font-size: 13px;
 }
 
 .remember-checkbox .box {
     -fx-background-color: white;
-    -fx-border-color: #d1d5db;
-    -fx-border-radius: 3;
-    -fx-background-radius: 3;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
 }
 
 .remember-checkbox:selected .mark {
@@ -92,27 +103,32 @@
 
 .remember-checkbox:selected .box {
     -fx-border-color: #f97316;
-    -fx-background-color: white;
+    -fx-background-color: #f97316;
 }
 
 .login-button {
     -fx-background-color: #f97316;
     -fx-text-fill: white;
+    -fx-font-family: "Segoe UI", "Arial";
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
-    -fx-background-radius: 5;
+    -fx-font-size: 15px;
+    -fx-background-radius: 8;
     -fx-cursor: hand;
-    -fx-pref-height: 40;
-    -fx-min-height: 40;
-    -fx-max-height: 40;
+    -fx-pref-height: 48;
+    -fx-min-height: 48;
+    -fx-max-height: 48;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 12, 0, 0, 4);
 }
 
 .login-button:hover {
     -fx-background-color: #ea580c;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.4), 16, 0, 0, 6);
+    -fx-scale-y: 1.02;
 }
 
 .login-button:pressed {
     -fx-background-color: #c2410c;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.2), 8, 0, 0, 2);
 }
 
 .login-button:focused {

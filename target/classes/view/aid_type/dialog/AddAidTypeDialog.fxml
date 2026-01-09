@@ -202,14 +202,6 @@
         <padding>
             <Insets bottom="32" left="32" right="32" top="24" />
         </padding>
-        <Button fx:id="cancelBtn" styleClass="secondary-btn">
-            <graphic>
-                <HBox alignment="CENTER" spacing="8">
-                    <FontAwesomeIconView glyphName="TIMES" styleClass="btn-icon" />
-                    <Label styleClass="btn-label" text="Cancel" />
-                </HBox>
-            </graphic>
-        </Button>
         <Button fx:id="saveBtn" styleClass="primary-btn">
             <graphic>
                 <HBox alignment="CENTER" spacing="8">

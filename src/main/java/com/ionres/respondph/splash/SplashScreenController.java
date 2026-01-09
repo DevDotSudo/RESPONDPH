@@ -5,7 +5,6 @@ import com.ionres.respondph.util.SceneManager;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
@@ -19,7 +18,6 @@ public class SplashScreenController {
     private Label loadingText;
 
     public void initialize() {
-
         Task<Void> loadingTask = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -68,8 +66,10 @@ public class SplashScreenController {
                 Stage splashStage = (Stage) loadingText.getScene().getWindow();
                 splashStage.close();
 
-                SceneManager.showStage("/view/auth/Login.fxml", "ResponPH - Login");
-
+                SceneManager.showStage(
+                        "/view/auth/Login.fxml",
+                        "RESPONDPH - Login"
+                );
             } catch (Exception e) {
                 e.printStackTrace();
             }

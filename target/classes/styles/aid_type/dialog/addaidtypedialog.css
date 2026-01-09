@@ -93,16 +93,8 @@
     -fx-alignment: CENTER_LEFT;
 }
 
-.field-container:focused-within {
-    -fx-border-color: #f97316;
-}
-
 .field-icon {
     -fx-fill: #94a3b8;
-}
-
-.field-container:focused-within .field-icon {
-    -fx-fill: #f97316;
 }
 
 .text-field,

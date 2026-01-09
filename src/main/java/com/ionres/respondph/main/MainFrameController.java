@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.event.EventHandler;
+import javafx.stage.Stage;
 
 public class MainFrameController {
 
@@ -152,7 +153,19 @@ public class MainFrameController {
     }
 
     private void handleLogout() {
+        boolean confirm = AlertDialogManager.showConfirmation(
+                "Logout",
+                "Do you want to logout?"
+        );
 
+        if (confirm) {
+            Stage stage = (Stage) logoutBtn.getScene().getWindow();
+            stage.close();
+            SceneManager.showStage(
+                    "/view/auth/Login.fxml",
+                    "RESPONDPH - Login"
+            );
+        }
     }
 
     private void loadPage(String fxml) {

@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
 <StackPane prefHeight="800.0" prefWidth="1600.0" styleClass="root" stylesheets="@/styles/auth/splashscreen.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.splash.SplashScreenController">
 
-    <VBox alignment="CENTER" styleClass="content-container">
-      <StackPane prefHeight="626.0" prefWidth="1520.0" styleClass="logo-container">
-         <padding>
-            <Insets top="40.0" />
-         </padding></StackPane>
+    <VBox alignment="CENTER" styleClass="content-container" spacing="40">
 
-        <VBox alignment="BOTTOM_CENTER" prefHeight="161.0" prefWidth="1520.0" spacing="10" styleClass="progress-container">
-            <Label fx:id="loadingText" maxWidth="1.7976931348623157E308" styleClass="loading-text" text="Loading..." />
+        <!-- Logo and Branding Section -->
+        <VBox fx:id="brandingSection" alignment="CENTER" spacing="25" styleClass="branding-section">
+            <ImageView fitWidth="200" fitHeight="200" preserveRatio="true">
+                <Image url="@/images/respondph_logo_.png" />
+            </ImageView>
+
+            <VBox alignment="CENTER" spacing="10">
+                <Label text="RespondPH" styleClass="brand-title"/>
+                <Label text="Emergency Response System" styleClass="brand-subtitle"/>
+            </VBox>
+        </VBox>
+
+        <!-- Progress Section -->
+        <VBox fx:id="progressSection" alignment="CENTER" spacing="15" styleClass="progress-section" maxWidth="500">
             <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0" styleClass="custom-progress-bar" />
+            <Label fx:id="loadingText" styleClass="loading-text" text="Loading application..." />
         </VBox>
 
     </VBox>

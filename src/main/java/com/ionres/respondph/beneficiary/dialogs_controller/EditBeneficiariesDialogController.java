@@ -4,6 +4,7 @@ import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -376,6 +377,7 @@ public class EditBeneficiariesDialogController {
             if (success) {
                 AlertDialogManager.showSuccess("Success", "Beneficiary updated successfully.");
                 clearFields();
+                DashboardRefresher.refresh();
             } else {
                 AlertDialogManager.showError("Error", "Failed to update beneficiary.");
             }

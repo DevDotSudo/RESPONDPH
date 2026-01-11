@@ -8,10 +8,15 @@
     import com.ionres.respondph.disaster.DisasterServiceImpl;
     import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
     import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
+    import com.ionres.respondph.mapping.DashBoardServiceImpl;
+    import com.ionres.respondph.mapping.MappingController;
 
     public class AppLoader {
 
+
+
         public static void initModules() {
+
             // Module initialization logic
         }
 
@@ -27,6 +32,9 @@
             AppContext.disasterService  = new DisasterServiceImpl(AppContext.db);
             AppContext.disasterDamageService = new DisasterDamageServiceImpl(AppContext.db);
             AppContext.aidTypeService = new AidTypeServiceImpl(AppContext.db);
+            AppContext.dashBoardService = new DashBoardServiceImpl(AppContext.db);
+
+
          }
 
         public static void configureSettings() {

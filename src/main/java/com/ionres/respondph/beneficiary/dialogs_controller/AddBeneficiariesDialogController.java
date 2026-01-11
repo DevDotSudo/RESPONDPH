@@ -1,6 +1,7 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -344,9 +345,9 @@ public class AddBeneficiariesDialogController {
                         "Success",
                         javax.swing.JOptionPane.INFORMATION_MESSAGE
                 );
-                System.out.println("Firstname " + addedBy);
                 clearFields();
-                close();
+                DashboardRefresher.refresh();
+
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,

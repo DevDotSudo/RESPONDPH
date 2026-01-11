@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 
 public class SplashScreenController {
 
+
     @FXML
     private ProgressBar progressBar;
 
@@ -48,6 +49,8 @@ public class SplashScreenController {
                 AppLoader.prepareUI();
                 currentStep++;
                 updateProgress(currentStep, totalSteps);
+
+
 
                 updateMessage("Opening application...");
                 Thread.sleep(200);

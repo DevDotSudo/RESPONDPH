@@ -1,4 +1,3 @@
-/* ===== EDIT DISASTER DIALOG CONTAINER ===== */
 .edit-disaster-dialog-container {
     -fx-background-color: #1e293b;
     -fx-border-color: #475569;
@@ -11,7 +10,6 @@
     -fx-pref-height: 700px;
 }
 
-/* ===== EDIT DISASTER DIALOG HEADER ===== */
 .edit-disaster-dialog-header {
     -fx-background-color: #334155;
     -fx-background-radius: 16px 16px 0 0;
@@ -53,7 +51,6 @@
     -fx-fill: #f97316;
 }
 
-/* ===== EDIT DISASTER ERROR CONTAINER ===== */
 .edit-disaster-error-container {
     -fx-padding: 0 32px 0 32px;
     -fx-background-color: transparent;
@@ -400,12 +397,11 @@
     -fx-background-color: #f97316;
 }
 
-/* ===== EDIT DISASTER BUTTON CONTAINER ===== */
 .edit-disaster-button-container {
     -fx-background-color: #1e293b;
     -fx-border-color: #475569;
     -fx-border-width: 1px 0 0 0;
-    -fx-padding: 20px 0;
+    -fx-padding: 20px;
 }
 
 /* ===== REGION ===== */

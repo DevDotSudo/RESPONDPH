@@ -24,16 +24,14 @@
                 <Insets bottom="32" left="32" right="32" top="32" />
             </padding>
 
-            <!-- Aid Name Field -->
             <VBox spacing="8">
                 <Label styleClass="field-label" text="Aid Name" />
                 <HBox spacing="12" styleClass="field-container">
                     <FontAwesomeIconView glyphName="TAG" styleClass="field-icon" />
-                    <TextField fx:id="aidNameFld" promptText="Enter aid type name" styleClass="text-field" />
+                    <TextField fx:id="aidNameFld" promptText="Enter aid type name" styleClass="text-field" HBox.hgrow="ALWAYS" />
                 </HBox>
             </VBox>
 
-            <!-- Weights Grid -->
             <GridPane hgap="20" vgap="20">
                 <columnConstraints>
                     <ColumnConstraints percentWidth="33" />
@@ -41,7 +39,6 @@
                     <ColumnConstraints percentWidth="34" />
                 </columnConstraints>
 
-                <!-- Row 1 -->
                 <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
                     <Label styleClass="field-label" text="Age Weight" />
                     <HBox spacing="8" styleClass="field-container">
@@ -66,7 +63,6 @@
                     </HBox>
                 </VBox>
 
-                <!-- Row 2 -->
                 <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="1">
                     <Label styleClass="field-label" text="Solo Parent Weight" />
                     <HBox spacing="8" styleClass="field-container">
@@ -116,7 +112,6 @@
                     </HBox>
                 </VBox>
 
-                <!-- Row 4 -->
                 <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="3">
                     <Label styleClass="field-label" text="Ownership Weight" />
                     <HBox spacing="8" styleClass="field-container">
@@ -141,7 +136,6 @@
                     </HBox>
                 </VBox>
 
-                <!-- Row 5 -->
                 <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="4">
                     <Label styleClass="field-label" text="Monthly Income Weight" />
                     <HBox spacing="8" styleClass="field-container">
@@ -166,7 +160,6 @@
                     </HBox>
                 </VBox>
 
-                <!-- Row 6 -->
                 <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="5">
                     <Label styleClass="field-label" text="Dependency Ratio Weight" />
                     <HBox spacing="8" styleClass="field-container">
@@ -185,7 +178,6 @@
                 </rowConstraints>
             </GridPane>
 
-            <!-- Notes Section -->
             <VBox spacing="8">
                 <Label styleClass="field-label" text="Notes" />
                 <HBox alignment="CENTER_LEFT" spacing="8">
@@ -197,7 +189,6 @@
         </VBox>
     </ScrollPane>
 
-    <!-- Action Buttons -->
     <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="button-container">
         <padding>
             <Insets bottom="32" left="32" right="32" top="24" />

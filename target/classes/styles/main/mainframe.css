@@ -1,10 +1,8 @@
-/* ===== ROOT STYLES ===== */
 .dashboard-root {
     -fx-background-color: #0f172a;
     -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
 }
 
-/* ===== SIDEBAR STYLES ===== */
 .sidebar {
     -fx-background-color: #1e293b;
     -fx-pref-width: 280px;
@@ -56,7 +54,6 @@
     -fx-letter-spacing: 1px;
 }
 
-/* Navigation Menu */
 .nav-menu {
     -fx-spacing: 4px;
     -fx-padding: 16px;
@@ -120,7 +117,6 @@
 
 }
 
-/* Logout Section */
 .logout-section {
     -fx-padding: 16px;
     -fx-border-color: #334155;
@@ -169,7 +165,6 @@
     -fx-text-fill: inherit;
 }
 
-/* ===== CONTENT AREA ===== */
 .content-area {
     -fx-background-color: #0f172a;
     -fx-padding: 15px;

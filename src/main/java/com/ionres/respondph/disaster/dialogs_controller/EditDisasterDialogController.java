@@ -4,6 +4,7 @@ import com.ionres.respondph.disaster.DisasterController;
 import com.ionres.respondph.disaster.DisasterModel;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -124,6 +125,7 @@ public class EditDisasterDialogController {
                 AlertDialogManager.showSuccess("Update Successful",
                         "Disaster information has been successfully updated.");
                 disasterController.loadTable();
+                DashboardRefresher.refresh();
                 closeDialog();
             } else {
                 AlertDialogManager.showError("Update Failed",

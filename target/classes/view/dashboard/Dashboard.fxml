@@ -31,7 +31,7 @@
                         </StackPane>
                         <VBox spacing="2">
                             <Label styleClass="card-title" text="Total Beneficiary" />
-                            <Label styleClass="card-value" text="0" />
+                            <Label fx:id="totalBeneficiaryLabel" styleClass="card-value" text="0" />
                         </VBox>
                     </HBox>
                 </VBox>
@@ -48,7 +48,7 @@
                         </StackPane>
                         <VBox spacing="2">
                             <Label styleClass="card-title" text="Total Disasters" />
-                            <Label styleClass="card-value" text="0" />
+                            <Label fx:id="totalDisastersLabel" styleClass="card-value" text="0" />
                         </VBox>
                     </HBox>
                 </VBox>
@@ -65,7 +65,7 @@
                         </StackPane>
                         <VBox spacing="2">
                             <Label styleClass="card-title" text="Total Aids" />
-                            <Label styleClass="card-value" text="0" />
+                            <Label fx:id="totalAidsLabel" styleClass="card-value" text="0" />
                         </VBox>
                     </HBox>
                 </VBox>

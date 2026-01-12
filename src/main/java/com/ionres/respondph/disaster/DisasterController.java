@@ -4,6 +4,7 @@ import com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogControl
 import com.ionres.respondph.disaster.dialogs_controller.EditDisasterDialogController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -118,6 +119,7 @@ public class DisasterController {
                     disasterList.remove(disaster);
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Disaster has been successfully deleted.");
+                    DashboardRefresher.refresh();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete disaster. Please try again.");

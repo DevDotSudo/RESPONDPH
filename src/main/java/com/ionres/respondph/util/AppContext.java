@@ -8,6 +8,7 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.familymembers.FamilyMemberService;
+import com.ionres.respondph.mapping.DashBoardService;
 
 public final class AppContext {
     public static DBConnection db;
@@ -18,6 +19,7 @@ public final class AppContext {
     public static DisasterService disasterService;
     public static DisasterDamageService disasterDamageService;
     public static AidTypeService aidTypeService;
+    public static DashBoardService dashBoardService;
 
     private AppContext() {}
 }

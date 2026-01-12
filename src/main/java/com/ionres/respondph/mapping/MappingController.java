@@ -3,16 +3,30 @@ package com.ionres.respondph.mapping;
 import com.gluonhq.maps.MapView;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapLayer;
+import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DashboardRefresher;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.geometry.Point2D;
 
+import javafx.scene.control.*;
+
+
 public class MappingController {
+
+
+    private final DashBoardService dashBoardService = AppContext.dashBoardService;
 
     @FXML
     private VBox mapContainer;
+    @FXML
+    private  Label totalBeneficiaryLabel;
+    @FXML
+    private Label totalDisastersLabel;
+    @FXML
+    private Label totalAidsLabel;
 
     final double MIN_ZOOM = 5.0;
     final double MAX_ZOOM = 18.0;
@@ -66,6 +80,8 @@ public class MappingController {
 
     public void initialize() {
         loadMap();
+        DashboardRefresher.register(this);
+        loadDashBoardData();
     }
 
     private void loadMap() {
@@ -140,4 +156,13 @@ public class MappingController {
             this.lon = lon;
         }
     }
+
+    public  void loadDashBoardData(){
+        totalBeneficiaryLabel.setText(String.valueOf(dashBoardService.fetchTotalBeneficiary()));
+        totalDisastersLabel.setText(String.valueOf(dashBoardService.fetchTotalDisasters()));
+        totalAidsLabel.setText(String.valueOf(dashBoardService.fetchTotalAids()));
+
+    }
+
+
 }

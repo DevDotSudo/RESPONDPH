@@ -11,6 +11,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -44,20 +45,31 @@ public class DisasterController {
         setupActionButtons();
         setupSearchListener();
         loadTable();
-        setupEventHandlers();
+        EventHandler<ActionEvent> handler = this::handleActions;
+        searchBtn.setOnAction(handler);
+        addBtn.setOnAction(handler);
+        refreshBtn.setOnAction(handler);
     }
 
-    private void setupEventHandlers() {
-        refreshBtn.setOnAction(this::handleRefresh);
-        searchBtn.setOnAction(this::handleSearch);
-        addBtn.setOnAction(this::handleAddDisaster);
+    private void handleActions (ActionEvent e) {
+        Object src = e.getSource();
+
+        if (src == searchBtn) {
+            handleSearch();
+        }
+        else if (src == addBtn) {
+            handleAddDisaster();
+        }
+        else if (src == refreshBtn) {
+            handleRefresh();
+        }
     }
 
-    private void handleRefresh(ActionEvent event) {
+    private void handleRefresh() {
         loadTable();
     }
 
-    private void handleSearch(ActionEvent event) {
+    private void handleSearch() {
         String searchText = searchField.getText().trim();
         if (searchText.isEmpty()) {
             loadTable();
@@ -66,7 +78,7 @@ public class DisasterController {
         }
     }
 
-    private void handleAddDisaster(ActionEvent event) {
+    private void handleAddDisaster() {
         showAddDisasterDialog();
     }
 
@@ -102,13 +114,9 @@ public class DisasterController {
             return;
         }
 
-        String disasterName = disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
-
         boolean confirm = AlertDialogManager.showConfirmation(
                 "Delete Disaster",
-                "Are you sure you want to delete disaster:\n" +
-                        disasterName + "?\n\n" +
-                        "This action cannot be undone."
+                "Are you sure you want to delete this disaster?"
         );
 
         if (confirm) {

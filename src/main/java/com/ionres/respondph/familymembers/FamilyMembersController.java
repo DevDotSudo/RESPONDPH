@@ -10,6 +10,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -49,25 +50,36 @@ public class FamilyMembersController {
         setupTableColumns();
         loadTable();
         setupActionButtons();
-        setupEventHandlers();
         setupSearchListener();
+        EventHandler<ActionEvent> handler = this::handleActions;
+        refreshButton.setOnAction(handler);
+        addButton.setOnAction(handler);
+        searchBtn.setOnAction(handler);
     }
 
-    private void setupEventHandlers() {
-        addButton.setOnAction(this::handleAdd);
-        refreshButton.setOnAction(this::handleRefresh);
-        searchBtn.setOnAction(this::handleSearch);
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+
+        if(src == searchBtn){
+            handleSearch();
+        }
+        else if(src == addButton){
+            handleAdd();
+        }
+        else if (src == refreshButton){
+            handleRefresh();
+        }
     }
 
-    private void handleAdd(ActionEvent event) {
+    private void handleAdd() {
         showAddMembersDialog();
     }
 
-    private void handleRefresh(ActionEvent event) {
+    private void handleRefresh() {
         loadTable();
     }
 
-    private void handleSearch(ActionEvent event) {
+    private void handleSearch() {
         String searchText = searchField.getText().trim();
         if (searchText.isEmpty()) {
             loadTable();

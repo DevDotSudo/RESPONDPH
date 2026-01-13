@@ -1,8 +1,10 @@
+/* ===== ROOT STYLES ===== */
 .dashboard-root {
     -fx-background-color: #0f172a;
     -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
 }
 
+/* ===== SIDEBAR STYLES ===== */
 .sidebar {
     -fx-background-color: #1e293b;
     -fx-pref-width: 280px;
@@ -34,32 +36,42 @@
     );
 }
 
-.brand-container {
-    -fx-padding: 16px 0 0 0;
+/* ===== SCROLL PANE ===== */
+.nav-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
 }
 
-.sidebar-brand-name {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 800;
-    -fx-font-size: 28px;
-    -fx-text-fill: #f8fafc;
-    -fx-letter-spacing: 1px;
-}
-
-.sidebar-brand-highlight {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 800;
-    -fx-font-size: 28px;
-    -fx-text-fill: #f97316;
-    -fx-letter-spacing: 1px;
-}
-
-.nav-menu {
-    -fx-spacing: 4px;
-    -fx-padding: 16px;
+.nav-scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 
+.nav-scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8px;
+}
+
+.nav-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.nav-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #334155;
+    -fx-background-radius: 4px;
+}
+
+.nav-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #475569;
+}
+
+/* ===== NAVIGATION MENU ===== */
+.nav-menu {
+    -fx-spacing: 4px;
+    -fx-padding: 12px;
+    -fx-background-color: transparent;
+}
+
+/* ===== SINGLE NAVIGATION BUTTONS ===== */
 .nav-button {
     -fx-background-color: transparent;
     -fx-background-radius: 8px;
@@ -71,10 +83,6 @@
     -fx-font-size: 14px;
     -fx-font-weight: 500;
     -fx-min-height: 48px;
-    -fx-pref-width: 248px;
-    -fx-max-width: 248px;
-    -fx-effect: null;
-    -fx-transition: all 0.2s ease;
 }
 
 .nav-button:hover {
@@ -97,7 +105,7 @@
     -fx-background-color: #ea580c;
 }
 
-.nav-icon {
+.nav-button .nav-icon {
     -fx-fill: #94a3b8;
     -fx-icon-size: 18px;
 }
@@ -110,13 +118,104 @@
     -fx-fill: #ffffff;
 }
 
-.nav-text {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-text-fill: #ffffff;
-
+/* ===== TREE SECTION (DROPDOWN) ===== */
+.tree-section {
+    -fx-spacing: 0;
+    -fx-padding: 0;
 }
 
+/* Tree Section Header (Collapsible Title) */
+.tree-section-header {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #cbd5e1;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 16px;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-min-height: 40px;
+}
+
+.tree-section-header:hover {
+    -fx-background-color: #334155;
+}
+
+.tree-section-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #cbd5e1;
+}
+
+.tree-chevron {
+    -fx-fill: #94a3b8;
+}
+
+.tree-section-header:hover .tree-chevron {
+    -fx-fill: #ffffff;
+}
+
+/* Tree Section Content (Dropdown Items) */
+.tree-section-content {
+    -fx-spacing: 2px;
+    -fx-padding: 0 0 0 12px;
+}
+
+/* Child Navigation Buttons */
+.nav-button-child {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #cbd5e1;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 16px;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-font-weight: 400;
+    -fx-min-height: 38px;
+}
+
+.nav-button-child:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: #ffffff;
+}
+
+.nav-button-child:pressed {
+    -fx-background-color: #475569;
+}
+
+.nav-button-child-active {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+}
+
+.nav-button-child-active:hover {
+    -fx-background-color: #ea580c;
+}
+
+.nav-button-child .nav-icon {
+    -fx-fill: #94a3b8;
+    -fx-icon-size: 16px;
+}
+
+.nav-button-child:hover .nav-icon {
+    -fx-fill: #ffffff;
+}
+
+.nav-button-child-active .nav-icon {
+    -fx-fill: #ffffff;
+}
+
+.nav-text {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: inherit;
+}
+
+/* ===== LOGOUT SECTION ===== */
 .logout-section {
     -fx-padding: 16px;
     -fx-border-color: #334155;
@@ -135,9 +234,6 @@
     -fx-padding: 14px 20px;
     -fx-cursor: hand;
     -fx-min-height: 48px;
-    -fx-pref-width: 248px;
-    -fx-max-width: 248px;
-    -fx-transition: all 0.2s ease;
 }
 
 .logout-button:hover {
@@ -165,6 +261,7 @@
     -fx-text-fill: inherit;
 }
 
+/* ===== CONTENT AREA ===== */
 .content-area {
     -fx-background-color: #0f172a;
     -fx-padding: 15px;

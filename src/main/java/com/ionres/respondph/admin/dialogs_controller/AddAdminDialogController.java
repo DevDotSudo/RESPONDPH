@@ -4,6 +4,8 @@ import com.ionres.respondph.admin.AdminController;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.admin.AdminService;
 import com.ionres.respondph.util.AlertDialogManager;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -12,14 +14,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AddAdminDialogController {
-    @FXML
-    private VBox root;
-    @FXML
-    private TextField usernameField, firstNameField, middleNameField, lastNameField;
-    @FXML
-    private PasswordField passwordField, confirmPasswordField;
-    @FXML
-    private Label errorLabel;
+
+    @FXML private VBox root;
+    @FXML private TextField usernameField, firstNameField, middleNameField, lastNameField;
+    @FXML private PasswordField passwordField, confirmPasswordField;
+    @FXML private Label errorLabel;
     @FXML private Button closeButton, saveButton;
     private Stage dialogStage;
     private AdminService adminService;
@@ -30,9 +29,20 @@ public class AddAdminDialogController {
     @FXML
     public void initialize() {
         makeDraggable();
-        closeButton.setOnAction(e -> close());
-        saveButton.setOnAction(e -> handleSave());
         clearError();
+        EventHandler<ActionEvent> handler = this::handleActions;
+        saveButton.setOnAction(handler);
+        closeButton.setOnAction(handler);
+    }
+
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+        if (src == saveButton) {
+            handleSave();
+        }
+        else if (src == closeButton) {
+            close();
+        }
     }
 
     public void setDialogStage(Stage stage) {
@@ -137,6 +147,7 @@ public class AddAdminDialogController {
 
         return true;
     }
+
 
     private void clearFields() {
         usernameField.clear();

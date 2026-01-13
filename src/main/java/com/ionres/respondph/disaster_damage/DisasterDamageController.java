@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -44,21 +45,33 @@ public class DisasterDamageController {
         setupTableColumns();
         loadTable();
         setupActionButtons();
-        setupEventHandlers();
         setupSearchListener();
+
+        EventHandler<ActionEvent> handler = this::handleActions;
+        searchBtn.setOnAction(handler);
+        addBtn.setOnAction(handler);
+        refreshBtn.setOnAction(handler);
     }
 
-    private void setupEventHandlers() {
-        refreshBtn.setOnAction(this::handleRefresh);
-        searchBtn.setOnAction(this::handleSearch);
-        addBtn.setOnAction(this::handleAddDisasterDamage);
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+
+        if (src == searchBtn) {
+            handleSearch();
+        }
+        else if(src == addBtn){
+            handleAddDisasterDamage();
+        }
+        else if(src == refreshBtn){
+            handleRefresh();
+        }
     }
 
-    private void handleRefresh(ActionEvent event) {
+    private void handleRefresh() {
         loadTable();
     }
 
-    private void handleSearch(ActionEvent event) {
+    private void handleSearch() {
         String searchText = searchField.getText().trim();
         if (searchText.isEmpty()) {
             loadTable();
@@ -67,7 +80,7 @@ public class DisasterDamageController {
         }
     }
 
-    private void handleAddDisasterDamage(ActionEvent event) {
+    private void handleAddDisasterDamage() {
         showAddDisasterDamageDialog();
     }
 
@@ -117,17 +130,9 @@ public class DisasterDamageController {
             return;
         }
 
-        String beneficiaryInfo = disasterDamage.getBeneficiaryFirstname();
-        String disasterInfo = disasterDamage.getDisasterType();
-        String severity = disasterDamage.getHouseDamageSeverity();
-
         boolean confirm = AlertDialogManager.showConfirmation(
                 "Delete Disaster Damage Record",
-                "Are you sure you want to delete this disaster damage record?\n\n" +
-                        "Beneficiary: " + beneficiaryInfo + "\n" +
-                        "Disaster: " + disasterInfo + "\n" +
-                        "Damage Severity: " + severity + "\n\n" +
-                        "This action cannot be undone."
+                "Are you sure you want to delete this disaster damage record?"
         );
 
         if (confirm) {

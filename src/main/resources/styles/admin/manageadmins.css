@@ -224,10 +224,10 @@
     -fx-border-color: #f97316;
     -fx-border-width: 1px;
     -fx-border-radius: 6px;
-    -fx-padding: 8px 16px; /* ADDED PADDING */
+    -fx-padding: 8px 16px;
     -fx-cursor: hand;
     -fx-font-size: 12px;
-    -fx-font-weight: 700; /* BOLD BUTTON TEXT */
+    -fx-font-weight: 700;
     -fx-alignment: CENTER;
     -fx-content-display: CENTER;
     -fx-min-width: 40px;

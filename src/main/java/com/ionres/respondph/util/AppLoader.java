@@ -17,7 +17,6 @@
 
         public static void initModules() {
 
-            // Module initialization logic
         }
 
         public static void connectDatabase() {
@@ -43,13 +42,13 @@
 
         public static void prepareUI() throws Exception {
 
-            //load pages
             SceneManager.preload("/view/auth/Login.fxml");
             SceneManager.preload("/view/main/MainScreen.fxml");
             SceneManager.preload("/view/dashboard/Dashboard.fxml");
             SceneManager.preload("/view/admin/ManageAdmins.fxml");
             SceneManager.preload("/view/beneficiary/ManageBeneficiaries.fxml");
             SceneManager.preload("/view/aid_type/AidType.fxml");
+            SceneManager.preload("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");
             SceneManager.preload("/view/family/FamilyMembers.fxml");
             SceneManager.preload("/view/disaster/Disaster.fxml");
             SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");

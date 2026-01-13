@@ -16,7 +16,7 @@
 
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="MEDKIT" size="24" styleClass="page-icon" />
-                <Label styleClass="page-title" text="Manage Aids" />
+                <Label styleClass="page-title" text="Manage Aid Type" />
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">

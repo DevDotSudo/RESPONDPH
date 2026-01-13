@@ -58,7 +58,6 @@ public class AddAidTypeController {
     private Button saveBtn;
     @FXML
     private Button exitBtn;
-
     private double xOffset = 0;
     private double yOffset = 0;
 
@@ -96,7 +95,6 @@ public class AddAidTypeController {
         }
 
     }
-
 
     private void addAidType() {
         try {

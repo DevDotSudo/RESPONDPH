@@ -30,7 +30,7 @@ public class LoginDAOImpl implements LoginDAO{
                 String encryptedUsername = rs.getString("username");
                 String hashedPassword = rs.getString("hash");
 
-                String decryptedUsername = cs.decryptId(encryptedUsername);
+                String decryptedUsername = cs.decryptWithOneParameter(encryptedUsername);
 
                 if (usernameInput.equals(decryptedUsername)) {
                     List<String> encrypted = new ArrayList<>();

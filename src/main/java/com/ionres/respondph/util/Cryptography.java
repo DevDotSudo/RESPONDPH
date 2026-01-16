@@ -138,7 +138,7 @@ public class Cryptography {
                 + Base64.getEncoder().encodeToString(ciphertext);
     }
 
-    public String decryptId(String encryptedId) throws Exception {
+    public String decryptWithOneParameter(String encryptedId) throws Exception {
         String[] parts = encryptedId.split(":");
         byte[] iv = Base64.getDecoder().decode(parts[0]);
         byte[] ciphertext = Base64.getDecoder().decode(parts[1]);

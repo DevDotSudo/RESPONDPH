@@ -4,6 +4,7 @@ import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.familymembers.FamilyMemberService;
 import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
+import com.ionres.respondph.household_score.HouseholdScoreCalculator;
 import com.ionres.respondph.util.AlertDialogManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -170,7 +171,7 @@ public class AddFamilyController {
         notesFld.clear();
     }
 
-    private void addFamilyMember() {
+    private void addFamilyMembers() {
         try {
             // Validate input
             if (!validateInput()) {
@@ -395,5 +396,72 @@ public class AddFamilyController {
             dialogStage.setX(event.getScreenX() - xOffset);
             dialogStage.setY(event.getScreenY() - yOffset);
         });
+    }
+
+    // Replace the addFamilyMember() method in AddFamilyController
+
+    private void addFamilyMember() {
+        try {
+            // Validate input
+            if (!validateInput()) {
+                return;
+            }
+
+            // Get values
+            String firstName = firstNameFld.getText().trim();
+            String middleName = middleNameFld.getText().trim();
+            String lastName = lastNameFld.getText().trim();
+            String relationship = relationshipSelection.getValue();
+            String birthDate = birthDatePicker.getValue() != null ? birthDatePicker.getValue().toString() : "";
+            String gender = genderSelection.getValue();
+            String maritalStatus = maritalStatusSelection.getValue();
+            String disabilityType = disabilityTypeSelection.getValue();
+            String healthCondition = healthConditionSelection.getValue();
+            String employmentStatus = employmentStatusSelection.getValue();
+            String educationalLevel = educationLevelSelection.getValue();
+            String notes = notesFld.getText().trim();
+
+            String regDate = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+
+            BeneficiaryModel selectedBeneficiary = beneficiaryNameFld.getValue();
+            int beneficiaryId = selectedBeneficiary.getBeneficiaryId();
+
+            // Create family member model
+            FamilyMembersModel familyMember = new FamilyMembersModel(
+                    firstName, middleName, lastName, relationship, birthDate, gender, maritalStatus,
+                    disabilityType, healthCondition, employmentStatus, educationalLevel,
+                    beneficiaryId, notes, regDate
+            );
+
+            boolean success = familyMemberService.createfamilyMember(familyMember);
+
+            if (success) {
+                // Recalculate household scores for this beneficiary
+                HouseholdScoreCalculator calculator = new HouseholdScoreCalculator(
+                );
+                boolean scoresCalculated = calculator.calculateAndSaveHouseholdScore(beneficiaryId);
+
+                if (scoresCalculated) {
+                    AlertDialogManager.showSuccess("Success",
+                            "Family member added and household scores updated successfully.");
+                } else {
+                    AlertDialogManager.showWarning("Partial Success",
+                            "Family member added, but household score update failed.");
+                }
+
+                familyMembersController.loadTable();
+                clearFields();
+                closeDialog();
+            } else {
+                AlertDialogManager.showError("Error",
+                        "Failed to add family member. Please try again.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Error",
+                    "An error occurred while adding family member: " + e.getMessage());
+        }
     }
 }

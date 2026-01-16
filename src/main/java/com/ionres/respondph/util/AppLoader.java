@@ -10,6 +10,8 @@
     import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
     import com.ionres.respondph.mapping.DashBoardServiceImpl;
     import com.ionres.respondph.mapping.MappingController;
+    import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorDAOServiceImpl;
+    import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorServiceImpl;
 
     public class AppLoader {
 
@@ -32,6 +34,7 @@
             AppContext.disasterDamageService = new DisasterDamageServiceImpl(AppContext.db);
             AppContext.aidTypeService = new AidTypeServiceImpl(AppContext.db);
             AppContext.dashBoardService = new DashBoardServiceImpl(AppContext.db);
+            AppContext.vulnerabilityIndicatorService = new VulnerabilityIndicatorServiceImpl(AppContext.db);
 
 
          }

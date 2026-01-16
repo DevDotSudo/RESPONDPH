@@ -1,6 +1,7 @@
 package com.ionres.respondph.main;
 
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.SceneManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.animation.RotateTransition;
@@ -16,22 +17,18 @@ public class MainFrameController {
 
     @FXML private VBox contentArea;
 
-    // Section Headers (only for sections with multiple items)
     @FXML private Button managementSectionBtn;
     @FXML private Button disasterSectionBtn;
     @FXML private Button aidsSectionBtn;
 
-    // Section Contents
     @FXML private VBox managementSectionContent;
     @FXML private VBox disasterSectionContent;
     @FXML private VBox aidsSectionContent;
 
-    // Chevron Icons
     @FXML private FontAwesomeIconView managementSectionIcon;
     @FXML private FontAwesomeIconView disasterSectionIcon;
     @FXML private FontAwesomeIconView aidsSectionIcon;
 
-    // Navigation Buttons
     @FXML private Button dashboardBtn;
     @FXML private Button manageAdminBtn;
     @FXML private Button manageBeneficiariesBtn;
@@ -99,6 +96,7 @@ public class MainFrameController {
             handleAids();
         }
         else if(src == vulnerabilityBtn) {
+            DashboardRefresher.refreshFlds();
             handleVulnerabilityIndicator();
         }
         else if(src == familyMembersBtn) {

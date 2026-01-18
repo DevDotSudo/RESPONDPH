@@ -6,6 +6,7 @@ public class BeneficiaryModel {
     private String middlename;
     private String lastname;
     private String birthDate;
+    private double ageScore;
     private String gender;
     private String maritalStatus;
     private String soloParentStatus;
@@ -25,13 +26,14 @@ public class BeneficiaryModel {
     private String addedBy;
     private String regDate;
 
-    public BeneficiaryModel(String firstname, String middlename, String lastname, String birthDate, String gender, String maritalStatus, String soloParentStatus, String latitude,
+    public BeneficiaryModel(String firstname, String middlename, String lastname, String birthDate, double ageScore, String gender, String maritalStatus, String soloParentStatus, String latitude,
                             String longitude,String mobileNumber, String disabilityType, String healthCondition, String cleanWaterAccess, String sanitationFacility, String houseType,
                             String ownerShipStatus, String employmentStatus, String monthlyIncome, String educationalLevel, String digitalAccess, String addedBy, String regDate){
         this.firstname = firstname;
         this.middlename = middlename;
         this.lastname = lastname;
         this.birthDate = birthDate;
+        this.ageScore = ageScore;
         this.gender = gender;
         this.maritalStatus = maritalStatus;
         this.soloParentStatus = soloParentStatus;
@@ -87,6 +89,14 @@ public class BeneficiaryModel {
     public void  setBirthDate(String newBirthDate){
         this.birthDate = newBirthDate;
     }
+    public double getAgeScore(){
+        return ageScore;
+    }
+
+    public void setAgeScore(double ageScore) {
+        this.ageScore = ageScore;
+    }
+
     public String getGender(){
         return gender;
     }

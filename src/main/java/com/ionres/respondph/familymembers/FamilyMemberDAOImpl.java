@@ -21,8 +21,8 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
 
     @Override
     public boolean saving(FamilyMembersModel fm) {
-        String sql = "INSERT INTO family_member (first_name, middle_name, last_name, relationshiptobene,birthdate, gender, marital_status, disability_type, health_condition, employment_status, education_level, beneficiary_id, notes, reg_date)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO family_member (first_name, middle_name, last_name, relationshiptobene,birthdate, age_score, gender, marital_status, disability_type, health_condition, employment_status, education_level, beneficiary_id, notes, reg_date)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
         try {
             conn = dbConnection.getConnection();
@@ -33,15 +33,16 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             ps.setString(3, fm.getLastName());
             ps.setString(4,fm.getRelationshipToBeneficiary());
             ps.setString(5, fm.getBirthDate());
-            ps.setString(6,fm.getGender());
-            ps.setString(7, fm.getMaritalStatus());
-            ps.setString(8,fm.getDisabilityType());
-            ps.setString(9, fm.getHealthCondition());
-            ps.setString(10,fm.getEmploymentStatus());
-            ps.setString(11, fm.getEducationalLevel());
-            ps.setInt(12,fm.getBeneficiaryId());
-            ps.setString(13, fm.getNotes());
-            ps.setString(14,fm.getRegDate());
+            ps.setDouble(6, fm.getAgeScore());  // Age score
+            ps.setString(7, fm.getGender());
+            ps.setString(8, fm.getMaritalStatus());
+            ps.setString(9, fm.getDisabilityType());
+            ps.setString(10, fm.getHealthCondition());
+            ps.setString(11, fm.getEmploymentStatus());
+            ps.setString(12, fm.getEducationalLevel());
+            ps.setInt(13, fm.getBeneficiaryId());
+            ps.setString(14, fm.getNotes());
+            ps.setString(15, fm.getRegDate());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -65,7 +66,7 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
 
         List<FamilyMembersModel> list = new ArrayList<>();
 
-        String sql = "SELECT fm.familymember_id, fm.first_name, fm.middle_name, fm.last_name, " +
+        String sql = "SELECT fm.familymember_id, fm.beneficiary_id, fm.first_name, fm.middle_name, fm.last_name, " +
                 "fm.relationshiptobene, fm.birthdate, fm.gender, fm.marital_status, " +
                 "fm.notes, fm.reg_date, b.first_name AS beneficiary_firstname " +
                 "FROM family_member fm " +
@@ -82,6 +83,9 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
                 FamilyMembersModel fm = new FamilyMembersModel();
 
                 fm.setFamilyId(rs.getInt("familymember_id"));
+                // ✅ FIX: ADD THIS LINE
+                fm.setBeneficiaryId(rs.getInt("beneficiary_id"));
+
                 fm.setFirstName(rs.getString("first_name"));
                 fm.setMiddleName(rs.getString("middle_name"));
                 fm.setLastName(rs.getString("last_name"));
@@ -144,7 +148,7 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
     @Override
     public boolean update(FamilyMembersModel fm) {
         String sql = "UPDATE family_member SET " +
-                "first_name = ?, middle_name = ?, last_name = ?, relationshiptobene = ?, birthdate = ?, " +
+                "first_name = ?, middle_name = ?, last_name = ?, relationshiptobene = ?, birthdate = ?, age_score = ?, " +
                 "gender = ?, marital_status = ?, disability_type = ?, health_condition = ?, " +
                 "employment_status = ?, education_level = ?, notes = ?, reg_date = ?" +
                 "WHERE familymember_id = ?";
@@ -158,15 +162,16 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             ps.setString(3, fm.getLastName());
             ps.setString(4, fm.getRelationshipToBeneficiary());
             ps.setString(5, fm.getBirthDate());
-            ps.setString(6, fm.getGender());
-            ps.setString(7, fm.getMaritalStatus());
-            ps.setString(8, fm.getDisabilityType());
-            ps.setString(9, fm.getHealthCondition());
-            ps.setString(10, fm.getEmploymentStatus());
-            ps.setString(11, fm.getEducationalLevel());
-            ps.setString(12, fm.getNotes());
-            ps.setString(13, fm.getRegDate());
-            ps.setInt(14, fm.getFamilyId());
+            ps.setDouble(6, fm.getAgeScore());
+            ps.setString(7, fm.getGender());
+            ps.setString(8, fm.getMaritalStatus());
+            ps.setString(9, fm.getDisabilityType());
+            ps.setString(10, fm.getHealthCondition());
+            ps.setString(11, fm.getEmploymentStatus());
+            ps.setString(12, fm.getEducationalLevel());
+            ps.setString(13, fm.getNotes());
+            ps.setString(14, fm.getRegDate());
+            ps.setInt(15, fm.getFamilyId());
 
 
             int rowsAffected = ps.executeUpdate();
@@ -201,6 +206,10 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             if (rs.next()) {
                 fm = new FamilyMembersModel();
                 fm.setFamilyId(rs.getInt("familymember_id"));
+
+
+                // ✅ FIX: ADD THIS LINE - This is what was missing!
+                fm.setBeneficiaryId(rs.getInt("beneficiary_id"));
 
                 fm.setFirstName(rs.getString("first_name"));
                 fm.setMiddleName(rs.getString("middle_name"));

@@ -1,7 +1,6 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.household_score.HouseholdScoreCalculator;
+import com.ionres.respondph.beneficiary.AgeScoreCalculator;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
 import javafx.fxml.FXML;
@@ -17,7 +16,6 @@ import javafx.event.EventHandler;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.sql.Connection;
 
 public class AddBeneficiariesDialogController {
 
@@ -218,7 +216,7 @@ public class AddBeneficiariesDialogController {
         );
     }
 
-    private void addBeneficiaries() {
+    private void addBeneficiary() {
         try {
             String firstname        = firstNameFld.getText().trim();
             String middlename       = middleNameFld.getText().trim();
@@ -226,6 +224,7 @@ public class AddBeneficiariesDialogController {
             String birthDate        = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
+            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
             String gender           = genderSelection.getValue();
             String mobileNumber     = mobileNumberFld.getText().trim();
             String maritalStatus    = maritalStatusSelection.getValue();
@@ -334,7 +333,7 @@ public class AddBeneficiariesDialogController {
 
 
             BeneficiaryModel bm = new BeneficiaryModel(
-                    firstname, middlename, lastname, birthDate, gender,
+                    firstname, middlename, lastname, birthDate,ageScore, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
@@ -422,119 +421,119 @@ public class AddBeneficiariesDialogController {
 
 
 
-    private void addBeneficiary() {
-        try {
-            String firstname        = firstNameFld.getText().trim();
-            String middlename       = middleNameFld.getText().trim();
-            String lastname         = lastNameFld.getText().trim();
-            String birthDate        = birthDatePicker.getValue() != null
-                    ? birthDatePicker.getValue().toString()
-                    : "";
-            String gender           = genderSelection.getValue();
-            String mobileNumber     = mobileNumberFld.getText().trim();
-            String maritalStatus    = maritalStatusSelection.getValue();
-            String soloParentStatus = soloParentStatusSelection.getValue();
-            String latitude         = latitudeFld.getText().trim();
-            String longitude        = longitudeFld.getText().trim();
-            String disabilityType   = disabilityTypeSelection.getValue();
-            String healthCondition  = healthConditionSelection.getValue();
-            String cleanWaterAccess = cleanWaterAccessSelection.getValue();
-            String sanitationFacility = sanitationFacilitiesSelection.getValue();
-            String houseType        = houseConstructionTypeSelection.getValue();
-            String ownershipStatus  = ownershipStatusSelection.getValue();
-            String employmentStatus = employmentStatusSelection.getValue();
-            String monthlyIncome    = monthlyIncomeSelection.getValue();
-            String educationalLevel = educationLevelSelection.getValue();
-            String digitalAccess    = digitalAccessSelection.getValue();
-
-            // Validation (keep your existing validation code)
-            if (firstname.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","First name is required");
-                return;
-            }
-            // ... rest of validation ...
-
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
-
-            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
-
-            BeneficiaryModel bm = new BeneficiaryModel(
-                    firstname, middlename, lastname, birthDate, gender,
-                    maritalStatus, soloParentStatus, latitude, longitude,
-                    mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
-                    sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess, addedBy, regDate
-            );
-
-            boolean success = beneficiaryService.createBeneficiary(bm);
-
-            if (success) {
-
-                int newBeneficiaryId = getLatestBeneficiaryId();
-
-                if (newBeneficiaryId > 0) {
-                    // Calculate and save household scores
-                    HouseholdScoreCalculator calculator = new HouseholdScoreCalculator(
-                    );
-                    boolean scoresCalculated = calculator.calculateAndSaveHouseholdScore(newBeneficiaryId);
-
-                    if (scoresCalculated) {
-                        javax.swing.JOptionPane.showMessageDialog(
-                                null,
-                                "Beneficiary and household scores successfully saved.",
-                                "Success",
-                                javax.swing.JOptionPane.INFORMATION_MESSAGE
-                        );
-                    } else {
-                        javax.swing.JOptionPane.showMessageDialog(
-                                null,
-                                "Beneficiary saved, but household score calculation failed.",
-                                "Warning",
-                                javax.swing.JOptionPane.WARNING_MESSAGE
-                        );
-                    }
-                }
-
-                clearFields();
-                DashboardRefresher.refresh();
-
-            } else {
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Failed to add beneficiary.",
-                        "Error",
-                        javax.swing.JOptionPane.ERROR_MESSAGE
-                );
-            }
-
-        } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    e.getMessage(),
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
-            e.printStackTrace();
-        }
-    }
-
-    private int getLatestBeneficiaryId() {
-        try {
-            String sql = "SELECT beneficiary_id FROM beneficiary ORDER BY beneficiary_id DESC LIMIT 1";
-            java.sql.Connection conn = DBConnection.getInstance().getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-            java.sql.ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                int id = rs.getInt("beneficiary_id");
-                conn.close();
-                return id;
-            }
-            conn.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
+//    private void addBeneficiary() {
+//        try {
+//            String firstname        = firstNameFld.getText().trim();
+//            String middlename       = middleNameFld.getText().trim();
+//            String lastname         = lastNameFld.getText().trim();
+//            String birthDate        = birthDatePicker.getValue() != null
+//                    ? birthDatePicker.getValue().toString()
+//                    : "";
+//            String gender           = genderSelection.getValue();
+//            String mobileNumber     = mobileNumberFld.getText().trim();
+//            String maritalStatus    = maritalStatusSelection.getValue();
+//            String soloParentStatus = soloParentStatusSelection.getValue();
+//            String latitude         = latitudeFld.getText().trim();
+//            String longitude        = longitudeFld.getText().trim();
+//            String disabilityType   = disabilityTypeSelection.getValue();
+//            String healthCondition  = healthConditionSelection.getValue();
+//            String cleanWaterAccess = cleanWaterAccessSelection.getValue();
+//            String sanitationFacility = sanitationFacilitiesSelection.getValue();
+//            String houseType        = houseConstructionTypeSelection.getValue();
+//            String ownershipStatus  = ownershipStatusSelection.getValue();
+//            String employmentStatus = employmentStatusSelection.getValue();
+//            String monthlyIncome    = monthlyIncomeSelection.getValue();
+//            String educationalLevel = educationLevelSelection.getValue();
+//            String digitalAccess    = digitalAccessSelection.getValue();
+//
+//            // Validation (keep your existing validation code)
+//            if (firstname.isEmpty()) {
+//                AlertDialogManager.showWarning("Warning","First name is required");
+//                return;
+//            }
+//            // ... rest of validation ...
+//
+//            String regDate = java.time.LocalDateTime.now()
+//                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+//
+//            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
+//
+//            BeneficiaryModel bm = new BeneficiaryModel(
+//                    firstname, middlename, lastname, birthDate, gender,
+//                    maritalStatus, soloParentStatus, latitude, longitude,
+//                    mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
+//                    sanitationFacility, houseType, ownershipStatus, employmentStatus,
+//                    monthlyIncome, educationalLevel, digitalAccess, addedBy, regDate
+//            );
+//
+//            boolean success = beneficiaryService.createBeneficiary(bm);
+//
+//            if (success) {
+//
+//                int newBeneficiaryId = getLatestBeneficiaryId();
+//
+//                if (newBeneficiaryId > 0) {
+//                    // Calculate and save household scores
+//                    HouseholdScoreCalculator calculator = new HouseholdScoreCalculator(
+//                    );
+//                    boolean scoresCalculated = calculator.calculateAndSaveHouseholdScore(newBeneficiaryId);
+//
+//                    if (scoresCalculated) {
+//                        javax.swing.JOptionPane.showMessageDialog(
+//                                null,
+//                                "Beneficiary and household scores successfully saved.",
+//                                "Success",
+//                                javax.swing.JOptionPane.INFORMATION_MESSAGE
+//                        );
+//                    } else {
+//                        javax.swing.JOptionPane.showMessageDialog(
+//                                null,
+//                                "Beneficiary saved, but household score calculation failed.",
+//                                "Warning",
+//                                javax.swing.JOptionPane.WARNING_MESSAGE
+//                        );
+//                    }
+//                }
+//
+//                clearFields();
+//                DashboardRefresher.refresh();
+//
+//            } else {
+//                javax.swing.JOptionPane.showMessageDialog(
+//                        null,
+//                        "Failed to add beneficiary.",
+//                        "Error",
+//                        javax.swing.JOptionPane.ERROR_MESSAGE
+//                );
+//            }
+//
+//        } catch (Exception e) {
+//            javax.swing.JOptionPane.showMessageDialog(
+//                    null,
+//                    e.getMessage(),
+//                    "Error",
+//                    javax.swing.JOptionPane.ERROR_MESSAGE
+//            );
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    private int getLatestBeneficiaryId() {
+//        try {
+//            String sql = "SELECT beneficiary_id FROM beneficiary ORDER BY beneficiary_id DESC LIMIT 1";
+//            java.sql.Connection conn = DBConnection.getInstance().getConnection();
+//            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+//            java.sql.ResultSet rs = ps.executeQuery();
+//
+//            if (rs.next()) {
+//                int id = rs.getInt("beneficiary_id");
+//                conn.close();
+//                return id;
+//            }
+//            conn.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return -1;
+//    }
 }

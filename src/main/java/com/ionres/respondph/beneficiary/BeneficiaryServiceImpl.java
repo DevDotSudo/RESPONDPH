@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeneficiaryServiceImpl implements  BeneficiaryService{
+public class BeneficiaryServiceImpl implements BeneficiaryService {
     private final BeneficiaryDAO beneficiaryDAO;
     private final Cryptography cs;
 
@@ -20,13 +20,11 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
 
     @Override
     public List<BeneficiaryModel> getAllBeneficiary() {
-
         try {
             List<BeneficiaryModel> encryptedList = beneficiaryDAO.getAll();
             List<BeneficiaryModel> decryptedList = new ArrayList<>();
 
             for (BeneficiaryModel bm : encryptedList) {
-
                 List<String> decrypted = cs.decrypt(List.of(
                         bm.getFirstname(),
                         bm.getMiddlename(),
@@ -45,6 +43,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
                 d.setMiddlename(decrypted.get(1));
                 d.setLastname(decrypted.get(2));
                 d.setBirthDate(decrypted.get(3));
+                d.setAgeScore(bm.getAgeScore()); // Age score is not encrypted
                 d.setGender(decrypted.get(4));
                 d.setMaritalStatus(decrypted.get(5));
                 d.setMobileNumber(decrypted.get(6));
@@ -69,7 +68,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             String encryptedMiddlename = cs.encryptWithOneParameter(bm.getMiddlename());
             String encryptedLastname = cs.encryptWithOneParameter(bm.getLastname());
             String encryptedBirthDate = cs.encryptWithOneParameter(bm.getBirthDate());
-            String encryptedGender  = cs.encryptWithOneParameter(bm.getGender());
+            String encryptedGender = cs.encryptWithOneParameter(bm.getGender());
             String encryptedMaritalStatus = cs.encryptWithOneParameter(bm.getMaritalStatus());
             String encryptedSoloParentStatus = cs.encryptWithOneParameter(bm.getSoloParentStatus());
             String encryptedLatitude = cs.encryptWithOneParameter(bm.getLatitude());
@@ -88,14 +87,13 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             String encryptedAddedBy = cs.encryptWithOneParameter(bm.getAddedBy());
             String encryptedRegDate = cs.encryptWithOneParameter(bm.getRegDate());
 
-
-
             boolean flag = beneficiaryDAO.saving(
                     new BeneficiaryModel(
                             encryptedFirstname,
                             encryptedMiddlename,
                             encryptedLastname,
                             encryptedBirthDate,
+                            bm.getAgeScore(), // Pass age score (not encrypted)
                             encryptedGender,
                             encryptedMaritalStatus,
                             encryptedSoloParentStatus,
@@ -122,11 +120,11 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             return flag;
         } catch (SQLException ex) {
             System.out.println("Error : " + ex);
-            return  false;
+            return false;
 
         } catch (Exception ex) {
             System.out.println("Error: " + ex);
-            return  false;
+            return false;
         }
     }
 
@@ -186,6 +184,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
                     encryptedMiddlename,
                     encryptedLastname,
                     encryptedBirthDate,
+                    bm.getAgeScore(), // Pass age score (not encrypted)
                     encryptedGender,
                     encryptedMaritalStatus,
                     encryptedSoloParentStatus,
@@ -223,7 +222,6 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
 
     @Override
     public BeneficiaryModel getBeneficiaryById(int id) {
-
         try {
             BeneficiaryModel encrypted = beneficiaryDAO.getById(id);
 
@@ -262,6 +260,7 @@ public class BeneficiaryServiceImpl implements  BeneficiaryService{
             d.setMiddlename(decrypted.get(1));
             d.setLastname(decrypted.get(2));
             d.setBirthDate(decrypted.get(3));
+            d.setAgeScore(encrypted.getAgeScore()); // Age score is not encrypted
             d.setGender(decrypted.get(4));
             d.setMaritalStatus(decrypted.get(5));
             d.setSoloParentStatus(decrypted.get(6));

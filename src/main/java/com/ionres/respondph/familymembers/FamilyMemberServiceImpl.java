@@ -45,11 +45,16 @@
 
                     FamilyMembersModel d = new FamilyMembersModel();
                     d.setFamilyId(fm.getFamilyId());
+
+                    // ✅ FIX: ADD THIS LINE - Preserve the beneficiaryId
+                    d.setBeneficiaryId(fm.getBeneficiaryId());
+
                     d.setFirstName(decrypted.get(0));
                     d.setMiddleName(decrypted.get(1));
                     d.setLastName(decrypted.get(2));
                     d.setRelationshipToBeneficiary(decrypted.get(3));
                     d.setBirthDate(decrypted.get(4));
+                    d.setAgeScore(fm.getAgeScore());
                     d.setGender(decrypted.get(5));
                     d.setMaritalStatus(decrypted.get(6));
                     d.setNotes(decrypted.get(7));
@@ -93,12 +98,13 @@
                                 encryptLastname,
                                 encryptRelationshipToBeneficiary,
                                 encryptBirthdate,
+                                fm.getAgeScore(),
                                 encryptGender,
                                 encryptMaritalStatus,
                                 encryptDisabilityType,
                                 encryptHealthCondition,
-                                encryptEducationalLevel,
                                 encryptEmploymentStatus,
+                                encryptEducationalLevel,
                                 encryptBeneficiary,
                                 encryptNotes,
                                 encryptRegDate));
@@ -165,6 +171,7 @@
                 encryptedFm.setLastName(encryptedLastname);
                 encryptedFm.setRelationshipToBeneficiary(encryptedRelationship);
                 encryptedFm.setBirthDate(encryptedBirthDate);
+                encryptedFm.setAgeScore(fm.getAgeScore());
                 encryptedFm.setGender(encryptedGender);
                 encryptedFm.setMaritalStatus(encryptedMaritalStatus);
                 encryptedFm.setDisabilityType(encryptedDisabilityType);
@@ -232,6 +239,10 @@
 
                 FamilyMembersModel d = new FamilyMembersModel();
                 d.setFamilyId(encrypted.getFamilyId());
+
+                // ✅ FIX: ADD THIS LINE - Preserve the beneficiaryId from the encrypted model
+                d.setBeneficiaryId(encrypted.getBeneficiaryId());
+
                 d.setFirstName(decrypted.get(0));
                 d.setMiddleName(decrypted.get(1));
                 d.setLastName(decrypted.get(2));

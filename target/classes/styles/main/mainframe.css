@@ -118,13 +118,11 @@
     -fx-fill: #ffffff;
 }
 
-/* ===== TREE SECTION (DROPDOWN) ===== */
 .tree-section {
     -fx-spacing: 0;
     -fx-padding: 0;
 }
 
-/* Tree Section Header (Collapsible Title) */
 .tree-section-header {
     -fx-background-color: transparent;
     -fx-background-radius: 6px;
@@ -261,10 +259,7 @@
     -fx-text-fill: inherit;
 }
 
-/* ===== CONTENT AREA ===== */
 .content-area {
     -fx-background-color: #0f172a;
     -fx-padding: 15px;
-    -fx-pref-height: 100%;
-    -fx-pref-width: 100%;
 }

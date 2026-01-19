@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class HouseholdScoreModel {
     private int householdScoreId;
     private int beneficiaryId;
+    private double ageScore;
     private double genderScore;
     private double maritalStatusScore;
     private double soloParentScore;
@@ -14,13 +15,18 @@ public class HouseholdScoreModel {
     private double sanitationFacilitiesScore;
     private double houseConstructionTypeScore;
     private double ownershipScore;
+    private double damageSeverityScore;
     private double employmentStatusScore;
     private double monthlyIncomeScore;
     private double educationLevelScore;
     private double digitalAccessScore;
+    private double dependencyRatioScore;
 
     public HouseholdScoreModel() {
     }
+
+
+
 
     // Getters and Setters
     public int getHouseholdScoreId() {
@@ -31,6 +37,7 @@ public class HouseholdScoreModel {
         this.householdScoreId = householdScoreId;
     }
 
+
     public int getBeneficiaryId() {
         return beneficiaryId;
     }
@@ -38,6 +45,15 @@ public class HouseholdScoreModel {
     public void setBeneficiaryId(int beneficiaryId) {
         this.beneficiaryId = beneficiaryId;
     }
+
+    public double getAgeScore() {
+        return ageScore;
+    }
+
+    public void setAgeScore(double ageScore) {
+        this.ageScore = ageScore;
+    }
+
 
     public double getGenderScore() {
         return genderScore;
@@ -111,6 +127,14 @@ public class HouseholdScoreModel {
         this.ownershipScore = ownershipScore;
     }
 
+    public double getDamageSeverityScore() {
+        return damageSeverityScore;
+    }
+
+    public void setDamageSeverityScore(double damageSeverityScore) {
+        this.damageSeverityScore = damageSeverityScore;
+    }
+
     public double getEmploymentStatusScore() {
         return employmentStatusScore;
     }
@@ -141,5 +165,13 @@ public class HouseholdScoreModel {
 
     public void setDigitalAccessScore(double digitalAccessScore) {
         this.digitalAccessScore = digitalAccessScore;
+    }
+
+    public double getDependencyRatioScore() {
+        return dependencyRatioScore;
+    }
+
+    public void setDependencyRatioScore(double dependencyRatioScore) {
+        this.dependencyRatioScore = dependencyRatioScore;
     }
 }

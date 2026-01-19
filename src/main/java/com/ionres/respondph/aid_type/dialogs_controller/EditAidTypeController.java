@@ -1,6 +1,7 @@
 package com.ionres.respondph.aid_type.dialogs_controller;
 
 
+import com.ionres.respondph.aidType_and_household_score.AidHouseholdScoreCalculator;
 import com.ionres.respondph.aid_type.AidTypeController;
 import com.ionres.respondph.aid_type.AidTypeModel;
 import com.ionres.respondph.aid_type.AidTypeService;
@@ -157,6 +158,8 @@ public class EditAidTypeController {
             boolean success = aidTypeService.updateAidType(atm);
 
             if (success) {
+
+                recalculateAidHouseholdScores(atm.getAidTypeId(), adminId);
                 AlertDialogManager.showSuccess(
                         "Success",
                         "Aid Type updated successfully."
@@ -182,6 +185,132 @@ public class EditAidTypeController {
                     "Unexpected error occurred: " + e.getMessage()
             );
         }
+    }
+
+    private void recalculateAidHouseholdScores(int aidTypeId, int adminId) {
+        try {
+            System.out.println("========== RECALCULATING AID-HOUSEHOLD SCORES AFTER UPDATE ==========");
+            System.out.println("Aid Type ID: " + aidTypeId);
+            System.out.println("Admin ID: " + adminId);
+
+            // Step 1: Delete existing scores for this aid type
+//            deleteExistingAidHouseholdScores(aidTypeId);
+
+            // Step 2: Get all beneficiaries with household scores
+            java.util.List<Integer> beneficiaryIds = getAllBeneficiaryIdsWithHouseholdScores();
+
+            System.out.println("Found " + beneficiaryIds.size() + " beneficiaries with household scores");
+
+            // Step 3: Recalculate scores for each beneficiary
+            AidHouseholdScoreCalculator calculator = new AidHouseholdScoreCalculator();
+            int successCount = 0;
+            int failCount = 0;
+
+            for (Integer beneficiaryId : beneficiaryIds) {
+                try {
+                    boolean success = calculator.calculateAndSaveAidHouseholdScore(
+                            beneficiaryId,
+                            aidTypeId,
+                            adminId
+                    );
+
+                    if (success) {
+                        successCount++;
+                        System.out.println("✓ Recalculated aid-household score for beneficiary ID: " + beneficiaryId);
+                    } else {
+                        failCount++;
+                        System.err.println("✗ Failed to recalculate aid-household score for beneficiary ID: " + beneficiaryId);
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                    System.err.println("✗ Error recalculating aid-household score for beneficiary ID " +
+                            beneficiaryId + ": " + e.getMessage());
+                }
+            }
+
+            System.out.println("========== RECALCULATION COMPLETE ==========");
+            System.out.println("Successfully recalculated: " + successCount + " out of " + beneficiaryIds.size());
+            System.out.println("Failed: " + failCount);
+
+            if (failCount > 0) {
+                AlertDialogManager.showWarning("Partial Success",
+                        "Aid type updated successfully.\n" +
+                                "Recalculated scores for " + successCount + " beneficiaries.\n" +
+                                "Failed to recalculate scores for " + failCount + " beneficiaries.");
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());
+            e.printStackTrace();
+            AlertDialogManager.showWarning("Warning",
+                    "Aid type updated successfully, but there was an error recalculating household scores.\n" +
+                            "You may need to recalculate manually.");
+        }
+    }
+
+    /**
+     * Deletes existing aid-household scores for a specific aid type before recalculation
+     */
+    private void deleteExistingAidHouseholdScores(int aidTypeId) {
+        String sql = "DELETE FROM aid_and_household_score WHERE aid_type_id = ?";
+
+        java.sql.Connection conn = null;
+        try {
+            conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
+            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, aidTypeId);
+            int deleted = ps.executeUpdate();
+            System.out.println("Deleted " + deleted + " existing aid-household scores for aid type ID: " + aidTypeId);
+            ps.close();
+
+        } catch (java.sql.SQLException e) {
+            System.err.println("Error deleting existing aid-household scores: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null && !conn.isClosed()) {
+                    conn.close();
+                }
+            } catch (java.sql.SQLException e) {
+                System.err.println("Error closing connection: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Gets all beneficiary IDs that have household scores
+     */
+    private java.util.List<Integer> getAllBeneficiaryIdsWithHouseholdScores() {
+        java.util.List<Integer> beneficiaryIds = new java.util.ArrayList<>();
+        String sql = "SELECT DISTINCT beneficiary_id FROM household_score";
+
+        java.sql.Connection conn = null;
+        try {
+            conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
+            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+            java.sql.ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                beneficiaryIds.add(rs.getInt("beneficiary_id"));
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (java.sql.SQLException e) {
+            System.err.println("Error fetching beneficiary IDs: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null && !conn.isClosed()) {
+                    conn.close();
+                }
+            } catch (java.sql.SQLException e) {
+                System.err.println("Error closing connection: " + e.getMessage());
+            }
+        }
+
+        return beneficiaryIds;
     }
 
 

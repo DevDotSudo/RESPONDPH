@@ -9,6 +9,7 @@ public class FamilyMembersModel {
     private String lastName;
     private String relationshipToBeneficiary;
     private String birthDate;
+    private double ageScore;
     private String gender;
     private String maritalStatus;
     private String disabilityType;
@@ -18,37 +19,42 @@ public class FamilyMembersModel {
     private String notes;
     private String regDate;
 
-        public FamilyMembersModel(
-                String firstName,
-                String middleName,
-                String lastName,
-                String relationship,
-                String birthDate,
-                String gender,
-                String maritalStatus,
-                String disabilityType,
-                String healthCondition,
-                String educationalLevel,
-                String employmentStatus,
-                int beneficiaryId,
-                String notes,
-                String regDate) {
+    public FamilyMembersModel(
+            String firstName,
+            String middleName,
+            String lastName,
+            String relationship,
+            String birthDate,
+            double ageScore,
+            String gender,
+            String maritalStatus,
+            String disabilityType,
+            String healthCondition,
+            String employmentStatus,      // ← Position 10
+            String educationalLevel,      // ← Position 11
+            int beneficiaryId,
+            String notes,
+            String regDate) {
 
-            this.firstName = firstName;
-            this.middleName = middleName;
-            this.lastName = lastName;
-            this.relationshipToBeneficiary = relationship;
-            this.birthDate = birthDate;
-            this.gender = gender;
-            this.maritalStatus = maritalStatus;
-            this.disabilityType = disabilityType;
-            this.healthCondition = healthCondition;
-            this.educationalLevel = educationalLevel;
-            this.employmentStatus = employmentStatus;
-            this.beneficiaryId = beneficiaryId;
-            this.notes = notes;
-            this.regDate = regDate;
-        }
+        this.firstName = firstName;
+        this.middleName = middleName;
+        this.lastName = lastName;
+        this.relationshipToBeneficiary = relationship;
+        this.birthDate = birthDate;
+        this.ageScore = ageScore;
+        this.gender = gender;
+        this.maritalStatus = maritalStatus;
+        this.disabilityType = disabilityType;
+        this.healthCondition = healthCondition;
+
+        // ✅ FIX: Assign in correct order!
+        this.employmentStatus = employmentStatus;     // ← Was getting educationalLevel
+        this.educationalLevel = educationalLevel;     // ← Was getting employmentStatus
+
+        this.beneficiaryId = beneficiaryId;
+        this.notes = notes;
+        this.regDate = regDate;
+    }
         public FamilyMembersModel(){
 
         }
@@ -83,7 +89,11 @@ public class FamilyMembersModel {
             return birthDate;
         }
 
-        public String getGender() {
+    public double getAgeScore() {
+        return ageScore;
+    }
+
+    public String getGender() {
             return gender;
         }
 
@@ -144,7 +154,11 @@ public class FamilyMembersModel {
             this.birthDate = birthDate;
         }
 
-        public void setGender(String gender) {
+    public void setAgeScore(double ageScore) {
+        this.ageScore = ageScore;
+    }
+
+    public void setGender(String gender) {
             this.gender = gender;
         }
 

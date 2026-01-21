@@ -8,7 +8,7 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.familymembers.FamilyMemberService;
-import com.ionres.respondph.mapping.DashBoardService;
+import com.ionres.respondph.dashboard.DashBoardService;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorDAOService;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorService;
 

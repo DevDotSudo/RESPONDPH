@@ -36,7 +36,6 @@
     );
 }
 
-/* ===== SCROLL PANE ===== */
 .nav-scroll-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -64,14 +63,12 @@
     -fx-background-color: #475569;
 }
 
-/* ===== NAVIGATION MENU ===== */
 .nav-menu {
     -fx-spacing: 4px;
     -fx-padding: 12px;
     -fx-background-color: transparent;
 }
 
-/* ===== SINGLE NAVIGATION BUTTONS ===== */
 .nav-button {
     -fx-background-color: transparent;
     -fx-background-radius: 8px;
@@ -118,13 +115,11 @@
     -fx-fill: #ffffff;
 }
 
-/* ===== TREE SECTION (DROPDOWN) ===== */
 .tree-section {
     -fx-spacing: 0;
     -fx-padding: 0;
 }
 
-/* Tree Section Header (Collapsible Title) */
 .tree-section-header {
     -fx-background-color: transparent;
     -fx-background-radius: 6px;
@@ -157,13 +152,11 @@
     -fx-fill: #ffffff;
 }
 
-/* Tree Section Content (Dropdown Items) */
 .tree-section-content {
     -fx-spacing: 2px;
     -fx-padding: 0 0 0 12px;
 }
 
-/* Child Navigation Buttons */
 .nav-button-child {
     -fx-background-color: transparent;
     -fx-background-radius: 6px;
@@ -215,7 +208,6 @@
     -fx-text-fill: inherit;
 }
 
-/* ===== LOGOUT SECTION ===== */
 .logout-section {
     -fx-padding: 16px;
     -fx-border-color: #334155;
@@ -261,10 +253,7 @@
     -fx-text-fill: inherit;
 }
 
-/* ===== CONTENT AREA ===== */
 .content-area {
     -fx-background-color: #0f172a;
     -fx-padding: 15px;
-    -fx-pref-height: 100%;
-    -fx-pref-width: 100%;
 }

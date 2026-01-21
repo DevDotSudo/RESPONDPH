@@ -164,7 +164,10 @@
     </left>
 
     <center>
-        <VBox fx:id="contentArea" styleClass="content-area" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
-        </VBox>
+        <StackPane>
+            <VBox fx:id="contentArea"
+                  styleClass="content-area"/>
+        </StackPane>
     </center>
+
 </BorderPane>

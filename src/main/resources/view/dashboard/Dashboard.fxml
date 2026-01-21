@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane styleClass="dashboard-root" stylesheets="@/styles/dashboard/dashboard.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.mapping.MappingController">
+<AnchorPane styleClass="dashboard-root" stylesheets="@/styles/dashboard/dashboard.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.dashboard.DashboardController">
 
     <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
@@ -13,7 +13,7 @@
             <Label styleClass="page-title" text="Dashboard" />
         </HBox>
 
-        <GridPane hgap="15" vgap="15" VBox.vgrow="NEVER">
+        <GridPane hgap="20.0" vgap="20.0" VBox.vgrow="NEVER">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" />
                 <ColumnConstraints hgrow="ALWAYS" />
@@ -75,7 +75,7 @@
             </rowConstraints>
         </GridPane>
 
-        <VBox fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
+        <Pane fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
 
     </VBox>
 </AnchorPane>

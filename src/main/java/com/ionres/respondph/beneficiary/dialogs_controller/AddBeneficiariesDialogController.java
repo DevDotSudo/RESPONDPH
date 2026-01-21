@@ -1,8 +1,10 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
 import com.ionres.respondph.beneficiary.AgeScoreCalculator;
+import com.ionres.respondph.common.controller.MappingDialogController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.DialogManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -15,10 +17,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-
 public class AddBeneficiariesDialogController {
-
 
     @FXML
     private VBox root;
@@ -39,9 +38,9 @@ public class AddBeneficiariesDialogController {
     @FXML
     private ComboBox<String> soloParentStatusSelection;
     @FXML
-    private TextField latitudeFld;
+    public TextField latitudeFld;
     @FXML
-    private TextField longitudeFld;
+    public TextField longitudeFld;
     @FXML
     private Button getLocationBtn;
     @FXML
@@ -74,6 +73,7 @@ public class AddBeneficiariesDialogController {
     private double xOffset = 0;
     private BeneficiaryService beneficiaryService;
     private BeneficiaryController beneficiaryController;
+    private BeneficiaryModel beneficiaryModel;
     private Stage dialogStage;
     public void setBeneficiaryService(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;
@@ -101,6 +101,7 @@ public class AddBeneficiariesDialogController {
         EventHandler<ActionEvent> handlers = this::handleActions;
         exitBtn.setOnAction(handlers);
         addBeneficiaryBtn.setOnAction(handlers);
+        getLocationBtn.setOnAction(handlers);
     }
 
     private void handleActions(ActionEvent event){
@@ -113,6 +114,15 @@ public class AddBeneficiariesDialogController {
         else if(src == exitBtn){
             close();
         }
+        else if(src == getLocationBtn) {
+            handleGetLocationBtn();
+        }
+    }
+
+    private void handleGetLocationBtn(){
+        MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+        controller.setController(this);
+        DialogManager.show("mapping");
     }
 
     private void initializeBeneficiaryProfileDropdowns() {

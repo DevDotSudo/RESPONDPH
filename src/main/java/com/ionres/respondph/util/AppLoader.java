@@ -8,8 +8,8 @@
     import com.ionres.respondph.disaster.DisasterServiceImpl;
     import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
     import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
-    import com.ionres.respondph.mapping.DashBoardServiceImpl;
-    import com.ionres.respondph.mapping.MappingController;
+    import com.ionres.respondph.dashboard.DashBoardServiceImpl;
+    import com.ionres.respondph.dashboard.DashboardController;
     import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorDAOServiceImpl;
     import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorServiceImpl;
 
@@ -71,5 +71,6 @@
             DialogManager.preload("editFamilyMember", "/view/family/dialog/EditFamilyMemberDialog.fxml");
             DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
             DialogManager.preload("editAidType", "/view/aid_type/dialog/EditAidTypeDialog.fxml");
+            DialogManager.preload("mapping", "/view/mapping/MapDialog.fxml");
         }
     }

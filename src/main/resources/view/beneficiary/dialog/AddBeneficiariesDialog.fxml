@@ -34,7 +34,7 @@
                     <Label styleClass="section-title" text="Core Beneficiary Profile" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <!-- First Name -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="First Name *" />

@@ -8,7 +8,10 @@ import javafx.animation.RotateTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -96,7 +99,6 @@ public class MainFrameController {
             handleAids();
         }
         else if(src == vulnerabilityBtn) {
-            DashboardRefresher.refreshFlds();
             handleVulnerabilityIndicator();
         }
         else if(src == familyMembersBtn) {
@@ -140,6 +142,7 @@ public class MainFrameController {
     }
 
     private void handleVulnerabilityIndicator() {
+        DashboardRefresher.refreshFlds();
         loadPage("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");
         activeButton(vulnerabilityBtn);
     }
@@ -187,8 +190,17 @@ public class MainFrameController {
 
     private void loadPage(String fxml) {
         SceneManager.SceneEntry<?> entry = SceneManager.load(fxml);
-        contentArea.getChildren().setAll(entry.getRoot());
+        Parent root = entry.getRoot();
+
+        if (root instanceof Region) {
+            Region region = (Region) root;
+            region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            VBox.setVgrow(region, Priority.ALWAYS);
+        }
+
+        contentArea.getChildren().setAll(root);
     }
+
 
     private void activeButton(Button btnId) {
         if(activeBtn != null) {
@@ -196,5 +208,6 @@ public class MainFrameController {
             activeBtn.getStyleClass().remove("nav-button-child-active");
         }
         activeBtn = btnId;
+        activeBtn.getStyleClass().add("nav-button-active");
     }
 }

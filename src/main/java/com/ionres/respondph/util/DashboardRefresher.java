@@ -1,19 +1,20 @@
 package com.ionres.respondph.util;
 
-import com.ionres.respondph.mapping.MappingController;
+import com.ionres.respondph.dashboard.DashboardController;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorController;
 import javafx.application.Platform;
 
 public final class DashboardRefresher {
 
-    private static MappingController controller;
+    private static DashboardController controller;
     private static VulnerabilityIndicatorController vulnerabilityIndicatorController;
 
     private DashboardRefresher() {}
 
-    public static void register(MappingController ctrl) {
+    public static void register(DashboardController ctrl) {
         controller = ctrl;
     }
+
     public static  void registerLoadVulScore(VulnerabilityIndicatorController controller){
         vulnerabilityIndicatorController = controller;
 

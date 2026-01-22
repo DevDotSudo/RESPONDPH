@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="mappingDialogRoot" prefHeight="800.0" prefWidth="1200.0" styleClass="map-dialog-container" stylesheets="@/styles/mapping/mappingdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.common.controller.MappingDialogController">
+<VBox fx:id="mappingDialogRoot" prefHeight="800.0" prefWidth="1600.0" styleClass="map-dialog-container" stylesheets="@/styles/mapping/mappingdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.common.controller.MappingDialogController">
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="map-dialog-header">
         <FontAwesomeIconView glyphName="MAP_MARKER" size="24" styleClass="map-header-icon" />
         <Label fx:id="mapDialogTitle" styleClass="map-dialog-title" text="Select Location" />

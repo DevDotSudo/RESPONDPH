@@ -106,10 +106,10 @@
 
                     <!-- Radius -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label styleClass="disaster-field-label" text="Radius (km) *" />
+                        <Label styleClass="disaster-field-label" text="Radius (m) *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="disaster-input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="COMPASS" size="16" styleClass="disaster-field-icon" />
-                            <TextField fx:id="radiusFld" promptText="Enter radius in kilometers" styleClass="disaster-input-field" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="radiusFld" promptText="Enter radius in meters" styleClass="disaster-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
                 </HBox>

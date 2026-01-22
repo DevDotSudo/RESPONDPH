@@ -121,7 +121,7 @@ public class AddBeneficiariesDialogController {
 
     private void handleGetLocationBtn(){
         MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
-        controller.setController(this);
+//        controller.setController(this);
         DialogManager.show("mapping");
     }
 

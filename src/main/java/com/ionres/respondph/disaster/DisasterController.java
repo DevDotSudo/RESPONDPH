@@ -45,6 +45,7 @@ public class DisasterController {
         setupActionButtons();
         setupSearchListener();
         loadTable();
+        DashboardRefresher.registerLoadDisaster(this);
         EventHandler<ActionEvent> handler = this::handleActions;
         searchBtn.setOnAction(handler);
         addBtn.setOnAction(handler);

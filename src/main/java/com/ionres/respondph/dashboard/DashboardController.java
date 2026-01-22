@@ -7,15 +7,23 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DashboardController {
     private final DashBoardService dashBoardService = AppContext.dashBoardService;
     private final Mapping mapping = new Mapping();
+    private final List<MapCircle> circles = new ArrayList<>();
     @FXML private Pane mapContainer;
+    @FXML private RadioButton offlineRadio;
+    @FXML private RadioButton onlineRadio;
     @FXML private Label totalBeneficiaryLabel;
     @FXML private Label totalDisastersLabel;
     @FXML private Label totalAidsLabel;
@@ -50,16 +58,58 @@ public class DashboardController {
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
                 drawBarangays();
+                drawCircles();
             });
             DashboardRefresher.register(this);
             loadDashBoardData();
+            loadCirclesFromDb();
         });
+        ToggleGroup mapStatusGroup = new ToggleGroup();
+        offlineRadio.setToggleGroup(mapStatusGroup);
+        onlineRadio.setToggleGroup(mapStatusGroup);
+        offlineRadio.setSelected(true);
+    }
+
+    public void loadCirclesFromDb() {
+        circles.clear();
+
+        dashBoardService.getCircles().forEach(c ->
+                circles.add(new MapCircle(c.lat, c.lon, c.radius))
+        );
+
+        mapping.redraw();
+    }
+
+    private void drawCircles() {
+        GraphicsContext gc = mapping.getGc();
+
+        for (MapCircle c : circles) {
+            Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
+            double px = c.meters / mapping.metersPerPixel(c.lat);
+
+            gc.setFill(Color.rgb(255, 0, 0, 0.25));
+            gc.fillOval(
+                    center.x - px,
+                    center.y - px,
+                    px * 2,
+                    px * 2
+            );
+
+            gc.setStroke(Color.RED);
+            gc.setLineWidth(2);
+            gc.strokeOval(
+                    center.x - px,
+                    center.y - px,
+                    px * 2,
+                    px * 2
+            );
+        }
     }
 
     private void drawBoundary() {
         GraphicsContext gc = mapping.getGc();
         gc.setStroke(Color.RED);
-        gc.setLineWidth(3);
+        gc.setLineWidth(2);
         gc.beginPath();
 
         boolean first = true;
@@ -115,6 +165,17 @@ public class DashboardController {
             name=n;
             lat=a;
             lon=o;
+        }
+    }
+
+    private static class MapCircle {
+        double lat;
+        double lon;
+        double meters;
+        MapCircle(double lat,double lon,double meters){
+            this.lat=lat;
+            this.lon=lon;
+            this.meters=meters;
         }
     }
 }

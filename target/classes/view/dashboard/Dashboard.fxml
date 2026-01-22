@@ -70,12 +70,27 @@
                     </HBox>
                 </VBox>
             </StackPane>
-            <rowConstraints>
-                <RowConstraints />
-            </rowConstraints>
+         <rowConstraints>
+            <RowConstraints />
+         </rowConstraints>
         </GridPane>
 
-        <Pane fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
+        <Label styleClass="section-title" text="Disaster Mapping" />
 
+        <StackPane VBox.vgrow="ALWAYS">
+
+            <Pane fx:id="mapContainer" styleClass="map-container" />
+
+            <VBox alignment="TOP_RIGHT" fillWidth="false" maxWidth="-Infinity" pickOnBounds="false" spacing="6" styleClass="map-status-wrapper" StackPane.alignment="TOP_RIGHT">
+
+                <VBox alignment="CENTER_LEFT" fillWidth="false" maxWidth="-Infinity" spacing="6" styleClass="map-status-pane" VBox.vgrow="NEVER">
+                    <Label styleClass="map-status-title" text="Map Status" />
+                    <VBox alignment="CENTER_LEFT" spacing="8">
+                        <RadioButton fx:id="offlineRadio" text="Offline" />
+                        <RadioButton fx:id="onlineRadio" text="Online" />
+                    </VBox>
+                </VBox>
+            </VBox>
+        </StackPane>
     </VBox>
 </AnchorPane>

@@ -1,10 +1,12 @@
 package com.ionres.respondph.disaster.dialogs_controller;
 
+import com.ionres.respondph.common.controller.MappingDialogController;
 import com.ionres.respondph.disaster.DisasterController;
 import com.ionres.respondph.disaster.DisasterModel;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.DialogManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -20,11 +22,11 @@ public class AddDisasterDialogController {
     @FXML private ComboBox<String> disasterType;
     @FXML private TextField disasterNameFld;
     @FXML private DatePicker datePicker;
-    @FXML private TextField latitudeFld;
-    @FXML private TextField longitudeFld;
+    @FXML public TextField latitudeFld;
+    @FXML public TextField longitudeFld;
     @FXML private TextField radiusFld;
     @FXML private TextField notesFld;
-
+    @FXML Button getLocationBtn;
     private Stage dialogStage;
     private DisasterService disasterService;
     private DisasterController disasterController;
@@ -49,12 +51,15 @@ public class AddDisasterDialogController {
     private void setupActionHandlers() {
         saveBtn.setOnAction(this::handleSave);
         exitBtn.setOnAction(this::handleExit);
+        getLocationBtn.setOnAction(this::handleGetLocation);
     }
 
     private void handleSave(ActionEvent event) {
         addDisaster();
     }
-
+    private void handleGetLocation(ActionEvent event) {
+        handleGetLocationBtn();
+    }
     private void handleExit(ActionEvent event) {
         closeDialog();
     }
@@ -71,6 +76,12 @@ public class AddDisasterDialogController {
                 "Wildfire",
                 "Heat wave"
         );
+    }
+
+    private void handleGetLocationBtn(){
+        MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+        controller.setController(this);
+        DialogManager.show("mapping");
     }
 
     private void addDisaster() {

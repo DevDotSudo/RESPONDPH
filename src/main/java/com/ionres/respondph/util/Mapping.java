@@ -8,7 +8,9 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Mapping {
@@ -20,20 +22,20 @@ public class Mapping {
     private double offsetY;
     private double lastX;
     private double lastY;
-    private boolean dragging;
+    public boolean dragging;
     private boolean centered;
-
-    private int zoom = 13;
-
+    public Point markerPosition;
+    private final Image markerImage = new Image("file:/C:/Users/Davie/IdeaProjects/RESPONDPH/src/main/resources/images/placeholder.png", false);
+    private static double zoom = 13.2;
+    private static final double MIN_ZOOM = 13.2;
+    private static final double MAX_ZOOM = 18;
     private static final int TILE_SIZE = 256;
-    private static final int MIN_ZOOM = 13;
-    private static final int MAX_ZOOM = 18;
-
+    public LatLng circleCenter;
+    public double circleRadiusMeters;
     private static final double BOUND_NORTH = 11.116584029742963;
     private static final double BOUND_SOUTH = 10.984159872049194;
     private static final double BOUND_WEST  = 122.6584666442871;
     private static final double BOUND_EAST  = 122.93484146118163;
-
     private final Map<String, Image> tileCache = new HashMap<>();
 
     public void init(Pane container) {
@@ -42,7 +44,7 @@ public class Mapping {
 
         canvas.widthProperty().bind(container.widthProperty());
         canvas.heightProperty().bind(container.heightProperty());
-
+        center();
         container.getChildren().setAll(canvas);
 
         canvas.setOnMousePressed(this::mousePressed);
@@ -56,6 +58,7 @@ public class Mapping {
 
     private void redrawSafe() {
         if (!centered && canvas.getWidth() > 0 && canvas.getHeight() > 0) {
+            zoom = MIN_ZOOM;
             center();
             centered = true;
         } else if (centered) {
@@ -75,8 +78,15 @@ public class Mapping {
 
         drawTiles();
 
+        if (markerPosition != null && !dragging) {
+            double w = markerImage.getWidth();
+            double h = markerImage.getHeight();
+            gc.drawImage(markerImage, markerPosition.x - w/2, markerPosition.y - h, w, h);
+        }
+
         if (afterRedraw != null) afterRedraw.run();
     }
+
 
     private void center() {
         Point p = latLonToPixel(11.052390, 122.786762, zoom);
@@ -87,35 +97,28 @@ public class Mapping {
     }
 
     private void drawTiles() {
-        int tiles = 1 << zoom;
+        int baseZoom = (int) Math.floor(zoom);
+        double scale = Math.pow(2, zoom - baseZoom);
+        int tiles = 1 << baseZoom;
 
-        Point nwTile = latLonToPixel(BOUND_NORTH, BOUND_WEST, zoom);
-        Point seTile = latLonToPixel(BOUND_SOUTH, BOUND_EAST, zoom);
-
-        int minTileX = (int)Math.floor(nwTile.x / TILE_SIZE);
-        int minTileY = (int)Math.floor(nwTile.y / TILE_SIZE);
-        int maxTileX = (int)Math.ceil(seTile.x / TILE_SIZE);
-        int maxTileY = (int)Math.ceil(seTile.y / TILE_SIZE);
-
-        int startX = (int)Math.floor(-offsetX / TILE_SIZE);
-        int startY = (int)Math.floor(-offsetY / TILE_SIZE);
-        int endX = startX + (int)Math.ceil(canvas.getWidth() / TILE_SIZE) + 1;
-        int endY = startY + (int)Math.ceil(canvas.getHeight() / TILE_SIZE) + 1;
+        int startX = (int)Math.floor(-offsetX / (TILE_SIZE * scale));
+        int startY = (int)Math.floor(-offsetY / (TILE_SIZE * scale));
+        int endX = startX + (int)Math.ceil(canvas.getWidth() / (TILE_SIZE * scale)) + 1;
+        int endY = startY + (int)Math.ceil(canvas.getHeight() / (TILE_SIZE * scale)) + 1;
 
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
-                if (x < minTileX || x > maxTileX || y < minTileY || y > maxTileY) continue;
                 if (x < 0 || y < 0 || x >= tiles || y >= tiles) continue;
 
-                Image img = loadTile(zoom, x, y);
+                Image img = loadTile(baseZoom, x, y);
                 if (img == null) continue;
 
                 gc.drawImage(
                         img,
-                        x * TILE_SIZE + offsetX,
-                        y * TILE_SIZE + offsetY,
-                        TILE_SIZE,
-                        TILE_SIZE
+                        x * TILE_SIZE * scale + offsetX,
+                        y * TILE_SIZE * scale + offsetY,
+                        TILE_SIZE * scale,
+                        TILE_SIZE * scale
                 );
             }
         }
@@ -176,8 +179,8 @@ public class Mapping {
     }
 
     private void mouseScroll(ScrollEvent e) {
-        int oldZoom = zoom;
-        zoom += e.getDeltaY() > 0 ? 1 : -1;
+        double oldZoom = zoom;
+        zoom += e.getDeltaY() > 0 ? 0.2 : -0.2;
         zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
         if (zoom == oldZoom) return;
 
@@ -205,16 +208,26 @@ public class Mapping {
         return img;
     }
 
-    private Point latLonToPixel(double lat, double lon, int z) {
-        double n = Math.pow(2, z);
-        double x = (lon + 180) / 360 * n * TILE_SIZE;
-        double y = (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * n * TILE_SIZE;
+    private Point latLonToPixel(double lat, double lon, double z) {
+        int baseZoom = (int) Math.floor(z);
+        double scale = Math.pow(2, z - baseZoom);
+
+        double n = Math.pow(2, baseZoom);
+        double x = (lon + 180) / 360 * n * TILE_SIZE * scale;
+        double y = (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * n * TILE_SIZE * scale;
+
         return new Point(x, y);
     }
 
     public Point latLonToScreen(double lat, double lon) {
         Point p = latLonToPixel(lat, lon, zoom);
         return new Point(p.x + offsetX, p.y + offsetY);
+    }
+
+
+    public double metersPerPixel(double lat) {
+        double earth = 40075016.686;
+        return Math.cos(Math.toRadians(lat)) * earth / (TILE_SIZE * Math.pow(2, zoom));
     }
 
     public GraphicsContext getGc() {
@@ -224,18 +237,12 @@ public class Mapping {
     public static class Point {
         public final double x;
         public final double y;
-        public Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
+        public Point(double x, double y) { this.x = x; this.y = y; }
     }
 
     public static class LatLng {
         public final double lat;
         public final double lon;
-        public LatLng(double lat, double lon) {
-            this.lat = lat;
-            this.lon = lon;
-        }
+        public LatLng(double lat, double lon) { this.lat = lat; this.lon = lon; }
     }
 }

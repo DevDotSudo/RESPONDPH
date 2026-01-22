@@ -1,6 +1,7 @@
 package com.ionres.respondph.common.controller;
 
 import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController;
+import com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Mapping;
 import javafx.application.Platform;
@@ -15,7 +16,7 @@ public class MappingDialogController {
     @FXML private Pane mapContainer;
     @FXML private Button mapOkButton;
     @FXML private Button mapCloseButton;
-    private AddBeneficiariesDialogController controller;
+    private AddDisasterDialogController controller;
     private Stage dialogStage;
     private final Mapping mapping = new Mapping();
     private Mapping.LatLng selectedLatLng;
@@ -23,15 +24,18 @@ public class MappingDialogController {
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
-    public void setController(AddBeneficiariesDialogController controller) {
+    public void setController(AddDisasterDialogController controller) {
         this.controller = controller;
     }
     public void initialize() {
         Platform.runLater(() -> {
             mapping.init(mapContainer);
             mapping.getCanvas().setOnMouseClicked(e -> {
-                selectedLatLng = mapping.screenToLatLon(e.getX(), e.getY());
-                mapping.redraw();
+                if (!mapping.dragging) {
+                    selectedLatLng = mapping.screenToLatLon(e.getX(), e.getY());
+                    mapping.markerPosition = new Mapping.Point(e.getX(), e.getY());
+                    mapping.redraw();
+                }
             });
         });
 

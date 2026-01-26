@@ -6,6 +6,7 @@ import com.ionres.respondph.disaster_damage.DisasterDamageController;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -278,11 +279,27 @@ public class AddDisasterDamageDialogController {
             boolean success = disasterDamageService.createDisasterDamage(disasterDamage);
 
             if (success) {
-                AlertDialogManager.showSuccess("Success",
-                        "Disaster damage record has been successfully added.");
+
+                System.out.println("========== DISASTER DAMAGE ADDED - TRIGGERING CASCADE ==========");
+
+                int beneficiaryId = beneficiary.getBeneficiaryId();
+
+                UpdateTrigger updateTrigger = new UpdateTrigger();
+                boolean cascadeSuccess = updateTrigger.triggerCascadeUpdate(beneficiaryId);
+
+                if (cascadeSuccess) {
+                    AlertDialogManager.showSuccess("Success",
+                            "Disaster damage record has been successfully added.\n" +
+                                    "Household and aid scores have been automatically recalculated.");
+                } else {
+                    AlertDialogManager.showWarning("Partial Success",
+                            "Disaster damage record has been added, but score recalculation encountered issues.\n" +
+                                    "Please check the console for details.");
+                }
+
                 disasterDamageController.loadTable();
                 clearFields();
-                closeDialog();
+
             } else {
                 AlertDialogManager.showError("Error",
                         "Failed to add disaster damage record. Please try again.");

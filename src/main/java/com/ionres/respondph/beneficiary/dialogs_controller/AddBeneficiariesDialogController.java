@@ -1,13 +1,10 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import com.ionres.respondph.beneficiary.AgeScoreCalculator;
+import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
@@ -15,6 +12,10 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.function.UnaryOperator;
+
+import static com.ionres.respondph.util.LatLongValidation.setNumericCoordinateFilter;
 
 
 public class AddBeneficiariesDialogController {
@@ -94,6 +95,7 @@ public class AddBeneficiariesDialogController {
     @FXML
     public void initialize() {
         makeDraggable();
+        setupNumericFieldValidation();
         initializeBeneficiaryProfileDropdowns();
         initializeVulnerabilityIndicatorsDropdowns();
         initializeHousingAndInfrastructureDropdowns();
@@ -115,18 +117,43 @@ public class AddBeneficiariesDialogController {
         }
     }
 
+    private void setupNumericFieldValidation() {
+        setNumericPhoneNumberFilter(mobileNumberFld);
+
+        setNumericCoordinateFilter(latitudeFld, 90.0, "Latitude");
+
+        setNumericCoordinateFilter(longitudeFld, 180.0, "Longitude");
+    }
+
+    private void setNumericPhoneNumberFilter(TextField textField) {
+        String phoneNumberPattern = "[-+()\\d\\s]*";
+
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String newText = change.getControlNewText();
+
+            if (newText.matches(phoneNumberPattern)) {
+                return change;
+            }
+            return null;
+        };
+
+        textField.setTextFormatter(new TextFormatter<>(filter));
+
+        textField.setTooltip(new Tooltip("Enter phone number (digits, +, -, (, ), spaces allowed)"));
+    }
+
+
     private void initializeBeneficiaryProfileDropdowns() {
-        genderSelection.getItems().addAll("Male", "Female", "Other");
+        genderSelection.getItems().addAll("Male", "Female");
 
         maritalStatusSelection.getItems().addAll(
             "Single",
             "Married",
             "Widowed",
-            "Separated",
-            "Divorced"
+            "Separated"
         );
 
-        soloParentStatusSelection.getItems().addAll("Yes", "No");
+        soloParentStatusSelection.getItems().addAll("Not a Solo Parent", "Solo Parent (with support network)","Solo Parent (without support)");
     }
 
     private void initializeVulnerabilityIndicatorsDropdowns() {
@@ -138,7 +165,8 @@ public class AddBeneficiariesDialogController {
             "Speech",
             "Intellectual",
             "Mental/Psychosocial",
-            "Due to Chronic Illness"
+            "Due to Chronic Illness",
+                "Multiple Disabilities"
         );
 
         healthConditionSelection.getItems().addAll(
@@ -151,9 +179,9 @@ public class AddBeneficiariesDialogController {
         );
 
         cleanWaterAccessSelection.getItems().addAll(
-            "Yes",
-            "Occasionally",
-            "No"
+            "Daily access to clean and safe water",
+            "Irregular or limited access to clean water",
+            "No access to clean water"
         );
 
         sanitationFacilitiesSelection.getItems().addAll(
@@ -186,23 +214,24 @@ public class AddBeneficiariesDialogController {
             "Regular full-time employment",
             "Self-employed with stable income",
             "Self-employed with unstable income",
-            "Irregular employment (odd jobs, seasonal work)",
+            "Informal or irregular employment",
             "Unemployed"
         );
 
         monthlyIncomeSelection.getItems().addAll(
-            "12,030-30,000(Poor)",
-            "12,030-24,480(Low-Income)",
-            "24,061-84,120 (Lower Middle Income)",
-            "84,121-144,210(Middle Class)",
-            "144,211-244,350(Upper Middle Income)",
+            "Less than 12,030 PHP (Poor)",
+            "12,030 to 24,060 PHP (Low Income)",
+            "24,061 to 48,120 PHP (Lower Middle Income)",
+            "48,121 to 84,210 PHP (Middle Class)",
+            "84,211 to 144,360 PHP (Upper Middle Income)",
+            "144,361 to 240,600 PHP (Upper Income)",
             "At least 244,350(Rich)"
         );
 
         educationLevelSelection.getItems().addAll(
             "No Formal Education",
-            "Elementary",
-            "High School",
+            "Elementary level completed",
+            "High school level completed",
             "Vocational or technical training",
             "College or university level",
             "Graduate education"
@@ -211,7 +240,7 @@ public class AddBeneficiariesDialogController {
         digitalAccessSelection.getItems().addAll(
             "Reliable Internet and Device Access",
             "Intermittent internet or device access",
-            "Device only",
+            "Limited or shared access only",
             "No digital access"
         );
     }
@@ -224,7 +253,7 @@ public class AddBeneficiariesDialogController {
             String birthDate        = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
+            double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender           = genderSelection.getValue();
             String mobileNumber     = mobileNumberFld.getText().trim();
             String maritalStatus    = maritalStatusSelection.getValue();

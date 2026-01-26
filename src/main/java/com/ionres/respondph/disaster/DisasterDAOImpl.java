@@ -1,5 +1,6 @@
 package com.ionres.respondph.disaster;
 
+import com.ionres.respondph.aid_type.AidTypeModelComboBox;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
@@ -230,5 +231,78 @@ public class DisasterDAOImpl implements DisasterDAO{
             }
         }
         return dm;
+    }
+
+
+    @Override
+    public List<DisasterModelComboBox> findAll() {
+        List<DisasterModelComboBox> aidTypes = new ArrayList<>();
+        String sql = "SELECT * FROM disaster ORDER BY date DESC";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                DisasterModelComboBox aidType = mapResultSetToDisaster(rs);
+                aidTypes.add(aidType);
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("Loaded " + aidTypes.size() + " aid types");
+
+        } catch (Exception e) {
+            System.err.println("Error fetching all aid types: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return aidTypes;
+    }
+
+    @Override
+    public DisasterModelComboBox mapResultSetToDisaster(ResultSet rs) throws Exception {
+        DisasterModelComboBox disaster = new DisasterModelComboBox();
+
+        disaster.setDisasterId(rs.getInt("disaster_id"));
+
+        // Decrypt fields
+        String encryptedType = rs.getString("type");
+        disaster.setDisasterTypeName(cs.decryptWithOneParameter(encryptedType));
+
+        String encryptedName = rs.getString("name");
+        disaster.setDisasterName(cs.decryptWithOneParameter(encryptedName));
+
+        String encryptedDate = rs.getString("date");
+        String decryptedDate = cs.decryptWithOneParameter(encryptedDate);
+        disaster.setDisasterDate(java.time.LocalDate.parse(decryptedDate));
+
+        // Decrypt optional fields
+        String encryptedLat = rs.getString("lat");
+        if (encryptedLat != null && !encryptedLat.isEmpty()) {
+            String decryptedLat = cs.decryptWithOneParameter(encryptedLat);
+            disaster.setLatitude(new java.math.BigDecimal(decryptedLat));
+        }
+
+        String encryptedLong = rs.getString("long");
+        if (encryptedLong != null && !encryptedLong.isEmpty()) {
+            String decryptedLong = cs.decryptWithOneParameter(encryptedLong);
+            disaster.setLongitude(new java.math.BigDecimal(decryptedLong));
+        }
+
+        String encryptedRadius = rs.getString("radius");
+        if (encryptedRadius != null && !encryptedRadius.isEmpty()) {
+            String decryptedRadius = cs.decryptWithOneParameter(encryptedRadius);
+            disaster.setRadiusKm(new java.math.BigDecimal(decryptedRadius));
+        }
+
+        String encryptedNotes = rs.getString("notes");
+        if (encryptedNotes != null && !encryptedNotes.isEmpty()) {
+            disaster.setNotes(cs.decryptWithOneParameter(encryptedNotes));
+        }
+
+        return disaster;
     }
 }

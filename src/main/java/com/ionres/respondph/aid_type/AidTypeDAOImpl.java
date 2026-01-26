@@ -1,6 +1,7 @@
 package com.ionres.respondph.aid_type;
 
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.Cryptography;
 
 import javax.swing.*;
 import java.sql.Connection;
@@ -13,11 +14,40 @@ import java.util.List;
 public class AidTypeDAOImpl implements AidTypeDAO{
     private final DBConnection dbConnection;
     private Connection conn;
+    private final Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
 
     public AidTypeDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
 
+    }
+
+    @Override
+    public List<AidTypeModelComboBox> findAll() {
+        List<AidTypeModelComboBox> aidTypes = new ArrayList<>();
+        String sql = "SELECT * FROM aid_type ORDER BY aid_name";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                AidTypeModelComboBox aidType = mapResultSetToAidType(rs);
+                aidTypes.add(aidType);
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("Loaded " + aidTypes.size() + " aid types");
+
+        } catch (Exception e) {
+            System.err.println("Error fetching all aid types: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return aidTypes;
     }
     @Override
     public boolean saving(AidTypeModel atm) {
@@ -191,6 +221,8 @@ public class AidTypeDAOImpl implements AidTypeDAO{
         return at;
     }
 
+
+
     @Override
     public boolean update(AidTypeModel atm) {
 
@@ -261,6 +293,27 @@ public class AidTypeDAOImpl implements AidTypeDAO{
             }
         }
     }
+
+    @Override
+    public AidTypeModelComboBox mapResultSetToAidType(ResultSet rs) throws Exception {
+        AidTypeModelComboBox aidType = new AidTypeModelComboBox();
+
+        aidType.setAidTypeId(rs.getInt("aid_type_id"));
+
+        String encryptedName = rs.getString("aid_name");
+        aidType.setAidName(cs.decryptWithOneParameter(encryptedName));
+
+        String encryptedNotes = rs.getString("notes");
+        if (encryptedNotes != null && !encryptedNotes.isEmpty()) {
+            aidType.setNotes(cs.decryptWithOneParameter(encryptedNotes));
+        }
+
+        aidType.setCreatedByAdminId(rs.getInt("admin_id"));
+
+
+        return aidType;
+    }
+
 
 
 

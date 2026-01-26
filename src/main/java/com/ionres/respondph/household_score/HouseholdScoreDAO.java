@@ -1,9 +1,23 @@
 package com.ionres.respondph.household_score;
 
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.disaster_damage.DisasterDamageModel;
+import com.ionres.respondph.familymembers.FamilyMembersModel;
+import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorScoreModel;
+
+import java.util.List;
+
 public interface HouseholdScoreDAO {
-    public boolean saveHouseholdScore(int beneficiaryId, double genderScore, double maritalStatusScore,
-                                      double soloParentScore, double disabilityScore, double healthConditionScore,
-                                      double cleanWaterScore, double sanitationScore, double houseConstructionScore,
-                                      double ownershipScore, double employmentScore, double monthlyIncomeScore,
-                                      double educationScore, double digitalAccessScore);
+
+    VulnerabilityIndicatorScoreModel getVulnerabilityScores();
+    BeneficiaryModel getBeneficiaryById(int beneficiaryId);
+
+    List<FamilyMembersModel> getFamilyMembersByBeneficiaryId(int beneficiaryId);
+
+    List<DisasterDamageModel> getDisasterDamageById(int beneficiaryId);
+
+    boolean saveHouseholdScore(HouseholdScoreModel score);
+
+    List<Integer> getAllBeneficiaryIdsWithHouseholdScores();
+
 }

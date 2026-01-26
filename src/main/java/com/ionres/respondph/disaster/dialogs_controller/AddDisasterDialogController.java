@@ -13,6 +13,9 @@ import javafx.stage.Stage;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.ionres.respondph.util.LatLongValidation.setNumericCoordinateFilter;
+import static com.ionres.respondph.util.LatLongValidation.setNumericNumberFilter;
+
 public class AddDisasterDialogController {
 
     @FXML private VBox root;
@@ -31,6 +34,7 @@ public class AddDisasterDialogController {
 
     @FXML
     private void initialize() {
+        setNumberValidation();
         initializeDisasterTypeDropdowns();
         setupKeyHandlers();
         setupActionHandlers();
@@ -50,6 +54,16 @@ public class AddDisasterDialogController {
         saveBtn.setOnAction(this::handleSave);
         exitBtn.setOnAction(this::handleExit);
     }
+
+    private void setNumberValidation(){
+        setNumericCoordinateFilter(latitudeFld, 90.0, "Latitude");
+
+        setNumericCoordinateFilter(longitudeFld, 180.0, "Longitude");
+
+        setNumericNumberFilter(radiusFld);
+    }
+
+
 
     private void handleSave(ActionEvent event) {
         addDisaster();
@@ -99,6 +113,7 @@ public class AddDisasterDialogController {
                 disasterController.loadTable();
                 clearFields();
                 DashboardRefresher.refresh();
+                DashboardRefresher.refreshComboBoxOfDNAndAN();
             } else {
                 AlertDialogManager.showError("Error", "Failed to add disaster. Please try again.");
             }

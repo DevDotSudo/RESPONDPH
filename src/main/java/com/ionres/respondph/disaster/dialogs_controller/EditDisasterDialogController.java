@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import static com.ionres.respondph.util.LatLongValidation.setNumericCoordinateFilter;
+import static com.ionres.respondph.util.LatLongValidation.setNumericNumberFilter;
+
 public class EditDisasterDialogController {
 
     @FXML private VBox root;
@@ -34,6 +37,7 @@ public class EditDisasterDialogController {
 
     @FXML
     private void initialize() {
+        setNumberValidation();
         initializeDisasterTypeDropdowns();
         setupEventHandlers();
         setupKeyHandlers();
@@ -52,6 +56,14 @@ public class EditDisasterDialogController {
             }
         });
         root.requestFocus();
+    }
+
+    private void setNumberValidation(){
+        setNumericCoordinateFilter(latitudeFld, 90.0, "Latitude");
+
+        setNumericCoordinateFilter(longitudeFld, 180.0, "Longitude");
+
+        setNumericNumberFilter(radiusFld);
     }
 
     private void handleUpdate(ActionEvent event) {
@@ -126,6 +138,7 @@ public class EditDisasterDialogController {
                         "Disaster information has been successfully updated.");
                 disasterController.loadTable();
                 DashboardRefresher.refresh();
+                DashboardRefresher.refreshComboBoxOfDNAndAN();
                 closeDialog();
             } else {
                 AlertDialogManager.showError("Update Failed",

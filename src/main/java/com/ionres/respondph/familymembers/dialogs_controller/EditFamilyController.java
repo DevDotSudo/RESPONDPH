@@ -1,12 +1,12 @@
 package com.ionres.respondph.familymembers.dialogs_controller;
 
-import com.ionres.respondph.beneficiary.AgeScoreCalculator;
-import com.ionres.respondph.common.model.BeneficiaryModel;
+import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.familymembers.FamilyMemberService;
 import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
-import com.ionres.respondph.household_score.HouseholdScoreCalculator;
+import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 
 public class EditFamilyController {
 
@@ -131,7 +130,7 @@ public class EditFamilyController {
     }
 
     private void initializeFamilyMemberProfileDropdowns() {
-        genderSelection.getItems().addAll("Male", "Female", "Other");
+        genderSelection.getItems().addAll("Male", "Female");
 
         maritalStatusSelection.getItems().addAll(
                 "Single",
@@ -148,7 +147,11 @@ public class EditFamilyController {
                 "Niece",
                 "Nephew",
                 "Brother",
-                "Sister"
+                "Sister",
+                "Uncle",
+                "Auntie",
+                "Wife",
+                "Husband"
         );
     }
 
@@ -161,7 +164,8 @@ public class EditFamilyController {
                 "Speech",
                 "Intellectual",
                 "Mental/Psychosocial",
-                "Due to Chronic Illness"
+                "Due to Chronic Illness",
+                "Multiple Disabilities"
         );
 
         healthConditionSelection.getItems().addAll(
@@ -177,7 +181,7 @@ public class EditFamilyController {
                 "Regular full-time employment",
                 "Self-employed with stable income",
                 "Self-employed with unstable income",
-                "Irregular employment (odd jobs, seasonal work)",
+                "Informal or irregular employment",
                 "Unemployed"
         );
 
@@ -216,74 +220,18 @@ public class EditFamilyController {
         }
     }
 
-    private void updateFamilyMembers() {
-        try {
-            // Validate input
-            if (!validateInput()) {
-                return;
-            }
-
-            // Get updated values
-            String firstName = firstNameFld.getText().trim();
-            String middleName = middleNameFld.getText().trim();
-            String lastName = lastNameFld.getText().trim();
-            String relationship = relationshipSelection.getValue();
-            String birthDate = birthDatePicker.getValue() != null ? birthDatePicker.getValue().toString() : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
-            String gender = genderSelection.getValue();
-            String maritalStatus = maritalStatusSelection.getValue();
-            String disabilityType = disabilityTypeSelection.getValue();
-            String healthCondition = healthConditionSelection.getValue();
-            String employmentStatus = employmentStatusSelection.getValue();
-            String educationalLevel = educationLevelSelection.getValue();
-            String notes = notesFld.getText().trim();
-
-            String regDate = LocalDateTime.now()
-                    .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
-
-            // Create updated family member model
-            FamilyMembersModel updatedFamilyMember = new FamilyMembersModel(
-                    firstName, middleName, lastName, relationship, birthDate, ageScore, gender, maritalStatus,
-                    disabilityType, healthCondition, employmentStatus, educationalLevel,
-                    currentFamilyMember.getBeneficiaryId(), notes, regDate
-            );
-
-            updatedFamilyMember.setFamilyId(currentFamilyMember.getFamilyId());
-
-            // Update family member
-            boolean success = familyMemberService.updatefamilyMember(updatedFamilyMember);
-
-            if (success) {
-                AlertDialogManager.showSuccess("Update Successful",
-                        "Family member information has been successfully updated.");
-                familyMembersController.loadTable();
-                closeDialog();
-            } else {
-                AlertDialogManager.showError("Update Failed",
-                        "Failed to update family member. Please try again.");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("Update Error",
-                    "An error occurred while updating family member: " + e.getMessage());
-        }
-    }
-
     private void updateFamilyMember() {
         try {
-            // Validate input
             if (!validateInput()) {
                 return;
             }
 
-            // Get updated values
             String firstName = firstNameFld.getText().trim();
             String middleName = middleNameFld.getText().trim();
             String lastName = lastNameFld.getText().trim();
             String relationship = relationshipSelection.getValue();
             String birthDate = birthDatePicker.getValue() != null ? birthDatePicker.getValue().toString() : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
+            double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender = genderSelection.getValue();
             String maritalStatus = maritalStatusSelection.getValue();
             String disabilityType = disabilityTypeSelection.getValue();
@@ -309,9 +257,12 @@ public class EditFamilyController {
 
             if (success) {
                 // ✅ AUTO-RECALCULATE HOUSEHOLD SCORES AFTER FAMILY MEMBER UPDATE
-                HouseholdScoreCalculator calculator =
-                        new HouseholdScoreCalculator();
+                HouseholdScoreCalculate calculator =
+                        new HouseholdScoreCalculate();
                 calculator.autoRecalculateHouseholdScore(currentFamilyMember.getBeneficiaryId());
+
+                UpdateTrigger trigger = new UpdateTrigger();
+                trigger.triggerCascadeUpdate(currentFamilyMember.getBeneficiaryId());
 
                 AlertDialogManager.showSuccess("Update Successful",
                         "Family member information has been successfully updated.\nHousehold scores have been recalculated.");

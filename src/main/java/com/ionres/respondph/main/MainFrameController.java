@@ -36,7 +36,8 @@ public class MainFrameController {
     @FXML private Button disasterBtn;
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
-    @FXML private Button aidsBtn;
+    @FXML private Button aidTypeBtn;
+    @FXML private Button aidBtn;
     @FXML private Button sendSmsBtn;
     @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
@@ -57,12 +58,13 @@ public class MainFrameController {
         manageBeneficiariesBtn.setOnAction(handlers);
         disasterBtn.setOnAction(handlers);
         disasterDamageBtn.setOnAction(handlers);
-        aidsBtn.setOnAction(handlers);
+        aidTypeBtn.setOnAction(handlers);
         vulnerabilityBtn.setOnAction(handlers);
         familyMembersBtn.setOnAction(handlers);
         sendSmsBtn.setOnAction(handlers);
         settingsBtn.setOnAction(handlers);
         logoutBtn.setOnAction(handlers);
+        aidBtn.setOnAction(handlers);
     }
 
     private void setupSectionToggle(Button sectionBtn, VBox sectionContent, FontAwesomeIconView chevronIcon) {
@@ -92,10 +94,12 @@ public class MainFrameController {
         else if(src == manageBeneficiariesBtn) {
             handleManageBeneficiaries();
         }
-        else if(src == aidsBtn) {
-            handleAids();
-        }
-        else if(src == vulnerabilityBtn) {
+        else if(src == aidTypeBtn) {
+            handleAidType();
+        } else if (src == aidBtn) {
+            handleAid();
+
+        } else if(src == vulnerabilityBtn) {
             DashboardRefresher.refreshFlds();
             handleVulnerabilityIndicator();
         }
@@ -134,9 +138,14 @@ public class MainFrameController {
         activeButton(manageBeneficiariesBtn);
     }
 
-    private void handleAids() {
+    private void handleAidType() {
         loadPage("/view/aid_type/AidType.fxml");
-        activeButton(aidsBtn);
+        activeButton(aidTypeBtn);
+    }
+
+    private void handleAid(){
+        loadPage("/view/aid/Aid.fxml");
+        activeButton(aidBtn);
     }
 
     private void handleVulnerabilityIndicator() {

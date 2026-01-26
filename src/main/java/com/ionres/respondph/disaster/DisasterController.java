@@ -128,6 +128,7 @@ public class DisasterController {
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Disaster has been successfully deleted.");
                     DashboardRefresher.refresh();
+                    DashboardRefresher.refreshComboBoxOfDNAndAN();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete disaster. Please try again.");

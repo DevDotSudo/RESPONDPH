@@ -6,6 +6,7 @@ import com.ionres.respondph.disaster_damage.DisasterDamageController;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -396,6 +397,11 @@ public class EditDisasterDamageDialogController {
             boolean success = disasterDamageService.updateDisasterDamage(updatedDisasterDamage);
 
             if (success) {
+                int beneficiaryId = beneficiary.getBeneficiaryId();
+
+                UpdateTrigger updateTrigger = new UpdateTrigger();
+                updateTrigger.triggerCascadeUpdate(beneficiaryId);
+
                 AlertDialogManager.showSuccess("Update Successful",
                         "Disaster damage record has been successfully updated.");
 

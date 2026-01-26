@@ -40,10 +40,6 @@
                         <FontAwesomeIconView glyphName="USER" size="16" styleClass="family-field-icon" />
                         <ComboBox fx:id="beneficiaryNameFld" editable="true" promptText="Search beneficiary name" styleClass="family-dropdown" HBox.hgrow="ALWAYS" />
                     </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="family-input-container" HBox.hgrow="ALWAYS">
-                        <FontAwesomeIconView glyphName="USER" size="16" styleClass="family-field-icon" />
-                        <ComboBox fx:id="selectBeneficiaryComboBox" promptText="Select Id of Beneficiary" styleClass="family-dropdown" HBox.hgrow="ALWAYS" />
-                    </HBox>
                 </VBox>
             </VBox>
 
@@ -188,14 +184,6 @@
                 <HBox alignment="CENTER" spacing="10">
                     <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="family-button-icon" text="" />
                     <Label styleClass="family-button-label" text="Save Family Member" />
-                </HBox>
-            </graphic>
-        </Button>
-        <Button fx:id="calculateHouseholdScoresBtn" styleClass="family-save-button">
-            <graphic>
-                <HBox alignment="CENTER" spacing="10">
-                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="family-button-icon" text="" />
-                    <Label styleClass="family-button-label" text="Calculate Score" />
                 </HBox>
             </graphic>
         </Button>

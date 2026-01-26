@@ -1,22 +1,23 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import com.ionres.respondph.beneficiary.AgeScoreCalculator;
+import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
-import com.ionres.respondph.household_score.HouseholdScoreCalculator;
+import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import com.ionres.respondph.util.DashboardRefresher;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.time.LocalDate;
+import java.util.function.UnaryOperator;
+
+import static com.ionres.respondph.util.LatLongValidation.setNumericCoordinateFilter;
 
 public class EditBeneficiariesDialogController {
 
@@ -97,6 +98,7 @@ public class EditBeneficiariesDialogController {
 
     @FXML
     public void initialize() {
+        setupNumericFieldValidation();
         initializeBeneficiaryProfileDropdowns();
         initializeVulnerabilityIndicatorsDropdowns();
         initializeHousingAndInfrastructureDropdowns();
@@ -116,6 +118,32 @@ public class EditBeneficiariesDialogController {
         } else if (src == exitBtn) {
             closeDialog();
         }
+    }
+
+
+    private void setupNumericFieldValidation() {
+        setNumericPhoneNumberFilter(mobileNumberFld);
+
+        setNumericCoordinateFilter(latitudeFld, 90.0, "Latitude");
+
+        setNumericCoordinateFilter(longitudeFld, 180.0, "Longitude");
+    }
+
+    private void setNumericPhoneNumberFilter(TextField textField) {
+        String phoneNumberPattern = "[-+()\\d\\s]*";
+
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String newText = change.getControlNewText();
+
+            if (newText.matches(phoneNumberPattern)) {
+                return change;
+            }
+            return null;
+        };
+
+        textField.setTextFormatter(new TextFormatter<>(filter));
+
+        textField.setTooltip(new Tooltip("Enter phone number (digits, +, -, (, ), spaces allowed)"));
     }
 
 
@@ -152,17 +180,16 @@ public class EditBeneficiariesDialogController {
     }
 
     private void initializeBeneficiaryProfileDropdowns() {
-        genderSelection.getItems().addAll("Male", "Female", "Other");
+        genderSelection.getItems().addAll("Male", "Female");
 
         maritalStatusSelection.getItems().addAll(
                 "Single",
                 "Married",
                 "Widowed",
-                "Separated",
-                "Divorced"
+                "Separated"
         );
 
-        soloParentStatusSelection.getItems().addAll("Yes", "No");
+        soloParentStatusSelection.getItems().addAll("Not a Solo Parent", "Solo Parent (with support network)","Solo Parent (without support)");
     }
 
     private void initializeVulnerabilityIndicatorsDropdowns() {
@@ -174,7 +201,8 @@ public class EditBeneficiariesDialogController {
                 "Speech",
                 "Intellectual",
                 "Mental/Psychosocial",
-                "Due to Chronic Illness"
+                "Due to Chronic Illness",
+                "Multiple Disabilities"
         );
 
         healthConditionSelection.getItems().addAll(
@@ -187,9 +215,9 @@ public class EditBeneficiariesDialogController {
         );
 
         cleanWaterAccessSelection.getItems().addAll(
-                "Yes",
-                "Occasionally",
-                "No"
+                "Daily access to clean and safe water",
+                "Irregular or limited access to clean water",
+                "No access to clean water"
         );
 
         sanitationFacilitiesSelection.getItems().addAll(
@@ -222,23 +250,24 @@ public class EditBeneficiariesDialogController {
                 "Regular full-time employment",
                 "Self-employed with stable income",
                 "Self-employed with unstable income",
-                "Irregular employment (odd jobs, seasonal work)",
+                "Informal or irregular employment",
                 "Unemployed"
         );
 
         monthlyIncomeSelection.getItems().addAll(
-                "12,030-30,000(Poor)",
-                "12,030-24,480(Low-Income)",
-                "24,061-84,120 (Lower Middle Income)",
-                "84,121-144,210(Middle Class)",
-                "144,211-244,350(Upper Middle Income)",
+                "Less than 12,030 PHP (Poor)",
+                "12,030 to 24,060 PHP (Low Income)",
+                "24,061 to 48,120 PHP (Lower Middle Income)",
+                "48,121 to 84,210 PHP (Middle Class)",
+                "84,211 to 144,360 PHP (Upper Middle Income)",
+                "144,361 to 240,600 PHP (Upper Income)",
                 "At least 244,350(Rich)"
         );
 
         educationLevelSelection.getItems().addAll(
                 "No Formal Education",
-                "Elementary",
-                "High School",
+                "Elementary level completed",
+                "High school level completed",
                 "Vocational or technical training",
                 "College or university level",
                 "Graduate education"
@@ -247,149 +276,11 @@ public class EditBeneficiariesDialogController {
         digitalAccessSelection.getItems().addAll(
                 "Reliable Internet and Device Access",
                 "Intermittent internet or device access",
-                "Device only",
+                "Limited or shared access only",
                 "No digital access"
         );
     }
 
-    private void updateBeneficiaries() {
-        try {
-            String firstname = firstNameFld.getText().trim();
-            String middlename = middleNameFld.getText().trim();
-            String lastname = lastNameFld.getText().trim();
-            String birthDate = birthDatePicker.getValue() != null
-                    ? birthDatePicker.getValue().toString()
-                    : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
-            String gender = genderSelection.getValue();
-            String mobileNumber = mobileNumberFld.getText().trim();
-            String maritalStatus = maritalStatusSelection.getValue();
-            String soloParentStatus = soloParentStatusSelection.getValue();
-            String latitude = latitudeFld.getText().trim();
-            String longitude = longitudeFld.getText().trim();
-            String disabilityType = disabilityTypeSelection.getValue();
-            String healthCondition = healthConditionSelection.getValue();
-            String cleanWaterAccess = cleanWaterAccessSelection.getValue();
-            String sanitationFacility = sanitationFacilitiesSelection.getValue();
-            String houseType = houseConstructionTypeSelection.getValue();
-            String ownershipStatus = ownershipStatusSelection.getValue();
-            String employmentStatus = employmentStatusSelection.getValue();
-            String monthlyIncome = monthlyIncomeSelection.getValue();
-            String educationalLevel = educationLevelSelection.getValue();
-            String digitalAccess = digitalAccessSelection.getValue();
-            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
-
-            if (firstname.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","First name is required");
-                return;
-            }
-            if (middlename.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Middle name is required");
-                return;
-            }
-            if (lastname.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Last name is required");
-                return;
-            }
-            if (birthDate.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Birth date is required");
-                return;
-            }
-            if (gender == null) {
-                AlertDialogManager.showWarning("Warning","Gender is required");
-                return;
-            }
-            if (mobileNumber.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Mobile number is required");
-                return;
-            }
-            if (maritalStatus == null) {
-                AlertDialogManager.showWarning("Warning","Marital status is required");
-                return;
-            }
-            if (soloParentStatus == null) {
-                AlertDialogManager.showWarning("Warning","Solo parent status is required");
-                return;
-            }
-            if (latitude.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Latitude is required");
-                return;
-            }
-            if (longitude.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Longitude is required");
-                return;
-            }
-            if (disabilityType == null) {
-                AlertDialogManager.showWarning("Warning","Disability type is required");
-                return;
-            }
-            if (healthCondition == null) {
-                AlertDialogManager.showWarning("Warning","Health condition is required");
-                return;
-            }
-            if (cleanWaterAccess == null) {
-                AlertDialogManager.showWarning("Warning","Clean water access is required");
-                return;
-            }
-            if (sanitationFacility == null) {
-                AlertDialogManager.showWarning("Warning","Sanitation facility is required");
-                return;
-            }
-            if (houseType == null) {
-                AlertDialogManager.showWarning("Warning","House type is required");
-                return;
-            }
-
-            if (ownershipStatus == null) {
-                AlertDialogManager.showWarning("Warning","Ownership status is required");
-                return;
-            }
-
-            if (employmentStatus == null) {
-                AlertDialogManager.showWarning("Warning","Employment status is required");
-                return;
-            }
-            if (monthlyIncome == null) {
-                AlertDialogManager.showWarning("Warning","Monthly income is required");
-                return;
-            }
-            if (educationalLevel == null) {
-                AlertDialogManager.showWarning("Warning","Educational level is required");
-                return;
-            }
-            if (digitalAccess == null) {
-                AlertDialogManager.showWarning("Warning","Digital access is required");
-                return;
-            }
-
-            BeneficiaryModel updatedBm = new BeneficiaryModel(
-                    firstname, middlename, lastname, birthDate,ageScore, gender,
-                    maritalStatus, soloParentStatus, latitude, longitude,
-                    mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
-                    sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess, addedBy,
-                    regDate
-            );
-
-            updatedBm.setId(currentBeneficiary.getId());
-
-            boolean success = beneficiaryService.updateBeneficiary(updatedBm);
-
-            if (success) {
-                AlertDialogManager.showSuccess("Success", "Beneficiary updated successfully.");
-                clearFields();
-                DashboardRefresher.refresh();
-            } else {
-                AlertDialogManager.showError("Error", "Failed to update beneficiary.");
-            }
-            dialogStage.hide();
-        } catch (Exception e) {
-            AlertDialogManager.showError("Error", e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     private void updateBeneficiary() {
         try {
@@ -399,7 +290,7 @@ public class EditBeneficiariesDialogController {
             String birthDate = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
+            double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender = genderSelection.getValue();
             String mobileNumber = mobileNumberFld.getText().trim();
             String maritalStatus = maritalStatusSelection.getValue();
@@ -517,12 +408,25 @@ public class EditBeneficiariesDialogController {
 
             if (success) {
                 // ✅ AUTO-RECALCULATE HOUSEHOLD SCORES AFTER BENEFICIARY UPDATE
-                HouseholdScoreCalculator calculator = new HouseholdScoreCalculator();
+                HouseholdScoreCalculate calculator = new HouseholdScoreCalculate();
                 calculator.autoRecalculateHouseholdScore(currentBeneficiary.getId());
 
                 AlertDialogManager.showSuccess("Success", "Beneficiary updated successfully.\nHousehold scores have been recalculated.");
                 clearFields();
                 DashboardRefresher.refresh();
+
+                // After successfully updating beneficiary
+                UpdateTrigger trigger = new UpdateTrigger();
+                boolean cascadeSuccess = trigger.triggerCascadeUpdate(currentBeneficiary.getId());
+
+                if (cascadeSuccess) {
+                    AlertDialogManager.showSuccess("Success",
+                            "Beneficiary updated successfully!\n" +
+                                    "Household scores and aid scores have been recalculated.");
+                } else {
+                    AlertDialogManager.showWarning("Partial Success",
+                            "Beneficiary updated, but some scores failed to recalculate.");
+                }
             } else {
                 AlertDialogManager.showError("Error", "Failed to update beneficiary.");
             }

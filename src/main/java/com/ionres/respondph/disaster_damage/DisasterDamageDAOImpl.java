@@ -3,6 +3,8 @@ package com.ionres.respondph.disaster_damage;
 import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.common.model.DisasterModel;
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.DisasterDamageUpdateHandler;
+
 import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,7 +38,26 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             ps.setString(7, ddm.getRegDate());
 
             int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+            ps.close();
+
+            if (rowsAffected > 0) {
+                System.out.println("Disaster damage inserted successfully");
+
+                DisasterDamageUpdateHandler updateHandler = new DisasterDamageUpdateHandler();
+                boolean scoresUpdated = updateHandler.updateDamageSeverityScores(
+                        ddm.getBeneficiaryId()
+                );
+
+                if (scoresUpdated) {
+                    System.out.println("✓ Damage severity scores updated automatically");
+                } else {
+                    System.err.println("⚠ Warning: Damage inserted but scores not updated");
+                }
+
+                return true;
+            }
+
+            return false;
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -207,8 +228,27 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             ps.setString(7, ddm.getRegDate());
             ps.setInt(8, ddm.getBeneficiaryDisasterDamageId());
 
-            return ps.executeUpdate() > 0;
+            int rowsAffected = ps.executeUpdate();
+            ps.close();
 
+            if (rowsAffected > 0) {
+                System.out.println("Disaster damage updated successfully");
+
+                DisasterDamageUpdateHandler updateHandler = new DisasterDamageUpdateHandler();
+                boolean scoresUpdated = updateHandler.updateDamageSeverityScores(
+                        ddm.getBeneficiaryId()
+                );
+
+                if (scoresUpdated) {
+                    System.out.println("✓ Damage severity scores updated automatically");
+                } else {
+                    System.err.println("⚠ Warning: Damage updated but scores not recalculated");
+                }
+
+                return true;
+            }
+
+            return false;
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
                     null,

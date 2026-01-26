@@ -1,13 +1,14 @@
 
 package com.ionres.respondph.familymembers.dialogs_controller;
 
-import com.ionres.respondph.beneficiary.AgeScoreCalculator;
+import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.familymembers.FamilyMemberService;
 import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
-import com.ionres.respondph.household_score.HouseholdScoreCalculator;
+import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -38,8 +39,6 @@ public class AddFamilyController {
     @FXML private ComboBox<String> relationshipSelection;
     @FXML private Button saveBtn;
     @FXML private Button exitBtn;
-    @FXML private Button calculateHouseholdScoresBtn;
-    @FXML private ComboBox<BeneficiaryModel> selectBeneficiaryComboBox;
 
     private double xOffset = 0;
     private double yOffset = 0;
@@ -77,41 +76,15 @@ public class AddFamilyController {
     private void setupEventHandlers() {
         saveBtn.setOnAction(this::handleSave);
         exitBtn.setOnAction(this::handleExit);
-        calculateHouseholdScoresBtn.setOnAction(this::handleSaveCalculation);
     }
 
     private void handleSave(ActionEvent event) {
         addFamilyMembers();
     }
 
-    private void handleSaveCalculation(ActionEvent event) {
-        handleCalculateScores();
-    }
 
-    private void handleCalculateScores() {
-        BeneficiaryModel selected = selectBeneficiaryComboBox.getValue();
 
-        if (selected == null) {
-            AlertDialogManager.showWarning("Warning", "Please select a beneficiary first.");
-            return;
-        }
 
-        int beneficiaryId = selected.getBeneficiaryId();
-
-        HouseholdScoreCalculator calculator = new HouseholdScoreCalculator();
-        boolean success = calculator.calculateAndSaveHouseholdScore(beneficiaryId);
-
-        if (success) {
-            AlertDialogManager.showSuccess("Success",
-                    "Household scores have been calculated and saved successfully!");
-        } else {
-            AlertDialogManager.showError("Error",
-                    "Failed to calculate household scores. Please check:\n" +
-                            "1. Beneficiary has disaster damage record\n" +
-                            "2. Vulnerability indicator scores are configured\n" +
-                            "3. All family members have been added");
-        }
-    }
 
     private void handleExit(ActionEvent event) {
         closeDialog();
@@ -123,7 +96,7 @@ public class AddFamilyController {
     }
 
     private void initializeFamilyMemberProfileDropdowns() {
-        genderSelection.getItems().addAll("Male", "Female", "Other");
+        genderSelection.getItems().addAll("Male", "Female");
 
         maritalStatusSelection.getItems().addAll(
                 "Single",
@@ -140,7 +113,11 @@ public class AddFamilyController {
                 "Niece",
                 "Nephew",
                 "Brother",
-                "Sister"
+                "Sister",
+                "Uncle",
+                "Auntie",
+                "Wife",
+                "Husband"
         );
     }
 
@@ -153,7 +130,8 @@ public class AddFamilyController {
                 "Speech",
                 "Intellectual",
                 "Mental/Psychosocial",
-                "Due to Chronic Illness"
+                "Due to Chronic Illness",
+                "Multiple Disabilities"
         );
 
         healthConditionSelection.getItems().addAll(
@@ -169,7 +147,7 @@ public class AddFamilyController {
                 "Regular full-time employment",
                 "Self-employed with stable income",
                 "Self-employed with unstable income",
-                "Irregular employment (odd jobs, seasonal work)",
+                "Informal or irregular employment",
                 "Unemployed"
         );
 
@@ -216,7 +194,7 @@ public class AddFamilyController {
             String lastName = lastNameFld.getText().trim();
             String relationship = relationshipSelection.getValue();
             String birthDate = birthDatePicker.getValue() != null ? birthDatePicker.getValue().toString() : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
+            double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender = genderSelection.getValue();
             String maritalStatus = maritalStatusSelection.getValue();
             String disabilityType = disabilityTypeSelection.getValue();
@@ -240,9 +218,12 @@ public class AddFamilyController {
             boolean success = familyMemberService.createfamilyMember(familyMember);
 
             if (success) {
-                HouseholdScoreCalculator calculator = new HouseholdScoreCalculator();
+                HouseholdScoreCalculate calculator = new HouseholdScoreCalculate();
 
                  calculator.calculateAndSaveHouseholdScore(beneficiaryId);
+
+                UpdateTrigger trigger = new UpdateTrigger();
+                trigger.triggerCascadeUpdate(beneficiaryId);
 
                 AlertDialogManager.showSuccess("Success",
                         "Family member has been successfully added.\n" +
@@ -367,7 +348,6 @@ public class AddFamilyController {
 
             // ✅ POPULATE BOTH COMBO BOXES
             setupBeneficiaryNameComboBox();
-            setupSelectBeneficiaryComboBox();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -432,41 +412,7 @@ public class AddFamilyController {
         });
     }
 
-    // ✅ Setup for calculating household scores
-    private void setupSelectBeneficiaryComboBox() {
-        selectBeneficiaryComboBox.getItems().setAll(allBeneficiaries);
 
-        selectBeneficiaryComboBox.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(BeneficiaryModel beneficiary) {
-                return beneficiary != null ? beneficiary.getFirstName() : "";
-            }
-
-            @Override
-            public BeneficiaryModel fromString(String string) {
-                return allBeneficiaries.stream()
-                        .filter(b -> b.getFirstName().equalsIgnoreCase(string))
-                        .findFirst()
-                        .orElse(null);
-            }
-        });
-
-        selectBeneficiaryComboBox.setCellFactory(cb -> new ListCell<>() {
-            @Override
-            protected void updateItem(BeneficiaryModel item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getFirstName());
-            }
-        });
-
-        selectBeneficiaryComboBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(BeneficiaryModel item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getFirstName());
-            }
-        });
-    }
 
     private void makeDraggable() {
         root.setOnMousePressed(event -> {

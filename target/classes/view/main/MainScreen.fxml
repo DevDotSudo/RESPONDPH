@@ -110,7 +110,7 @@
                         </Button>
 
                         <VBox fx:id="aidsSectionContent" managed="false" styleClass="tree-section-content" visible="false">
-                            <Button fx:id="aidsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="aidTypeBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="16">
                                         <FontAwesomeIconView glyphName="MEDKIT" size="18" styleClass="nav-icon" />
@@ -119,17 +119,25 @@
                                 </graphic>
                             </Button>
 
-                            <Button fx:id="vulnerabilityBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="aidBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                                 <graphic>
-                                    <HBox alignment="CENTER_LEFT" spacing="12">
-                                        <FontAwesomeIconView glyphName="SHIELD" size="16" styleClass="nav-icon" />
-                                        <Label styleClass="nav-text" text="Vulnerability Indicator" />
+                                    <HBox alignment="CENTER_LEFT" spacing="16">
+                                        <FontAwesomeIconView glyphName="MEDKIT" size="18" styleClass="nav-icon" />
+                                        <Label styleClass="nav-text" text="Aid" />
                                     </HBox>
                                 </graphic>
                             </Button>
                         </VBox>
                     </VBox>
 
+                    <Button fx:id="vulnerabilityBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                        <graphic>
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <FontAwesomeIconView glyphName="SHIELD" size="16" styleClass="nav-icon" />
+                                <Label styleClass="nav-text" text="Vulnerability Indicator" />
+                            </HBox>
+                        </graphic>
+                    </Button>
                     <Button fx:id="sendSmsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                         <graphic>
                             <HBox alignment="CENTER_LEFT" spacing="16">

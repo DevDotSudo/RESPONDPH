@@ -9,8 +9,6 @@
     import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
     import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
     import com.ionres.respondph.mapping.DashBoardServiceImpl;
-    import com.ionres.respondph.mapping.MappingController;
-    import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorDAOServiceImpl;
     import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorServiceImpl;
 
     public class AppLoader {
@@ -57,6 +55,9 @@
             SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");
             SceneManager.preload("/view/send_sms/SendSMS.fxml");
             SceneManager.preload("/view/settings/Settings.fxml");
+            SceneManager.preload( "/view/aid/Aid.fxml");
+
+
 
             //load dialog
             DialogManager.preload("addAdmin", "/view/admin/dialog/AddAdminDialog.fxml");
@@ -71,5 +72,8 @@
             DialogManager.preload("editFamilyMember", "/view/family/dialog/EditFamilyMemberDialog.fxml");
             DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
             DialogManager.preload("editAidType", "/view/aid_type/dialog/EditAidTypeDialog.fxml");
+            DialogManager.preload("addAid", "/view/aid/dialog/AddAidDialog.fxml");
+            DialogManager.preload("printAidDialog", "/view/aid/dialog/printAidDialog.fxml");
+
         }
     }

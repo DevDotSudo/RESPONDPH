@@ -26,7 +26,7 @@ public class DashBoardServiceImplDAO implements DashBoardDAO{
 
     @Override
     public int getTotalAids() {
-        return getCount("SELECT COUNT(*) FROM admin");
+        return getCount("SELECT COUNT(*) FROM aid_supply");
     }
 
     @Override

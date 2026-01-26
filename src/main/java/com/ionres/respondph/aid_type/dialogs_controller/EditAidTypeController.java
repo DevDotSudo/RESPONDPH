@@ -1,11 +1,12 @@
 package com.ionres.respondph.aid_type.dialogs_controller;
 
 
-import com.ionres.respondph.aidType_and_household_score.AidHouseholdScoreCalculator;
+import com.ionres.respondph.aidType_and_household_score.AidHouseholdScoreCalculate;
 import com.ionres.respondph.aid_type.AidTypeController;
 import com.ionres.respondph.aid_type.AidTypeModel;
 import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.SessionManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -13,8 +14,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.function.UnaryOperator;
 
 public class EditAidTypeController {
     @FXML
@@ -91,6 +95,7 @@ public class EditAidTypeController {
     @FXML
     private void initialize() {
         makeDraggable();
+        setupNumericValidation();
         EventHandler<ActionEvent> handlers = this::handleActions;
 
         updateBtn.setOnAction(handlers);
@@ -108,6 +113,42 @@ public class EditAidTypeController {
             closeDialog();
         }
 
+    }
+
+    private void setupNumericValidation() {
+        TextField[] weightFields = {
+                ageWeightFld, genderWeightFld, maritalStatusWeightFld, soloParentWeightFld,
+                disabilityWeightFld, healthConditionWeightFld, waterAccessWeightFld, sanitationWeightFld,
+                houseTypeWeightFld, ownershipWeightFld, damageSeverityWeightFld, employmentWeightFld,
+                monthlyIncomeWeightFld, educationWeightFld, digitalAccessWeightFld, dependencyRatioWeightFld
+        };
+
+        for (TextField field : weightFields) {
+            if (field != null) {
+                setNumericWeightFilter(field);
+            }
+        }
+    }
+
+    private void setNumericWeightFilter(TextField textField) {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String newText = change.getControlNewText();
+
+            if (newText.isEmpty()) {
+                return change;
+            }
+
+            if (newText.matches("-?\\d*(\\.\\d*)?")) {
+                int decimalCount = newText.length() - newText.replace(".", "").length();
+                if (decimalCount <= 1) {
+                    return change;
+                }
+            }
+
+            return null;
+        };
+
+        textField.setTextFormatter(new TextFormatter<>(filter));
     }
 
     private void editAidType() {
@@ -165,6 +206,7 @@ public class EditAidTypeController {
                         "Aid Type updated successfully."
                 );
                 aidTypeController.loadTable();
+                DashboardRefresher.refreshComboBoxOfDNAndAN();
                 clearFields();
             } else {
                 AlertDialogManager.showError(
@@ -202,7 +244,7 @@ public class EditAidTypeController {
             System.out.println("Found " + beneficiaryIds.size() + " beneficiaries with household scores");
 
             // Step 3: Recalculate scores for each beneficiary
-            AidHouseholdScoreCalculator calculator = new AidHouseholdScoreCalculator();
+            AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
             int successCount = 0;
             int failCount = 0;
 

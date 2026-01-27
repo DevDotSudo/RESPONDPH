@@ -45,7 +45,7 @@ public class Mapping {
                 return configPath.trim();
             }
         } catch (Exception e) {
-            // Config property not found, continue
+            LOGGER.severe("There was an error getting tile directory");
         }
         
         String sysProp = System.getProperty("map.tile.directory");

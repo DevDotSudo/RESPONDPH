@@ -1,13 +1,9 @@
 package com.ionres.respondph.util;
 import com.fazecast.jSerialComm.SerialPort;
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
-import com.ionres.respondph.beneficiary.BeneficiaryServiceImpl;
 import com.ionres.respondph.sendsms.smsDAO;
 import com.ionres.respondph.sendsms.smsDAOImpl;
 import com.ionres.respondph.sendsms.smsModel;
-
 import javafx.application.Platform;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -17,8 +13,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public class SMSSender {
 
@@ -46,10 +40,10 @@ public class SMSSender {
         if (l != null) listeners.remove(l);
     }
 
-    // private constructor for singleton
+
     private SMSSender() {}
 
-    // singleton accessor used by controllers
+
     public static synchronized SMSSender getInstance() {
         if (instance == null) instance = new SMSSender();
         return instance;
@@ -235,7 +229,6 @@ public class SMSSender {
 
     public boolean resendSMS(smsModel log, String portName, int timeoutMs) {
         if (log == null) return false;
-        // ensure connection
         if (!isConnected()) {
             if (portName == null) {
                 System.err.println("resendSMS: no port available to connect");

@@ -14,7 +14,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class SendSMSController implements Initializable {
 
     private final ObservableList<smsModel> logRows = FXCollections.observableArrayList();
 
-    // Called by FXMLLoader after fields are injected
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
@@ -210,7 +209,6 @@ public class SendSMSController implements Initializable {
             });
         }
 
-        // ensure beneficiary combobox has the same defaults as defined in FXML
         if (cbSelectBeneficiary != null && (cbSelectBeneficiary.getItems() == null || cbSelectBeneficiary.getItems().isEmpty())) {
             cbSelectBeneficiary.setItems(FXCollections.observableArrayList(
                     "All Beneficiaries",
@@ -233,7 +231,6 @@ public class SendSMSController implements Initializable {
         String sel = cbSelectBeneficiary == null ? null : cbSelectBeneficiary.getSelectionModel().getSelectedItem();
         if ("All Beneficiaries".equals(sel)) {
             try {
-                // ensure beneficiaryService is initialized and has rows
                 if (AppContext.beneficiaryService == null && AppContext.db != null) {
                     AppContext.beneficiaryService = new BeneficiaryServiceImpl(AppContext.db);
                 }

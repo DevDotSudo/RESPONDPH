@@ -4,9 +4,12 @@ import com.ionres.respondph.beneficiary.AgeScoreCalculator;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
+import com.ionres.respondph.common.controller.MappingDialogController;
 import com.ionres.respondph.household_score.HouseholdScoreCalculator;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.DialogManager;
+import com.ionres.respondph.util.SessionManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -17,6 +20,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class EditBeneficiariesDialogController {
 
@@ -97,14 +102,11 @@ public class EditBeneficiariesDialogController {
 
     @FXML
     public void initialize() {
-        initializeBeneficiaryProfileDropdowns();
-        initializeVulnerabilityIndicatorsDropdowns();
-        initializeHousingAndInfrastructureDropdowns();
-        initializeSocioEconomicStatusDropdowns();
         makeDraggable();
         EventHandler<ActionEvent> handlers = this::handleActions;
         exitBtn.setOnAction(handlers);
         updateBeneficiaryBtn.setOnAction(handlers);
+        getLocationBtn.setOnAction(handlers);
     }
 
     private void handleActions(ActionEvent event) {
@@ -116,8 +118,19 @@ public class EditBeneficiariesDialogController {
         } else if (src == exitBtn) {
             closeDialog();
         }
+        else if(src == getLocationBtn) {
+            handleGetLocationBtn();
+        }
     }
 
+    private void handleGetLocationBtn() {
+        MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+        controller.setListener(latLng -> {
+            latitudeFld.setText(String.valueOf(latLng.lat));
+            longitudeFld.setText(String.valueOf(latLng.lon));
+        });
+        DialogManager.show("mapping");
+    }
 
     private void populateFields(BeneficiaryModel bm) {
         firstNameFld.setText(bm.getFirstname());
@@ -151,246 +164,6 @@ public class EditBeneficiariesDialogController {
         digitalAccessSelection.setValue(bm.getDigitalAccess());
     }
 
-    private void initializeBeneficiaryProfileDropdowns() {
-        genderSelection.getItems().addAll("Male", "Female", "Other");
-
-        maritalStatusSelection.getItems().addAll(
-                "Single",
-                "Married",
-                "Widowed",
-                "Separated",
-                "Divorced"
-        );
-
-        soloParentStatusSelection.getItems().addAll("Yes", "No");
-    }
-
-    private void initializeVulnerabilityIndicatorsDropdowns() {
-        disabilityTypeSelection.getItems().addAll(
-                "None",
-                "Physical",
-                "Visual",
-                "Hearing",
-                "Speech",
-                "Intellectual",
-                "Mental/Psychosocial",
-                "Due to Chronic Illness"
-        );
-
-        healthConditionSelection.getItems().addAll(
-                "Healthy",
-                "Temporarily ill",
-                "Chronically ill",
-                "Immunocompromised",
-                "Terminally ill",
-                "With History of Hospitalization/ Long-term Medical Equipment Dependency"
-        );
-
-        cleanWaterAccessSelection.getItems().addAll(
-                "Yes",
-                "Occasionally",
-                "No"
-        );
-
-        sanitationFacilitiesSelection.getItems().addAll(
-                "Safely managed private toilet",
-                "Shared sanitation facility",
-                "Unimproved sanitation facility",
-                "No sanitation facility available"
-        );
-    }
-
-    private void initializeHousingAndInfrastructureDropdowns() {
-        houseConstructionTypeSelection.getItems().addAll(
-                "Reinforced concrete or masonry",
-                "Light materials (bamboo, nipa, thatch, cogon)",
-                "Semi-concrete with light roofing (GI, asbestos)",
-                "Makeshift shelter (wood, tarpaulin)"
-        );
-
-        ownershipStatusSelection.getItems().addAll(
-                "Owned with formal title",
-                "Owned without formal title",
-                "Rented",
-                "Informal settler",
-                "Evicted or displaced"
-        );
-    }
-
-    private void initializeSocioEconomicStatusDropdowns() {
-        employmentStatusSelection.getItems().addAll(
-                "Regular full-time employment",
-                "Self-employed with stable income",
-                "Self-employed with unstable income",
-                "Irregular employment (odd jobs, seasonal work)",
-                "Unemployed"
-        );
-
-        monthlyIncomeSelection.getItems().addAll(
-                "12,030-30,000(Poor)",
-                "12,030-24,480(Low-Income)",
-                "24,061-84,120 (Lower Middle Income)",
-                "84,121-144,210(Middle Class)",
-                "144,211-244,350(Upper Middle Income)",
-                "At least 244,350(Rich)"
-        );
-
-        educationLevelSelection.getItems().addAll(
-                "No Formal Education",
-                "Elementary",
-                "High School",
-                "Vocational or technical training",
-                "College or university level",
-                "Graduate education"
-        );
-
-        digitalAccessSelection.getItems().addAll(
-                "Reliable Internet and Device Access",
-                "Intermittent internet or device access",
-                "Device only",
-                "No digital access"
-        );
-    }
-
-    private void updateBeneficiaries() {
-        try {
-            String firstname = firstNameFld.getText().trim();
-            String middlename = middleNameFld.getText().trim();
-            String lastname = lastNameFld.getText().trim();
-            String birthDate = birthDatePicker.getValue() != null
-                    ? birthDatePicker.getValue().toString()
-                    : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
-            String gender = genderSelection.getValue();
-            String mobileNumber = mobileNumberFld.getText().trim();
-            String maritalStatus = maritalStatusSelection.getValue();
-            String soloParentStatus = soloParentStatusSelection.getValue();
-            String latitude = latitudeFld.getText().trim();
-            String longitude = longitudeFld.getText().trim();
-            String disabilityType = disabilityTypeSelection.getValue();
-            String healthCondition = healthConditionSelection.getValue();
-            String cleanWaterAccess = cleanWaterAccessSelection.getValue();
-            String sanitationFacility = sanitationFacilitiesSelection.getValue();
-            String houseType = houseConstructionTypeSelection.getValue();
-            String ownershipStatus = ownershipStatusSelection.getValue();
-            String employmentStatus = employmentStatusSelection.getValue();
-            String monthlyIncome = monthlyIncomeSelection.getValue();
-            String educationalLevel = educationLevelSelection.getValue();
-            String digitalAccess = digitalAccessSelection.getValue();
-            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
-
-            if (firstname.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","First name is required");
-                return;
-            }
-            if (middlename.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Middle name is required");
-                return;
-            }
-            if (lastname.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Last name is required");
-                return;
-            }
-            if (birthDate.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Birth date is required");
-                return;
-            }
-            if (gender == null) {
-                AlertDialogManager.showWarning("Warning","Gender is required");
-                return;
-            }
-            if (mobileNumber.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Mobile number is required");
-                return;
-            }
-            if (maritalStatus == null) {
-                AlertDialogManager.showWarning("Warning","Marital status is required");
-                return;
-            }
-            if (soloParentStatus == null) {
-                AlertDialogManager.showWarning("Warning","Solo parent status is required");
-                return;
-            }
-            if (latitude.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Latitude is required");
-                return;
-            }
-            if (longitude.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Longitude is required");
-                return;
-            }
-            if (disabilityType == null) {
-                AlertDialogManager.showWarning("Warning","Disability type is required");
-                return;
-            }
-            if (healthCondition == null) {
-                AlertDialogManager.showWarning("Warning","Health condition is required");
-                return;
-            }
-            if (cleanWaterAccess == null) {
-                AlertDialogManager.showWarning("Warning","Clean water access is required");
-                return;
-            }
-            if (sanitationFacility == null) {
-                AlertDialogManager.showWarning("Warning","Sanitation facility is required");
-                return;
-            }
-            if (houseType == null) {
-                AlertDialogManager.showWarning("Warning","House type is required");
-                return;
-            }
-
-            if (ownershipStatus == null) {
-                AlertDialogManager.showWarning("Warning","Ownership status is required");
-                return;
-            }
-
-            if (employmentStatus == null) {
-                AlertDialogManager.showWarning("Warning","Employment status is required");
-                return;
-            }
-            if (monthlyIncome == null) {
-                AlertDialogManager.showWarning("Warning","Monthly income is required");
-                return;
-            }
-            if (educationalLevel == null) {
-                AlertDialogManager.showWarning("Warning","Educational level is required");
-                return;
-            }
-            if (digitalAccess == null) {
-                AlertDialogManager.showWarning("Warning","Digital access is required");
-                return;
-            }
-
-            BeneficiaryModel updatedBm = new BeneficiaryModel(
-                    firstname, middlename, lastname, birthDate,ageScore, gender,
-                    maritalStatus, soloParentStatus, latitude, longitude,
-                    mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
-                    sanitationFacility, houseType, ownershipStatus, employmentStatus,
-                    monthlyIncome, educationalLevel, digitalAccess, addedBy,
-                    regDate
-            );
-
-            updatedBm.setId(currentBeneficiary.getId());
-
-            boolean success = beneficiaryService.updateBeneficiary(updatedBm);
-
-            if (success) {
-                AlertDialogManager.showSuccess("Success", "Beneficiary updated successfully.");
-                clearFields();
-                DashboardRefresher.refresh();
-            } else {
-                AlertDialogManager.showError("Error", "Failed to update beneficiary.");
-            }
-            dialogStage.hide();
-        } catch (Exception e) {
-            AlertDialogManager.showError("Error", e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private void updateBeneficiary() {
         try {
             String firstname = firstNameFld.getText().trim();
@@ -416,11 +189,10 @@ public class EditBeneficiariesDialogController {
             String monthlyIncome = monthlyIncomeSelection.getValue();
             String educationalLevel = educationLevelSelection.getValue();
             String digitalAccess = digitalAccessSelection.getValue();
-            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
-            String regDate = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
+            String addedBy = SessionManager.getInstance().getCurrentAdminFirstName();
+            String regDate = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
-            // Validation checks...
             if (firstname.isEmpty()) {
                 AlertDialogManager.showWarning("Warning","First name is required");
                 return;

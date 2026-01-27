@@ -1,22 +1,24 @@
 package com.ionres.respondph.dashboard;
 
-import com.ionres.respondph.common.model.CircleArea;
-import com.ionres.respondph.common.model.EncryptedCircle;
+import com.ionres.respondph.common.model.BeneficiaryMarker;
+import com.ionres.respondph.common.model.DisasterCircleInfo;
+import com.ionres.respondph.common.model.DisasterCircleEncrypted;
 import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
-
+import com.ionres.respondph.util.CryptographyManager;
+import com.ionres.respondph.util.NameDecryptionUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class DashBoardServiceImpl implements DashBoardService{
+public class DashBoardServiceImpl implements DashBoardService {
+    private static final Logger LOGGER = Logger.getLogger(DashBoardServiceImpl.class.getName());
     private final DashBoardDAO dashBoardDAO;
-    private final  Cryptography cs;
+    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
 
-    public DashBoardServiceImpl(DBConnection connection){
-        this.dashBoardDAO = new DashBoardServiceImplDAO(connection);
-        String secretKey = ConfigLoader.get("secretKey");
-        this.cs = new Cryptography(secretKey);
+    public DashBoardServiceImpl(DBConnection connection) {
+        this.dashBoardDAO = new DashBoardDAOImpl(connection);
     }
     @Override
     public int fetchTotalBeneficiary() {
@@ -34,18 +36,38 @@ public class DashBoardServiceImpl implements DashBoardService{
     }
 
     @Override
-    public List<CircleArea> getCircles() {
-        List<CircleArea> result = new ArrayList<>();
+    public List<DisasterCircleInfo> getCircles() {
+        List<DisasterCircleInfo> result = new ArrayList<>();
 
-        for (EncryptedCircle e : dashBoardDAO.fetchAllEncrypted()) {
+        for (DisasterCircleEncrypted e : dashBoardDAO.fetchAllEncrypted()) {
             try {
-                double lat = Double.parseDouble(cs.decryptWithOneParameter(e.lat));
-                double lon = Double.parseDouble(cs.decryptWithOneParameter(e.lon));
-                double radius = Double.parseDouble(cs.decryptWithOneParameter(e.radius));
+                double lat = Double.parseDouble(CRYPTO.decryptWithOneParameter(e.lat));
+                double lon = Double.parseDouble(CRYPTO.decryptWithOneParameter(e.lon));
+                double radius = Double.parseDouble(CRYPTO.decryptWithOneParameter(e.radius));
 
-                result.add(new CircleArea(lat, lon, radius));
-            }catch (Exception ex){
-                System.out.println(ex.getMessage());
+                // Dashboard doesn't need disaster name/type, so we pass empty strings
+                result.add(new DisasterCircleInfo(lat, lon, radius, "", ""));
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error decrypting circle coordinates", ex);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public List<BeneficiaryMarker> getBeneficiaries() {
+        List<BeneficiaryMarker> result = new ArrayList<>();
+
+        for (BeneficiariesMappingModel b : dashBoardDAO.fetchAllBeneficiaries()) {
+            try {
+                double lat = Double.parseDouble(CRYPTO.decryptWithOneParameter(b.getLat()));
+                double lon = Double.parseDouble(CRYPTO.decryptWithOneParameter(b.getLng()));
+                String fullName = NameDecryptionUtils.decryptFullName(b.getBeneficiaryName());
+
+                result.add(new BeneficiaryMarker(b.getId(), fullName, lat, lon));
+
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error decrypting beneficiary (ID: " + b.getId() + ")", ex);
             }
         }
 

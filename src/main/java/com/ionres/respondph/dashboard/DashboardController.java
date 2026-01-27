@@ -1,5 +1,6 @@
 package com.ionres.respondph.dashboard;
 
+import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.Mapping;
@@ -11,9 +12,6 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +19,8 @@ public class DashboardController {
     private final DashBoardService dashBoardService = AppContext.dashBoardService;
     private final Mapping mapping = new Mapping();
     private final List<MapCircle> circles = new ArrayList<>();
+    private final List<BeneficiaryMarker> beneficiaries = new ArrayList<>();
+
     @FXML private Pane mapContainer;
     @FXML private RadioButton offlineRadio;
     @FXML private RadioButton onlineRadio;
@@ -41,28 +41,17 @@ public class DashboardController {
             {11.0681,122.7489},{11.0719,122.7453},{11.0761,122.7454}
     };
 
-    private final Barangay[] barangays = {
-            new Barangay("Poblacion",11.0021,122.8196),
-            new Barangay("Alacaygan",10.9977,122.8046),
-            new Barangay("Bularan",11.0035,122.8230),
-            new Barangay("Carmelo",11.0100,122.8151),
-            new Barangay("Talokgangan",11.0032,122.8271),
-            new Barangay("Zona Sur",11.0002,122.8148),
-            new Barangay("San Salvador",10.9992,122.8356),
-            new Barangay("Belen",10.9971,122.7970)
-    };
-
     public void initialize() {
         Platform.runLater(() -> {
             mapping.init(mapContainer);
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
-                drawBarangays();
                 drawCircles();
+                drawBeneficiaries();
             });
             DashboardRefresher.register(this);
             loadDashBoardData();
-            loadCirclesFromDb();
+            loadBeneficiariesFromDb();
         });
         ToggleGroup mapStatusGroup = new ToggleGroup();
         offlineRadio.setToggleGroup(mapStatusGroup);
@@ -70,39 +59,110 @@ public class DashboardController {
         offlineRadio.setSelected(true);
     }
 
-    public void loadCirclesFromDb() {
-        circles.clear();
-
-        dashBoardService.getCircles().forEach(c ->
-                circles.add(new MapCircle(c.lat, c.lon, c.radius))
-        );
-
+    public void loadBeneficiariesFromDb() {
+        beneficiaries.clear();
+        beneficiaries.addAll(dashBoardService.getBeneficiaries());
         mapping.redraw();
     }
 
-    private void drawCircles() {
+    private void drawBeneficiaries() {
+        if (!mapping.isInitialized() || beneficiaries.isEmpty()) {
+            return;
+        }
+
         GraphicsContext gc = mapping.getGc();
+        double canvasWidth = mapping.getCanvas().getWidth();
+        double canvasHeight = mapping.getCanvas().getHeight();
+        
+        double padding = 50;
+        double minX = -padding;
+        double maxX = canvasWidth + padding;
+        double minY = -padding;
+        double maxY = canvasHeight + padding;
+
+        for (BeneficiaryMarker b : beneficiaries) {
+            if (!Mapping.isValidCoordinate(b.lat, b.lon)) {
+                continue;
+            }
+
+            try {
+                Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
+                
+                if (p.x < 0 || p.y < 0) {
+                    continue;
+                }
+
+                if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) {
+                    gc.setFill(Color.RED);
+                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
+
+                    gc.setStroke(Color.DARKRED);
+                    gc.setLineWidth(1.5);
+                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
+                }
+            } catch (Exception e) {
+                continue;
+            }
+        }
+    }
+
+    private void drawCircles() {
+        if (!mapping.isInitialized() || circles.isEmpty()) {
+            return;
+        }
+
+        GraphicsContext gc = mapping.getGc();
+        double canvasWidth = mapping.getCanvas().getWidth();
+        double canvasHeight = mapping.getCanvas().getHeight();
+        
+        double padding = 2000;
+        double minX = -padding;
+        double maxX = canvasWidth + padding;
+        double minY = -padding;
+        double maxY = canvasHeight + padding;
 
         for (MapCircle c : circles) {
-            Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
-            double px = c.meters / mapping.metersPerPixel(c.lat);
+            try {
+                if (!Mapping.isValidCoordinate(c.lat, c.lon) ||
+                    Double.isNaN(c.meters) || c.meters <= 0) {
+                    continue;
+                }
 
-            gc.setFill(Color.rgb(255, 0, 0, 0.25));
-            gc.fillOval(
-                    center.x - px,
-                    center.y - px,
-                    px * 2,
-                    px * 2
-            );
+                Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
+                
+                if (center.x < 0 || center.y < 0) {
+                    continue;
+                }
 
-            gc.setStroke(Color.RED);
-            gc.setLineWidth(2);
-            gc.strokeOval(
-                    center.x - px,
-                    center.y - px,
-                    px * 2,
-                    px * 2
-            );
+                double px = c.meters / mapping.metersPerPixel(c.lat);
+                
+                if (center.x < minX || center.x > maxX ||
+                    center.y < minY || center.y > maxY) {
+                    if (center.x + px < minX || center.x - px > maxX ||
+                        center.y + px < minY || center.y - px > maxY) {
+                        continue;
+                    }
+                }
+
+                gc.setFill(Color.rgb(255, 0, 0, 0.25));
+                gc.fillOval(
+                        center.x - px,
+                        center.y - px,
+                        px * 2,
+                        px * 2
+                );
+
+                gc.setStroke(Color.RED);
+                gc.setLineWidth(2);
+                gc.strokeOval(
+                        center.x - px,
+                        center.y - px,
+                        px * 2,
+                        px * 2
+                );
+            } catch (Exception e) {
+                continue;
+            }
         }
     }
 
@@ -126,46 +186,10 @@ public class DashboardController {
         gc.stroke();
     }
 
-    private void drawBarangays() {
-        GraphicsContext gc = mapping.getGc();
-        gc.setFont(Font.font(11));
-
-        for (Barangay b : barangays) {
-            Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
-
-            gc.setFill(Color.DODGERBLUE);
-            gc.fillOval(p.x - 6, p.y - 6, 12, 12);
-
-            double w = textWidth(b.name, gc);
-            gc.setFill(Color.WHITE);
-            gc.fillRect(p.x - w / 2 - 4, p.y + 8, w + 8, 18);
-
-            gc.setFill(Color.BLACK);
-            gc.fillText(b.name, p.x - w / 2, p.y + 22);
-        }
-    }
-
-    private double textWidth(String s, GraphicsContext gc) {
-        Text t = new Text(s);
-        t.setFont(gc.getFont());
-        return t.getLayoutBounds().getWidth();
-    }
-
     public void loadDashBoardData() {
         totalBeneficiaryLabel.setText(String.valueOf(dashBoardService.fetchTotalBeneficiary()));
         totalDisastersLabel.setText(String.valueOf(dashBoardService.fetchTotalDisasters()));
         totalAidsLabel.setText(String.valueOf(dashBoardService.fetchTotalAids()));
-    }
-
-    private static class Barangay {
-        String name;
-        double lat;
-        double lon;
-        Barangay(String n,double a,double o){
-            name=n;
-            lat=a;
-            lon=o;
-        }
     }
 
     private static class MapCircle {

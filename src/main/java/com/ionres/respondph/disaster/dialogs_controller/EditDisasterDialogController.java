@@ -1,11 +1,14 @@
 package com.ionres.respondph.disaster.dialogs_controller;
 
+import com.ionres.respondph.common.controller.MappingDialogController;
 import com.ionres.respondph.disaster.DisasterController;
 import com.ionres.respondph.disaster.DisasterModel;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.DialogManager;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -26,7 +29,7 @@ public class EditDisasterDialogController {
     @FXML private TextField longitudeFld;
     @FXML private TextField radiusFld;
     @FXML private TextField notesFld;
-
+    @FXML private Button getLocationBtn;
     private DisasterService disasterService;
     private DisasterController disasterController;
     private DisasterModel currentDisaster;
@@ -35,13 +38,26 @@ public class EditDisasterDialogController {
     @FXML
     private void initialize() {
         initializeDisasterTypeDropdowns();
-        setupEventHandlers();
         setupKeyHandlers();
+
+        EventHandler<ActionEvent> eventHandler = this::handleActions;
+        exitBtn.setOnAction(eventHandler);
+        updateBtn.setOnAction(eventHandler);
+        getLocationBtn.setOnAction(eventHandler);
     }
 
-    private void setupEventHandlers() {
-        exitBtn.setOnAction(this::handleExit);
-        updateBtn.setOnAction(this::handleUpdate);
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+
+        if (src == exitBtn) {
+            closeDialog();
+        }
+        else if (src == updateBtn) {
+            updateDisaster();
+        }
+        else if(src == getLocationBtn) {
+            handleGetLocationBtn();
+        }
     }
 
     private void setupKeyHandlers() {
@@ -52,14 +68,6 @@ public class EditDisasterDialogController {
             }
         });
         root.requestFocus();
-    }
-
-    private void handleUpdate(ActionEvent event) {
-        updateDisaster();
-    }
-
-    private void handleExit(ActionEvent event) {
-        closeDialog();
     }
 
     private void initializeDisasterTypeDropdowns() {
@@ -74,6 +82,15 @@ public class EditDisasterDialogController {
                 "Wildfire",
                 "Heat wave"
         );
+    }
+
+    private void handleGetLocationBtn(){
+        MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+        controller.setListener(latLng -> {
+            latitudeFld.setText(String.valueOf(latLng.lat));
+            longitudeFld.setText(String.valueOf(latLng.lon));
+        });
+        DialogManager.show("mapping");
     }
 
     private void populateFields(DisasterModel disaster) {

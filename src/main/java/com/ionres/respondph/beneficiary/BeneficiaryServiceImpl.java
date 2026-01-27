@@ -2,20 +2,21 @@ package com.ionres.respondph.beneficiary;
 
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
-import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
+import com.ionres.respondph.util.CryptographyManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+    private static final Logger LOGGER = Logger.getLogger(BeneficiaryServiceImpl.class.getName());
     private final BeneficiaryDAO beneficiaryDAO;
-    private final Cryptography cs;
+    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
 
     public BeneficiaryServiceImpl(DBConnection dbConnection) {
         this.beneficiaryDAO = new BeneficiaryDAOImpl(dbConnection);
-        String secretKey = ConfigLoader.get("secretKey");
-        this.cs = new Cryptography(secretKey);
     }
 
     @Override
@@ -25,7 +26,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             List<BeneficiaryModel> decryptedList = new ArrayList<>();
 
             for (BeneficiaryModel bm : encryptedList) {
-                List<String> decrypted = cs.decrypt(List.of(
+                List<String> decrypted = CRYPTO.decrypt(List.of(
                         bm.getFirstname(),
                         bm.getMiddlename(),
                         bm.getLastname(),
@@ -64,28 +65,28 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     @Override
     public boolean createBeneficiary(BeneficiaryModel bm) {
         try {
-            String encryptedFirstname = cs.encryptWithOneParameter(bm.getFirstname());
-            String encryptedMiddlename = cs.encryptWithOneParameter(bm.getMiddlename());
-            String encryptedLastname = cs.encryptWithOneParameter(bm.getLastname());
-            String encryptedBirthDate = cs.encryptWithOneParameter(bm.getBirthDate());
-            String encryptedGender = cs.encryptWithOneParameter(bm.getGender());
-            String encryptedMaritalStatus = cs.encryptWithOneParameter(bm.getMaritalStatus());
-            String encryptedSoloParentStatus = cs.encryptWithOneParameter(bm.getSoloParentStatus());
-            String encryptedLatitude = cs.encryptWithOneParameter(bm.getLatitude());
-            String encryptedLongitude = cs.encryptWithOneParameter(bm.getLongitude());
-            String encryptedMobileNumber = cs.encryptWithOneParameter(bm.getMobileNumber());
-            String encryptedDisabilityType = cs.encryptWithOneParameter(bm.getDisabilityType());
-            String encryptedHealthCondition = cs.encryptWithOneParameter(bm.getHealthCondition());
-            String encryptedCleanWaterAccess = cs.encryptWithOneParameter(bm.getCleanWaterAccess());
-            String encryptedSanitationFacility = cs.encryptWithOneParameter(bm.getSanitationFacility());
-            String encryptedHouseType = cs.encryptWithOneParameter(bm.getHouseType());
-            String encryptedOwnerShipStatus = cs.encryptWithOneParameter(bm.getOwnerShipStatus());
-            String encryptedEmploymentStatus = cs.encryptWithOneParameter(bm.getEmploymentStatus());
-            String encryptedMonthlyIncome = cs.encryptWithOneParameter(bm.getMonthlyIncome());
-            String encryptedEducationalLevel = cs.encryptWithOneParameter(bm.getEducationalLevel());
-            String encryptedDigitalAccess = cs.encryptWithOneParameter(bm.getDigitalAccess());
-            String encryptedAddedBy = cs.encryptWithOneParameter(bm.getAddedBy());
-            String encryptedRegDate = cs.encryptWithOneParameter(bm.getRegDate());
+            String encryptedFirstname = CRYPTO.encryptWithOneParameter(bm.getFirstname());
+            String encryptedMiddlename = CRYPTO.encryptWithOneParameter(bm.getMiddlename());
+            String encryptedLastname = CRYPTO.encryptWithOneParameter(bm.getLastname());
+            String encryptedBirthDate = CRYPTO.encryptWithOneParameter(bm.getBirthDate());
+            String encryptedGender = CRYPTO.encryptWithOneParameter(bm.getGender());
+            String encryptedMaritalStatus = CRYPTO.encryptWithOneParameter(bm.getMaritalStatus());
+            String encryptedSoloParentStatus = CRYPTO.encryptWithOneParameter(bm.getSoloParentStatus());
+            String encryptedLatitude = CRYPTO.encryptWithOneParameter(bm.getLatitude());
+            String encryptedLongitude = CRYPTO.encryptWithOneParameter(bm.getLongitude());
+            String encryptedMobileNumber = CRYPTO.encryptWithOneParameter(bm.getMobileNumber());
+            String encryptedDisabilityType = CRYPTO.encryptWithOneParameter(bm.getDisabilityType());
+            String encryptedHealthCondition = CRYPTO.encryptWithOneParameter(bm.getHealthCondition());
+            String encryptedCleanWaterAccess = CRYPTO.encryptWithOneParameter(bm.getCleanWaterAccess());
+            String encryptedSanitationFacility = CRYPTO.encryptWithOneParameter(bm.getSanitationFacility());
+            String encryptedHouseType = CRYPTO.encryptWithOneParameter(bm.getHouseType());
+            String encryptedOwnerShipStatus = CRYPTO.encryptWithOneParameter(bm.getOwnerShipStatus());
+            String encryptedEmploymentStatus = CRYPTO.encryptWithOneParameter(bm.getEmploymentStatus());
+            String encryptedMonthlyIncome = CRYPTO.encryptWithOneParameter(bm.getMonthlyIncome());
+            String encryptedEducationalLevel = CRYPTO.encryptWithOneParameter(bm.getEducationalLevel());
+            String encryptedDigitalAccess = CRYPTO.encryptWithOneParameter(bm.getDigitalAccess());
+            String encryptedAddedBy = CRYPTO.encryptWithOneParameter(bm.getAddedBy());
+            String encryptedRegDate = CRYPTO.encryptWithOneParameter(bm.getRegDate());
 
             boolean flag = beneficiaryDAO.saving(
                     new BeneficiaryModel(
@@ -119,11 +120,11 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             }
             return flag;
         } catch (SQLException ex) {
-            System.out.println("Error : " + ex);
+            LOGGER.log(Level.SEVERE, "SQL error creating beneficiary", ex);
             return false;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
+            LOGGER.log(Level.SEVERE, "Error creating beneficiary", ex);
             return false;
         }
     }
@@ -144,7 +145,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             return deleted;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error deleting beneficiary", ex);
             return false;
         }
     }
@@ -156,28 +157,28 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                 throw ExceptionFactory.missingField("Beneficiary ID");
             }
 
-            String encryptedFirstname = cs.encryptWithOneParameter(bm.getFirstname());
-            String encryptedMiddlename = cs.encryptWithOneParameter(bm.getMiddlename());
-            String encryptedLastname = cs.encryptWithOneParameter(bm.getLastname());
-            String encryptedBirthDate = cs.encryptWithOneParameter(bm.getBirthDate());
-            String encryptedGender = cs.encryptWithOneParameter(bm.getGender());
-            String encryptedMaritalStatus = cs.encryptWithOneParameter(bm.getMaritalStatus());
-            String encryptedSoloParentStatus = cs.encryptWithOneParameter(bm.getSoloParentStatus());
-            String encryptedLatitude = cs.encryptWithOneParameter(bm.getLatitude());
-            String encryptedLongitude = cs.encryptWithOneParameter(bm.getLongitude());
-            String encryptedMobileNumber = cs.encryptWithOneParameter(bm.getMobileNumber());
-            String encryptedDisabilityType = cs.encryptWithOneParameter(bm.getDisabilityType());
-            String encryptedHealthCondition = cs.encryptWithOneParameter(bm.getHealthCondition());
-            String encryptedCleanWaterAccess = cs.encryptWithOneParameter(bm.getCleanWaterAccess());
-            String encryptedSanitationFacility = cs.encryptWithOneParameter(bm.getSanitationFacility());
-            String encryptedHouseType = cs.encryptWithOneParameter(bm.getHouseType());
-            String encryptedOwnerShipStatus = cs.encryptWithOneParameter(bm.getOwnerShipStatus());
-            String encryptedEmploymentStatus = cs.encryptWithOneParameter(bm.getEmploymentStatus());
-            String encryptedMonthlyIncome = cs.encryptWithOneParameter(bm.getMonthlyIncome());
-            String encryptedEducationalLevel = cs.encryptWithOneParameter(bm.getEducationalLevel());
-            String encryptedDigitalAccess = cs.encryptWithOneParameter(bm.getDigitalAccess());
-            String encryptedAddedBy = cs.encryptWithOneParameter(bm.getAddedBy());
-            String encryptedRegDate = cs.encryptWithOneParameter(bm.getRegDate());
+            String encryptedFirstname = CRYPTO.encryptWithOneParameter(bm.getFirstname());
+            String encryptedMiddlename = CRYPTO.encryptWithOneParameter(bm.getMiddlename());
+            String encryptedLastname = CRYPTO.encryptWithOneParameter(bm.getLastname());
+            String encryptedBirthDate = CRYPTO.encryptWithOneParameter(bm.getBirthDate());
+            String encryptedGender = CRYPTO.encryptWithOneParameter(bm.getGender());
+            String encryptedMaritalStatus = CRYPTO.encryptWithOneParameter(bm.getMaritalStatus());
+            String encryptedSoloParentStatus = CRYPTO.encryptWithOneParameter(bm.getSoloParentStatus());
+            String encryptedLatitude = CRYPTO.encryptWithOneParameter(bm.getLatitude());
+            String encryptedLongitude = CRYPTO.encryptWithOneParameter(bm.getLongitude());
+            String encryptedMobileNumber = CRYPTO.encryptWithOneParameter(bm.getMobileNumber());
+            String encryptedDisabilityType = CRYPTO.encryptWithOneParameter(bm.getDisabilityType());
+            String encryptedHealthCondition = CRYPTO.encryptWithOneParameter(bm.getHealthCondition());
+            String encryptedCleanWaterAccess = CRYPTO.encryptWithOneParameter(bm.getCleanWaterAccess());
+            String encryptedSanitationFacility = CRYPTO.encryptWithOneParameter(bm.getSanitationFacility());
+            String encryptedHouseType = CRYPTO.encryptWithOneParameter(bm.getHouseType());
+            String encryptedOwnerShipStatus = CRYPTO.encryptWithOneParameter(bm.getOwnerShipStatus());
+            String encryptedEmploymentStatus = CRYPTO.encryptWithOneParameter(bm.getEmploymentStatus());
+            String encryptedMonthlyIncome = CRYPTO.encryptWithOneParameter(bm.getMonthlyIncome());
+            String encryptedEducationalLevel = CRYPTO.encryptWithOneParameter(bm.getEducationalLevel());
+            String encryptedDigitalAccess = CRYPTO.encryptWithOneParameter(bm.getDigitalAccess());
+            String encryptedAddedBy = CRYPTO.encryptWithOneParameter(bm.getAddedBy());
+            String encryptedRegDate = CRYPTO.encryptWithOneParameter(bm.getRegDate());
 
             BeneficiaryModel encryptedBm = new BeneficiaryModel(
                     encryptedFirstname,
@@ -215,7 +216,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             return updated;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error deleting beneficiary", ex);
             return false;
         }
     }
@@ -229,7 +230,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                 return null;
             }
 
-            List<String> decrypted = cs.decrypt(List.of(
+            List<String> decrypted = CRYPTO.decrypt(List.of(
                     encrypted.getFirstname(),
                     encrypted.getMiddlename(),
                     encrypted.getLastname(),

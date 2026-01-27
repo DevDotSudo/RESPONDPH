@@ -28,7 +28,8 @@ public final class DashboardRefresher {
     public static void refresh() {
         if (controller != null) {
             Platform.runLater(controller::loadDashBoardData);
-            Platform.runLater(controller::loadCirclesFromDb);
+            Platform.runLater(controller::loadBeneficiariesFromDb);
+
         }
     }
 

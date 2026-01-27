@@ -255,25 +255,20 @@ public class EditAidTypeController {
         String sql = "DELETE FROM aid_and_household_score WHERE aid_type_id = ?";
 
         java.sql.Connection conn = null;
+        java.sql.PreparedStatement ps = null;
         try {
             conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, aidTypeId);
             int deleted = ps.executeUpdate();
-            System.out.println("Deleted " + deleted + " existing aid-household scores for aid type ID: " + aidTypeId);
-            ps.close();
+            java.util.logging.Logger.getLogger(EditAidTypeController.class.getName())
+                    .info("Deleted " + deleted + " existing aid-household scores for aid type ID: " + aidTypeId);
 
         } catch (java.sql.SQLException e) {
-            System.err.println("Error deleting existing aid-household scores: " + e.getMessage());
-            e.printStackTrace();
+            java.util.logging.Logger.getLogger(EditAidTypeController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Error deleting existing aid-household scores", e);
         } finally {
-            try {
-                if (conn != null && !conn.isClosed()) {
-                    conn.close();
-                }
-            } catch (java.sql.SQLException e) {
-                System.err.println("Error closing connection: " + e.getMessage());
-            }
+            com.ionres.respondph.util.ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -285,35 +280,26 @@ public class EditAidTypeController {
         String sql = "SELECT DISTINCT beneficiary_id FROM household_score";
 
         java.sql.Connection conn = null;
+        java.sql.PreparedStatement ps = null;
+        java.sql.ResultSet rs = null;
         try {
             conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-            java.sql.ResultSet rs = ps.executeQuery();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
 
             while (rs.next()) {
                 beneficiaryIds.add(rs.getInt("beneficiary_id"));
             }
 
-            rs.close();
-            ps.close();
-
         } catch (java.sql.SQLException e) {
-            System.err.println("Error fetching beneficiary IDs: " + e.getMessage());
-            e.printStackTrace();
+            java.util.logging.Logger.getLogger(EditAidTypeController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Error fetching beneficiary IDs", e);
         } finally {
-            try {
-                if (conn != null && !conn.isClosed()) {
-                    conn.close();
-                }
-            } catch (java.sql.SQLException e) {
-                System.err.println("Error closing connection: " + e.getMessage());
-            }
+            com.ionres.respondph.util.ResourceUtils.closeResources(rs, ps);
         }
 
         return beneficiaryIds;
     }
-
-
 
     private  void closeDialog(){
         Stage stage = (Stage) exitBtn.getScene().getWindow();

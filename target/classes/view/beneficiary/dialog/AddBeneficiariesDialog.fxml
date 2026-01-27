@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import java.lang.String?>
 <VBox fx:id="root" prefHeight="915.0" prefWidth="1000.0" spacing="0" styleClass="dialog-container" stylesheets="@/styles/beneficiary/dialog/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
@@ -28,6 +30,7 @@
                 <Insets bottom="32" left="32" right="32" top="32" />
             </padding>
 
+            <!-- Core Beneficiary Profile -->
             <VBox spacing="20" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
                     <FontAwesomeIconView glyphName="USER" size="20" styleClass="section-icon" />
@@ -44,6 +47,7 @@
                         </HBox>
                     </VBox>
 
+                    <!-- Middle Name -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Middle Name" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
@@ -52,6 +56,7 @@
                         </HBox>
                     </VBox>
 
+                    <!-- Last Name -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Last Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
@@ -71,14 +76,24 @@
                         </HBox>
                     </VBox>
 
+                    <!-- Gender -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Gender *" />
                         <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="230.0" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="VENUS_MARS" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="genderSelection" promptText="Select gender" styleClass="combo-box short-values" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="genderSelection" promptText="Select gender" styleClass="combo-box short-values" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Male"/>
+                                        <String fx:value="Female"/>
+                                        <String fx:value="Other"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
+                    <!-- Mobile Number -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Mobile Number" />
                         <HBox alignment="CENTER_LEFT" prefHeight="59.0" prefWidth="145.0" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
@@ -89,25 +104,43 @@
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Marital Status (Medium values: Single/Married/Divorced/Widowed) -->
+                    <!-- Marital Status -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Marital Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="HEART" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="maritalStatusSelection" promptText="Select marital status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="maritalStatusSelection" promptText="Select marital status" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Single"/>
+                                        <String fx:value="Married"/>
+                                        <String fx:value="Divorced"/>
+                                        <String fx:value="Widowed"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
+                    <!-- Solo Parent Status -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Solo Parent Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="CHILD" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="soloParentStatusSelection" promptText="Select solo parent status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="soloParentStatusSelection" promptText="Select solo parent status" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Yes"/>
+                                        <String fx:value="No"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
                 </HBox>
             </VBox>
 
+            <!-- Geographical Location -->
             <VBox spacing="20" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
                     <FontAwesomeIconView glyphName="MAP_MARKER" size="20" styleClass="section-icon" />
@@ -124,6 +157,7 @@
                         </HBox>
                     </VBox>
 
+                    <!-- Longitude -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Longitude" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
@@ -132,6 +166,7 @@
                         </HBox>
                     </VBox>
 
+                    <!-- Get Location Button -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Action" />
                         <Button fx:id="getLocationBtn" styleClass="secondary-button" HBox.hgrow="ALWAYS">
@@ -146,6 +181,7 @@
                 </HBox>
             </VBox>
 
+            <!-- Vulnerability Indicators -->
             <VBox spacing="20" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
                     <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="20" styleClass="section-icon" />
@@ -153,20 +189,45 @@
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Disability Type (Potentially long values) -->
+                    <!-- Disability Type -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Disability Type *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="WHEELCHAIR" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="disabilityTypeSelection" promptText="Select disability type" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="disabilityTypeSelection" promptText="Select disability type" styleClass="combo-box long-values" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="None"/>
+                                        <String fx:value="Physical"/>
+                                        <String fx:value="Visual"/>
+                                        <String fx:value="Hearing"/>
+                                        <String fx:value="Speech"/>
+                                        <String fx:value="Intellectual"/>
+                                        <String fx:value="Mental/Psychosocial"/>
+                                        <String fx:value="Due to Chronic Illness"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
+                    <!-- Health Condition -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Health Condition *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="HEARTBEAT" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="healthConditionSelection" promptText="Select health condition" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="healthConditionSelection" promptText="Select health condition" styleClass="combo-box long-values" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Healthy"/>
+                                        <String fx:value="Temporarily ill"/>
+                                        <String fx:value="Chronically ill"/>
+                                        <String fx:value="Immunocompromised"/>
+                                        <String fx:value="Terminally ill"/>
+                                        <String fx:value="With History of Hospitalization/ Long-term Medical Equipment Dependency"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
@@ -174,7 +235,15 @@
                         <Label styleClass="field-label" text="Clean Water Access *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="TINT" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="cleanWaterAccessSelection" promptText="Select clean water access" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="cleanWaterAccessSelection" promptText="Select clean water access" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Yes"/>
+                                        <String fx:value="Occasionally"/>
+                                        <String fx:value="No"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
                 </HBox>
@@ -183,11 +252,19 @@
                     <Label styleClass="field-label" text="Sanitation Facilities *" />
                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                         <FontAwesomeIconView glyphName="HOME" size="16" styleClass="input-icon" />
-                        <ComboBox fx:id="sanitationFacilitiesSelection" promptText="Select sanitation facility" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="sanitationFacilitiesSelection" promptText="Select sanitation facility" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Safely managed private toilet"/>
+                                    <String fx:value="Shared sanitation facility"/>
+                                    <String fx:value="Unimproved sanitation facility"/>
+                                    <String fx:value="No sanitation facility available"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
                     </HBox>
                 </VBox>
             </VBox>
-
             <VBox spacing="20" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="section-header">
                     <FontAwesomeIconView glyphName="BUILDING" size="20" styleClass="section-icon" />
@@ -195,11 +272,22 @@
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                    <!-- House Construction -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="House Construction *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="BUILDING" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="houseConstructionTypeSelection" promptText="Select construction type" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="houseConstructionTypeSelection" promptText="Select construction type" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Concrete"/>
+                                        <String fx:value="Wood"/>
+                                        <String fx:value="Bamboo/Light materials"/>
+                                        <String fx:value="Mixed"/>
+                                        <String fx:value="Other"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
@@ -207,7 +295,16 @@
                         <Label styleClass="field-label" text="Ownership Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="KEY" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="ownershipStatusSelection" promptText="Select ownership status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="ownershipStatusSelection" promptText="Select ownership status" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Owned"/>
+                                        <String fx:value="Rented"/>
+                                        <String fx:value="Borrowed"/>
+                                        <String fx:value="Squatting"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
                 </HBox>
@@ -220,12 +317,21 @@
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Employment Status (Medium values) -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Employment Status *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="BRIEFCASE" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="employmentStatusSelection" promptText="Select employment status" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="employmentStatusSelection" promptText="Select employment status" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Employed"/>
+                                        <String fx:value="Self-Employed"/>
+                                        <String fx:value="Unemployed"/>
+                                        <String fx:value="Student"/>
+                                        <String fx:value="Retired"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
@@ -233,7 +339,17 @@
                         <Label styleClass="field-label" text="Monthly Income *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="MONEY" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="monthlyIncomeSelection" promptText="Select income range" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="monthlyIncomeSelection" promptText="Select income range" styleClass="combo-box long-values" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Below 5,000"/>
+                                        <String fx:value="5,000 - 10,000"/>
+                                        <String fx:value="10,001 - 20,000"/>
+                                        <String fx:value="20,001 - 50,000"/>
+                                        <String fx:value="Above 50,000"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 
@@ -241,7 +357,18 @@
                         <Label styleClass="field-label" text="Education Level *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="GRADUATION_CAP" size="16" styleClass="input-icon" />
-                            <ComboBox fx:id="educationLevelSelection" promptText="Select education level" styleClass="combo-box long-values" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="educationLevelSelection" promptText="Select education level" styleClass="combo-box long-values" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="No formal education"/>
+                                        <String fx:value="Primary"/>
+                                        <String fx:value="Secondary"/>
+                                        <String fx:value="Vocational/Trade"/>
+                                        <String fx:value="College/University"/>
+                                        <String fx:value="Postgraduate"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
                 </HBox>
@@ -250,7 +377,15 @@
                     <Label styleClass="field-label" text="Digital Access *" />
                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
                         <FontAwesomeIconView glyphName="LAPTOP" size="16" styleClass="input-icon" />
-                        <ComboBox fx:id="digitalAccessSelection" promptText="Select digital access" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="digitalAccessSelection" promptText="Select digital access" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Full access"/>
+                                    <String fx:value="Limited access"/>
+                                    <String fx:value="No access"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
                     </HBox>
                 </VBox>
             </VBox>

@@ -4,6 +4,7 @@ import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialo
 import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -184,6 +185,7 @@ public class BeneficiaryController {
                     beneficiaryList.remove(bm);
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Beneficiary has been successfully deleted.");
+                    DashboardRefresher.refresh();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete beneficiary. Please try again.");

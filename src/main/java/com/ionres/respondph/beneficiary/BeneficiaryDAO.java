@@ -8,4 +8,5 @@ public interface BeneficiaryDAO {
     public boolean delete(BeneficiaryModel bm);
     public boolean update(BeneficiaryModel bm);
     BeneficiaryModel getById(int id);
+    public List<String[]> getEncryptedLocations();
 }

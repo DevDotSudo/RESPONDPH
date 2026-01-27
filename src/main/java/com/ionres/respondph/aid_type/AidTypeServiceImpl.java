@@ -2,28 +2,28 @@ package com.ionres.respondph.aid_type;
 
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
-import com.ionres.respondph.familymembers.FamilyMembersModel;
-import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
+import com.ionres.respondph.util.CryptographyManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class AidTypeServiceImpl implements AidTypeService{
+public class AidTypeServiceImpl implements AidTypeService {
+    private static final Logger LOGGER = Logger.getLogger(AidTypeServiceImpl.class.getName());
     private final AidTypeDAO aidTypeDAO;
-    private final Cryptography cs;
+    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
 
     public AidTypeServiceImpl(DBConnection dbConnection) {
         this.aidTypeDAO = new AidTypeDAOImpl(dbConnection);
-        String secretKey = ConfigLoader.get("secretKey");
-        this.cs = new Cryptography(secretKey);
     }
     @Override
     public boolean createAidType(AidTypeModel atm) {
         try {
-            String encryptAidTypeName = cs.encryptWithOneParameter(atm.getAidTypeName());
-            String encryptNotes = cs.encryptWithOneParameter(atm.getNotes());
-            String encryptRegDate = cs.encryptWithOneParameter(atm.getRegDate());
+            String encryptAidTypeName = CRYPTO.encryptWithOneParameter(atm.getAidTypeName());
+            String encryptNotes = CRYPTO.encryptWithOneParameter(atm.getNotes());
+            String encryptRegDate = CRYPTO.encryptWithOneParameter(atm.getRegDate());
 
             boolean flag = aidTypeDAO.saving(
                     new AidTypeModel(
@@ -57,11 +57,11 @@ public class AidTypeServiceImpl implements AidTypeService{
             return flag;
 
         } catch (SQLException ex) {
-            System.out.println("SQL Error: " + ex);
+            LOGGER.log(Level.SEVERE, "SQL error creating aid type", ex);
             return false;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
+            LOGGER.log(Level.SEVERE, "Error creating aid type", ex);
             return false;
         }
 
@@ -83,7 +83,7 @@ public class AidTypeServiceImpl implements AidTypeService{
                         at.getAdminName()
                 );
 
-                List<String> decrypted = cs.decrypt(encrypted);
+                List<String> decrypted = CRYPTO.decrypt(encrypted);
 
                 AidTypeModel d = new AidTypeModel();
                 d.setAidTypeId(at.getAidTypeId());
@@ -100,7 +100,7 @@ public class AidTypeServiceImpl implements AidTypeService{
             return decryptedList;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all aid types", ex);
             return List.of();
         }
     }
@@ -120,7 +120,7 @@ public class AidTypeServiceImpl implements AidTypeService{
             return deleted;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error deleting aid type", ex);
             return false;
         }
     }
@@ -133,9 +133,9 @@ public class AidTypeServiceImpl implements AidTypeService{
                 throw ExceptionFactory.missingField("Aid Type ID");
             }
 
-            String encryptedAidName = cs.encryptWithOneParameter(atm.getAidTypeName());
-            String encryptedNotes = cs.encryptWithOneParameter(atm.getNotes());
-            String encryptedRegDate = cs.encryptWithOneParameter(atm.getRegDate());
+            String encryptedAidName = CRYPTO.encryptWithOneParameter(atm.getAidTypeName());
+            String encryptedNotes = CRYPTO.encryptWithOneParameter(atm.getNotes());
+            String encryptedRegDate = CRYPTO.encryptWithOneParameter(atm.getRegDate());
 
             AidTypeModel encrypted = new AidTypeModel();
 
@@ -172,7 +172,7 @@ public class AidTypeServiceImpl implements AidTypeService{
             return true;
 
         } catch (Exception ex) {
-            System.out.println("Update Aid Type Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error updating aid type", ex);
             return false;
         }
     }
@@ -188,7 +188,7 @@ public class AidTypeServiceImpl implements AidTypeService{
                 return null;
             }
 
-            List<String> decrypted = cs.decrypt(List.of(
+            List<String> decrypted = CRYPTO.decrypt(List.of(
                     encrypted.getAidTypeName(),
                     encrypted.getNotes(),
                     encrypted.getRegDate()
@@ -220,7 +220,7 @@ public class AidTypeServiceImpl implements AidTypeService{
             return d;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching aid type by ID: " + id, ex);
             return null;
         }
     }

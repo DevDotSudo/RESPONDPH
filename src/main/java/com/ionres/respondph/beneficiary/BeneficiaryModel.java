@@ -1,5 +1,9 @@
 package com.ionres.respondph.beneficiary;
 
+/**
+ * Full BeneficiaryModel for data operations.
+ * Contains all beneficiary fields and properties.
+ */
 public class BeneficiaryModel {
     private int id;
     private String firstname;
@@ -26,9 +30,26 @@ public class BeneficiaryModel {
     private String addedBy;
     private String regDate;
 
-    public BeneficiaryModel(String firstname, String middlename, String lastname, String birthDate, double ageScore, String gender, String maritalStatus, String soloParentStatus, String latitude,
-                            String longitude,String mobileNumber, String disabilityType, String healthCondition, String cleanWaterAccess, String sanitationFacility, String houseType,
-                            String ownerShipStatus, String employmentStatus, String monthlyIncome, String educationalLevel, String digitalAccess, String addedBy, String regDate){
+    public BeneficiaryModel(int id, String firstname, String middlename, 
+                           String lastname, String latitude, String longitude) {
+        this.id = id;
+        this.firstname = firstname;
+        this.middlename = middlename;
+        this.lastname = lastname;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public BeneficiaryModel(String firstname, String middlename, String lastname, 
+                           String birthDate, double ageScore, String gender, 
+                           String maritalStatus, String soloParentStatus, 
+                           String latitude, String longitude, String mobileNumber, 
+                           String disabilityType, String healthCondition, 
+                           String cleanWaterAccess, String sanitationFacility, 
+                           String houseType, String ownerShipStatus, 
+                           String employmentStatus, String monthlyIncome, 
+                           String educationalLevel, String digitalAccess, 
+                           String addedBy, String regDate) {
         this.firstname = firstname;
         this.middlename = middlename;
         this.lastname = lastname;
@@ -39,7 +60,7 @@ public class BeneficiaryModel {
         this.soloParentStatus = soloParentStatus;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.mobileNumber =mobileNumber;
+        this.mobileNumber = mobileNumber;
         this.disabilityType = disabilityType;
         this.healthCondition = healthCondition;
         this.cleanWaterAccess = cleanWaterAccess;
@@ -54,40 +75,48 @@ public class BeneficiaryModel {
         this.regDate = regDate;
     }
 
-    public BeneficiaryModel(){
-
+    public BeneficiaryModel() {
+        // Default constructor
     }
 
-    public int getId(){
+    public int getId() {
         return id;
     }
-    public void setId(int newId){
-        this.id = newId;
+
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getFirstname(){
+    public String getFirstname() {
         return firstname;
     }
-    public void setFirstname(String newFirstname){
-        this.firstname = newFirstname;
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
-    public String getMiddlename(){
+
+    public String getMiddlename() {
         return middlename;
     }
-    public void setMiddlename(String newMiddlename){
-        this.middlename = newMiddlename;
+
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
     }
-    public String getLastname(){
+
+    public String getLastname() {
         return lastname;
     }
-    public void setLastname(String newLastname){
-        this.lastname = newLastname;
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
-    public String getBirthDate(){
-        return  birthDate;
+
+    public String getBirthDate() {
+        return birthDate;
     }
-    public void  setBirthDate(String newBirthDate){
-        this.birthDate = newBirthDate;
+
+    public void setBirthDate(String birthDate) {
+        this.birthDate = birthDate;
     }
     public double getAgeScore(){
         return ageScore;
@@ -97,113 +126,148 @@ public class BeneficiaryModel {
         this.ageScore = ageScore;
     }
 
-    public String getGender(){
+    public String getGender() {
         return gender;
     }
-    public void setGender(String newGender){
-        this.gender = newGender;
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
-    public String getMaritalStatus(){
+
+    public String getMaritalStatus() {
         return maritalStatus;
     }
-    public void setMaritalStatus(String newMaritalStatus){
-        this.maritalStatus = newMaritalStatus;
+
+    public void setMaritalStatus(String maritalStatus) {
+        this.maritalStatus = maritalStatus;
     }
-    public String getSoloParentStatus(){
+
+    public String getSoloParentStatus() {
         return soloParentStatus;
     }
-    public void setSoloParentStatus(String newSoloParentStatus){
-        this.soloParentStatus = newSoloParentStatus;
+
+    public void setSoloParentStatus(String soloParentStatus) {
+        this.soloParentStatus = soloParentStatus;
     }
-    public String getLatitude(){
-        return  latitude;
+
+    public String getLatitude() {
+        return latitude;
     }
-    public void setLatitude(String newLatitude){
-        this.latitude = newLatitude;
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
     }
-    public String getLongitude(){
-        return  longitude;
+
+    public String getLongitude() {
+        return longitude;
     }
-    public void setLongitude(String newLongitude){
-        this.longitude = newLongitude;
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
     }
-    public String getMobileNumber(){
+
+    public String getMobileNumber() {
         return mobileNumber;
     }
-    public void setMobileNumber(String newMobileNumber){
-        this.mobileNumber = newMobileNumber;
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
     }
-    public String getDisabilityType(){
-        return  disabilityType;
+
+    public String getDisabilityType() {
+        return disabilityType;
     }
-    public void setDisabilityType(String newDisabilityType){
-        this.disabilityType = newDisabilityType;
+
+    public void setDisabilityType(String disabilityType) {
+        this.disabilityType = disabilityType;
     }
-    public String getHealthCondition(){
-        return  healthCondition;
+
+    public String getHealthCondition() {
+        return healthCondition;
     }
-    public void setHealthCondition(String newHealthCondition){
-        this.healthCondition = newHealthCondition;
+
+    public void setHealthCondition(String healthCondition) {
+        this.healthCondition = healthCondition;
     }
-    public String getCleanWaterAccess(){
+
+    public String getCleanWaterAccess() {
         return cleanWaterAccess;
     }
-    public void setCleanWaterAccess(String newCleanWaterAccess){
-        this.cleanWaterAccess = newCleanWaterAccess;
+
+    public void setCleanWaterAccess(String cleanWaterAccess) {
+        this.cleanWaterAccess = cleanWaterAccess;
     }
+
     public String getSanitationFacility() {
         return sanitationFacility;
     }
-    public void setSanitationFacility(String newSanitationFacility){
-        this.sanitationFacility = newSanitationFacility;
+
+    public void setSanitationFacility(String sanitationFacility) {
+        this.sanitationFacility = sanitationFacility;
     }
-    public String getHouseType(){
-        return  houseType;
+
+    public String getHouseType() {
+        return houseType;
     }
-    public void setHouseType(String newHouseType){
-        this.houseType = newHouseType;
+
+    public void setHouseType(String houseType) {
+        this.houseType = houseType;
     }
-    public String getOwnerShipStatus(){
+
+    public String getOwnerShipStatus() {
         return ownerShipStatus;
     }
-    public void setOwnerShipStatus(String newOwnerShipStatus){
-        this.ownerShipStatus = newOwnerShipStatus;
+
+    public void setOwnerShipStatus(String ownerShipStatus) {
+        this.ownerShipStatus = ownerShipStatus;
     }
-    public String getEmploymentStatus(){
+
+    public String getEmploymentStatus() {
         return employmentStatus;
     }
-    public void setEmploymentStatus(String newEmploymentStatus){
-        this.employmentStatus = newEmploymentStatus;
+
+    public void setEmploymentStatus(String employmentStatus) {
+        this.employmentStatus = employmentStatus;
     }
-    public String getMonthlyIncome(){
+
+    public String getMonthlyIncome() {
         return monthlyIncome;
     }
-    public void setMonthlyIncome(String newMonthlyIncome){
-        this.monthlyIncome = newMonthlyIncome;
+
+    public void setMonthlyIncome(String monthlyIncome) {
+        this.monthlyIncome = monthlyIncome;
     }
-    public String getEducationalLevel(){
-        return  educationalLevel;
+
+    public String getEducationalLevel() {
+        return educationalLevel;
     }
-    public void setEducationalLevel(String newEducationalLevel){
-        this.educationalLevel = newEducationalLevel;
+
+    public void setEducationalLevel(String educationalLevel) {
+        this.educationalLevel = educationalLevel;
     }
-    public String getDigitalAccess(){
+
+    public String getDigitalAccess() {
         return digitalAccess;
     }
-    public void setDigitalAccess(String newDigitalAccess){
-        this.digitalAccess = newDigitalAccess;
+
+    public void setDigitalAccess(String digitalAccess) {
+        this.digitalAccess = digitalAccess;
     }
-    public String getAddedBy(){
+
+    public String getAddedBy() {
         return addedBy;
     }
-    public void setAddedBy(String newAddedBy){
-        this.addedBy = newAddedBy;
+
+    public void setAddedBy(String addedBy) {
+        this.addedBy = addedBy;
     }
-    public String getRegDate(){
+
+    public String getRegDate() {
         return regDate;
     }
-    public void setRegDate(String newRegDate){
-        this.regDate = newRegDate;
+
+    public void setRegDate(String regDate) {
+        this.regDate = regDate;
     }
 
 

@@ -1,7 +1,5 @@
 package com.ionres.respondph.common.controller;
 
-import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController;
-import com.ionres.respondph.disaster.dialogs_controller.AddDisasterDialogController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Mapping;
 import javafx.application.Platform;
@@ -13,44 +11,74 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class MappingDialogController {
+
     @FXML private Pane mapContainer;
     @FXML private Button mapOkButton;
     @FXML private Button mapCloseButton;
-    private AddDisasterDialogController controller;
+
     private Stage dialogStage;
     private final Mapping mapping = new Mapping();
     private Mapping.LatLng selectedLatLng;
+    private ControllerListener listener;
 
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
-    public void setController(AddDisasterDialogController controller) {
-        this.controller = controller;
+
+    public void setListener(ControllerListener listener) {
+        this.listener = listener;
     }
+
+    /**
+     * Initializes the mapping dialog.
+     * Sets up the map and event handlers.
+     */
     public void initialize() {
         Platform.runLater(() -> {
-            mapping.init(mapContainer);
-            mapping.getCanvas().setOnMouseClicked(e -> {
-                if (!mapping.dragging) {
-                    selectedLatLng = mapping.screenToLatLon(e.getX(), e.getY());
-                    mapping.markerPosition = new Mapping.Point(e.getX(), e.getY());
-                    mapping.redraw();
-                }
-            });
+            try {
+                mapping.init(mapContainer);
+                
+                // Wait for mapping to be fully initialized
+                mapping.getCanvas().setOnMouseClicked(e -> {
+                    if (!mapping.isDragging() && mapping.isInitialized()) {
+                        try {
+                            Mapping.LatLng latLng = mapping.screenToLatLon(e.getX(), e.getY());
+                            
+                            // Validate coordinates
+                            if (Mapping.isValidCoordinate(latLng.lat, latLng.lon)) {
+                                selectedLatLng = latLng;
+                                Mapping.Point screenPoint = mapping.latLonToScreen(latLng.lat, latLng.lon);
+                                mapping.markerPosition = screenPoint;
+                                mapping.redraw();
+                            }
+                        } catch (Exception ex) {
+                            java.util.logging.Logger.getLogger(MappingDialogController.class.getName())
+                                .log(java.util.logging.Level.WARNING, "Error handling map click", ex);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(MappingDialogController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Failed to initialize mapping dialog", e);
+            }
         });
 
         EventHandler<ActionEvent> handler = this::actionButtons;
-        mapCloseButton.setOnAction(handler);
-        mapOkButton.setOnAction(handler);
+        if (mapCloseButton != null) {
+            mapCloseButton.setOnAction(handler);
+        }
+        if (mapOkButton != null) {
+            mapOkButton.setOnAction(handler);
+        }
     }
 
     private void actionButtons(ActionEvent event) {
-        Object src = event.getSource();
-
-        if(src ==  mapCloseButton) {
+        if (event.getSource() == mapCloseButton) {
             dialogStage.hide();
+            return;
         }
-        else if (src == mapOkButton) {
+
+        if (event.getSource() == mapOkButton) {
             handleOk();
         }
     }
@@ -63,8 +91,10 @@ public class MappingDialogController {
             );
             return;
         }
-        controller.latitudeFld.setText(Double.toString(selectedLatLng.lat));
-        controller.longitudeFld.setText(Double.toString(selectedLatLng.lon));
+
+        if (listener != null) {
+            listener.onLocationSelected(selectedLatLng);
+        }
         dialogStage.hide();
     }
 }

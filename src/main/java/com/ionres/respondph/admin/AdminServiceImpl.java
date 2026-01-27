@@ -3,24 +3,24 @@ package com.ionres.respondph.admin;
 
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.*;
-import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
+import com.ionres.respondph.util.CryptographyManager;
 import org.mindrot.jbcrypt.BCrypt;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.time.LocalDate;
 import java.util.List;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-
-public class AdminServiceImpl implements AdminService{
+public class AdminServiceImpl implements AdminService {
+    private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
     private final AdminDAO adminDao;
-    private final Cryptography cs;
+    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
 
     public AdminServiceImpl(DBConnection dbConnection) {
         this.adminDao = new AdminDAOImpl(dbConnection);
-        String secretKey = ConfigLoader.get("secretKey");
-        this.cs = new Cryptography(secretKey);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class AdminServiceImpl implements AdminService{
                         a.getRegDate()
                 );
 
-                List<String> decrypted = cs.decrypt(encrypted);
+                List<String> decrypted = CRYPTO.decrypt(encrypted);
 
                 AdminModel d = new AdminModel();
                 d.setId(a.getId());
@@ -56,7 +56,7 @@ public class AdminServiceImpl implements AdminService{
             return decryptedAdmins;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all admins", ex);
             return List.of();
         }
     }
@@ -69,7 +69,7 @@ public class AdminServiceImpl implements AdminService{
             }
 
 
-            List<String> encryptedData = cs.encrypt(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
+            List<String> encryptedData = CRYPTO.encrypt(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
             String hashedPassword = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
 
             String encryptedUsername = encryptedData.get(0);
@@ -88,12 +88,11 @@ public class AdminServiceImpl implements AdminService{
             }
             return flag;
         } catch (SQLException ex) {
-            System.out.println("Error : " + ex);
-            return  false;
-
+            LOGGER.log(Level.SEVERE, "SQL error creating admin", ex);
+            return false;
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
-            return  false;
+            LOGGER.log(Level.SEVERE, "Error creating admin", ex);
+            return false;
         }
     }
 
@@ -118,7 +117,7 @@ public class AdminServiceImpl implements AdminService{
             }
             return deleted;
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error deleting admin", ex);
             return false;
         }
     }
@@ -131,7 +130,7 @@ public class AdminServiceImpl implements AdminService{
             }
 
 
-            List<String> encryptedData = cs.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname());
+            List<String> encryptedData = CRYPTO.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname());
 
             String encryptedUsername = encryptedData.get(0);
             String encryptedFname = encryptedData.get(1);
@@ -150,12 +149,11 @@ public class AdminServiceImpl implements AdminService{
             }
             return flag;
         } catch (SQLException ex) {
-            System.out.println("Error : " + ex);
-            return  false;
-
+            LOGGER.log(Level.SEVERE, "SQL error updating admin", ex);
+            return false;
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
-            return  false;
+            LOGGER.log(Level.SEVERE, "Error updating admin", ex);
+            return false;
         }
     }
 

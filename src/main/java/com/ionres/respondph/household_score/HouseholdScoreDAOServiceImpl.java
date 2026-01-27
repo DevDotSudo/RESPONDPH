@@ -1,15 +1,15 @@
 package com.ionres.respondph.household_score;
 
 import com.ionres.respondph.database.DBConnection;
-
-import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HouseholdScoreDAOServiceImpl implements HouseholdScoreDAO {
+    private static final Logger LOGGER = Logger.getLogger(HouseholdScoreDAOServiceImpl.class.getName());
     private final DBConnection dbConnection;
-    private Connection conn;
 
     public HouseholdScoreDAOServiceImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
@@ -62,8 +62,7 @@ public class HouseholdScoreDAOServiceImpl implements HouseholdScoreDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error saving household score: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error saving household score", e);
             return false;
         }
     }

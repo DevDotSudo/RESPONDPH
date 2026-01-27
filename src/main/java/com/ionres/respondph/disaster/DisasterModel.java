@@ -1,5 +1,9 @@
 package com.ionres.respondph.disaster;
 
+/**
+ * Full DisasterModel for data operations.
+ * Contains all disaster fields and properties.
+ */
 public class DisasterModel {
 
     private int disasterId;

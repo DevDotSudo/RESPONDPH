@@ -1,26 +1,29 @@
 package com.ionres.respondph.aidType_and_household_score;
 
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.ResourceUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AidHouseholdScoreCalculator {
-    private Connection conn;
+    private static final Logger LOGGER = Logger.getLogger(AidHouseholdScoreCalculator.class.getName());
 
 
     public boolean calculateAndSaveAidHouseholdScore(int beneficiaryId, int aidTypeId, int adminId) {
         try {
             HouseholdScoreData householdScores = getHouseholdScores(beneficiaryId);
             if (householdScores == null) {
-                System.err.println("No household scores found for beneficiary ID: " + beneficiaryId);
+                LOGGER.warning("No household scores found for beneficiary ID: " + beneficiaryId);
                 return false;
             }
 
             AidTypeWeights aidWeights = getAidTypeWeights(aidTypeId);
             if (aidWeights == null) {
-                System.err.println("No aid type weights found for aid type ID: " + aidTypeId);
+                LOGGER.warning("No aid type weights found for aid type ID: " + aidTypeId);
                 return false;
             }
 
@@ -43,19 +46,19 @@ public class AidHouseholdScoreCalculator {
         double totalScore = 0.0;
         int indicatorCount = 0;
 
-        System.out.println("========== CALCULATING FINAL SCORE ==========");
+        LOGGER.info("========== CALCULATING FINAL SCORE ==========");
 
         if (household.ageScore != null && weights.ageWeight != null) {
             double ageContribution = (household.ageScore + weights.ageWeight) / 2.0;
             totalScore += ageContribution;
             indicatorCount++;
-            System.out.println("Age: (" + household.ageScore + " + " + weights.ageWeight + ") / 2 = " + ageContribution);
+            LOGGER.fine("Age: (" + household.ageScore + " + " + weights.ageWeight + ") / 2 = " + ageContribution);
         }
 
         double genderContribution = (household.genderScore + weights.genderWeight) / 2.0;
         totalScore += genderContribution;
         indicatorCount++;
-        System.out.println("Gender: (" + household.genderScore + " + " + weights.genderWeight + ") / 2 = " + genderContribution);
+            LOGGER.fine("Gender: (" + household.genderScore + " + " + weights.genderWeight + ") / 2 = " + genderContribution);
 
         double maritalContribution = (household.maritalStatusScore + weights.maritalStatusWeight) / 2.0;
         totalScore += maritalContribution;
@@ -65,37 +68,37 @@ public class AidHouseholdScoreCalculator {
         double soloParentContribution = (household.soloParentScore + weights.soloParentWeight) / 2.0;
         totalScore += soloParentContribution;
         indicatorCount++;
-        System.out.println("Solo Parent: (" + household.soloParentScore + " + " + weights.soloParentWeight + ") / 2 = " + soloParentContribution);
+            LOGGER.fine("Solo Parent: (" + household.soloParentScore + " + " + weights.soloParentWeight + ") / 2 = " + soloParentContribution);
 
         double disabilityContribution = (household.disabilityScore + weights.disabilityWeight) / 2.0;
         totalScore += disabilityContribution;
         indicatorCount++;
-        System.out.println("Disability: (" + household.disabilityScore + " + " + weights.disabilityWeight + ") / 2 = " + disabilityContribution);
+            LOGGER.fine("Disability: (" + household.disabilityScore + " + " + weights.disabilityWeight + ") / 2 = " + disabilityContribution);
 
         double healthContribution = (household.healthConditionScore + weights.healthConditionWeight) / 2.0;
         totalScore += healthContribution;
         indicatorCount++;
-        System.out.println("Health: (" + household.healthConditionScore + " + " + weights.healthConditionWeight + ") / 2 = " + healthContribution);
+            LOGGER.fine("Health: (" + household.healthConditionScore + " + " + weights.healthConditionWeight + ") / 2 = " + healthContribution);
 
         double waterContribution = (household.cleanWaterScore + weights.cleanWaterWeight) / 2.0;
         totalScore += waterContribution;
         indicatorCount++;
-        System.out.println("Water: (" + household.cleanWaterScore + " + " + weights.cleanWaterWeight + ") / 2 = " + waterContribution);
+            LOGGER.fine("Water: (" + household.cleanWaterScore + " + " + weights.cleanWaterWeight + ") / 2 = " + waterContribution);
 
         double sanitationContribution = (household.sanitationScore + weights.sanitationWeight) / 2.0;
         totalScore += sanitationContribution;
         indicatorCount++;
-        System.out.println("Sanitation: (" + household.sanitationScore + " + " + weights.sanitationWeight + ") / 2 = " + sanitationContribution);
+            LOGGER.fine("Sanitation: (" + household.sanitationScore + " + " + weights.sanitationWeight + ") / 2 = " + sanitationContribution);
 
         double houseContribution = (household.houseConstructionScore + weights.houseConstructionWeight) / 2.0;
         totalScore += houseContribution;
         indicatorCount++;
-        System.out.println("House: (" + household.houseConstructionScore + " + " + weights.houseConstructionWeight + ") / 2 = " + houseContribution);
+            LOGGER.fine("House: (" + household.houseConstructionScore + " + " + weights.houseConstructionWeight + ") / 2 = " + houseContribution);
 
         double ownershipContribution = (household.ownershipScore + weights.ownershipWeight) / 2.0;
         totalScore += ownershipContribution;
         indicatorCount++;
-        System.out.println("Ownership: (" + household.ownershipScore + " + " + weights.ownershipWeight + ") / 2 = " + ownershipContribution);
+            LOGGER.fine("Ownership: (" + household.ownershipScore + " + " + weights.ownershipWeight + ") / 2 = " + ownershipContribution);
 
         double damageContribution = (household.damageSeverityScore + weights.damageSeverityWeight) / 2.0;
         totalScore += damageContribution;
@@ -105,37 +108,37 @@ public class AidHouseholdScoreCalculator {
         double employmentContribution = (household.employmentStatusScore + weights.employmentStatusWeight) / 2.0;
         totalScore += employmentContribution;
         indicatorCount++;
-        System.out.println("Employment: (" + household.employmentStatusScore + " + " + weights.employmentStatusWeight + ") / 2 = " + employmentContribution);
+            LOGGER.fine("Employment: (" + household.employmentStatusScore + " + " + weights.employmentStatusWeight + ") / 2 = " + employmentContribution);
 
         double incomeContribution = (household.monthlyIncomeScore + weights.monthlyIncomeWeight) / 2.0;
         totalScore += incomeContribution;
         indicatorCount++;
-        System.out.println("Income: (" + household.monthlyIncomeScore + " + " + weights.monthlyIncomeWeight + ") / 2 = " + incomeContribution);
+            LOGGER.fine("Income: (" + household.monthlyIncomeScore + " + " + weights.monthlyIncomeWeight + ") / 2 = " + incomeContribution);
 
         double educationContribution = (household.educationLevelScore + weights.educationLevelWeight) / 2.0;
         totalScore += educationContribution;
         indicatorCount++;
-        System.out.println("Education: (" + household.educationLevelScore + " + " + weights.educationLevelWeight + ") / 2 = " + educationContribution);
+            LOGGER.fine("Education: (" + household.educationLevelScore + " + " + weights.educationLevelWeight + ") / 2 = " + educationContribution);
 
         double digitalContribution = (household.digitalAccessScore + weights.digitalAccessWeight) / 2.0;
         totalScore += digitalContribution;
         indicatorCount++;
-        System.out.println("Digital: (" + household.digitalAccessScore + " + " + weights.digitalAccessWeight + ") / 2 = " + digitalContribution);
+            LOGGER.fine("Digital: (" + household.digitalAccessScore + " + " + weights.digitalAccessWeight + ") / 2 = " + digitalContribution);
 
         if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
             double dependencyContribution = (household.dependencyRatioScore + weights.dependencyRatioWeight) / 2.0;
             totalScore += dependencyContribution;
             indicatorCount++;
-            System.out.println("Dependency: (" + household.dependencyRatioScore + " + " + weights.dependencyRatioWeight + ") / 2 = " + dependencyContribution);
+            LOGGER.fine("Dependency: (" + household.dependencyRatioScore + " + " + weights.dependencyRatioWeight + ") / 2 = " + dependencyContribution);
         }
 
         double averageScore = indicatorCount > 0 ? totalScore / indicatorCount : 0.0;
 
-        System.out.println("─────────────────────────────────────────────");
-        System.out.println("TOTAL SUM: " + totalScore);
-        System.out.println("INDICATOR COUNT: " + indicatorCount);
-        System.out.println("AVERAGE (FINAL SCORE): " + averageScore);
-        System.out.println("=============================================");
+        LOGGER.info("─────────────────────────────────────────────");
+        LOGGER.info("TOTAL SUM: " + totalScore);
+        LOGGER.info("INDICATOR COUNT: " + indicatorCount);
+        LOGGER.info("AVERAGE (FINAL SCORE): " + averageScore);
+        LOGGER.info("=============================================");
 
         return Math.round(averageScore * 100.0) / 100.0; // Round to 2 decimal places
     }
@@ -159,20 +162,23 @@ public class AidHouseholdScoreCalculator {
     private HouseholdScoreData getHouseholdScores(int beneficiaryId) {
         String sql = "SELECT * FROM household_score WHERE beneficiary_id = ?";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, beneficiaryId);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             if (rs.next()) {
                 HouseholdScoreData data = new HouseholdScoreData();
 
                 try {
                     data.ageScore = rs.getObject("age_score") != null ? rs.getDouble("age_score") : null;
-                    System.out.println("Retrieved age_score from household_score: " + data.ageScore);
+                    LOGGER.fine("Retrieved age_score from household_score: " + data.ageScore);
                 } catch (SQLException e) {
-                    System.err.println("Error retrieving age_score: " + e.getMessage());
+                    LOGGER.log(Level.WARNING, "Error retrieving age_score", e);
                     data.ageScore = null;
                 }
 
@@ -193,22 +199,19 @@ public class AidHouseholdScoreCalculator {
                 try {
                     data.dependencyRatioScore = rs.getObject("dependency_ratio_score") != null ?
                             rs.getDouble("dependency_ratio_score") : null;
-                    System.out.println("Retrieved dependency_ratio_score from household_score: " + data.dependencyRatioScore);
+                    LOGGER.fine("Retrieved dependency_ratio_score from household_score: " + data.dependencyRatioScore);
                 } catch (SQLException e) {
-                    System.err.println("Error retrieving dependency_ratio_score: " + e.getMessage());
+                    LOGGER.log(Level.WARNING, "Error retrieving dependency_ratio_score", e);
                     data.dependencyRatioScore = null;
                 }
 
                 return data;
             }
 
-            rs.close();
-            ps.close();
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching household scores", e);
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, ps);
         }
 
         return null;
@@ -218,11 +221,14 @@ public class AidHouseholdScoreCalculator {
     private AidTypeWeights getAidTypeWeights(int aidTypeId) {
         String sql = "SELECT * FROM aid_type WHERE aid_type_id = ?";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, aidTypeId);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             if (rs.next()) {
                 AidTypeWeights weights = new AidTypeWeights();
@@ -246,13 +252,10 @@ public class AidHouseholdScoreCalculator {
                 return weights;
             }
 
-            rs.close();
-            ps.close();
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching aid type weights", e);
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, ps);
         }
 
         return null;
@@ -265,7 +268,7 @@ public class AidHouseholdScoreCalculator {
 
         AidTypeWeights weights = getAidTypeWeights(aidTypeId);
         if (weights == null) {
-            System.err.println("Cannot save: Aid type weights not found for aid type ID: " + aidTypeId);
+            LOGGER.warning("Cannot save: Aid type weights not found for aid type ID: " + aidTypeId);
             return false;
         }
 
@@ -273,7 +276,7 @@ public class AidHouseholdScoreCalculator {
         Double combinedAgeScore = null;
         if (household.ageScore != null && weights.ageWeight != null) {
             combinedAgeScore = (household.ageScore + weights.ageWeight) / 2.0;
-            System.out.println("Combined age_score: " + combinedAgeScore);
+            LOGGER.fine("Combined age_score: " + combinedAgeScore);
         }
 
         double combinedGenderScore = (household.genderScore + weights.genderWeight) / 2.0;
@@ -294,7 +297,7 @@ public class AidHouseholdScoreCalculator {
         Double combinedDependencyScore = null;
         if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
             combinedDependencyScore = (household.dependencyRatioScore + weights.dependencyRatioWeight) / 2.0;
-            System.out.println("Combined dependency_ratio_score: " + combinedDependencyScore);
+            LOGGER.fine("Combined dependency_ratio_score: " + combinedDependencyScore);
         }
 
         // Check if record exists
@@ -321,21 +324,23 @@ public class AidHouseholdScoreCalculator {
                 "scoring_model=?, assessment_date=NOW(), admin_id=? " +
                 "WHERE beneficiary_id=? AND aid_type_id=?";
 
+        Connection conn = null;
+        PreparedStatement checkPs = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = DBConnection.getInstance().getConnection();
-
-            PreparedStatement checkPs = conn.prepareStatement(checkSql);
+            checkPs = conn.prepareStatement(checkSql);
             checkPs.setInt(1, beneficiaryId);
             checkPs.setInt(2, aidTypeId);
-            ResultSet rs = checkPs.executeQuery();
+            rs = checkPs.executeQuery();
             boolean recordExists = rs.next();
-            rs.close();
-            checkPs.close();
-
-            PreparedStatement ps;
+            ResourceUtils.closeResources(rs, checkPs);
+            rs = null;
+            checkPs = null;
 
             if (recordExists) {
-                System.out.println("Aid-Household score exists - Updating existing record");
+                LOGGER.info("Aid-Household score exists - Updating existing record");
                 ps = conn.prepareStatement(updateSql);
 
                 int i = 1;
@@ -366,7 +371,7 @@ public class AidHouseholdScoreCalculator {
                 ps.setInt(i++, aidTypeId);
 
             } else {
-                System.out.println("Aid-Household score doesn't exist - Inserting new record");
+                LOGGER.info("Aid-Household score doesn't exist - Inserting new record");
                 ps = conn.prepareStatement(insertSql);
 
                 int i = 1;
@@ -398,31 +403,20 @@ public class AidHouseholdScoreCalculator {
             }
 
             int rowsAffected = ps.executeUpdate();
-            ps.close();
 
             if (rowsAffected > 0) {
-                System.out.println("Successfully saved aid_and_household_score with:");
-                System.out.println("  - age_score: " + combinedAgeScore);
-                System.out.println("  - dependency_ratio_score: " + combinedDependencyScore);
+                LOGGER.info("Successfully saved aid_and_household_score with:");
+                LOGGER.info("  - age_score: " + combinedAgeScore);
+                LOGGER.info("  - dependency_ratio_score: " + combinedDependencyScore);
             }
 
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error saving aid household score", e);
             return false;
         } finally {
-            closeConnection();
-        }
-    }
-
-    private void closeConnection() {
-        try {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
+            ResourceUtils.closePreparedStatement(ps);
         }
     }
 

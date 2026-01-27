@@ -7,15 +7,13 @@
 
 <BorderPane prefHeight="824.0" prefWidth="321.0" styleClass="dashboard-root" stylesheets="@/styles/main/mainframe.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.main.MainFrameController">
     <left>
-        <VBox spacing="0" styleClass="sidebar">
+        <VBox styleClass="sidebar">
             <VBox alignment="CENTER" styleClass="logo-section">
-                <children>
-                    <StackPane prefHeight="135.0" prefWidth="240.0" styleClass="logo-container">
-                        <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                        </padding>
-                    </StackPane>
-                </children>
+                <StackPane prefHeight="135.0" prefWidth="240.0" styleClass="logo-container">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                    </padding>
+                </StackPane>
             </VBox>
 
             <ScrollPane fitToWidth="true" styleClass="nav-scroll-pane" VBox.vgrow="ALWAYS">
@@ -40,7 +38,7 @@
                         </Button>
 
                         <VBox fx:id="managementSectionContent" managed="false" styleClass="tree-section-content" visible="false">
-                            <Button fx:id="manageAdminBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="manageAdminBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <FontAwesomeIconView glyphName="USER" size="16" styleClass="nav-icon" />
@@ -49,7 +47,7 @@
                                 </graphic>
                             </Button>
 
-                            <Button fx:id="manageBeneficiariesBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="manageBeneficiariesBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <FontAwesomeIconView glyphName="USERS" size="16" styleClass="nav-icon" />
@@ -58,7 +56,7 @@
                                 </graphic>
                             </Button>
 
-                            <Button fx:id="familyMembersBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="familyMembersBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <FontAwesomeIconView glyphName="USER_PLUS" size="16" styleClass="nav-icon" />
@@ -80,7 +78,7 @@
                         </Button>
 
                         <VBox fx:id="disasterSectionContent" managed="false" styleClass="tree-section-content" visible="false">
-                            <Button fx:id="disasterBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="disasterBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="16" styleClass="nav-icon" />
@@ -89,7 +87,16 @@
                                 </graphic>
                             </Button>
 
-                            <Button fx:id="disasterDamageBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="disasterMappingBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
+                                <graphic>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <FontAwesomeIconView glyphName="MAP_MARKER" size="16" styleClass="nav-icon" />
+                                        <Label styleClass="nav-text" text="Disaster Mapping" />
+                                    </HBox>
+                                </graphic>
+                            </Button>
+
+                            <Button fx:id="disasterDamageBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <FontAwesomeIconView glyphName="FIRE" size="16" styleClass="nav-icon" />
@@ -110,16 +117,16 @@
                         </Button>
 
                         <VBox fx:id="aidsSectionContent" managed="false" styleClass="tree-section-content" visible="false">
-                            <Button fx:id="aidsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="aidsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
-                                    <HBox alignment="CENTER_LEFT" spacing="16">
-                                        <FontAwesomeIconView glyphName="MEDKIT" size="18" styleClass="nav-icon" />
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <FontAwesomeIconView glyphName="MEDKIT" size="16" styleClass="nav-icon" />
                                         <Label styleClass="nav-text" text="Aid Type" />
                                     </HBox>
                                 </graphic>
                             </Button>
 
-                            <Button fx:id="vulnerabilityBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
+                            <Button fx:id="vulnerabilityBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <FontAwesomeIconView glyphName="SHIELD" size="16" styleClass="nav-icon" />

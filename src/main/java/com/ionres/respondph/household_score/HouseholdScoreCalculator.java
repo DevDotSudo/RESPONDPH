@@ -5,6 +5,7 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
 import com.ionres.respondph.util.Cryptography;
+import com.ionres.respondph.util.ResourceUtils;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorScoreModel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,30 +13,29 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HouseholdScoreCalculator {
-    private Connection conn;
-    private static final boolean DEBUG = true;
-    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
+    private static final Logger LOGGER = Logger.getLogger(HouseholdScoreCalculator.class.getName());
+    private static final boolean DEBUG = false;
+    private static final Cryptography CRYPTO = com.ionres.respondph.util.CryptographyManager.getInstance();
 
     public boolean calculateAndSaveHouseholdScore(int beneficiaryId) {
         try {
             VulnerabilityIndicatorScoreModel vulnScores = getVulnerabilityScores();
             if (vulnScores == null) {
-                System.err.println("No vulnerability scores found in database");
+                LOGGER.warning("No vulnerability scores found in database");
                 return false;
             }
 
             BeneficiaryModel beneficiary = getBeneficiaryById(beneficiaryId);
             if (beneficiary == null) {
-                System.err.println("Beneficiary not found: " + beneficiaryId);
+                LOGGER.warning("Beneficiary not found: " + beneficiaryId);
                 return false;
             }
             debug("Gender", beneficiary.getGender());
             debug("Marital Status", beneficiary.getMaritalStatus());
-
-            String gender = cs.decryptWithOneParameter(beneficiary.getGender());
-            System.out.println(gender);
 
             List<FamilyMembersModel> familyMembers = getFamilyMembersByBeneficiaryId(beneficiaryId);
             debug("Family members count", familyMembers.size());
@@ -47,7 +47,7 @@ public class HouseholdScoreCalculator {
             return saveHouseholdScore(householdScore);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error calculating household score", e);
             return false;
         }
     }
@@ -57,13 +57,13 @@ public class HouseholdScoreCalculator {
         try {
             VulnerabilityIndicatorScoreModel vulnScores = getVulnerabilityScores();
             if (vulnScores == null) {
-                System.err.println("Auto-recalculation failed: No vulnerability scores found");
+                LOGGER.warning("Auto-recalculation failed: No vulnerability scores found");
                 return false;
             }
 
             BeneficiaryModel beneficiary = getBeneficiaryById(beneficiaryId);
             if (beneficiary == null) {
-                System.err.println("Auto-recalculation failed: Beneficiary not found - " + beneficiaryId);
+                LOGGER.warning("Auto-recalculation failed: Beneficiary not found - " + beneficiaryId);
                 return false;
             }
 
@@ -75,8 +75,7 @@ public class HouseholdScoreCalculator {
             return saveHouseholdScore(householdScore);
 
         } catch (Exception e) {
-            System.err.println("Auto-recalculation error: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Auto-recalculation error", e);
             return false;
         }
     }
@@ -86,25 +85,25 @@ public class HouseholdScoreCalculator {
         int recalculatedCount = 0;
         List<Integer> beneficiaryIds = getAllBeneficiaryIdsWithHouseholdScores();
 
-        System.out.println("========== RECALCULATING ALL HOUSEHOLD SCORES ==========");
-        System.out.println("Found " + beneficiaryIds.size() + " households to recalculate");
+        LOGGER.info("========== RECALCULATING ALL HOUSEHOLD SCORES ==========");
+        LOGGER.info("Found " + beneficiaryIds.size() + " households to recalculate");
 
         for (Integer beneficiaryId : beneficiaryIds) {
             try {
                 boolean success = autoRecalculateHouseholdScore(beneficiaryId);
                 if (success) {
                     recalculatedCount++;
-                    System.out.println("✓ Recalculated household score for beneficiary ID: " + beneficiaryId);
+                    LOGGER.info("✓ Recalculated household score for beneficiary ID: " + beneficiaryId);
                 } else {
-                    System.err.println("✗ Failed to recalculate household score for beneficiary ID: " + beneficiaryId);
+                    LOGGER.warning("✗ Failed to recalculate household score for beneficiary ID: " + beneficiaryId);
                 }
             } catch (Exception e) {
-                System.err.println("✗ Error recalculating household score for beneficiary ID " + beneficiaryId + ": " + e.getMessage());
+                LOGGER.log(Level.WARNING, "✗ Error recalculating household score for beneficiary ID " + beneficiaryId, e);
             }
         }
 
-        System.out.println("========== RECALCULATION COMPLETE ==========");
-        System.out.println("Successfully recalculated: " + recalculatedCount + " out of " + beneficiaryIds.size());
+        LOGGER.info("========== RECALCULATION COMPLETE ==========");
+        LOGGER.info("Successfully recalculated: " + recalculatedCount + " out of " + beneficiaryIds.size());
 
         return recalculatedCount;
     }
@@ -142,8 +141,8 @@ public class HouseholdScoreCalculator {
             String beneEmployment = null;
 
             try {
-                beneDisability = cs.decryptWithOneParameter(beneficiary.getDisabilityType());
-                beneEmployment = cs.decryptWithOneParameter(beneficiary.getEmploymentStatus());
+                beneDisability = CRYPTO.decryptWithOneParameter(beneficiary.getDisabilityType());
+                beneEmployment = CRYPTO.decryptWithOneParameter(beneficiary.getEmploymentStatus());
             } catch (Exception e) {
                 debug("Error decrypting beneficiary data", e.getMessage());
                 beneDisability = "None";
@@ -170,8 +169,8 @@ public class HouseholdScoreCalculator {
                 String fmEmployment = null;
 
                 try {
-                    fmDisability = cs.decryptWithOneParameter(fm.getDisabilityType());
-                    fmEmployment = cs.decryptWithOneParameter(fm.getEmploymentStatus());
+                    fmDisability = CRYPTO.decryptWithOneParameter(fm.getDisabilityType());
+                    fmEmployment = CRYPTO.decryptWithOneParameter(fm.getEmploymentStatus());
                 } catch (Exception e) {
                     debug("Error decrypting family member #" + memberIndex + " data", e.getMessage());
                     fmDisability = "None";
@@ -208,8 +207,7 @@ public class HouseholdScoreCalculator {
             return Math.round(dependencyRatio * 100.0) / 100.0;
 
         } catch (Exception e) {
-            System.err.println("Error calculating dependency ratio score: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error calculating dependency ratio score", e);
             return 0.5;
         }
     }
@@ -239,23 +237,22 @@ public class HouseholdScoreCalculator {
         List<Integer> beneficiaryIds = new ArrayList<>();
         String sql = "SELECT DISTINCT beneficiary_id FROM household_score";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
 
             while (rs.next()) {
                 beneficiaryIds.add(rs.getInt("beneficiary_id"));
             }
 
-            rs.close();
-            ps.close();
-
         } catch (SQLException e) {
-            System.err.println("Error fetching beneficiary IDs with household scores: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching beneficiary IDs with household scores", e);
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, ps);
         }
 
         return beneficiaryIds;
@@ -263,7 +260,7 @@ public class HouseholdScoreCalculator {
 
     private void debug(String label, Object value) {
         if (DEBUG) {
-            System.out.println("[DEBUG] " + label + " => [" + value + "]");
+            LOGGER.info("[DEBUG] " + label + " => [" + value + "]");
         }
     }
 
@@ -300,19 +297,19 @@ public class HouseholdScoreCalculator {
             debug("Beneficiary Education Level (encrypted)", beneficiary.getEducationalLevel());
             debug("Beneficiary Digital Access (encrypted)", beneficiary.getDigitalAccess());
 
-            String beneGender = cs.decryptWithOneParameter(beneficiary.getGender());
-            String beneMaritalStatus = cs.decryptWithOneParameter(beneficiary.getMaritalStatus());
-            String beneSoloParentStatus = cs.decryptWithOneParameter(beneficiary.getSoloParentStatus());
-            String beneDisabilityType = cs.decryptWithOneParameter(beneficiary.getDisabilityType());
-            String beneHealthCondition = cs.decryptWithOneParameter(beneficiary.getHealthCondition());
-            String beneCleanWaterAccess = cs.decryptWithOneParameter(beneficiary.getCleanWaterAccess());
-            String beneSanitationFacility = cs.decryptWithOneParameter(beneficiary.getSanitationFacility());
-            String beneHouseType = cs.decryptWithOneParameter(beneficiary.getHouseType());
-            String beneOwnershipStatus = cs.decryptWithOneParameter(beneficiary.getOwnerShipStatus());
-            String beneEmploymentStatus = cs.decryptWithOneParameter(beneficiary.getEmploymentStatus());
-            String beneMonthlyIncome = cs.decryptWithOneParameter(beneficiary.getMonthlyIncome());
-            String beneEducationLevel = cs.decryptWithOneParameter(beneficiary.getEducationalLevel());
-            String beneDigitalAccess = cs.decryptWithOneParameter(beneficiary.getDigitalAccess());
+            String beneGender = CRYPTO.decryptWithOneParameter(beneficiary.getGender());
+            String beneMaritalStatus = CRYPTO.decryptWithOneParameter(beneficiary.getMaritalStatus());
+            String beneSoloParentStatus = CRYPTO.decryptWithOneParameter(beneficiary.getSoloParentStatus());
+            String beneDisabilityType = CRYPTO.decryptWithOneParameter(beneficiary.getDisabilityType());
+            String beneHealthCondition = CRYPTO.decryptWithOneParameter(beneficiary.getHealthCondition());
+            String beneCleanWaterAccess = CRYPTO.decryptWithOneParameter(beneficiary.getCleanWaterAccess());
+            String beneSanitationFacility = CRYPTO.decryptWithOneParameter(beneficiary.getSanitationFacility());
+            String beneHouseType = CRYPTO.decryptWithOneParameter(beneficiary.getHouseType());
+            String beneOwnershipStatus = CRYPTO.decryptWithOneParameter(beneficiary.getOwnerShipStatus());
+            String beneEmploymentStatus = CRYPTO.decryptWithOneParameter(beneficiary.getEmploymentStatus());
+            String beneMonthlyIncome = CRYPTO.decryptWithOneParameter(beneficiary.getMonthlyIncome());
+            String beneEducationLevel = CRYPTO.decryptWithOneParameter(beneficiary.getEducationalLevel());
+            String beneDigitalAccess = CRYPTO.decryptWithOneParameter(beneficiary.getDigitalAccess());
 
             double beneGenderScore = getGenderScore(beneGender, vulnScores);
             double beneMaritalScore = getMaritalStatusScore(beneMaritalStatus, vulnScores);
@@ -334,7 +331,7 @@ public class HouseholdScoreCalculator {
                 DisasterDamageModel latestDamage = disasterDamages.get(disasterDamages.size() - 1);
                 String houseDamageEncrypted = latestDamage.getHouseDamageSeverity();
                 if (houseDamageEncrypted != null && !houseDamageEncrypted.isEmpty()) {
-                    String houseDamageDecrypted = cs.decryptWithOneParameter(houseDamageEncrypted);
+                    String houseDamageDecrypted = CRYPTO.decryptWithOneParameter(houseDamageEncrypted);
                     beneDisasterDamageScore = getDisasterDamageScore(houseDamageDecrypted, vulnScores);
                 }
             }
@@ -347,12 +344,12 @@ public class HouseholdScoreCalculator {
             double totalEducationScore = beneEducationScore;
 
             for (FamilyMembersModel fm : familyMembers) {
-                String fmGender = cs.decryptWithOneParameter(fm.getGender());
-                String fmMaritalStatus = cs.decryptWithOneParameter(fm.getMaritalStatus());
-                String fmDisabilityType = cs.decryptWithOneParameter(fm.getDisabilityType());
-                String fmHealthCondition = cs.decryptWithOneParameter(fm.getHealthCondition());
-                String fmEmploymentStatus = cs.decryptWithOneParameter(fm.getEmploymentStatus());
-                String fmEducationLevel = cs.decryptWithOneParameter(fm.getEducationalLevel());
+                String fmGender = CRYPTO.decryptWithOneParameter(fm.getGender());
+                String fmMaritalStatus = CRYPTO.decryptWithOneParameter(fm.getMaritalStatus());
+                String fmDisabilityType = CRYPTO.decryptWithOneParameter(fm.getDisabilityType());
+                String fmHealthCondition = CRYPTO.decryptWithOneParameter(fm.getHealthCondition());
+                String fmEmploymentStatus = CRYPTO.decryptWithOneParameter(fm.getEmploymentStatus());
+                String fmEducationLevel = CRYPTO.decryptWithOneParameter(fm.getEducationalLevel());
 
                 totalGenderScore += getGenderScore(fmGender, vulnScores);
                 totalMaritalScore += getMaritalStatusScore(fmMaritalStatus, vulnScores);
@@ -393,10 +390,7 @@ public class HouseholdScoreCalculator {
             debug("========== CALCULATION COMPLETE ==========", "");
 
         } catch (Exception e) {
-            System.err.println("========== ERROR IN CALCULATION ==========");
-            System.err.println("Error calculating scores: " + e.getMessage());
-            e.printStackTrace();
-            System.err.println("==========================================");
+            LOGGER.log(Level.SEVERE, "========== ERROR IN CALCULATION ==========", e);
         }
 
         return result;
@@ -567,37 +561,43 @@ public class HouseholdScoreCalculator {
 
     private VulnerabilityIndicatorScoreModel getVulnerabilityScores() {
         String sql = "SELECT * FROM vulnerability_indicator_score LIMIT 1";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
 
             if (rs.next()) {
                 return mapVulnerabilityScores(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching vulnerability scores", e);
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, ps);
         }
         return null;
     }
 
     private BeneficiaryModel getBeneficiaryById(int beneficiaryId) {
         String sql = "SELECT * FROM beneficiary WHERE beneficiary_id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            conn =  DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            conn = DBConnection.getInstance().getConnection();
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, beneficiaryId);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             if (rs.next()) {
                 return mapBeneficiary(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching beneficiary by ID", e);
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, ps);
         }
         return null;
     }
@@ -606,42 +606,46 @@ public class HouseholdScoreCalculator {
         List<FamilyMembersModel> members = new ArrayList<>();
         String sql = "SELECT * FROM family_member WHERE beneficiary_id = ?";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            conn =  DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            conn = DBConnection.getInstance().getConnection();
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, beneficiaryId);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             while (rs.next()) {
                 members.add(mapFamilyMember(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching family members", e);
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, ps);
         }
         return members;
     }
 
-    private List<DisasterDamageModel> getDisasterDamageById(int beneficiaryId){
+    private List<DisasterDamageModel> getDisasterDamageById(int beneficiaryId) {
         List<DisasterDamageModel> members = new ArrayList<>();
-
         String sql = "SELECT * FROM beneficiary_disaster_damage WHERE beneficiary_id = ?";
 
-        try{
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
             conn = DBConnection.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, beneficiaryId);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
-            while (rs.next()){
+            while (rs.next()) {
                 members.add(mapDisasterDamage(rs));
             }
-
-        }catch (SQLException e){
-            e.printStackTrace();
-        }finally {
-            closeConnection();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching disaster damage", e);
+        } finally {
+            ResourceUtils.closeResources(rs, ps);
         }
         return members;
     }
@@ -663,17 +667,20 @@ public class HouseholdScoreCalculator {
                 "employment_status_score=?, monthly_income_score=?, education_level_score=?, " +
                 "digital_access_score=?, dependency_ratio_score=?, updating_date=NOW() WHERE beneficiary_id=?";
 
+        Connection conn = null;
+        PreparedStatement checkPs = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = DBConnection.getInstance().getConnection();
 
-            PreparedStatement checkPs = conn.prepareStatement(checkSql);
+            checkPs = conn.prepareStatement(checkSql);
             checkPs.setInt(1, score.getBeneficiaryId());
-            ResultSet rs = checkPs.executeQuery();
+            rs = checkPs.executeQuery();
             boolean recordExists = rs.next();
-            rs.close();
-            checkPs.close();
-
-            PreparedStatement ps;
+            ResourceUtils.closeResources(rs, checkPs);
+            rs = null;
+            checkPs = null;
 
             if (recordExists) {
                 debug("Household score exists", "Updating existing record");
@@ -721,15 +728,14 @@ public class HouseholdScoreCalculator {
             }
 
             int rowsAffected = ps.executeUpdate();
-            ps.close();
-
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error saving household score", e);
             return false;
         } finally {
-            closeConnection();
+            ResourceUtils.closeResources(rs, checkPs);
+            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -836,19 +842,9 @@ public class HouseholdScoreCalculator {
         return model;
     }
 
-    private DisasterDamageModel mapDisasterDamage(ResultSet rs) throws  SQLException{
+    private DisasterDamageModel mapDisasterDamage(ResultSet rs) throws SQLException {
         DisasterDamageModel model = new DisasterDamageModel();
         model.setHouseDamageSeverity(rs.getString("house_damage_severity"));
-        return  model;
-    }
-
-    private void closeConnection() {
-        try {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
-        }
+        return model;
     }
 }

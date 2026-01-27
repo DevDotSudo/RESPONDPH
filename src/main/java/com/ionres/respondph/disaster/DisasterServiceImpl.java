@@ -1,21 +1,21 @@
 package com.ionres.respondph.disaster;
 
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
 import com.ionres.respondph.util.Cryptography;
-
+import com.ionres.respondph.util.CryptographyManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class DisasterServiceImpl implements  DisasterService{
-    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
-
+public class DisasterServiceImpl implements DisasterService {
+    private static final Logger LOGGER = Logger.getLogger(DisasterServiceImpl.class.getName());
+    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
     private final DisasterDAO disasterDAO;
 
     public DisasterServiceImpl(DBConnection dbConnection) {
-
         this.disasterDAO = new DisasterDAOImpl(dbConnection);
     }
     @Override
@@ -28,14 +28,14 @@ public class DisasterServiceImpl implements  DisasterService{
     public boolean createDisaster(DisasterModel dm) {
         try {
 
-            String encryptedDisasterType = cs.encryptWithOneParameter(dm.getDisasterType());
-            String encryptedDisasterName = cs.encryptWithOneParameter(dm.getDisasterName());
-            String encryptedDate = cs.encryptWithOneParameter(dm.getDate());
-            String encryptedLat = cs.encryptWithOneParameter(dm.getLat());
-            String encryptedLongi = cs.encryptWithOneParameter(dm.getLongi());
-            String encryptedRadius = cs.encryptWithOneParameter(dm.getRadius());
-            String encryptedNotes = cs.encryptWithOneParameter(dm.getNotes());
-            String encryptedRegDate = cs.encryptWithOneParameter(dm.getRegDate());
+            String encryptedDisasterType = CRYPTO.encryptWithOneParameter(dm.getDisasterType());
+            String encryptedDisasterName = CRYPTO.encryptWithOneParameter(dm.getDisasterName());
+            String encryptedDate = CRYPTO.encryptWithOneParameter(dm.getDate());
+            String encryptedLat = CRYPTO.encryptWithOneParameter(dm.getLat());
+            String encryptedLongi = CRYPTO.encryptWithOneParameter(dm.getLongi());
+            String encryptedRadius = CRYPTO.encryptWithOneParameter(dm.getRadius());
+            String encryptedNotes = CRYPTO.encryptWithOneParameter(dm.getNotes());
+            String encryptedRegDate = CRYPTO.encryptWithOneParameter(dm.getRegDate());
 
 
             boolean flag = disasterDAO.saving(new DisasterModel(
@@ -48,12 +48,11 @@ public class DisasterServiceImpl implements  DisasterService{
             }
             return flag;
         } catch (SQLException ex) {
-            System.out.println("Error : " + ex);
-            return  false;
-
+            LOGGER.log(Level.SEVERE, "SQL error creating disaster", ex);
+            return false;
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
-            return  false;
+            LOGGER.log(Level.SEVERE, "Error creating disaster", ex);
+            return false;
         }
     }
 
@@ -73,7 +72,7 @@ public class DisasterServiceImpl implements  DisasterService{
             return deleted;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error deleting disaster", ex);
             return false;
         }
     }
@@ -85,14 +84,14 @@ public class DisasterServiceImpl implements  DisasterService{
                 throw ExceptionFactory.missingField("Disaster ID");
             }
 
-            String encryptedDisasterType = cs.encryptWithOneParameter(dm.getDisasterType());
-            String encryptedDisasterName = cs.encryptWithOneParameter(dm.getDisasterName());
-            String encryptedDate = cs.encryptWithOneParameter(dm.getDate());
-            String encryptedLat = cs.encryptWithOneParameter(dm.getLat());
-            String encryptedLongi = cs.encryptWithOneParameter(dm.getLongi());
-            String encryptedRadius = cs.encryptWithOneParameter(dm.getRadius());
-            String encryptedNotes = cs.encryptWithOneParameter(dm.getNotes());
-            String encryptedRegDate = cs.encryptWithOneParameter(dm.getRegDate());
+            String encryptedDisasterType = CRYPTO.encryptWithOneParameter(dm.getDisasterType());
+            String encryptedDisasterName = CRYPTO.encryptWithOneParameter(dm.getDisasterName());
+            String encryptedDate = CRYPTO.encryptWithOneParameter(dm.getDate());
+            String encryptedLat = CRYPTO.encryptWithOneParameter(dm.getLat());
+            String encryptedLongi = CRYPTO.encryptWithOneParameter(dm.getLongi());
+            String encryptedRadius = CRYPTO.encryptWithOneParameter(dm.getRadius());
+            String encryptedNotes = CRYPTO.encryptWithOneParameter(dm.getNotes());
+            String encryptedRegDate = CRYPTO.encryptWithOneParameter(dm.getRegDate());
 
             DisasterModel encryptedDm = new DisasterModel(
                     encryptedDisasterType, encryptedDisasterName, encryptedDate,
@@ -110,7 +109,7 @@ public class DisasterServiceImpl implements  DisasterService{
             return updated;
 
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error deleting disaster", ex);
             return false;
         }
     }
@@ -120,11 +119,11 @@ public class DisasterServiceImpl implements  DisasterService{
         try {
             DisasterModel dm = disasterDAO.getById(id);
             if (dm == null) {
-                System.out.println("Disaster not found with ID: " + id);
+                LOGGER.warning("Disaster not found with ID: " + id);
             }
             return dm;
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error fetching disaster by ID: " + id, ex);
             return null;
         }
     }

@@ -593,29 +593,22 @@ public class AddAidTypeController {
         String sql = "SELECT DISTINCT beneficiary_id FROM household_score";
 
         java.sql.Connection conn = null;
+        java.sql.PreparedStatement ps = null;
+        java.sql.ResultSet rs = null;
         try {
             conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-            java.sql.ResultSet rs = ps.executeQuery();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
 
             while (rs.next()) {
                 beneficiaryIds.add(rs.getInt("beneficiary_id"));
             }
 
-            rs.close();
-            ps.close();
-
         } catch (java.sql.SQLException e) {
-            System.err.println("Error fetching beneficiary IDs: " + e.getMessage());
-            e.printStackTrace();
+            java.util.logging.Logger.getLogger(AddAidTypeController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Error fetching beneficiary IDs", e);
         } finally {
-            try {
-                if (conn != null && !conn.isClosed()) {
-                    conn.close();
-                }
-            } catch (java.sql.SQLException e) {
-                System.err.println("Error closing connection: " + e.getMessage());
-            }
+            com.ionres.respondph.util.ResourceUtils.closeResources(rs, ps);
         }
 
         return beneficiaryIds;

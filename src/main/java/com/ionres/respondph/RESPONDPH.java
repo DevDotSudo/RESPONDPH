@@ -5,8 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RESPONDPH extends Application {
+    private static final Logger LOGGER = Logger.getLogger(RESPONDPH.class.getName());
     
     public static void main(String[] args) {
         launch(args);
@@ -14,7 +17,6 @@ public class RESPONDPH extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/auth/SplashScreen.fxml"));
             Parent root = loader.load();
@@ -29,7 +31,8 @@ public class RESPONDPH extends Application {
             primaryStage.setMaximized(true); 
             primaryStage.show();
         } catch (Exception e) {
-            
+            LOGGER.log(Level.SEVERE, "Failed to start application", e);
+            e.printStackTrace();
         }
     }
 }

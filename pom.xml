@@ -113,7 +113,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.4</version>
                 <configuration>
-                    <mainClass>com.ionres.respondph.App</mainClass>
+                    <mainClass>com.ionres.respondph.RESPONDPH</mainClass>
                 </configuration>
                 <executions>
                     <execution>

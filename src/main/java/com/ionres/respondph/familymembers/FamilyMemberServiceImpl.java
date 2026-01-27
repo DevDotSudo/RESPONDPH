@@ -1,23 +1,24 @@
-    package com.ionres.respondph.familymembers;
+package com.ionres.respondph.familymembers;
 
-    import com.ionres.respondph.common.model.BeneficiaryModel;
-    import com.ionres.respondph.database.DBConnection;
-    import com.ionres.respondph.exception.ExceptionFactory;
-    import com.ionres.respondph.util.ConfigLoader;
-    import com.ionres.respondph.util.Cryptography;
-    import java.sql.SQLException;
-    import java.util.ArrayList;
-    import java.util.List;
+import com.ionres.respondph.common.model.BeneficiaryModel;
+import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.exception.ExceptionFactory;
+import com.ionres.respondph.util.Cryptography;
+import com.ionres.respondph.util.CryptographyManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-    public class FamilyMemberServiceImpl implements FamilyMemberService{
-        private final FamilyMemberDAO familyMemberDAO;
-        private final Cryptography cs;
+public class FamilyMemberServiceImpl implements FamilyMemberService {
+    private static final Logger LOGGER = Logger.getLogger(FamilyMemberServiceImpl.class.getName());
+    private final FamilyMemberDAO familyMemberDAO;
+    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
 
-        public FamilyMemberServiceImpl(DBConnection dbConnection) {
-            this.familyMemberDAO = new FamilyMemberDAOImpl(dbConnection);
-            String secretKey = ConfigLoader.get("secretKey");
-            this.cs = new Cryptography(secretKey);
-        }
+    public FamilyMemberServiceImpl(DBConnection dbConnection) {
+        this.familyMemberDAO = new FamilyMemberDAOImpl(dbConnection);
+    }
 
         @Override
         public List<FamilyMembersModel> getAllFamilyMembers() {
@@ -41,7 +42,7 @@
                             fm.getBeneficiaryName()
                     );
 
-                    List<String> decrypted = cs.decrypt(encrypted);
+                    List<String> decrypted = CRYPTO.decrypt(encrypted);
 
                     FamilyMembersModel d = new FamilyMembersModel();
                     d.setFamilyId(fm.getFamilyId());
@@ -76,20 +77,20 @@
         @Override
         public boolean createfamilyMember(FamilyMembersModel fm) {
             try {
-                String encryptFirstname = cs.encryptWithOneParameter(fm.getFirstName());
-                String encryptMiddlename = cs.encryptWithOneParameter(fm.getMiddleName());
-                String encryptLastname = cs.encryptWithOneParameter(fm.getLastName());
-                String encryptRelationshipToBeneficiary = cs.encryptWithOneParameter(fm.getRelationshipToBeneficiary());
-                String encryptBirthdate = cs.encryptWithOneParameter(fm.getBirthDate());
-                String encryptGender = cs.encryptWithOneParameter(fm.getGender());
-                String encryptMaritalStatus = cs.encryptWithOneParameter(fm.getMaritalStatus());
-                String encryptDisabilityType = cs.encryptWithOneParameter(fm.getDisabilityType());
-                String encryptHealthCondition = cs.encryptWithOneParameter(fm.getHealthCondition());
-                String encryptEducationalLevel = cs.encryptWithOneParameter(fm.getEducationalLevel());
-                String encryptEmploymentStatus = cs.encryptWithOneParameter(fm.getEmploymentStatus());
+                String encryptFirstname = CRYPTO.encryptWithOneParameter(fm.getFirstName());
+                String encryptMiddlename = CRYPTO.encryptWithOneParameter(fm.getMiddleName());
+                String encryptLastname = CRYPTO.encryptWithOneParameter(fm.getLastName());
+                String encryptRelationshipToBeneficiary = CRYPTO.encryptWithOneParameter(fm.getRelationshipToBeneficiary());
+                String encryptBirthdate = CRYPTO.encryptWithOneParameter(fm.getBirthDate());
+                String encryptGender = CRYPTO.encryptWithOneParameter(fm.getGender());
+                String encryptMaritalStatus = CRYPTO.encryptWithOneParameter(fm.getMaritalStatus());
+                String encryptDisabilityType = CRYPTO.encryptWithOneParameter(fm.getDisabilityType());
+                String encryptHealthCondition = CRYPTO.encryptWithOneParameter(fm.getHealthCondition());
+                String encryptEducationalLevel = CRYPTO.encryptWithOneParameter(fm.getEducationalLevel());
+                String encryptEmploymentStatus = CRYPTO.encryptWithOneParameter(fm.getEmploymentStatus());
                 int encryptBeneficiary = fm.getBeneficiaryId();
-                String encryptNotes = cs.encryptWithOneParameter(fm.getNotes());
-                String encryptRegDate = cs.encryptWithOneParameter(fm.getRegDate());
+                String encryptNotes = CRYPTO.encryptWithOneParameter(fm.getNotes());
+                String encryptRegDate = CRYPTO.encryptWithOneParameter(fm.getRegDate());
 
                 boolean flag = familyMemberDAO.saving(
                         new FamilyMembersModel(
@@ -113,11 +114,11 @@
                 }
                 return flag;
             } catch (SQLException ex) {
-                System.out.println("Error : " + ex);
+                LOGGER.log(Level.SEVERE, "SQL error creating family member", ex);
                 return  false;
 
             } catch (Exception ex) {
-                System.out.println("Error: " + ex);
+                LOGGER.log(Level.SEVERE, "Error creating family member", ex);
                 return  false;
             }
         }
@@ -138,7 +139,7 @@
                 return deleted;
 
             } catch (Exception ex) {
-                System.out.println("Error: " + ex.getMessage());
+                LOGGER.log(Level.SEVERE, "Error deleting family member", ex);
                 return false;
             }
         }
@@ -151,19 +152,19 @@
                 }
 
 
-                String encryptedFirstname = cs.encryptWithOneParameter(fm.getFirstName());
-                String encryptedMiddlename = cs.encryptWithOneParameter(fm.getMiddleName());
-                String encryptedLastname = cs.encryptWithOneParameter(fm.getLastName());
-                String encryptedRelationship = cs.encryptWithOneParameter(fm.getRelationshipToBeneficiary());
-                String encryptedBirthDate = cs.encryptWithOneParameter(fm.getBirthDate());
-                String encryptedGender = cs.encryptWithOneParameter(fm.getGender());
-                String encryptedMaritalStatus = cs.encryptWithOneParameter(fm.getMaritalStatus());
-                String encryptedDisabilityType = cs.encryptWithOneParameter(fm.getDisabilityType());
-                String encryptedHealthCondition = cs.encryptWithOneParameter(fm.getHealthCondition());
-                String encryptedEmploymentStatus = cs.encryptWithOneParameter(fm.getEmploymentStatus());
-                String encryptedEducationalLevel = cs.encryptWithOneParameter(fm.getEducationalLevel());
-                String encryptedNotes = cs.encryptWithOneParameter(fm.getNotes());
-                String encryptedRegDate = cs.encryptWithOneParameter(fm.getRegDate());
+                String encryptedFirstname = CRYPTO.encryptWithOneParameter(fm.getFirstName());
+                String encryptedMiddlename = CRYPTO.encryptWithOneParameter(fm.getMiddleName());
+                String encryptedLastname = CRYPTO.encryptWithOneParameter(fm.getLastName());
+                String encryptedRelationship = CRYPTO.encryptWithOneParameter(fm.getRelationshipToBeneficiary());
+                String encryptedBirthDate = CRYPTO.encryptWithOneParameter(fm.getBirthDate());
+                String encryptedGender = CRYPTO.encryptWithOneParameter(fm.getGender());
+                String encryptedMaritalStatus = CRYPTO.encryptWithOneParameter(fm.getMaritalStatus());
+                String encryptedDisabilityType = CRYPTO.encryptWithOneParameter(fm.getDisabilityType());
+                String encryptedHealthCondition = CRYPTO.encryptWithOneParameter(fm.getHealthCondition());
+                String encryptedEmploymentStatus = CRYPTO.encryptWithOneParameter(fm.getEmploymentStatus());
+                String encryptedEducationalLevel = CRYPTO.encryptWithOneParameter(fm.getEducationalLevel());
+                String encryptedNotes = CRYPTO.encryptWithOneParameter(fm.getNotes());
+                String encryptedRegDate = CRYPTO.encryptWithOneParameter(fm.getRegDate());
 
                 FamilyMembersModel encryptedFm = new FamilyMembersModel();
                 encryptedFm.setFirstName(encryptedFirstname);
@@ -191,7 +192,7 @@
                 return updated;
 
             } catch (Exception ex) {
-                System.out.println("Error updating family member: " + ex.getMessage());
+                LOGGER.log(Level.SEVERE, "Error updating family member", ex);
                 return false;
             }
         }
@@ -221,7 +222,7 @@
                     return null;
                 }
 
-                List<String> decrypted = cs.decrypt(List.of(
+                List<String> decrypted = CRYPTO.decrypt(List.of(
                         encrypted.getFirstName(),
                         encrypted.getMiddleName(),
                         encrypted.getLastName(),
@@ -275,7 +276,7 @@
                     encryptedNames.add(b.getFirstName());
                 }
 
-                List<String> decryptedNames = cs.decrypt(encryptedNames);
+                List<String> decryptedNames = CRYPTO.decrypt(encryptedNames);
 
                 List<BeneficiaryModel> decryptedModels = new ArrayList<>();
                 for (int i = 0; i < encryptedList.size(); i++) {

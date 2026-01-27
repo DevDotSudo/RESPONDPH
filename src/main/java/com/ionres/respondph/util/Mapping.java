@@ -7,14 +7,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-
-import java.util.ArrayList;
+import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Mapping {
-
+    private static final Logger LOGGER = Logger.getLogger(Mapping.class.getName());
+    
     private Canvas canvas;
     private GraphicsContext gc;
     private Runnable afterRedraw;
@@ -22,41 +23,120 @@ public class Mapping {
     private double offsetY;
     private double lastX;
     private double lastY;
-    public boolean dragging;
+    private boolean dragging;
     private boolean centered;
+    private boolean initialized;
     public Point markerPosition;
-    private final Image markerImage = new Image("file:/C:/Users/Davie/IdeaProjects/RESPONDPH/src/main/resources/images/placeholder.png", false);
-    private static double zoom = 13.2;
+    private Image markerImage;
+    private double zoom;
     private static final double MIN_ZOOM = 13.2;
     private static final double MAX_ZOOM = 18;
     private static final int TILE_SIZE = 256;
-    public LatLng circleCenter;
-    public double circleRadiusMeters;
     private static final double BOUND_NORTH = 11.116584029742963;
     private static final double BOUND_SOUTH = 10.984159872049194;
     private static final double BOUND_WEST  = 122.6584666442871;
     private static final double BOUND_EAST  = 122.93484146118163;
     private final Map<String, Image> tileCache = new HashMap<>();
 
+    private static String getTileDirectory() {
+        try {
+            String configPath = ConfigLoader.get("map.tile.directory");
+            if (configPath != null && !configPath.trim().isEmpty()) {
+                return configPath.trim();
+            }
+        } catch (Exception e) {
+            // Config property not found, continue
+        }
+        
+        String sysProp = System.getProperty("map.tile.directory");
+        if (sysProp != null && !sysProp.trim().isEmpty()) {
+            return sysProp.trim();
+        }
+        
+        return "C:/Users/Davie/OneDrive/Documents/IntellijIDEA Projects/tiles";
+    }
+
+    public Mapping() {
+        this.zoom = MIN_ZOOM;
+        this.initialized = false;
+        loadMarkerImage();
+    }
+    
+    private void loadMarkerImage() {
+        try {
+            // Try to load from resources first
+            markerImage = new Image(getClass().getResourceAsStream("/images/placeholder.png"));
+            if (markerImage.isError()) {
+                LOGGER.warning("Failed to load marker image from resources, using null");
+                markerImage = null;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error loading marker image from resources", e);
+            markerImage = null;
+        }
+    }
+
     public void init(Pane container) {
-        canvas = new Canvas();
-        gc = canvas.getGraphicsContext2D();
+        if (container == null) {
+            LOGGER.severe("Cannot initialize Mapping: container is null");
+            return;
+        }
+        
+        try {
+            canvas = new Canvas();
+            gc = canvas.getGraphicsContext2D();
 
-        canvas.widthProperty().bind(container.widthProperty());
-        canvas.heightProperty().bind(container.heightProperty());
-        center();
-        container.getChildren().setAll(canvas);
+            canvas.widthProperty().bind(container.widthProperty());
+            canvas.heightProperty().bind(container.heightProperty());
+            
+            container.getChildren().setAll(canvas);
 
-        canvas.setOnMousePressed(this::mousePressed);
-        canvas.setOnMouseDragged(this::mouseDragged);
-        canvas.setOnMouseReleased(e -> dragging = false);
-        canvas.setOnScroll(this::mouseScroll);
+            canvas.setOnMousePressed(this::mousePressed);
+            canvas.setOnMouseDragged(this::mouseDragged);
+            canvas.setOnMouseReleased(e -> dragging = false);
+            canvas.setOnScroll(this::mouseScroll);
 
-        canvas.widthProperty().addListener((o,a,b) -> redrawSafe());
-        canvas.heightProperty().addListener((o,a,b) -> redrawSafe());
+            canvas.widthProperty().addListener((o,a,b) -> redrawSafe());
+            canvas.heightProperty().addListener((o,a,b) -> redrawSafe());
+            
+            center();
+            initialized = true;
+            LOGGER.fine("Mapping initialized successfully");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error initializing Mapping", e);
+            initialized = false;
+        }
+    }
+    
+    public boolean isInitialized() {
+        return initialized && canvas != null && gc != null && 
+               canvas.getWidth() > 0 && canvas.getHeight() > 0;
+    }
+    
+    public boolean isDragging() {
+        return dragging;
+    }
+    
+    public static boolean isValidCoordinate(double lat, double lon) {
+        if (Double.isNaN(lat) || lat < -90.0 || lat > 90.0) {
+            return false;
+        }
+        if (Double.isNaN(lon) || lon < -180.0 || lon > 180.0) {
+            return false;
+        }
+        if (lat < BOUND_SOUTH || lat > BOUND_NORTH ||
+            lon < BOUND_WEST || lon > BOUND_EAST) {
+            LOGGER.fine("Coordinate outside application bounds: " + lat + ", " + lon);
+            // Still return true as coordinates are valid, just outside our region
+        }
+        return true;
     }
 
     private void redrawSafe() {
+        if (!isInitialized()) {
+            return;
+        }
+        
         if (!centered && canvas.getWidth() > 0 && canvas.getHeight() > 0) {
             zoom = MIN_ZOOM;
             center();
@@ -71,56 +151,86 @@ public class Mapping {
     }
 
     public void redraw() {
-        if (canvas.getWidth() <= 0 || canvas.getHeight() <= 0) return;
-
-        gc.setFill(Color.rgb(240,240,240));
-        gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
-
-        drawTiles();
-
-        if (markerPosition != null && !dragging) {
-            double w = markerImage.getWidth();
-            double h = markerImage.getHeight();
-            gc.drawImage(markerImage, markerPosition.x - w/2, markerPosition.y - h, w, h);
+        if (!isInitialized()) {
+            LOGGER.fine("Cannot redraw: mapping not initialized");
+            return;
         }
 
-        if (afterRedraw != null) afterRedraw.run();
+        try {
+            gc.setFill(Color.rgb(240,240,240));
+            gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+
+            drawTiles();
+
+            if (markerPosition != null && !dragging && markerImage != null && !markerImage.isError()) {
+                double w = markerImage.getWidth();
+                double h = markerImage.getHeight();
+                if (w > 0 && h > 0) {
+                    gc.drawImage(markerImage, markerPosition.x - w/2, markerPosition.y - h, w, h);
+                }
+            }
+
+            if (afterRedraw != null) {
+                try {
+                    afterRedraw.run();
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error in afterRedraw callback", e);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during redraw", e);
+        }
     }
 
-
     private void center() {
-        Point p = latLonToPixel(11.052390, 122.786762, zoom);
-        offsetX = canvas.getWidth() / 2 - p.x;
-        offsetY = canvas.getHeight() / 2 - p.y;
-        clamp();
-        redraw();
+        if (!isInitialized()) {
+            return;
+        }
+        
+        try {
+            Point p = latLonToPixel(11.052390, 122.786762, zoom);
+            offsetX = canvas.getWidth() / 2 - p.x;
+            offsetY = canvas.getHeight() / 2 - p.y;
+            clamp();
+            redraw();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error centering map", e);
+        }
     }
 
     private void drawTiles() {
-        int baseZoom = (int) Math.floor(zoom);
-        double scale = Math.pow(2, zoom - baseZoom);
-        int tiles = 1 << baseZoom;
+        if (!isInitialized()) {
+            return;
+        }
+        
+        try {
+            int baseZoom = (int) Math.floor(zoom);
+            double scale = Math.pow(2, zoom - baseZoom);
+            int tiles = 1 << baseZoom;
 
-        int startX = (int)Math.floor(-offsetX / (TILE_SIZE * scale));
-        int startY = (int)Math.floor(-offsetY / (TILE_SIZE * scale));
-        int endX = startX + (int)Math.ceil(canvas.getWidth() / (TILE_SIZE * scale)) + 1;
-        int endY = startY + (int)Math.ceil(canvas.getHeight() / (TILE_SIZE * scale)) + 1;
+            int startX = (int)Math.floor(-offsetX / (TILE_SIZE * scale));
+            int startY = (int)Math.floor(-offsetY / (TILE_SIZE * scale));
+            int endX = startX + (int)Math.ceil(canvas.getWidth() / (TILE_SIZE * scale)) + 1;
+            int endY = startY + (int)Math.ceil(canvas.getHeight() / (TILE_SIZE * scale)) + 1;
 
-        for (int x = startX; x <= endX; x++) {
-            for (int y = startY; y <= endY; y++) {
-                if (x < 0 || y < 0 || x >= tiles || y >= tiles) continue;
+            for (int x = startX; x <= endX; x++) {
+                for (int y = startY; y <= endY; y++) {
+                    if (x < 0 || y < 0 || x >= tiles || y >= tiles) continue;
 
-                Image img = loadTile(baseZoom, x, y);
-                if (img == null) continue;
+                    Image img = loadTile(baseZoom, x, y);
+                    if (img == null || img.isError()) continue;
 
-                gc.drawImage(
-                        img,
-                        x * TILE_SIZE * scale + offsetX,
-                        y * TILE_SIZE * scale + offsetY,
-                        TILE_SIZE * scale,
-                        TILE_SIZE * scale
-                );
+                    gc.drawImage(
+                            img,
+                            x * TILE_SIZE * scale + offsetX,
+                            y * TILE_SIZE * scale + offsetY,
+                            TILE_SIZE * scale,
+                            TILE_SIZE * scale
+                    );
+                }
             }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error drawing tiles", e);
         }
     }
 
@@ -129,67 +239,110 @@ public class Mapping {
     }
 
     public LatLng screenToLatLon(double x, double y) {
-        double px = x - offsetX;
-        double py = y - offsetY;
+        if (!isInitialized()) {
+            LOGGER.warning("Cannot convert screen to lat/lon: mapping not initialized");
+            return new LatLng(0, 0);
+        }
+        
+        try {
+            double px = x - offsetX;
+            double py = y - offsetY;
 
-        double n = Math.pow(2, zoom);
-        double lon = px / (TILE_SIZE * n) * 360.0 - 180.0;
-        double lat = Math.toDegrees(Math.atan(Math.sinh(Math.PI * (1 - 2 * py / (TILE_SIZE * n)))));
+            int baseZoom = (int) Math.floor(zoom);
+            double scale = Math.pow(2, zoom - baseZoom);
+            double n = Math.pow(2, baseZoom) * scale;
 
-        return new LatLng(lat, lon);
+            double lon = px / (TILE_SIZE * n) * 360.0 - 180.0;
+            double lat = Math.toDegrees(Math.atan(Math.sinh(Math.PI * (1 - 2 * py / (TILE_SIZE * n)))));
+
+            if (!isValidCoordinate(lat, lon)) {
+                LOGGER.fine("Invalid coordinate conversion result: " + lat + ", " + lon);
+            }
+            
+            return new LatLng(lat, lon);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error converting screen to lat/lon", e);
+            return new LatLng(0, 0);
+        }
     }
 
+
     private void clamp() {
-        Point nw = latLonToPixel(BOUND_NORTH, BOUND_WEST, zoom);
-        Point se = latLonToPixel(BOUND_SOUTH, BOUND_EAST, zoom);
-
-        double mapWidth = se.x - nw.x;
-        double mapHeight = se.y - nw.y;
-
-        if (mapWidth < canvas.getWidth()) {
-            offsetX = (canvas.getWidth() - mapWidth) / 2 - nw.x;
-        } else {
-            offsetX = Math.min(-nw.x, Math.max(canvas.getWidth() - se.x, offsetX));
+        if (!isInitialized()) {
+            return;
         }
+        
+        try {
+            Point nw = latLonToPixel(BOUND_NORTH, BOUND_WEST, zoom);
+            Point se = latLonToPixel(BOUND_SOUTH, BOUND_EAST, zoom);
 
-        if (mapHeight < canvas.getHeight()) {
-            offsetY = (canvas.getHeight() - mapHeight) / 2 - nw.y;
-        } else {
-            offsetY = Math.min(-nw.y, Math.max(canvas.getHeight() - se.y, offsetY));
+            double mapWidth = se.x - nw.x;
+            double mapHeight = se.y - nw.y;
+
+            if (mapWidth < canvas.getWidth()) {
+                offsetX = (canvas.getWidth() - mapWidth) / 2 - nw.x;
+            } else {
+                offsetX = Math.min(-nw.x, Math.max(canvas.getWidth() - se.x, offsetX));
+            }
+
+            if (mapHeight < canvas.getHeight()) {
+                offsetY = (canvas.getHeight() - mapHeight) / 2 - nw.y;
+            } else {
+                offsetY = Math.min(-nw.y, Math.max(canvas.getHeight() - se.y, offsetY));
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error clamping map bounds", e);
         }
     }
 
     private void mousePressed(MouseEvent e) {
+        if (!isInitialized()) {
+            return;
+        }
         dragging = true;
         lastX = e.getX();
         lastY = e.getY();
     }
 
     private void mouseDragged(MouseEvent e) {
-        if (!dragging) return;
+        if (!isInitialized() || !dragging) {
+            return;
+        }
 
-        offsetX += e.getX() - lastX;
-        offsetY += e.getY() - lastY;
+        try {
+            offsetX += e.getX() - lastX;
+            offsetY += e.getY() - lastY;
 
-        lastX = e.getX();
-        lastY = e.getY();
+            lastX = e.getX();
+            lastY = e.getY();
 
-        clamp();
-        redraw();
+            clamp();
+            redraw();
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Error during mouse drag", ex);
+        }
     }
 
     private void mouseScroll(ScrollEvent e) {
-        double oldZoom = zoom;
-        zoom += e.getDeltaY() > 0 ? 0.2 : -0.2;
-        zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
-        if (zoom == oldZoom) return;
+        if (!isInitialized()) {
+            return;
+        }
+        
+        try {
+            double oldZoom = zoom;
+            zoom += e.getDeltaY() > 0 ? 0.2 : -0.2;
+            zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
+            if (zoom == oldZoom) return;
 
-        double scale = Math.pow(2, zoom - oldZoom);
-        offsetX = e.getX() - (e.getX() - offsetX) * scale;
-        offsetY = e.getY() - (e.getY() - offsetY) * scale;
+            double scale = Math.pow(2, zoom - oldZoom);
+            offsetX = e.getX() - (e.getX() - offsetX) * scale;
+            offsetY = e.getY() - (e.getY() - offsetY) * scale;
 
-        clamp();
-        redraw();
+            clamp();
+            redraw();
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Error during mouse scroll", ex);
+        }
     }
 
     private Image loadTile(int z, int x, int y) {
@@ -198,36 +351,110 @@ public class Mapping {
         String key = z + "/" + x + "/" + fy;
 
         Image img = tileCache.get(key);
-        if (img != null) return img;
+        if (img != null && !img.isError()) {
+            return img;
+        }
 
         try {
-            img = new Image("file:/C:/Users/Davie/OneDrive/Documents/IntellijIDEA%20Projects/tiles/" + key + ".png", false);
-            if (!img.isError()) tileCache.put(key, img);
-        } catch (Exception ignored) {}
+            String tileDir = getTileDirectory();
+            File tileFile = new File(tileDir, key + ".png");
+            
+            if (!tileFile.exists() || !tileFile.isFile()) {
+                LOGGER.finest("Tile file does not exist: " + tileFile.getAbsolutePath());
+                return null;
+            }
+            
+            String tilePath = tileFile.toURI().toString();
+            img = new Image(tilePath, false);
+            
+            if (img.isError()) {
+                String fallbackPath = "file:/" + tileFile.getAbsolutePath().replace("\\", "/");
+                fallbackPath = fallbackPath.replace(" ", "%20");
+                img = new Image(fallbackPath, false);
+                
+                if (img.isError()) {
+                    LOGGER.fine("Failed to load tile: " + key + " from both " + tilePath + " and " + fallbackPath);
+                    return null;
+                }
+            }
+            
+            if (img.getWidth() > 0 && img.getHeight() > 0) {
+                tileCache.put(key, img);
+                LOGGER.finest("Loaded tile: " + key);
+            } else {
+                LOGGER.fine("Tile loaded but has zero dimensions: " + key);
+                return null;
+            }
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Error loading tile: " + key + " - " + e.getMessage(), e);
+            return null;
+        }
 
         return img;
     }
 
     private Point latLonToPixel(double lat, double lon, double z) {
-        int baseZoom = (int) Math.floor(z);
-        double scale = Math.pow(2, z - baseZoom);
-
-        double n = Math.pow(2, baseZoom);
-        double x = (lon + 180) / 360 * n * TILE_SIZE * scale;
-        double y = (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * n * TILE_SIZE * scale;
-
-        return new Point(x, y);
+        if (!isValidCoordinate(lat, lon)) {
+            LOGGER.fine("Invalid coordinate in latLonToPixel: " + lat + ", " + lon);
+            return new Point(0, 0);
+        }
+        
+        try {
+            double n = Math.pow(2, z);
+            double x = (lon + 180) / 360 * n * TILE_SIZE;
+            double y = (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * n * TILE_SIZE;
+            return new Point(x, y);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error converting lat/lon to pixel", e);
+            return new Point(0, 0);
+        }
     }
 
     public Point latLonToScreen(double lat, double lon) {
-        Point p = latLonToPixel(lat, lon, zoom);
-        return new Point(p.x + offsetX, p.y + offsetY);
+        if (!isInitialized()) {
+            LOGGER.warning("Cannot convert lat/lon to screen: mapping not initialized");
+            return new Point(0, 0);
+        }
+        
+        try {
+            Point p = latLonToPixel(lat, lon, zoom);
+            return new Point(p.x + offsetX, p.y + offsetY);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error converting lat/lon to screen", e);
+            return new Point(0, 0);
+        }
     }
 
-
     public double metersPerPixel(double lat) {
-        double earth = 40075016.686;
-        return Math.cos(Math.toRadians(lat)) * earth / (TILE_SIZE * Math.pow(2, zoom));
+        if (!isValidCoordinate(lat, 0)) {
+            LOGGER.fine("Invalid latitude in metersPerPixel: " + lat);
+            return 1.0; // Default fallback
+        }
+        
+        try {
+            double earth = 40075016.686;
+            return earth * Math.cos(Math.toRadians(lat)) / Math.pow(2, zoom + 8);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error calculating meters per pixel", e);
+            return 1.0;
+        }
+    }
+    
+    public double getZoom() {
+        return zoom;
+    }
+    
+    public void setZoom(double newZoom) {
+        if (newZoom >= MIN_ZOOM && newZoom <= MAX_ZOOM) {
+            this.zoom = newZoom;
+            if (isInitialized()) {
+                clamp();
+                redraw();
+            }
+        } else {
+            LOGGER.warning("Zoom value out of range: " + newZoom);
+        }
     }
 
     public GraphicsContext getGc() {

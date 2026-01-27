@@ -1,5 +1,9 @@
 package com.ionres.respondph.common.model;
 
+/**
+ * Simplified BeneficiaryModel for display purposes (e.g., dropdowns, lists).
+ * For full beneficiary data operations, use com.ionres.respondph.beneficiary.BeneficiaryModel
+ */
 public class BeneficiaryModel {
     private int beneficiaryId;
     private String firstName;

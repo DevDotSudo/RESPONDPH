@@ -5,6 +5,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="damage-dialog-container" stylesheets="@/styles/disaster_damage/dialog/adddisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.AddDisasterDamageDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="damage-dialog-header">
@@ -66,7 +68,17 @@
                         <Label styleClass="damage-field-label" text="House Damage Severity *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="damage-input-container" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="FIRE" size="16" styleClass="damage-field-icon" />
-                            <ComboBox fx:id="damageSeverityFld" promptText="Select damage severity" styleClass="damage-dropdown" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="damageSeverityFld" promptText="Select damage severity">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="No visible damage"/>
+                                        <String fx:value="Minor damage (non-structural)"/>
+                                        <String fx:value="Moderate damage (partially unusable)"/>
+                                        <String fx:value="Severe damage (unsafe for use)"/>
+                                        <String fx:value="Destruction or collapse"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 

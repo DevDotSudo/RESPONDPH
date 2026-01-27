@@ -22,11 +22,11 @@ public class SplashScreenController {
         Task<Void> loadingTask = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                int totalSteps = 6;
+                int totalSteps = 5;
                 int currentStep = 0;
 
-                updateMessage("Initializing modules...");
-                AppLoader.initModules();
+                updateMessage("Initializing utilities...");
+                AppLoader.initializeUtilities();
                 currentStep++;
                 updateProgress(currentStep, totalSteps);
 
@@ -40,17 +40,10 @@ public class SplashScreenController {
                 currentStep++;
                 updateProgress(currentStep, totalSteps);
 
-                updateMessage("Configuring modules...");
-                AppLoader.configureSettings();
-                currentStep++;
-                updateProgress(currentStep, totalSteps);
-
                 updateMessage("Preparing interface...");
                 AppLoader.prepareUI();
                 currentStep++;
                 updateProgress(currentStep, totalSteps);
-
-
 
                 updateMessage("Opening application...");
                 Thread.sleep(200);
@@ -81,10 +74,8 @@ public class SplashScreenController {
         loadingTask.setOnFailed(event -> Platform.runLater(() -> {
             loadingText.textProperty().unbind();
             loadingText.setText("Error loading application");
-
-            System.err.println("Loading failed: " +
-                    loadingTask.getException().getMessage());
-            loadingTask.getException().printStackTrace();
+            java.util.logging.Logger.getLogger(SplashScreenController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Loading failed", loadingTask.getException());
         }));
 
         Thread loadingThread = new Thread(loadingTask);

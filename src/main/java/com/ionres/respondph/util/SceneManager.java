@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class  SceneManager {
+public final class SceneManager {
 
     private static final Map<String, SceneEntry<?>> CACHE =
             new ConcurrentHashMap<>();

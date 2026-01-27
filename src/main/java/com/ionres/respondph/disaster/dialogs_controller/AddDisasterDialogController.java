@@ -30,12 +30,12 @@ public class AddDisasterDialogController {
     private Stage dialogStage;
     private DisasterService disasterService;
     private DisasterController disasterController;
-
     @FXML
     private void initialize() {
         initializeDisasterTypeDropdowns();
         setupKeyHandlers();
         setupActionHandlers();
+
     }
 
     private void setupKeyHandlers() {
@@ -80,7 +80,10 @@ public class AddDisasterDialogController {
 
     private void handleGetLocationBtn(){
         MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
-        controller.setController(this);
+        controller.setListener(latLng -> {
+            latitudeFld.setText(String.valueOf(latLng.lat));
+            longitudeFld.setText(String.valueOf(latLng.lon));
+        });
         DialogManager.show("mapping");
     }
 

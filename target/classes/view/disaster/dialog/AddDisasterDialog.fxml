@@ -35,7 +35,6 @@
                     <Label styleClass="disaster-section-title" text="Disaster Information" />
                 </HBox>
 
-                <!-- First Row: Disaster Type and Name -->
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
                     <!-- Disaster Type -->
                     <VBox prefHeight="50.0" prefWidth="280.0" spacing="8" HBox.hgrow="ALWAYS">
@@ -46,7 +45,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Disaster Name -->
                     <VBox prefHeight="50.0" prefWidth="274.0" spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="disaster-field-label" text="Disaster Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="disaster-input-container" HBox.hgrow="ALWAYS">
@@ -55,7 +53,6 @@
                         </HBox>
                     </VBox>
    
-                   <!-- Second Row: Disaster Date -->
                    <VBox prefHeight="50.0" prefWidth="326.0" spacing="8">
                        <Label styleClass="disaster-field-label" text="Disaster Date *" />
                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="disaster-input-container" HBox.hgrow="ALWAYS">
@@ -66,7 +63,6 @@
                 </HBox>
             </VBox>
 
-            <!-- Location Information -->
             <VBox spacing="20" styleClass="disaster-form-section">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="disaster-section-header">
                     <FontAwesomeIconView glyphName="MAP_MARKER" size="20" styleClass="disaster-section-icon" />

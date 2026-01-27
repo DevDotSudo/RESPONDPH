@@ -37,6 +37,7 @@ public class MainFrameController {
     @FXML private Button manageBeneficiariesBtn;
     @FXML private Button familyMembersBtn;
     @FXML private Button disasterBtn;
+    @FXML private Button disasterMappingBtn;
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
     @FXML private Button aidsBtn;
@@ -48,17 +49,25 @@ public class MainFrameController {
 
     @FXML
     public void initialize() {
+        // Setup section toggles - all sections start collapsed
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn, disasterSectionContent, disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn, aidsSectionContent, aidsSectionIcon);
+        
+        // Collapse all sections at startup
+        collapseAllSections();
+        
+        // Load default page
         loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
 
+        // Setup action handlers
         EventHandler<ActionEvent> handlers = this::handleActions;
         dashboardBtn.setOnAction(handlers);
         manageAdminBtn.setOnAction(handlers);
         manageBeneficiariesBtn.setOnAction(handlers);
         disasterBtn.setOnAction(handlers);
+        disasterMappingBtn.setOnAction(handlers);
         disasterDamageBtn.setOnAction(handlers);
         aidsBtn.setOnAction(handlers);
         vulnerabilityBtn.setOnAction(handlers);
@@ -66,6 +75,24 @@ public class MainFrameController {
         sendSmsBtn.setOnAction(handlers);
         settingsBtn.setOnAction(handlers);
         logoutBtn.setOnAction(handlers);
+    }
+    
+    /**
+     * Collapses all navigation sections at startup.
+     */
+    private void collapseAllSections() {
+        collapseSection(managementSectionContent, managementSectionIcon);
+        collapseSection(disasterSectionContent, disasterSectionIcon);
+        collapseSection(aidsSectionContent, aidsSectionIcon);
+    }
+    
+    /**
+     * Collapses a specific section.
+     */
+    private void collapseSection(VBox sectionContent, FontAwesomeIconView chevronIcon) {
+        sectionContent.setVisible(false);
+        sectionContent.setManaged(false);
+        chevronIcon.setRotate(0);
     }
 
     private void setupSectionToggle(Button sectionBtn, VBox sectionContent, FontAwesomeIconView chevronIcon) {
@@ -106,6 +133,9 @@ public class MainFrameController {
         }
         else if(src == disasterBtn) {
             handleDisaster();
+        }
+        else if(src == disasterMappingBtn) {
+            handleDisasterMapping();
         }
         else if(src == disasterDamageBtn) {
             handleDisasterDamage();
@@ -157,6 +187,11 @@ public class MainFrameController {
         activeButton(disasterBtn);
     }
 
+    private void handleDisasterMapping() {
+        loadPage("/view/disaster_mapping/DisasterMapping.fxml");
+        activeButton(disasterMappingBtn);
+    }
+
     private void handleDisasterDamage() {
         loadPage("/view/disaster_damage/DisasterDamage.fxml");
         activeButton(disasterDamageBtn);
@@ -179,6 +214,10 @@ public class MainFrameController {
         );
 
         if (confirm) {
+            // Clear session and preferences
+            com.ionres.respondph.util.SessionManager.getInstance().clearSession();
+            com.ionres.respondph.util.AppPreferences.clearToken();
+            
             Stage stage = (Stage) logoutBtn.getScene().getWindow();
             stage.close();
             SceneManager.showStage(
@@ -202,12 +241,24 @@ public class MainFrameController {
     }
 
 
+    /**
+     * Sets the active button state for navigation highlighting.
+     * Removes active state from previous button and applies to new button.
+     * 
+     * @param btnId The button to set as active
+     */
     private void activeButton(Button btnId) {
-        if(activeBtn != null) {
+        if (activeBtn != null) {
             activeBtn.getStyleClass().remove("nav-button-active");
             activeBtn.getStyleClass().remove("nav-button-child-active");
         }
         activeBtn = btnId;
-        activeBtn.getStyleClass().add("nav-button-active");
+        
+        // Determine if it's a child button or main button
+        if (btnId.getStyleClass().contains("nav-button-child")) {
+            activeBtn.getStyleClass().add("nav-button-child-active");
+        } else {
+            activeBtn.getStyleClass().add("nav-button-active");
+        }
     }
 }

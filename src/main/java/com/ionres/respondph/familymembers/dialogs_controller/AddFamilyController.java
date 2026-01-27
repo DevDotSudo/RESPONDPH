@@ -59,7 +59,6 @@ public class AddFamilyController {
     @FXML
     public void initialize() {
         makeDraggable();
-        initializeDropdowns();
         setupEventHandlers();
         setupKeyHandlers();
     }
@@ -115,72 +114,6 @@ public class AddFamilyController {
 
     private void handleExit(ActionEvent event) {
         closeDialog();
-    }
-
-    private void initializeDropdowns() {
-        initializeFamilyMemberProfileDropdowns();
-        initializeVulnerabilityIndicatorsDropdowns();
-    }
-
-    private void initializeFamilyMemberProfileDropdowns() {
-        genderSelection.getItems().addAll("Male", "Female", "Other");
-
-        maritalStatusSelection.getItems().addAll(
-                "Single",
-                "Married",
-                "Widowed",
-                "Separated",
-                "Divorced"
-        );
-
-        relationshipSelection.getItems().addAll(
-                "Son",
-                "Daughter",
-                "Grandchild",
-                "Niece",
-                "Nephew",
-                "Brother",
-                "Sister"
-        );
-    }
-
-    private void initializeVulnerabilityIndicatorsDropdowns() {
-        disabilityTypeSelection.getItems().addAll(
-                "None",
-                "Physical",
-                "Visual",
-                "Hearing",
-                "Speech",
-                "Intellectual",
-                "Mental/Psychosocial",
-                "Due to Chronic Illness"
-        );
-
-        healthConditionSelection.getItems().addAll(
-                "Healthy",
-                "Temporarily ill",
-                "Chronically ill",
-                "Immunocompromised",
-                "Terminally ill",
-                "With History of Hospitalization/ Long-term Medical Equipment Dependency"
-        );
-
-        employmentStatusSelection.getItems().addAll(
-                "Regular full-time employment",
-                "Self-employed with stable income",
-                "Self-employed with unstable income",
-                "Irregular employment (odd jobs, seasonal work)",
-                "Unemployed"
-        );
-
-        educationLevelSelection.getItems().addAll(
-                "No Formal Education",
-                "Elementary",
-                "High School",
-                "Vocational or technical training",
-                "College or university level",
-                "Graduate education"
-        );
     }
 
     private void closeDialog() {

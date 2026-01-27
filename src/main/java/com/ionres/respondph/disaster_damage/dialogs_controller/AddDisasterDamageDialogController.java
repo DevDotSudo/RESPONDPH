@@ -46,7 +46,6 @@ public class AddDisasterDamageDialogController {
 
     @FXML
     private void initialize() {
-        initializeDamageSeverityDropdown();
         setupEventHandlers();
         setupKeyHandlers();
     }
@@ -72,16 +71,6 @@ public class AddDisasterDamageDialogController {
 
     private void handleExit(ActionEvent event) {
         closeDialog();
-    }
-
-    private void initializeDamageSeverityDropdown() {
-        damageSeverityFld.getItems().addAll(
-                "No visible damage",
-                "Minor damage (non-structural)",
-                "Moderate damage (partially unusable)",
-                "Severe damage (unsafe for use)",
-                "Destruction or collapse"
-        );
     }
 
     private void closeDialog() {

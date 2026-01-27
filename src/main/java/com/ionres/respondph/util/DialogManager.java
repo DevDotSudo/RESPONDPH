@@ -62,6 +62,9 @@ public final class DialogManager {
                 throw new RuntimeException(e);
             }
             stages.put(key, stage);
+            
+            // Remove stage from map when closed, so it can be recreated with fresh data
+            stage.setOnCloseRequest(e -> stages.remove(key));
         }
         stage.showAndWait();
     }

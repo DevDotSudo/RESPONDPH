@@ -20,7 +20,8 @@ public class ConfigLoader {
             props.load(is);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            java.util.logging.Logger.getLogger(ConfigLoader.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Failed to load Outlet.properties", e);
             throw new RuntimeException("Failed to load Outlet.properties", e);
         }
     }

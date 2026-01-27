@@ -1,17 +1,19 @@
 package com.ionres.respondph.beneficiary;
 
 import com.ionres.respondph.database.DBConnection;
-import javax.swing.*;
+import com.ionres.respondph.util.ResourceUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BeneficiaryDAOImpl implements BeneficiaryDAO {
+    private static final Logger LOGGER = Logger.getLogger(BeneficiaryDAOImpl.class.getName());
     private final DBConnection dbConnection;
-    private Connection conn;
 
     public BeneficiaryDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
@@ -25,15 +27,17 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 "employment_status, monthly_income, education_level, digital_access, added_by, reg_date) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql);
 
             ps.setString(1, bm.getFirstname());
             ps.setString(2, bm.getMiddlename());
             ps.setString(3, bm.getLastname());
             ps.setString(4, bm.getBirthDate());
-            ps.setDouble(5, bm.getAgeScore());  // Age score as double
+            ps.setDouble(5, bm.getAgeScore());
             ps.setString(6, bm.getGender());
             ps.setString(7, bm.getMaritalStatus());
             ps.setString(8, bm.getSoloParentStatus());
@@ -57,17 +61,10 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Database error occurred while saving beneficiary", e);
             return false;
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
+            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -78,10 +75,13 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 "birthdate, age_score, gender, marital_status, mobile_number, added_by, reg_date " +
                 "FROM beneficiary";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
 
             while (rs.next()) {
                 BeneficiaryModel bm = new BeneficiaryModel();
@@ -91,7 +91,7 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 bm.setMiddlename(rs.getString("middle_name"));
                 bm.setLastname(rs.getString("last_name"));
                 bm.setBirthDate(rs.getString("birthdate"));
-                bm.setAgeScore(rs.getDouble("age_score"));  // Retrieve age score
+                bm.setAgeScore(rs.getDouble("age_score"));
                 bm.setGender(rs.getString("gender"));
                 bm.setMaritalStatus(rs.getString("marital_status"));
                 bm.setMobileNumber(rs.getString("mobile_number"));
@@ -102,15 +102,9 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             }
 
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching beneficiaries", ex);
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
+            ResourceUtils.closeResources(rs, ps);
         }
 
         return beneficiaries;
@@ -120,27 +114,21 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
     public boolean delete(BeneficiaryModel bm) {
         String sql = "DELETE FROM beneficiary WHERE beneficiary_id = ?";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, bm.getId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Database error occurred while deleting beneficiary", e);
             return false;
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
+            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -154,15 +142,17 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 "monthly_income = ?, education_level = ?, digital_access = ?, added_by = ?, reg_date = ? " +
                 "WHERE beneficiary_id = ?";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql);
 
             ps.setString(1, bm.getFirstname());
             ps.setString(2, bm.getMiddlename());
             ps.setString(3, bm.getLastname());
             ps.setString(4, bm.getBirthDate());
-            ps.setDouble(5, bm.getAgeScore());  // Age score as double
+            ps.setDouble(5, bm.getAgeScore());
             ps.setString(6, bm.getGender());
             ps.setString(7, bm.getMaritalStatus());
             ps.setString(8, bm.getSoloParentStatus());
@@ -181,23 +171,16 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             ps.setString(21, bm.getDigitalAccess());
             ps.setString(22, bm.getAddedBy());
             ps.setString(23, bm.getRegDate());
-            ps.setInt(24, bm.getId());  // WHERE clause parameter
+            ps.setInt(24, bm.getId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Database error occurred while updating beneficiary", e);
             return false;
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
+            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -206,12 +189,14 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
         BeneficiaryModel bm = null;
         String sql = "SELECT * FROM beneficiary WHERE beneficiary_id = ?";
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             if (rs.next()) {
                 bm = new BeneficiaryModel();
@@ -221,7 +206,7 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 bm.setMiddlename(rs.getString("middle_name"));
                 bm.setLastname(rs.getString("last_name"));
                 bm.setBirthDate(rs.getString("birthdate"));
-                bm.setAgeScore(rs.getDouble("age_score"));  // Retrieve age score
+                bm.setAgeScore(rs.getDouble("age_score"));
                 bm.setGender(rs.getString("gender"));
                 bm.setMaritalStatus(rs.getString("marital_status"));
                 bm.setSoloParentStatus(rs.getString("solo_parent_status"));
@@ -243,18 +228,37 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(null, "Error fetching beneficiary: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error fetching beneficiary by ID", ex);
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
+            ResourceUtils.closeResources(rs, ps);
         }
 
         return bm;
+    }
+
+    @Override
+    public List<String[]> getEncryptedLocations() {
+        List<String[]> list = new ArrayList<>();
+        String sql = "SELECT beneficiary_id, latitude, longitude FROM beneficiary";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = dbConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new String[]{
+                        rs.getString("beneficiary_id"),
+                        rs.getString("latitude"),
+                        rs.getString("longitude")
+                });
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching encrypted locations", e);
+        } finally {
+            ResourceUtils.closeResources(rs, ps);
+        }
+        return list;
     }
 }

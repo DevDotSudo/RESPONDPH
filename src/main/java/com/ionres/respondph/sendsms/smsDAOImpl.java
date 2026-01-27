@@ -43,7 +43,6 @@ public class smsDAOImpl implements smsDAO{
                 smsModel log = new smsModel();
                 log.setDateSent(rs.getTimestamp("date_sent"));
                 log.setFullname(rs.getString("fullname"));
-                // store both canonical phonenumber and phoneString so UI can display original value
                 String phone = rs.getString("phonenumber");
                 log.setPhonenumber(phone);
                 log.setPhoneString(phone);

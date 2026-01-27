@@ -8,6 +8,7 @@ import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.DialogManager;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -30,12 +31,28 @@ public class AddDisasterDialogController {
     private Stage dialogStage;
     private DisasterService disasterService;
     private DisasterController disasterController;
+
     @FXML
     private void initialize() {
-        initializeDisasterTypeDropdowns();
         setupKeyHandlers();
-        setupActionHandlers();
+        EventHandler<ActionEvent> handler = this::handleActions;
+        saveBtn.setOnAction(handler);
+        exitBtn.setOnAction(handler);
+        getLocationBtn.setOnAction(handler);
+    }
 
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+
+        if(src == saveBtn){
+            addDisaster();
+        }
+        else if (src == exitBtn){
+            closeDialog();
+        }
+        else if (src == getLocationBtn){
+            handleGetLocationBtn();
+        }
     }
 
     private void setupKeyHandlers() {
@@ -46,36 +63,6 @@ public class AddDisasterDialogController {
             }
         });
         root.requestFocus();
-    }
-
-    private void setupActionHandlers() {
-        saveBtn.setOnAction(this::handleSave);
-        exitBtn.setOnAction(this::handleExit);
-        getLocationBtn.setOnAction(this::handleGetLocation);
-    }
-
-    private void handleSave(ActionEvent event) {
-        addDisaster();
-    }
-    private void handleGetLocation(ActionEvent event) {
-        handleGetLocationBtn();
-    }
-    private void handleExit(ActionEvent event) {
-        closeDialog();
-    }
-
-    private void initializeDisasterTypeDropdowns() {
-        disasterType.getItems().addAll(
-                "Earthquake",
-                "Tsunami",
-                "Volcanic eruption",
-                "Typhoon / Storm",
-                "Landslide",
-                "Storm surge",
-                "Drought",
-                "Wildfire",
-                "Heat wave"
-        );
     }
 
     private void handleGetLocationBtn(){

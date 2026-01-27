@@ -59,7 +59,6 @@ public class DisasterMappingController {
                 drawBeneficiaries();
             });
 
-            // Add click handler to canvas for circle detection
             mapping.getCanvas().setOnMouseClicked(this::handleMapClick);
 
             loadDisasterTypes();
@@ -68,7 +67,6 @@ public class DisasterMappingController {
     }
 
     private void setupDisasterComboBox() {
-        // Setup StringConverter for DisasterModel
         disasterComboBox.setConverter(new StringConverter<DisasterModel>() {
             @Override
             public String toString(DisasterModel disaster) {
@@ -81,12 +79,10 @@ public class DisasterMappingController {
 
             @Override
             public DisasterModel fromString(String string) {
-                // This is typically not needed for non-editable comboboxes
                 return null;
             }
         });
 
-        // Setup cell factory for dropdown items
         disasterComboBox.setCellFactory(cb -> new ListCell<DisasterModel>() {
             @Override
             protected void updateItem(DisasterModel item, boolean empty) {
@@ -100,7 +96,6 @@ public class DisasterMappingController {
             }
         });
 
-        // Setup button cell for selected item display
         disasterComboBox.setButtonCell(new ListCell<DisasterModel>() {
             @Override
             protected void updateItem(DisasterModel item, boolean empty) {
@@ -151,16 +146,13 @@ public class DisasterMappingController {
             disastersToShow = disasterMappingService.getDisastersByType(type);
         }
         
-        // Clear and repopulate combo box
         disasterComboBox.getItems().clear();
         if (disastersToShow != null && !disastersToShow.isEmpty()) {
             disasterComboBox.getItems().addAll(disastersToShow);
         }
         
-        // Force combo box UI to refresh
         Platform.runLater(() -> {
             disasterComboBox.getSelectionModel().clearSelection();
-            // Trigger a layout update
             disasterComboBox.requestLayout();
         });
         
@@ -203,7 +195,6 @@ public class DisasterMappingController {
             }
         }
         
-        // Force redraw to show circles and beneficiaries
         mapping.redraw();
     }
 
@@ -225,7 +216,6 @@ public class DisasterMappingController {
         double canvasWidth = mapping.getCanvas().getWidth();
         double canvasHeight = mapping.getCanvas().getHeight();
         
-        // Viewport bounds with padding for markers near edges
         double padding = 50;
         double minX = -padding;
         double maxX = canvasWidth + padding;
@@ -238,7 +228,6 @@ public class DisasterMappingController {
                 continue;
             }
 
-            // Check if beneficiary is inside any disaster circle
             boolean isInsideDisaster = false;
             for (DisasterCircleInfo c : disasterCircles) {
                 if (GeographicUtils.isInsideCircle(b.lat, b.lon, c.lat, c.lon, c.radius)) {
@@ -251,7 +240,6 @@ public class DisasterMappingController {
                 try {
                     Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
                     
-                    // Skip if point is invalid
                     if (p.x < 0 || p.y < 0) {
                         continue;
                     }
@@ -265,7 +253,6 @@ public class DisasterMappingController {
                         gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
                     }
                 } catch (Exception e) {
-                    // Skip this beneficiary if coordinate conversion fails
                     java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
                         .log(java.util.logging.Level.FINE, "Error drawing beneficiary marker", e);
                     continue;
@@ -370,6 +357,10 @@ public class DisasterMappingController {
     }
 
     private void handleMapClick(MouseEvent event) {
+        if (event.getClickCount() != 2) {
+            return;
+        }
+
         if (disasterCircles.isEmpty()) {
             return;
         }
@@ -380,28 +371,27 @@ public class DisasterMappingController {
         Mapping.LatLng clickLatLon = mapping.screenToLatLon(clickX, clickY);
 
         for (DisasterCircleInfo circle : disasterCircles) {
-            if (Double.isNaN(circle.lat) || Double.isNaN(circle.lon) || 
-                Double.isNaN(circle.radius) || circle.radius <= 0) {
+            if (Double.isNaN(circle.lat) || Double.isNaN(circle.lon) ||
+                    Double.isNaN(circle.radius) || circle.radius <= 0) {
                 continue;
             }
 
             double distance = GeographicUtils.calculateDistance(
-                clickLatLon.lat, clickLatLon.lon,
-                circle.lat, circle.lon
+                    clickLatLon.lat, clickLatLon.lon,
+                    circle.lat, circle.lon
             );
 
             if (!Double.isNaN(distance) && distance <= circle.radius) {
                 List<BeneficiaryMarker> beneficiariesInCircle =
-                    disasterMappingService.getBeneficiariesInsideCircle(
-                        circle.lat, circle.lon, circle.radius
-                    );
+                        disasterMappingService.getBeneficiariesInsideCircle(
+                                circle.lat, circle.lon, circle.radius
+                        );
 
                 showBeneficiariesDialog(circle, beneficiariesInCircle);
                 break;
             }
         }
     }
-
 
     private void showBeneficiariesDialog(DisasterCircleInfo circle, List<BeneficiaryMarker> beneficiaries) {
         try {

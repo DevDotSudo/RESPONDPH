@@ -288,7 +288,6 @@ public class EditBeneficiariesDialogController {
             boolean success = beneficiaryService.updateBeneficiary(updatedBm);
 
             if (success) {
-                // ✅ AUTO-RECALCULATE HOUSEHOLD SCORES AFTER BENEFICIARY UPDATE
                 HouseholdScoreCalculator calculator = new HouseholdScoreCalculator();
                 calculator.autoRecalculateHouseholdScore(currentBeneficiary.getId());
 

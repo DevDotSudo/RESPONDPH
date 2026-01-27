@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 public class AidHouseholdScoreCalculator {
     private static final Logger LOGGER = Logger.getLogger(AidHouseholdScoreCalculator.class.getName());
 
-
     public boolean calculateAndSaveAidHouseholdScore(int beneficiaryId, int aidTypeId, int adminId) {
         try {
             HouseholdScoreData householdScores = getHouseholdScores(beneficiaryId);
@@ -272,7 +271,6 @@ public class AidHouseholdScoreCalculator {
             return false;
         }
 
-        // Calculate combined scores
         Double combinedAgeScore = null;
         if (household.ageScore != null && weights.ageWeight != null) {
             combinedAgeScore = (household.ageScore + weights.ageWeight) / 2.0;
@@ -300,7 +298,6 @@ public class AidHouseholdScoreCalculator {
             LOGGER.fine("Combined dependency_ratio_score: " + combinedDependencyScore);
         }
 
-        // Check if record exists
         String checkSql = "SELECT beneficiary_family_score_id FROM aid_and_household_score " +
                 "WHERE beneficiary_id = ? AND aid_type_id = ?";
 

@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.net.URL;
 import java.util.List;
@@ -23,13 +24,21 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     @FXML private TableColumn<BeneficiaryMarker, String> nameColumn;
     @FXML private Button closeBtn;
     @FXML private Button closeButton;
-
+    private Stage dialogStage;
+    @FXML private VBox root;
+    private double yOffset = 0;
+    private double xOffset = 0;
     private ObservableList<BeneficiaryMarker> beneficiariesList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupTable();
         setupButtons();
+        makeDraggable();
+    }
+
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
     }
 
     private void setupTable() {
@@ -69,10 +78,21 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     }
 
     private void closeDialog() {
-        Stage stage = (Stage) (closeBtn != null ? closeBtn.getScene().getWindow() : 
-                              closeButton != null ? closeButton.getScene().getWindow() : null);
-        if (stage != null) {
-            stage.close();
+        if(dialogStage != null) {
+            dialogStage.hide();
         }
+    }
+
+    private void makeDraggable() {
+        root.setOnMousePressed(event -> {
+            yOffset = event.getSceneY();
+            xOffset = event.getSceneX();
+        });
+        root.setOnMouseDragged(event -> {
+            if(dialogStage != null) {
+                dialogStage.setX(event.getScreenX() - xOffset);
+                dialogStage.setY(event.getScreenY() - yOffset);
+            }
+        });
     }
 }

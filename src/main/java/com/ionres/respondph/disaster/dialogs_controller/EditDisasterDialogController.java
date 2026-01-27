@@ -37,7 +37,6 @@ public class EditDisasterDialogController {
 
     @FXML
     private void initialize() {
-        initializeDisasterTypeDropdowns();
         setupKeyHandlers();
 
         EventHandler<ActionEvent> eventHandler = this::handleActions;
@@ -68,20 +67,6 @@ public class EditDisasterDialogController {
             }
         });
         root.requestFocus();
-    }
-
-    private void initializeDisasterTypeDropdowns() {
-        disasterType.getItems().addAll(
-                "Earthquake",
-                "Tsunami",
-                "Volcanic eruption",
-                "Typhoon / Storm",
-                "Landslide",
-                "Storm surge",
-                "Drought",
-                "Wildfire",
-                "Heat wave"
-        );
     }
 
     private void handleGetLocationBtn(){

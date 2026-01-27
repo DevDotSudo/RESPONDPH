@@ -5,6 +5,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="edit-disaster-dialog-container" stylesheets="@/styles/disaster/dialog/editdisasterdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster.dialogs_controller.EditDisasterDialogController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-disaster-dialog-header">
@@ -34,12 +36,44 @@
                     <Label styleClass="edit-disaster-section-title" text="Disaster Information" />
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                <HBox spacing="20" HBox.hgrow="ALWAYS">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="edit-disaster-field-label" text="Disaster Type *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="edit-disaster-input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="FIRE" size="16" styleClass="edit-disaster-field-icon" />
-                            <ComboBox fx:id="disasterType" promptText="Select disaster type" styleClass="edit-disaster-dropdown" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="disasterType" promptText="Select disaster type" styleClass="disaster-dropdown" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Bioterrorism"/>
+                                        <String fx:value="Civil Unrest"/>
+                                        <String fx:value="Cold Wave"/>
+                                        <String fx:value="Drought"/>
+                                        <String fx:value="Earthquake"/>
+                                        <String fx:value="Epidemic"/>
+                                        <String fx:value="Famine"/>
+                                        <String fx:value="Fire (Urban)"/>
+                                        <String fx:value="Fire (Wild)"/>
+                                        <String fx:value="Flash Flood"/>
+                                        <String fx:value="Flood"/>
+                                        <String fx:value="Hazardous Material Spills"/>
+                                        <String fx:value="Heat Wave"/>
+                                        <String fx:value="Insect Infestation"/>
+                                        <String fx:value="Land Slide"/>
+                                        <String fx:value="Massacre"/>
+                                        <String fx:value="Mud Slide"/>
+                                        <String fx:value="Nuclear Radiation Accidents"/>
+                                        <String fx:value="Power Failure"/>
+                                        <String fx:value="Riot"/>
+                                        <String fx:value="Storm Surge"/>
+                                        <String fx:value="Structural Failures and Collapses"/>
+                                        <String fx:value="Technological Disaster"/>
+                                        <String fx:value="Tsunami"/>
+                                        <String fx:value="Typhoon"/>
+                                        <String fx:value="Volcano"/>
+                                        <String fx:value="War"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </VBox>
 

@@ -174,9 +174,7 @@ public class BeneficiaryController {
         }
 
         boolean confirm = AlertDialogManager.showConfirmation("Delete Beneficiary",
-                "Are you sure you want to delete beneficiary: " +
-                        bm.getFirstname() + " " + bm.getLastname() + "?\n\n" +
-                        "This action cannot be undone.");
+                "Are you sure you want to delete this beneficiary?");
 
         if (confirm) {
             try {

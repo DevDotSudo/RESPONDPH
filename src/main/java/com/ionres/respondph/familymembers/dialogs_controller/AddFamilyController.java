@@ -40,7 +40,6 @@ public class AddFamilyController {
     @FXML private Button exitBtn;
     @FXML private Button calculateHouseholdScoresBtn;
     @FXML private ComboBox<BeneficiaryModel> selectBeneficiaryComboBox;
-
     private double xOffset = 0;
     private double yOffset = 0;
     private List<BeneficiaryModel> allBeneficiaries;

@@ -8,19 +8,20 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class MappingDialogController {
-
+    @FXML VBox mappingDialogRoot;
     @FXML private Pane mapContainer;
     @FXML private Button mapOkButton;
     @FXML private Button mapCloseButton;
-
     private Stage dialogStage;
     private final Mapping mapping = new Mapping();
     private Mapping.LatLng selectedLatLng;
     private ControllerListener listener;
-
+    private double xOffset= 0;
+    private double yOffset = 0;
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
@@ -29,26 +30,20 @@ public class MappingDialogController {
         this.listener = listener;
     }
 
-    /**
-     * Initializes the mapping dialog.
-     * Sets up the map and event handlers.
-     */
     public void initialize() {
+        makeDraggable();
         Platform.runLater(() -> {
             try {
                 mapping.init(mapContainer);
                 
-                // Wait for mapping to be fully initialized
                 mapping.getCanvas().setOnMouseClicked(e -> {
                     if (!mapping.isDragging() && mapping.isInitialized()) {
                         try {
                             Mapping.LatLng latLng = mapping.screenToLatLon(e.getX(), e.getY());
                             
-                            // Validate coordinates
                             if (Mapping.isValidCoordinate(latLng.lat, latLng.lon)) {
                                 selectedLatLng = latLng;
-                                Mapping.Point screenPoint = mapping.latLonToScreen(latLng.lat, latLng.lon);
-                                mapping.markerPosition = screenPoint;
+                                mapping.markerPosition = mapping.latLonToScreen(latLng.lat, latLng.lon);
                                 mapping.redraw();
                             }
                         } catch (Exception ex) {
@@ -96,5 +91,18 @@ public class MappingDialogController {
             listener.onLocationSelected(selectedLatLng);
         }
         dialogStage.hide();
+    }
+
+    private void makeDraggable() {
+        mappingDialogRoot.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+        mappingDialogRoot.setOnMouseDragged(event -> {
+            if(dialogStage != null) {
+                dialogStage.setX(event.getScreenX() - xOffset);
+                dialogStage.setY(event.getScreenY() - yOffset);
+            }
+        });
     }
 }

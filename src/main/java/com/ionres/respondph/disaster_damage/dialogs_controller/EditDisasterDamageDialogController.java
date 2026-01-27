@@ -8,6 +8,7 @@ import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -68,8 +69,21 @@ public class EditDisasterDamageDialogController {
 
     @FXML
     private void initialize() {
-        setupEventHandlers();
         setupKeyHandlers();
+        EventHandler<ActionEvent> handler = this::handleActions;
+        updateBtn.setOnAction(handler);
+        exitBtn.setOnAction(handler);
+    }
+
+    private void handleActions(ActionEvent event) {
+        Object src = event.getSource();
+
+        if (src == exitBtn) {
+            closeDialog();
+        }
+        else if (src == updateBtn) {
+            updateDisasterDamage();
+        }
     }
 
     private void setupKeyHandlers() {
@@ -80,19 +94,6 @@ public class EditDisasterDamageDialogController {
             }
         });
         root.requestFocus();
-    }
-
-    private void setupEventHandlers() {
-        updateBtn.setOnAction(this::handleUpdate);
-        exitBtn.setOnAction(this::handleExit);
-    }
-
-    private void handleUpdate(ActionEvent event) {
-        updateDisasterDamage();
-    }
-
-    private void handleExit(ActionEvent event) {
-        closeDialog();
     }
 
     private void loadBeneficiaries() {

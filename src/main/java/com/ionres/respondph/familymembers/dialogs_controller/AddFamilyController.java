@@ -218,9 +218,6 @@ public class AddFamilyController {
             boolean success = familyMemberService.createfamilyMember(familyMember);
 
             if (success) {
-                HouseholdScoreCalculate calculator = new HouseholdScoreCalculate();
-
-                 calculator.calculateAndSaveHouseholdScore(beneficiaryId);
 
                 UpdateTrigger trigger = new UpdateTrigger();
                 trigger.triggerCascadeUpdate(beneficiaryId);
@@ -230,9 +227,6 @@ public class AddFamilyController {
                                 "Add more family members or click 'Calculate Household Scores' when done.");
                 familyMembersController.loadTable();
                 clearFields();
-
-
-
 
             } else {
                 AlertDialogManager.showError("Error",

@@ -1,8 +1,12 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
 import com.ionres.respondph.beneficiary.AgeScoreCalculate;
+import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.SessionManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
@@ -372,12 +376,32 @@ public class AddBeneficiariesDialogController {
             boolean success = beneficiaryService.createBeneficiary(bm);
 
             if (success) {
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Beneficiary successfully added.",
-                        "Success",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                int newBeneficiaryId = getLatestBeneficiaryId();
+
+                if (newBeneficiaryId > 0) {
+                    // Calculate and save household scores
+
+                    UpdateTrigger trigger = new UpdateTrigger();
+                    boolean cascadeSuccess = trigger.triggerCascadeUpdate(newBeneficiaryId);
+
+
+
+                    if (cascadeSuccess) {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                null,
+                                "Beneficiary and household scores successfully saved.",
+                                "Success",
+                                javax.swing.JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } else {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                null,
+                                "Beneficiary saved, but household score calculation failed.",
+                                "Warning",
+                                javax.swing.JOptionPane.WARNING_MESSAGE
+                        );
+                    }
+                }
                 clearFields();
                 DashboardRefresher.refresh();
 
@@ -546,23 +570,23 @@ public class AddBeneficiariesDialogController {
 //            e.printStackTrace();
 //        }
 //    }
-//
-//    private int getLatestBeneficiaryId() {
-//        try {
-//            String sql = "SELECT beneficiary_id FROM beneficiary ORDER BY beneficiary_id DESC LIMIT 1";
-//            java.sql.Connection conn = DBConnection.getInstance().getConnection();
-//            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-//            java.sql.ResultSet rs = ps.executeQuery();
-//
-//            if (rs.next()) {
-//                int id = rs.getInt("beneficiary_id");
-//                conn.close();
-//                return id;
-//            }
-//            conn.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return -1;
-//    }
+
+    private int getLatestBeneficiaryId() {
+        try {
+            String sql = "SELECT beneficiary_id FROM beneficiary ORDER BY beneficiary_id DESC LIMIT 1";
+            java.sql.Connection conn = DBConnection.getInstance().getConnection();
+            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+            java.sql.ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int id = rs.getInt("beneficiary_id");
+                conn.close();
+                return id;
+            }
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 }

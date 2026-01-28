@@ -49,4 +49,8 @@ public class SessionManager {
     public void clearSession() {
         currentAdmin = null;
     }
+
+    public boolean isLoggedIn() {
+        return currentAdmin != null;
+    }
 }

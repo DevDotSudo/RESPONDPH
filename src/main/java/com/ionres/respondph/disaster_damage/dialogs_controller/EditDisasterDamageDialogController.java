@@ -397,10 +397,6 @@ public class EditDisasterDamageDialogController {
             boolean success = disasterDamageService.updateDisasterDamage(updatedDisasterDamage);
 
             if (success) {
-                int beneficiaryId = beneficiary.getBeneficiaryId();
-
-                UpdateTrigger updateTrigger = new UpdateTrigger();
-                updateTrigger.triggerCascadeUpdate(beneficiaryId);
 
                 AlertDialogManager.showSuccess("Update Successful",
                         "Disaster damage record has been successfully updated.");

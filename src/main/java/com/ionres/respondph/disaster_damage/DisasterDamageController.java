@@ -5,6 +5,7 @@ import com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamag
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.beans.property.SimpleStringProperty;
@@ -140,9 +141,22 @@ public class DisasterDamageController {
                 boolean success = disasterDamageService.deleteDisasterDamage(disasterDamage);
 
                 if (success) {
+
+                    int beneficiaryId = disasterDamage.getBeneficiaryId();
+                    UpdateTrigger updateTrigger = new UpdateTrigger();
+                    boolean cascadeSuccess = updateTrigger.triggerCascadeUpdate(beneficiaryId);
+
+                    if (cascadeSuccess) {
+                        AlertDialogManager.showSuccess("Success",
+                                "Disaster damage record has been successfully Deleted.\n" +
+                                        "Household and aid scores have been automatically recalculated.");
+                    } else {
+                        AlertDialogManager.showWarning("Partial Success",
+                                "Disaster damage record has been added, but score recalculation encountered issues.\n" +
+                                        "Please check the console for details.");
+                    }
+
                     disasterList.remove(disasterDamage);
-                    AlertDialogManager.showSuccess("Delete Successful",
-                            "Disaster damage record has been successfully deleted.");
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete disaster damage record. Please try again.");

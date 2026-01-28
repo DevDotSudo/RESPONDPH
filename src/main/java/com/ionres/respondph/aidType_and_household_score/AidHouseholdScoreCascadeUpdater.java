@@ -1,3 +1,5 @@
+
+
 package com.ionres.respondph.aidType_and_household_score;
 
 import com.ionres.respondph.database.DBConnection;
@@ -24,16 +26,18 @@ public class AidHouseholdScoreCascadeUpdater {
             try {
                 AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
 
-                boolean success = calculator.calculateAndSaveAidHouseholdScore(
+                // ✅ MODIFIED: Pass disasterId to calculator
+                boolean success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
                         record.beneficiaryId,
                         record.aidTypeId,
-                        record.adminId
+                        record.adminId,
+                        record.disasterId  // ✅ NEW
                 );
 
                 if (success) {
                     recalculatedCount++;
                     System.out.println("✓ Recalculated aid score for Beneficiary ID: " + record.beneficiaryId +
-                            ", Aid Type ID: " + record.aidTypeId);
+                            ", Aid Type ID: " + record.aidTypeId + ", Disaster ID: " + record.disasterId);
                 } else {
                     System.err.println("✗ Failed to recalculate aid score for Beneficiary ID: " + record.beneficiaryId);
                 }
@@ -52,7 +56,8 @@ public class AidHouseholdScoreCascadeUpdater {
 
     private List<AidScoreRecord> getAllAidScoreRecords() {
         List<AidScoreRecord> records = new ArrayList<>();
-        String sql = "SELECT DISTINCT beneficiary_id, aid_type_id, admin_id FROM aid_and_household_score";
+        // ✅ MODIFIED: Select disaster_id as well
+        String sql = "SELECT DISTINCT beneficiary_id, aid_type_id, admin_id, disaster_id FROM aid_and_household_score";
 
         try {
             conn = DBConnection.getInstance().getConnection();
@@ -64,6 +69,7 @@ public class AidHouseholdScoreCascadeUpdater {
                 record.beneficiaryId = rs.getInt("beneficiary_id");
                 record.aidTypeId = rs.getInt("aid_type_id");
                 record.adminId = rs.getInt("admin_id");
+                record.disasterId = rs.getInt("disaster_id");  // ✅ NEW
                 records.add(record);
             }
 
@@ -90,6 +96,7 @@ public class AidHouseholdScoreCascadeUpdater {
         }
     }
 
+    // ✅ MODIFIED: Now recalculates for all disasters associated with this beneficiary
     public int recalculateAidScoresForBeneficiary(int beneficiaryId) {
         int recalculatedCount = 0;
 
@@ -106,15 +113,18 @@ public class AidHouseholdScoreCascadeUpdater {
             try {
                 AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
 
-                boolean success = calculator.calculateAndSaveAidHouseholdScore(
+                // ✅ MODIFIED: Pass disasterId to calculator
+                boolean success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
                         record.beneficiaryId,
                         record.aidTypeId,
-                        record.adminId
+                        record.adminId,
+                        record.disasterId  // ✅ NEW
                 );
 
                 if (success) {
                     recalculatedCount++;
-                    System.out.println("  ✓ Recalculated aid score for Aid Type ID: " + record.aidTypeId);
+                    System.out.println("  ✓ Recalculated aid score for Aid Type ID: " + record.aidTypeId +
+                            ", Disaster ID: " + record.disasterId);
                 }
 
             } catch (Exception e) {
@@ -127,7 +137,8 @@ public class AidHouseholdScoreCascadeUpdater {
 
     private List<AidScoreRecord> getAidScoreRecordsForBeneficiary(int beneficiaryId) {
         List<AidScoreRecord> records = new ArrayList<>();
-        String sql = "SELECT beneficiary_id, aid_type_id, admin_id FROM aid_and_household_score WHERE beneficiary_id = ?";
+        // ✅ MODIFIED: Select disaster_id as well
+        String sql = "SELECT beneficiary_id, aid_type_id, admin_id, disaster_id FROM aid_and_household_score WHERE beneficiary_id = ?";
 
         try {
             conn = DBConnection.getInstance().getConnection();
@@ -140,6 +151,7 @@ public class AidHouseholdScoreCascadeUpdater {
                 record.beneficiaryId = rs.getInt("beneficiary_id");
                 record.aidTypeId = rs.getInt("aid_type_id");
                 record.adminId = rs.getInt("admin_id");
+                record.disasterId = rs.getInt("disaster_id");  // ✅ NEW
                 records.add(record);
             }
 
@@ -160,5 +172,6 @@ public class AidHouseholdScoreCascadeUpdater {
         int beneficiaryId;
         int aidTypeId;
         int adminId;
+        int disasterId;  // ✅ NEW
     }
 }

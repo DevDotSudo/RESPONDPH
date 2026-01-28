@@ -314,6 +314,70 @@ public class AidTypeDAOImpl implements AidTypeDAO{
         return aidType;
     }
 
+    @Override
+    public List<Integer> getAllAidTypeIds() {
+        List<Integer> aidTypeIds = new ArrayList<>();
+        String sql = "SELECT aid_type_id FROM aid_type";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                aidTypeIds.add(rs.getInt("aid_type_id"));
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching aid type IDs: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return aidTypeIds;
+    }
+
+    @Override
+    public boolean hasAnyAidTypes() {
+        String sql = "SELECT COUNT(*) as count FROM aid_type";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int count = rs.getInt("count");
+                rs.close();
+                ps.close();
+                return count > 0;
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error checking for aid types: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return false;
+    }
+
 
 
 

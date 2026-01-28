@@ -14,4 +14,7 @@ public interface AidTypeDAO {
     public boolean update(AidTypeModel atm);
     public List<AidTypeModelComboBox> findAll();
     public AidTypeModelComboBox mapResultSetToAidType(ResultSet rs) throws Exception;
+
+    List<Integer> getAllAidTypeIds();
+    boolean hasAnyAidTypes();
 }

@@ -45,7 +45,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
 
                 DisasterDamageUpdateHandler updateHandler = new DisasterDamageUpdateHandler();
                 boolean scoresUpdated = updateHandler.updateDamageSeverityScores(
-                        ddm.getBeneficiaryId()
+                        ddm.getBeneficiaryId(), ddm.getDisasterId()
                 );
 
                 if (scoresUpdated) {
@@ -181,8 +181,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
 
             PreparedStatement ps = conn.prepareStatement(sql);
 
-            ps.setInt(1, ddm.getDisasterId());
-
+            ps.setInt(1, ddm.getBeneficiaryDisasterDamageId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -236,7 +235,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
 
                 DisasterDamageUpdateHandler updateHandler = new DisasterDamageUpdateHandler();
                 boolean scoresUpdated = updateHandler.updateDamageSeverityScores(
-                        ddm.getBeneficiaryId()
+                        ddm.getBeneficiaryId(), ddm.getDisasterId()
                 );
 
                 if (scoresUpdated) {

@@ -151,35 +151,33 @@ public class AidDAOServiceImpl implements AidDAO {
     public List<BeneficiaryCluster> getBeneficiariesWithScores(int aidTypeId, int disasterId) {
         List<BeneficiaryCluster> beneficiaries = new ArrayList<>();
 
-        // ✅ IMPROVED QUERY: Explicitly checks that beneficiary hasn't received THIS SPECIFIC AID TYPE for THIS SPECIFIC DISASTER
+        // ✅ FIXED: Filter by disaster_id in aid_and_household_score table directly
         String sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category " +
                 "FROM aid_and_household_score ahs " +
-                "INNER JOIN beneficiary_disaster_damage bdd ON ahs.beneficiary_id = bdd.beneficiary_id " +
-                "WHERE ahs.aid_type_id = ? " +              // Match this aid type
-                "AND bdd.disaster_id = ? " +                 // Match this disaster
-                "AND NOT EXISTS (" +                         // ✅ Check if they already received THIS aid type
+                "WHERE ahs.aid_type_id = ? " +       // Match this aid type
+                "AND ahs.disaster_id = ? " +         // ✅ Match disaster in SCORES table
+                "AND NOT EXISTS (" +                 // Check if already received aid
                 "    SELECT 1 FROM aid a " +
                 "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
-                "    AND a.aid_type_id = ? " +               // Same aid type
-                "    AND a.disaster_id = ? " +               // Same disaster
+                "    AND a.aid_type_id = ? " +
+                "    AND a.disaster_id = ? " +
                 ") " +
                 "ORDER BY ahs.final_score DESC";
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, aidTypeId);   // aid_and_household_score filter
-            ps.setInt(2, disasterId);  // disaster filter
-            ps.setInt(3, aidTypeId);   // NOT EXISTS - aid type check
-            ps.setInt(4, disasterId);  // NOT EXISTS - disaster check
+            ps.setInt(1, aidTypeId);
+            ps.setInt(2, disasterId);  // ✅ Filter scores by disaster
+            ps.setInt(3, aidTypeId);
+            ps.setInt(4, disasterId);
 
             System.out.println("========== FETCHING ELIGIBLE BENEFICIARIES ==========");
             System.out.println("Aid Type ID: " + aidTypeId);
             System.out.println("Disaster ID: " + disasterId);
             System.out.println("Query: Beneficiaries who:");
-            System.out.println("  ✓ Have scores for this aid type");
-            System.out.println("  ✓ Are affected by this disaster");
-            System.out.println("  ✗ Have NOT already received this aid type for this disaster");
+            System.out.println("  ✓ Have DISASTER-SPECIFIC scores (ahs.disaster_id = " + disasterId + ")");
+            System.out.println("  ✗ Have NOT already received this aid for this disaster");
             System.out.println("=====================================================");
 
             ResultSet rs = ps.executeQuery();
@@ -193,7 +191,7 @@ public class AidDAOServiceImpl implements AidDAO {
                 beneficiaries.add(new BeneficiaryCluster(beneficiaryId, finalScore, scoreCategory));
                 count++;
 
-                if (count <= 5) {  // Log first 5 for debugging
+                if (count <= 5) {
                     System.out.println("  " + count + ". Beneficiary #" + beneficiaryId +
                             " | Score: " + finalScore + " | Category: " + scoreCategory);
                 }
@@ -209,7 +207,6 @@ public class AidDAOServiceImpl implements AidDAO {
             System.out.println("\n✓ Found " + beneficiaries.size() + " eligible beneficiaries");
             System.out.println("=====================================================\n");
 
-            // If no eligible beneficiaries found, provide detailed debugging
             if (beneficiaries.isEmpty()) {
                 System.out.println("⚠ WARNING: No eligible beneficiaries found!");
                 debugNoEligibleBeneficiaries(aidTypeId, disasterId);
@@ -224,7 +221,6 @@ public class AidDAOServiceImpl implements AidDAO {
 
         return beneficiaries;
     }
-
     /**
      * Detailed debugging when no eligible beneficiaries are found
      */

@@ -407,15 +407,7 @@ public class EditBeneficiariesDialogController {
             boolean success = beneficiaryService.updateBeneficiary(updatedBm);
 
             if (success) {
-                // ✅ AUTO-RECALCULATE HOUSEHOLD SCORES AFTER BENEFICIARY UPDATE
-                HouseholdScoreCalculate calculator = new HouseholdScoreCalculate();
-                calculator.autoRecalculateHouseholdScore(currentBeneficiary.getId());
 
-                AlertDialogManager.showSuccess("Success", "Beneficiary updated successfully.\nHousehold scores have been recalculated.");
-                clearFields();
-                DashboardRefresher.refresh();
-
-                // After successfully updating beneficiary
                 UpdateTrigger trigger = new UpdateTrigger();
                 boolean cascadeSuccess = trigger.triggerCascadeUpdate(currentBeneficiary.getId());
 
@@ -430,6 +422,8 @@ public class EditBeneficiariesDialogController {
             } else {
                 AlertDialogManager.showError("Error", "Failed to update beneficiary.");
             }
+            clearFields();
+            DashboardRefresher.refresh();
             dialogStage.hide();
         } catch (Exception e) {
             AlertDialogManager.showError("Error", e.getMessage());

@@ -256,11 +256,6 @@ public class EditFamilyController {
             boolean success = familyMemberService.updatefamilyMember(updatedFamilyMember);
 
             if (success) {
-                // ✅ AUTO-RECALCULATE HOUSEHOLD SCORES AFTER FAMILY MEMBER UPDATE
-                HouseholdScoreCalculate calculator =
-                        new HouseholdScoreCalculate();
-                calculator.autoRecalculateHouseholdScore(currentFamilyMember.getBeneficiaryId());
-
                 UpdateTrigger trigger = new UpdateTrigger();
                 trigger.triggerCascadeUpdate(currentFamilyMember.getBeneficiaryId());
 

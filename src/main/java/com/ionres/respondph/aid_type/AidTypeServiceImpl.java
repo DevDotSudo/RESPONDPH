@@ -240,5 +240,27 @@ public class AidTypeServiceImpl implements AidTypeService{
         return filterAidType;
     }
 
+    @Override
+    public List<Integer> getAllAidTypeIds() {
+        try {
+            return aidTypeDAO.getAllAidTypeIds();
+        } catch (Exception e) {
+            System.err.println("Error getting aid type IDs: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public boolean hasAnyAidTypes() {
+        try {
+            return aidTypeDAO.hasAnyAidTypes();
+        } catch (Exception e) {
+            System.err.println("Error checking for aid types: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 }

@@ -143,9 +143,6 @@ public class FamilyMembersController {
                 boolean success = familyMembersService.deletefamilyMember(familyMember);
 
                 if (success) {
-                    HouseholdScoreCalculate calculator =
-                            new HouseholdScoreCalculate();
-                    calculator.autoRecalculateHouseholdScore(familyMember.getBeneficiaryId());
 
                     UpdateTrigger beneficiaryUpdateTrigger = new UpdateTrigger();
                     beneficiaryUpdateTrigger.triggerCascadeUpdate(familyMember.getBeneficiaryId());

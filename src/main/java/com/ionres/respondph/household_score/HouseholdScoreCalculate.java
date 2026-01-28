@@ -23,7 +23,10 @@ public class HouseholdScoreCalculate {
         this.dao = dao;
     }
 
-    public boolean calculateAndSaveHouseholdScore(int beneficiaryId) {
+
+
+    // ✅ MODIFIED: Add disasterId parameter
+    public boolean calculateAndSaveHouseholdScore(int beneficiaryId, int disasterId) {
         try {
             VulnerabilityIndicatorScoreModel vulnScores = dao.getVulnerabilityScores();
             if (vulnScores == null) {
@@ -36,19 +39,15 @@ public class HouseholdScoreCalculate {
                 System.err.println("Beneficiary not found: " + beneficiaryId);
                 return false;
             }
-            debug("Gender", beneficiary.getGender());
-            debug("Marital Status", beneficiary.getMaritalStatus());
-
-            String gender = cs.decryptWithOneParameter(beneficiary.getGender());
-            System.out.println(gender);
 
             List<FamilyMembersModel> familyMembers = dao.getFamilyMembersByBeneficiaryId(beneficiaryId);
-            debug("Family members count", familyMembers.size());
 
-            HouseholdScoreModel householdScore = calculateScores(beneficiary, familyMembers, vulnScores);
+            // ✅ Calculate scores for this specific disaster
+            HouseholdScoreModel householdScore = calculateScoresWithDisaster(beneficiary, familyMembers, vulnScores, disasterId);
             householdScore.setBeneficiaryId(beneficiaryId);
+            householdScore.setDisasterId(disasterId);  // ✅ NEW
 
-            return dao.saveHouseholdScore(householdScore);
+            return dao.saveHouseholdScoreWithDisaster(householdScore);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -328,6 +327,158 @@ public class HouseholdScoreCalculate {
 
         return false;
     }
+
+    private HouseholdScoreModel calculateScoresWithDisaster(
+            BeneficiaryModel beneficiary,
+            List<FamilyMembersModel> familyMembers,
+            VulnerabilityIndicatorScoreModel vulnScores, int disasterId) {
+
+        HouseholdScoreModel result = new HouseholdScoreModel();
+
+        try {
+            int totalMembers = 1 + familyMembers.size();
+            debug("Total household members", totalMembers);
+
+            double avgAgeScore = calculateAverageAgeScore(beneficiary, familyMembers);
+            result.setAgeScore(avgAgeScore);
+            debug("Final Average Age Score", avgAgeScore);
+
+            debug("Beneficiary Gender (encrypted)", beneficiary.getGender());
+            debug("Beneficiary Marital Status (encrypted)", beneficiary.getMaritalStatus());
+            debug("Beneficiary Solo Parent Status (encrypted)", beneficiary.getSoloParentStatus());
+            debug("Beneficiary Disability Type (encrypted)", beneficiary.getDisabilityType());
+            debug("Beneficiary Health Condition (encrypted)", beneficiary.getHealthCondition());
+            debug("Beneficiary Clean Water Access (encrypted)", beneficiary.getCleanWaterAccess());
+            debug("Beneficiary Sanitation Facility (encrypted)", beneficiary.getSanitationFacility());
+            debug("Beneficiary House Type (encrypted)", beneficiary.getHouseType());
+            debug("Beneficiary Ownership Status (encrypted)", beneficiary.getOwnerShipStatus());
+            debug("Beneficiary Employment Status (encrypted)", beneficiary.getEmploymentStatus());
+            debug("Beneficiary Monthly Income (encrypted)", beneficiary.getMonthlyIncome());
+            debug("Beneficiary Education Level (encrypted)", beneficiary.getEducationalLevel());
+            debug("Beneficiary Digital Access (encrypted)", beneficiary.getDigitalAccess());
+
+            String beneGender = cs.decryptWithOneParameter(beneficiary.getGender());
+            String beneMaritalStatus = cs.decryptWithOneParameter(beneficiary.getMaritalStatus());
+            String beneSoloParentStatus = cs.decryptWithOneParameter(beneficiary.getSoloParentStatus());
+            String beneDisabilityType = cs.decryptWithOneParameter(beneficiary.getDisabilityType());
+            String beneHealthCondition = cs.decryptWithOneParameter(beneficiary.getHealthCondition());
+            String beneCleanWaterAccess = cs.decryptWithOneParameter(beneficiary.getCleanWaterAccess());
+            String beneSanitationFacility = cs.decryptWithOneParameter(beneficiary.getSanitationFacility());
+            String beneHouseType = cs.decryptWithOneParameter(beneficiary.getHouseType());
+            String beneOwnershipStatus = cs.decryptWithOneParameter(beneficiary.getOwnerShipStatus());
+            String beneEmploymentStatus = cs.decryptWithOneParameter(beneficiary.getEmploymentStatus());
+            String beneMonthlyIncome = cs.decryptWithOneParameter(beneficiary.getMonthlyIncome());
+            String beneEducationLevel = cs.decryptWithOneParameter(beneficiary.getEducationalLevel());
+            String beneDigitalAccess = cs.decryptWithOneParameter(beneficiary.getDigitalAccess());
+
+            double beneGenderScore = getGenderScore(beneGender, vulnScores);
+            double beneMaritalScore = getMaritalStatusScore(beneMaritalStatus, vulnScores);
+            double beneSoloParentScore = getSoloParentScore(beneSoloParentStatus, vulnScores);
+            double beneDisabilityScore = getDisabilityScore(beneDisabilityType, vulnScores);
+            double beneHealthScore = getHealthScore(beneHealthCondition, vulnScores);
+            double beneCleanWaterScore = getCleanWaterScore(beneCleanWaterAccess, vulnScores);
+            double beneSanitationScore = getSanitationScore(beneSanitationFacility, vulnScores);
+            double beneHouseTypeScore = getHouseTypeScore(beneHouseType, vulnScores);
+            double beneOwnershipScore = getOwnershipScore(beneOwnershipStatus, vulnScores);
+            double beneEmploymentScore = getEmploymentScore(beneEmploymentStatus, vulnScores);
+            double beneIncomeScore = getIncomeScore(beneMonthlyIncome, vulnScores);
+            double beneEducationScore = getEducationScore(beneEducationLevel, vulnScores);
+            double beneDigitalScore = getDigitalAccessScore(beneDigitalAccess, vulnScores);
+
+            // ✅✅✅ FIXED: Get damage score for THIS SPECIFIC DISASTER ✅✅✅
+            double beneDisasterDamageScore = 0.0;
+            List<DisasterDamageModel> allDisasterDamages = dao.getDisasterDamageById(beneficiary.getId());
+
+            debug("========== DISASTER DAMAGE LOOKUP ==========", "");
+            debug("Total disaster damages for beneficiary", allDisasterDamages.size());
+            debug("Looking for damage from Disaster ID", disasterId);
+
+            boolean damageFound = false;
+            for (DisasterDamageModel damage : allDisasterDamages) {
+                debug("Checking disaster damage record with Disaster ID", damage.getDisasterId());
+
+                if (damage.getDisasterId() == disasterId) {
+                    String houseDamageEncrypted = damage.getHouseDamageSeverity();
+                    if (houseDamageEncrypted != null && !houseDamageEncrypted.isEmpty()) {
+                        String houseDamageDecrypted = cs.decryptWithOneParameter(houseDamageEncrypted);
+                        beneDisasterDamageScore = getDisasterDamageScore(houseDamageDecrypted, vulnScores);
+                        debug("✓ Found damage for Disaster ID " + disasterId, houseDamageDecrypted);
+                        debug("✓ Damage Score", beneDisasterDamageScore);
+                        damageFound = true;
+                    }
+                    break; // Stop searching once we find the matching disaster
+                }
+            }
+
+            if (!damageFound) {
+                debug("⚠ No damage record found for Disaster ID", disasterId);
+                debug("⚠ Damage score will be", 0.0);
+            }
+            debug("========== END DISASTER DAMAGE LOOKUP ==========", "");
+            // ✅✅✅ END OF FIX ✅✅✅
+
+            double totalGenderScore = beneGenderScore;
+            double totalMaritalScore = beneMaritalScore;
+            double totalDisabilityScore = beneDisabilityScore;
+            double totalHealthScore = beneHealthScore;
+            double totalEmploymentScore = beneEmploymentScore;
+            double totalEducationScore = beneEducationScore;
+
+            for (FamilyMembersModel fm : familyMembers) {
+                String fmGender = cs.decryptWithOneParameter(fm.getGender());
+                String fmMaritalStatus = cs.decryptWithOneParameter(fm.getMaritalStatus());
+                String fmDisabilityType = cs.decryptWithOneParameter(fm.getDisabilityType());
+                String fmHealthCondition = cs.decryptWithOneParameter(fm.getHealthCondition());
+                String fmEmploymentStatus = cs.decryptWithOneParameter(fm.getEmploymentStatus());
+                String fmEducationLevel = cs.decryptWithOneParameter(fm.getEducationalLevel());
+
+                totalGenderScore += getGenderScore(fmGender, vulnScores);
+                totalMaritalScore += getMaritalStatusScore(fmMaritalStatus, vulnScores);
+                totalDisabilityScore += getDisabilityScore(fmDisabilityType, vulnScores);
+                totalHealthScore += getHealthScore(fmHealthCondition, vulnScores);
+                totalEmploymentScore += getEmploymentScore(fmEmploymentStatus, vulnScores);
+                totalEducationScore += getEducationScore(fmEducationLevel, vulnScores);
+            }
+
+            double avgGenderScore = totalGenderScore / totalMembers;
+            double avgMaritalScore = totalMaritalScore / totalMembers;
+            double avgDisabilityScore = totalDisabilityScore / totalMembers;
+            double avgHealthScore = totalHealthScore / totalMembers;
+            double avgEmploymentScore = totalEmploymentScore / totalMembers;
+            double avgEducationScore = totalEducationScore / totalMembers;
+
+            result.setGenderScore(Math.round(avgGenderScore * 100.0) / 100.0);
+            result.setMaritalStatusScore(Math.round(avgMaritalScore * 100.0) / 100.0);
+            result.setDisabilityScore(Math.round(avgDisabilityScore * 100.0) / 100.0);
+            result.setHealthConditionScore(Math.round(avgHealthScore * 100.0) / 100.0);
+            result.setEmploymentStatusScore(Math.round(avgEmploymentScore * 100.0) / 100.0);
+            result.setEducationLevelScore(Math.round(avgEducationScore * 100.0) / 100.0);
+
+            result.setSoloParentScore(Math.round(beneSoloParentScore * 100.0) / 100.0);
+            result.setAccessToCleanWaterScore(Math.round(beneCleanWaterScore * 100.0) / 100.0);
+            result.setSanitationFacilitiesScore(Math.round(beneSanitationScore * 100.0) / 100.0);
+            result.setHouseConstructionTypeScore(Math.round(beneHouseTypeScore * 100.0) / 100.0);
+            result.setOwnershipScore(Math.round(beneOwnershipScore * 100.0) / 100.0);
+            result.setMonthlyIncomeScore(Math.round(beneIncomeScore * 100.0) / 100.0);
+            result.setDigitalAccessScore(Math.round(beneDigitalScore * 100.0) / 100.0);
+            result.setDamageSeverityScore(Math.round(beneDisasterDamageScore * 100.0) / 100.0);
+
+            double dependencyRatioScore = calculateDependencyRatioScore(beneficiary, familyMembers);
+            result.setDependencyRatioScore(dependencyRatioScore);
+            debug("Final Dependency Ratio Score", dependencyRatioScore);
+
+            debug("========== CALCULATION COMPLETE ==========", "");
+
+        } catch (Exception e) {
+            System.err.println("========== ERROR IN CALCULATION ==========");
+            System.err.println("Error calculating scores: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("==========================================");
+        }
+
+        return result;
+    }
+
 
 
     private HouseholdScoreModel calculateScores(

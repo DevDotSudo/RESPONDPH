@@ -17,7 +17,10 @@ public interface HouseholdScoreDAO {
     List<DisasterDamageModel> getDisasterDamageById(int beneficiaryId);
 
     boolean saveHouseholdScore(HouseholdScoreModel score);
+     boolean saveHouseholdScoreWithDisaster(HouseholdScoreModel score);
 
     List<Integer> getAllBeneficiaryIdsWithHouseholdScores();
+
+    boolean updateNullDisasterIdToSpecificDisaster(int beneficiaryId, int disasterId);
 
 }

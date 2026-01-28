@@ -1,8 +1,6 @@
 package com.ionres.respondph.main;
 
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
-import com.ionres.respondph.util.SceneManager;
+import com.ionres.respondph.util.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.animation.RotateTransition;
 import javafx.event.ActionEvent;
@@ -123,6 +121,38 @@ public class MainFrameController {
         }
     }
 
+    private void handleLogout() {
+        // Show confirmation dialog
+        boolean confirm = AlertDialogManager.showConfirmation(
+                "Logout Confirmation",
+                "Are you sure you want to logout?"
+        );
+
+        if (confirm) {
+            try {
+                AppPreferencesForLogin prefs = new AppPreferencesForLogin();
+                prefs.clearRememberMe();
+
+                SessionManager.getInstance().clearSession();
+
+                Stage currentStage = (Stage) logoutBtn.getScene().getWindow();
+                currentStage.close();
+
+                SceneManager.showStage(
+                        "/view/auth/Login.fxml",
+                        "RESPONDPH - Login"
+                );
+
+                System.out.println("User logged out successfully");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                AlertDialogManager.showError("Logout Error",
+                        "Failed to logout: " + e.getMessage());
+            }
+        }
+    }
+
     private void handleDashboard() {
         loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
@@ -178,21 +208,6 @@ public class MainFrameController {
         activeButton(settingsBtn);
     }
 
-    private void handleLogout() {
-        boolean confirm = AlertDialogManager.showConfirmation(
-                "Logout",
-                "Do you want to logout?"
-        );
-
-        if (confirm) {
-            Stage stage = (Stage) logoutBtn.getScene().getWindow();
-            stage.close();
-            SceneManager.showStage(
-                    "/view/auth/Login.fxml",
-                    "RESPONDPH - Login"
-            );
-        }
-    }
 
     private void loadPage(String fxml) {
         SceneManager.SceneEntry<?> entry = SceneManager.load(fxml);

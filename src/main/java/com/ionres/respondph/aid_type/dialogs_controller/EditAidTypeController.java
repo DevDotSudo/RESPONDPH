@@ -1,6 +1,4 @@
 package com.ionres.respondph.aid_type.dialogs_controller;
-
-
 import com.ionres.respondph.aidType_and_household_score.AidHouseholdScoreCalculate;
 import com.ionres.respondph.aid_type.AidTypeController;
 import com.ionres.respondph.aid_type.AidTypeModel;
@@ -156,6 +154,9 @@ public class EditAidTypeController {
         if (!validateInput()) {
             return;
         }
+        if(!validateWeightSum()){
+            return;
+        }
 
         try {
             int adminId = SessionManager.getInstance().getCurrentAdminId();
@@ -200,7 +201,7 @@ public class EditAidTypeController {
 
             if (success) {
 
-                recalculateAidHouseholdScores(atm.getAidTypeId(), adminId);
+                recalculateAllBeneficiaryScores(atm.getAidTypeId(), adminId);
                 AlertDialogManager.showSuccess(
                         "Success",
                         "Aid Type updated successfully."
@@ -229,102 +230,83 @@ public class EditAidTypeController {
         }
     }
 
-    private void recalculateAidHouseholdScores(int aidTypeId, int adminId) {
+    private void recalculateAllBeneficiaryScores(int aidTypeId, int adminId) {
         try {
-            System.out.println("========== RECALCULATING AID-HOUSEHOLD SCORES AFTER UPDATE ==========");
+            System.out.println("========== RECALCULATING AID-HOUSEHOLD SCORES ==========");
             System.out.println("Aid Type ID: " + aidTypeId);
             System.out.println("Admin ID: " + adminId);
 
-            // Step 1: Delete existing scores for this aid type
-//            deleteExistingAidHouseholdScores(aidTypeId);
+            // ✅ NEW: Get all beneficiary-disaster pairs that have household scores
+            java.util.List<BeneficiaryDisasterPair> beneficiaryDisasterPairs =
+                    getAllBeneficiaryDisasterPairsWithHouseholdScores();
 
-            // Step 2: Get all beneficiaries with household scores
-            java.util.List<Integer> beneficiaryIds = getAllBeneficiaryIdsWithHouseholdScores();
+            System.out.println("Found " + beneficiaryDisasterPairs.size() +
+                    " beneficiary-disaster pairs with household scores");
 
-            System.out.println("Found " + beneficiaryIds.size() + " beneficiaries with household scores");
-
-            // Step 3: Recalculate scores for each beneficiary
             AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
             int successCount = 0;
             int failCount = 0;
 
-            for (Integer beneficiaryId : beneficiaryIds) {
+            for (BeneficiaryDisasterPair pair : beneficiaryDisasterPairs) {
                 try {
-                    boolean success = calculator.calculateAndSaveAidHouseholdScore(
-                            beneficiaryId,
+                    boolean success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
+                            pair.beneficiaryId,
                             aidTypeId,
-                            adminId
+                            adminId,
+                            pair.disasterId  // ✅ NEW
                     );
 
                     if (success) {
                         successCount++;
-                        System.out.println("✓ Recalculated aid-household score for beneficiary ID: " + beneficiaryId);
+                        System.out.println("✓ Calculated aid-household score for beneficiary ID: " +
+                                pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
                     } else {
                         failCount++;
-                        System.err.println("✗ Failed to recalculate aid-household score for beneficiary ID: " + beneficiaryId);
+                        System.err.println("✗ Failed to calculate aid-household score for beneficiary ID: " +
+                                pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
                     }
                 } catch (Exception e) {
                     failCount++;
-                    System.err.println("✗ Error recalculating aid-household score for beneficiary ID " +
-                            beneficiaryId + ": " + e.getMessage());
+                    System.err.println("✗ Error calculating aid-household score for beneficiary ID " +
+                            pair.beneficiaryId + ", disaster ID " + pair.disasterId + ": " + e.getMessage());
                 }
             }
 
             System.out.println("========== RECALCULATION COMPLETE ==========");
-            System.out.println("Successfully recalculated: " + successCount + " out of " + beneficiaryIds.size());
+            System.out.println("Successfully calculated: " + successCount + " out of " +
+                    beneficiaryDisasterPairs.size());
             System.out.println("Failed: " + failCount);
 
             if (failCount > 0) {
                 AlertDialogManager.showWarning("Partial Success",
-                        "Aid type updated successfully.\n" +
-                                "Recalculated scores for " + successCount + " beneficiaries.\n" +
-                                "Failed to recalculate scores for " + failCount + " beneficiaries.");
+                        "Aid type created successfully.\n" +
+                                "Calculated scores for " + successCount + " beneficiary-disaster pairs.\n" +
+                                "Failed to calculate scores for " + failCount + " pairs.");
             }
 
         } catch (Exception e) {
             System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());
             e.printStackTrace();
             AlertDialogManager.showWarning("Warning",
-                    "Aid type updated successfully, but there was an error recalculating household scores.\n" +
+                    "Aid type created successfully, but there was an error calculating household scores.\n" +
                             "You may need to recalculate manually.");
         }
     }
 
-    /**
-     * Deletes existing aid-household scores for a specific aid type before recalculation
-     */
-    private void deleteExistingAidHouseholdScores(int aidTypeId) {
-        String sql = "DELETE FROM aid_and_household_score WHERE aid_type_id = ?";
+    private static class BeneficiaryDisasterPair {
+        int beneficiaryId;
+        int disasterId;
 
-        java.sql.Connection conn = null;
-        try {
-            conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, aidTypeId);
-            int deleted = ps.executeUpdate();
-            System.out.println("Deleted " + deleted + " existing aid-household scores for aid type ID: " + aidTypeId);
-            ps.close();
-
-        } catch (java.sql.SQLException e) {
-            System.err.println("Error deleting existing aid-household scores: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                if (conn != null && !conn.isClosed()) {
-                    conn.close();
-                }
-            } catch (java.sql.SQLException e) {
-                System.err.println("Error closing connection: " + e.getMessage());
-            }
+        BeneficiaryDisasterPair(int beneficiaryId, int disasterId) {
+            this.beneficiaryId = beneficiaryId;
+            this.disasterId = disasterId;
         }
     }
 
-    /**
-     * Gets all beneficiary IDs that have household scores
-     */
-    private java.util.List<Integer> getAllBeneficiaryIdsWithHouseholdScores() {
-        java.util.List<Integer> beneficiaryIds = new java.util.ArrayList<>();
-        String sql = "SELECT DISTINCT beneficiary_id FROM household_score";
+    private java.util.List<BeneficiaryDisasterPair> getAllBeneficiaryDisasterPairsWithHouseholdScores() {
+        java.util.List<BeneficiaryDisasterPair> pairs = new java.util.ArrayList<>();
+        // ✅ MODIFIED: Select both beneficiary_id and disaster_id
+        String sql = "SELECT DISTINCT beneficiary_id, disaster_id FROM household_score";
 
         java.sql.Connection conn = null;
         try {
@@ -333,14 +315,16 @@ public class EditAidTypeController {
             java.sql.ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                beneficiaryIds.add(rs.getInt("beneficiary_id"));
+                int beneficiaryId = rs.getInt("beneficiary_id");
+                int disasterId = rs.getInt("disaster_id");
+                pairs.add(new BeneficiaryDisasterPair(beneficiaryId, disasterId));
             }
 
             rs.close();
             ps.close();
 
         } catch (java.sql.SQLException e) {
-            System.err.println("Error fetching beneficiary IDs: " + e.getMessage());
+            System.err.println("Error fetching beneficiary-disaster pairs: " + e.getMessage());
             e.printStackTrace();
         } finally {
             try {
@@ -352,9 +336,8 @@ public class EditAidTypeController {
             }
         }
 
-        return beneficiaryIds;
+        return pairs;
     }
-
 
 
     private  void closeDialog(){
@@ -498,6 +481,50 @@ public class EditAidTypeController {
         }
 
         return true;
+    }
+
+    private boolean validateWeightSum() {
+        try {
+            double ageWeight = Double.parseDouble(ageWeightFld.getText().trim());
+            double genderWeight = Double.parseDouble(genderWeightFld.getText().trim());
+            double maritalStatusWeight = Double.parseDouble(maritalStatusWeightFld.getText().trim());
+            double soloParentWeight = Double.parseDouble(soloParentWeightFld.getText().trim());
+            double disabilityWeight = Double.parseDouble(disabilityWeightFld.getText().trim());
+            double healthConditionWeight = Double.parseDouble(healthConditionWeightFld.getText().trim());
+            double accessToCleanWaterWeight = Double.parseDouble(waterAccessWeightFld.getText().trim());
+            double sanitationFacilityWeight = Double.parseDouble(sanitationWeightFld.getText().trim());
+            double houseConstructionTypeWeight = Double.parseDouble(houseTypeWeightFld.getText().trim());
+            double ownershipWeight = Double.parseDouble(ownershipWeightFld.getText().trim());
+            double damageSeverityWeight = Double.parseDouble(damageSeverityWeightFld.getText().trim());
+            double employmentStatusWeight = Double.parseDouble(employmentWeightFld.getText().trim());
+            double monthlyIncomeWeight = Double.parseDouble(monthlyIncomeWeightFld.getText().trim());
+            double educationalLevelWeight = Double.parseDouble(educationWeightFld.getText().trim());
+            double digitalAccessWeight = Double.parseDouble(digitalAccessWeightFld.getText().trim());
+            double dependencyRatioWeight = Double.parseDouble(dependencyRatioWeightFld.getText().trim());
+
+            double totalWeight = ageWeight + genderWeight + maritalStatusWeight + soloParentWeight +
+                    disabilityWeight + healthConditionWeight + accessToCleanWaterWeight + sanitationFacilityWeight +
+                    houseConstructionTypeWeight + ownershipWeight + damageSeverityWeight + employmentStatusWeight +
+                    monthlyIncomeWeight + educationalLevelWeight + digitalAccessWeight + dependencyRatioWeight;
+
+            totalWeight = Math.round(totalWeight * 100.0) / 100.0;
+
+            if (totalWeight != 1.0) {
+                AlertDialogManager.showWarning("Validation Error",
+                        "The sum of all weights must equal exactly 1.0" +
+                                " Current total: " + String.format("%.2f", totalWeight)+
+                                " Required total: 1.0" +
+                                " Please adjust the weight values.");
+                return false;
+            }
+
+            return true;
+
+        } catch (NumberFormatException e) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "All weight fields must contain valid numeric values.");
+            return false;
+        }
     }
 
 

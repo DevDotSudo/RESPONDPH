@@ -55,137 +55,137 @@ public class FamilyMembersModel {
         this.notes = notes;
         this.regDate = regDate;
     }
-        public FamilyMembersModel(){
+    public FamilyMembersModel(){
 
-        }
+    }
 
-        public int getFamilyId() {
-            return familyId;
-        }
+    public int getFamilyId() {
+        return familyId;
+    }
 
-        public int getBeneficiaryId() {
-            return beneficiaryId;
-        }
+    public int getBeneficiaryId() {
+        return beneficiaryId;
+    }
 
-        public String getBeneficiaryName(){return  beneficiaryName;}
+    public String getBeneficiaryName(){return  beneficiaryName;}
 
-        public String getFirstName() {
-            return firstName;
-        }
+    public String getFirstName() {
+        return firstName;
+    }
 
-        public String getMiddleName() {
-            return middleName;
-        }
+    public String getMiddleName() {
+        return middleName;
+    }
 
-        public String getLastName() {
-            return lastName;
-        }
+    public String getLastName() {
+        return lastName;
+    }
 
-        public String getRelationshipToBeneficiary() {
-            return relationshipToBeneficiary;
-        }
+    public String getRelationshipToBeneficiary() {
+        return relationshipToBeneficiary;
+    }
 
-        public String getBirthDate() {
-            return birthDate;
-        }
+    public String getBirthDate() {
+        return birthDate;
+    }
 
     public double getAgeScore() {
         return ageScore;
     }
 
     public String getGender() {
-            return gender;
-        }
+        return gender;
+    }
 
-        public String getMaritalStatus() {
-            return maritalStatus;
-        }
+    public String getMaritalStatus() {
+        return maritalStatus;
+    }
 
-        public String getDisabilityType() {
-            return disabilityType;
-        }
+    public String getDisabilityType() {
+        return disabilityType;
+    }
 
-        public String getHealthCondition() {
-            return healthCondition;
-        }
+    public String getHealthCondition() {
+        return healthCondition;
+    }
 
-        public String getEducationalLevel() {
-            return educationalLevel;
-        }
+    public String getEducationalLevel() {
+        return educationalLevel;
+    }
 
-        public String getEmploymentStatus() {
-            return employmentStatus;
-        }
+    public String getEmploymentStatus() {
+        return employmentStatus;
+    }
 
-        public String getNotes() {
-            return notes;
-        }
-        public String getRegDate(){
-            return regDate;
-        }
+    public String getNotes() {
+        return notes;
+    }
+    public String getRegDate(){
+        return regDate;
+    }
 
-        public void setFamilyId(int familyId) {
-            this.familyId = familyId;
-        }
+    public void setFamilyId(int familyId) {
+        this.familyId = familyId;
+    }
 
-        public void setBeneficiaryId(int beneficiaryId) {
-            this.beneficiaryId = beneficiaryId;
-        }
+    public void setBeneficiaryId(int beneficiaryId) {
+        this.beneficiaryId = beneficiaryId;
+    }
 
-        public void setBeneficiaryName(String beneficiaryName){this.beneficiaryName = beneficiaryName;}
+    public void setBeneficiaryName(String beneficiaryName){this.beneficiaryName = beneficiaryName;}
 
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-        public void setMiddleName(String middleName) {
-            this.middleName = middleName;
-        }
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
 
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-        public void setRelationshipToBeneficiary(String relationship) {
-            this.relationshipToBeneficiary = relationship;
-        }
+    public void setRelationshipToBeneficiary(String relationship) {
+        this.relationshipToBeneficiary = relationship;
+    }
 
-        public void setBirthDate(String birthDate) {
-            this.birthDate = birthDate;
-        }
+    public void setBirthDate(String birthDate) {
+        this.birthDate = birthDate;
+    }
 
     public void setAgeScore(double ageScore) {
         this.ageScore = ageScore;
     }
 
     public void setGender(String gender) {
-            this.gender = gender;
-        }
-
-        public void setMaritalStatus(String maritalStatus) {
-            this.maritalStatus = maritalStatus;
-        }
-
-        public void setDisabilityType(String disabilityType) {
-            this.disabilityType = disabilityType;
-        }
-
-        public void setHealthCondition(String healthCondition) {
-            this.healthCondition = healthCondition;
-        }
-
-        public void setEducationalLevel(String educationalLevel) {
-            this.educationalLevel = educationalLevel;
-        }
-
-        public void setEmploymentStatus(String employmentStatus) {
-            this.employmentStatus = employmentStatus;
-        }
-
-        public void setNotes(String notes) {
-            this.notes = notes;
-        }
-        public void setRegDate(String regDate){
-            this.regDate = regDate;
-        }
+        this.gender = gender;
     }
+
+    public void setMaritalStatus(String maritalStatus) {
+        this.maritalStatus = maritalStatus;
+    }
+
+    public void setDisabilityType(String disabilityType) {
+        this.disabilityType = disabilityType;
+    }
+
+    public void setHealthCondition(String healthCondition) {
+        this.healthCondition = healthCondition;
+    }
+
+    public void setEducationalLevel(String educationalLevel) {
+        this.educationalLevel = educationalLevel;
+    }
+
+    public void setEmploymentStatus(String employmentStatus) {
+        this.employmentStatus = employmentStatus;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+    public void setRegDate(String regDate){
+        this.regDate = regDate;
+    }
+}

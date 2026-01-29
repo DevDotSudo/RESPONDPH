@@ -1,15 +1,11 @@
 package com.ionres.respondph.beneficiary.dialogs_controller;
 
-import com.ionres.respondph.beneficiary.AgeScoreCalculator;
+import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.beneficiary.BeneficiaryController;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
 import com.ionres.respondph.common.controller.MappingDialogController;
-import com.ionres.respondph.household_score.HouseholdScoreCalculator;
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
-import com.ionres.respondph.util.DialogManager;
-import com.ionres.respondph.util.SessionManager;
+import com.ionres.respondph.util.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -172,7 +168,7 @@ public class EditBeneficiariesDialogController {
             String birthDate = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
-            double ageScore = AgeScoreCalculator.calculateAgeScoreFromBirthdate(birthDate);
+            double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender = genderSelection.getValue();
             String mobileNumber = mobileNumberFld.getText().trim();
             String maritalStatus = maritalStatusSelection.getValue();
@@ -288,12 +284,17 @@ public class EditBeneficiariesDialogController {
             boolean success = beneficiaryService.updateBeneficiary(updatedBm);
 
             if (success) {
-                HouseholdScoreCalculator calculator = new HouseholdScoreCalculator();
-                calculator.autoRecalculateHouseholdScore(currentBeneficiary.getId());
+                UpdateTrigger trigger = new UpdateTrigger();
+                boolean cascadeSuccess = trigger.triggerCascadeUpdate(currentBeneficiary.getId());
 
-                AlertDialogManager.showSuccess("Success", "Beneficiary updated successfully.\nHousehold scores have been recalculated.");
-                clearFields();
-                DashboardRefresher.refresh();
+                if (cascadeSuccess) {
+                    AlertDialogManager.showSuccess("Success",
+                            "Beneficiary updated successfully!\n" +
+                                    "Household scores and aid scores have been recalculated.");
+                } else {
+                    AlertDialogManager.showWarning("Partial Success",
+                            "Beneficiary updated, but some scores failed to recalculate.");
+                }
             } else {
                 AlertDialogManager.showError("Error", "Failed to update beneficiary.");
             }

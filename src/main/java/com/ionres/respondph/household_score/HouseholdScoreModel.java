@@ -1,10 +1,9 @@
 package com.ionres.respondph.household_score;
 
-import java.math.BigDecimal;
-
 public class HouseholdScoreModel {
     private int householdScoreId;
     private int beneficiaryId;
+    private int disasterId;
     private double ageScore;
     private double genderScore;
     private double maritalStatusScore;
@@ -44,6 +43,14 @@ public class HouseholdScoreModel {
 
     public void setBeneficiaryId(int beneficiaryId) {
         this.beneficiaryId = beneficiaryId;
+    }
+
+    public int getDisasterId() {
+        return disasterId;
+    }
+
+    public void setDisasterId(int disasterId) {
+        this.disasterId = disasterId;
     }
 
     public double getAgeScore() {

@@ -1,8 +1,6 @@
 package com.ionres.respondph.main;
 
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
-import com.ionres.respondph.util.SceneManager;
+import com.ionres.respondph.util.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.animation.RotateTransition;
 import javafx.event.ActionEvent;
@@ -214,10 +212,9 @@ public class MainFrameController {
         );
 
         if (confirm) {
-            // Clear session and preferences
-            com.ionres.respondph.util.SessionManager.getInstance().clearSession();
-            com.ionres.respondph.util.AppPreferences.clearToken();
-            
+            AppPreferences prefs = new AppPreferences();
+            prefs.clearRememberMe();
+            SessionManager.getInstance().clearSession();
             Stage stage = (Stage) logoutBtn.getScene().getWindow();
             stage.close();
             SceneManager.showStage(

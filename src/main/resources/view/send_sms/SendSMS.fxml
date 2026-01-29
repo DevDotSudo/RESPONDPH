@@ -30,7 +30,7 @@
                     <VBox spacing="10" styleClass="message-input-container">
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label styleClass="input-label" text="Recipient Group:" />
-                            <ComboBox prefWidth="300" styleClass="recipient-combo">
+                            <ComboBox fx:id="cbSelectBeneficiary" prefWidth="300" styleClass="recipient-combo">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="All Beneficiaries" />
@@ -52,7 +52,7 @@
                             <Label styleClass="char-count" text="0/160 characters" />
                         </HBox>
 
-                        <HBox styleClass="action-buttons-container">
+                        <HBox alignment="CENTER_LEFT" styleClass="action-buttons-container">
                             <Button styleClass="primary-button" text="Send SMS">
                                 <padding>
                                     <Insets left="30" right="30" />

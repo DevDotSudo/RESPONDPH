@@ -4,21 +4,20 @@ import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.common.model.DisasterModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
+import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
-import com.ionres.respondph.util.CryptographyManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DisasterDamageServiceImpl implements DisasterDamageService {
-    private static final Logger LOGGER = Logger.getLogger(DisasterDamageServiceImpl.class.getName());
     private final DisasterDamageDAO disasterDamageDAO;
-    private static final Cryptography CRYPTO = CryptographyManager.getInstance();
+    private final  Cryptography cs;
 
     public DisasterDamageServiceImpl(DBConnection dbConnection) {
         this.disasterDamageDAO = new DisasterDamageDAOImpl(dbConnection);
+        String secretKey = ConfigLoader.get("secretKey");
+        this.cs = new Cryptography(secretKey);
     }
     @Override
     public List<DisasterDamageModel> getAllDisasterDamage() {
@@ -38,7 +37,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
                 encrypted.add(ddm.getNotes());
                 encrypted.add(ddm.getRegDate());
 
-                List<String> decrypted = CRYPTO.decrypt(encrypted);
+                List<String> decrypted = cs.decrypt(encrypted);
 
                 ddm.setBeneficiaryFirstname(decrypted.get(0));
                 ddm.setDisasterType(decrypted.get(1));
@@ -66,11 +65,11 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
     public boolean createDisasterDamage(DisasterDamageModel ddm) {
         try {
 
-            String  encryptedHouseDamage= CRYPTO.encryptWithOneParameter(ddm.getHouseDamageSeverity());
-            String encryptedAssessmentDate = CRYPTO.encryptWithOneParameter(ddm.getAssessmentDate());
-            String encryptedVerified = CRYPTO.encryptWithOneParameter(ddm.getVerifiedBy());
-            String encryptedNotes = CRYPTO.encryptWithOneParameter(ddm.getNotes());
-            String encryptedRegDate = CRYPTO.encryptWithOneParameter(ddm.getRegDate());
+            String  encryptedHouseDamage= cs.encryptWithOneParameter(ddm.getHouseDamageSeverity());
+            String encryptedAssessmentDate = cs.encryptWithOneParameter(ddm.getAssessmentDate());
+            String encryptedVerified = cs.encryptWithOneParameter(ddm.getVerifiedBy());
+            String encryptedNotes = cs.encryptWithOneParameter(ddm.getNotes());
+            String encryptedRegDate = cs.encryptWithOneParameter(ddm.getRegDate());
 
             boolean flag = disasterDamageDAO.saving(new DisasterDamageModel(ddm.getBeneficiaryId(), ddm.getDisasterId(), encryptedHouseDamage,
                     encryptedAssessmentDate, encryptedVerified, encryptedNotes, encryptedRegDate));
@@ -80,11 +79,11 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             }
             return flag;
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "SQL error creating disaster damage", ex);
+            System.out.println("Error : " + ex);
             return  false;
 
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error creating disaster damage", ex);
+            System.out.println("Error: " + ex);
             return  false;
         }
     }
@@ -105,7 +104,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             return deleted;
 
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error deleting disaster damage", ex);
+            System.out.println("Error: " + ex.getMessage());
             return false;
         }
     }
@@ -117,11 +116,11 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
                 throw ExceptionFactory.missingField("Disaster Damage ID");
             }
 
-            String encryptedSeverity =  CRYPTO.encryptWithOneParameter(ddm.getHouseDamageSeverity());
-            String encryptedAssessmentDate = CRYPTO.encryptWithOneParameter(ddm.getAssessmentDate());
-            String encryptedVerifiedBy = CRYPTO.encryptWithOneParameter(ddm.getVerifiedBy());
-            String encryptedNotes = CRYPTO.encryptWithOneParameter(ddm.getNotes());
-            String encryptedRegDate = CRYPTO.encryptWithOneParameter(ddm.getRegDate());
+            String encryptedSeverity =  cs.encryptWithOneParameter(ddm.getHouseDamageSeverity());
+            String encryptedAssessmentDate = cs.encryptWithOneParameter(ddm.getAssessmentDate());
+            String encryptedVerifiedBy = cs.encryptWithOneParameter(ddm.getVerifiedBy());
+            String encryptedNotes = cs.encryptWithOneParameter(ddm.getNotes());
+            String encryptedRegDate = cs.encryptWithOneParameter(ddm.getRegDate());
             DisasterDamageModel encrypted = new DisasterDamageModel();
 
             encrypted.setBeneficiaryDisasterDamageId(
@@ -145,7 +144,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             return true;
 
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error updating disaster damage", ex);
+            System.out.println("Error updating disaster damage: " + ex.getMessage());
             ex.printStackTrace();
             return false;
         }
@@ -157,7 +156,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
         try {
             DisasterDamageModel ddm = disasterDamageDAO.getById(id);
             if (ddm == null) {
-                LOGGER.warning("Disaster Damage not found with ID: " + id);
+                System.out.println("Disaster Damage not found with ID: " + id);
                 return null;
             }
 
@@ -172,7 +171,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
                     ddm.getRegDate()
             );
 
-            List<String> decrypted = CRYPTO.decrypt(encrypted);
+            List<String> decrypted = cs.decrypt(encrypted);
 
             ddm.setBeneficiaryFirstname(decrypted.get(0));
             ddm.setDisasterType(decrypted.get(1));
@@ -206,7 +205,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
                 encryptedNames.add(b.getFirstName());
             }
 
-            List<String> decryptedNames = CRYPTO.decrypt(encryptedNames);
+            List<String> decryptedNames = cs.decrypt(encryptedNames);
 
             List<BeneficiaryModel> decryptedModels = new ArrayList<>();
             for (int i = 0; i < encryptedList.size(); i++) {
@@ -236,7 +235,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
                 encryptedValues.add(d.getDisasterName());
             }
 
-            List<String> decryptedValues = CRYPTO.decrypt(encryptedValues);
+            List<String> decryptedValues = cs.decrypt(encryptedValues);
 
 
             List<DisasterModel> decryptedModels = new ArrayList<>();

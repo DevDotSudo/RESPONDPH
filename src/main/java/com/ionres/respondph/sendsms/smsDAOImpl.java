@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class smsDAOImpl implements smsDAO{
+
     @Override
     public void saveSMS(smsModel sms) {
         String sql = "INSERT INTO sms_logs(date_sent, fullname, phonenumber, message, status) VALUES (?,?,?,?,?)";

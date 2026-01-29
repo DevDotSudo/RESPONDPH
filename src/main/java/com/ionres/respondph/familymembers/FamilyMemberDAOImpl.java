@@ -2,19 +2,18 @@ package com.ionres.respondph.familymembers;
 
 import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.util.ResourceUtils;
+import com.ionres.respondph.util.Cryptography;
+import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class FamilyMemberDAOImpl implements FamilyMemberDAO {
-    private static final Logger LOGGER = Logger.getLogger(FamilyMemberDAOImpl.class.getName());
     private final DBConnection dbConnection;
+    private Connection conn;
 
     public FamilyMemberDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
@@ -22,21 +21,19 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
 
     @Override
     public boolean saving(FamilyMembersModel fm) {
-        String sql = "INSERT INTO family_member (first_name, middle_name, last_name, relationshiptobene, birthdate, age_score, gender, marital_status, disability_type, health_condition, employment_status, education_level, beneficiary_id, notes, reg_date)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO family_member (first_name, middle_name, last_name, relationshiptobene,birthdate, age_score, gender, marital_status, disability_type, health_condition, employment_status, education_level, beneficiary_id, notes, reg_date)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, fm.getFirstName());
-            ps.setString(2, fm.getMiddleName());
+            ps.setString(2,fm.getMiddleName());
             ps.setString(3, fm.getLastName());
-            ps.setString(4, fm.getRelationshipToBeneficiary());
+            ps.setString(4,fm.getRelationshipToBeneficiary());
             ps.setString(5, fm.getBirthDate());
-            ps.setDouble(6, fm.getAgeScore());
+            ps.setDouble(6, fm.getAgeScore());  // Age score
             ps.setString(7, fm.getGender());
             ps.setString(8, fm.getMaritalStatus());
             ps.setString(9, fm.getDisabilityType());
@@ -51,34 +48,44 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error occurred while saving family member", e);
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 
     @Override
     public List<FamilyMembersModel> getAll() {
+
         List<FamilyMembersModel> list = new ArrayList<>();
+
         String sql = "SELECT fm.familymember_id, fm.beneficiary_id, fm.first_name, fm.middle_name, fm.last_name, " +
                 "fm.relationshiptobene, fm.birthdate, fm.gender, fm.marital_status, " +
                 "fm.notes, fm.reg_date, b.first_name AS beneficiary_firstname " +
                 "FROM family_member fm " +
-                "INNER JOIN beneficiary b ON fm.beneficiary_id = b.beneficiary_id";
+                "INNER JOIN beneficiary b " +
+                "ON fm.beneficiary_id = b.beneficiary_id";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+            conn =  dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+
                 FamilyMembersModel fm = new FamilyMembersModel();
+
                 fm.setFamilyId(rs.getInt("familymember_id"));
+                // ✅ FIX: ADD THIS LINE
                 fm.setBeneficiaryId(rs.getInt("beneficiary_id"));
+
                 fm.setFirstName(rs.getString("first_name"));
                 fm.setMiddleName(rs.getString("middle_name"));
                 fm.setLastName(rs.getString("last_name"));
@@ -89,36 +96,52 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
                 fm.setNotes(rs.getString("notes"));
                 fm.setRegDate(rs.getString("reg_date"));
                 fm.setBeneficiaryName(rs.getString("beneficiary_firstname"));
+
                 list.add(fm);
             }
 
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error fetching family members", ex);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
+            ex.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(
+                    null,
+                    "Error fetching family members: " + ex.getMessage()
+            );
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
         return list;
     }
+
 
     @Override
     public boolean delete(FamilyMembersModel fm) {
         String sql = "DELETE FROM family_member WHERE familymember_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try {conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
             ps.setInt(1, fm.getFamilyId());
+
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error occurred while deleting family member", e);
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 
@@ -127,14 +150,12 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
         String sql = "UPDATE family_member SET " +
                 "first_name = ?, middle_name = ?, last_name = ?, relationshiptobene = ?, birthdate = ?, age_score = ?, " +
                 "gender = ?, marital_status = ?, disability_type = ?, health_condition = ?, " +
-                "employment_status = ?, education_level = ?, notes = ?, reg_date = ? " +
+                "employment_status = ?, education_level = ?, notes = ?, reg_date = ?" +
                 "WHERE familymember_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, fm.getFirstName());
             ps.setString(2, fm.getMiddleName());
@@ -152,14 +173,21 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             ps.setString(14, fm.getRegDate());
             ps.setInt(15, fm.getFamilyId());
 
+
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error occurred while updating family member", e);
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 
@@ -168,19 +196,21 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
         FamilyMembersModel fm = null;
         String sql = "SELECT * FROM family_member WHERE familymember_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
+
             ps.setInt(1, id);
-            rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
                 fm = new FamilyMembersModel();
                 fm.setFamilyId(rs.getInt("familymember_id"));
+
+
+                // ✅ FIX: ADD THIS LINE - This is what was missing!
                 fm.setBeneficiaryId(rs.getInt("beneficiary_id"));
+
                 fm.setFirstName(rs.getString("first_name"));
                 fm.setMiddleName(rs.getString("middle_name"));
                 fm.setLastName(rs.getString("last_name"));
@@ -194,28 +224,34 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
                 fm.setEducationalLevel(rs.getString("education_level"));
                 fm.setNotes(rs.getString("notes"));
                 fm.setRegDate(rs.getString("reg_date"));
+
             }
 
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error fetching family member by ID", ex);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
+            ex.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(null, "Error fetching beneficiary: " + ex.getMessage());
         }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
+        }
+
         return fm;
     }
 
     @Override
     public List<BeneficiaryModel> getAllBeneficiaryByFirstname() {
+
         List<BeneficiaryModel> list = new ArrayList<>();
         String sql = "SELECT beneficiary_id, first_name FROM beneficiary";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 list.add(new BeneficiaryModel(
@@ -225,9 +261,14 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching beneficiaries", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
+            throw new RuntimeException("Error fetching beneficiaries", e);
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
         return list;
     }

@@ -80,7 +80,6 @@
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="Male"/>
                                         <String fx:value="Female"/>
-                                        <String fx:value="Other"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -108,7 +107,6 @@
                                         <String fx:value="Married"/>
                                         <String fx:value="Widowed"/>
                                         <String fx:value="Separated"/>
-                                        <String fx:value="Divorced"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -122,8 +120,9 @@
                             <ComboBox fx:id="soloParentStatusSelection" promptText="Select solo parent status" styleClass="edit-dropdown" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="Yes"/>
-                                        <String fx:value="No"/>
+                                        <String fx:value="Not a Solo Parent"/>
+                                        <String fx:value="Solo Parent (with support network)"/>
+                                        <String fx:value="Solo Parent (without support)"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -191,6 +190,7 @@
                                         <String fx:value="Intellectual"/>
                                         <String fx:value="Mental/Psychosocial"/>
                                         <String fx:value="Due to Chronic Illness"/>
+                                        <String fx:value="Multiple Disabilities"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -223,9 +223,9 @@
                             <ComboBox fx:id="cleanWaterAccessSelection" promptText="Select clean water access" styleClass="edit-dropdown" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="Yes"/>
-                                        <String fx:value="Occasionally"/>
-                                        <String fx:value="No"/>
+                                        <String fx:value="Daily access to clean and safe water"/>
+                                        <String fx:value="Irregular or limited access to clean water"/>
+                                        <String fx:value="No access to clean water"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -267,7 +267,7 @@
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="Reinforced concrete or masonry"/>
-                                        <String fx:value="Light materials (bamboo, nipa, thatch, cogon)"/>
+                                        <String fx:value="Light materials (bamboo, nipa, thatch, cogon"/>
                                         <String fx:value="Semi-concrete with light roofing (GI, asbestos)"/>
                                         <String fx:value="Makeshift shelter (wood, tarpaulin)"/>
                                     </FXCollections>
@@ -313,7 +313,7 @@
                                         <String fx:value="Regular full-time employment"/>
                                         <String fx:value="Self-employed with stable income"/>
                                         <String fx:value="Self-employed with unstable income"/>
-                                        <String fx:value="Irregular employment (odd jobs, seasonal work)"/>
+                                        <String fx:value="Informal or irregular employment"/>
                                         <String fx:value="Unemployed"/>
                                     </FXCollections>
                                 </items>
@@ -328,11 +328,11 @@
                             <ComboBox fx:id="monthlyIncomeSelection" promptText="Select income range" styleClass="edit-dropdown" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="12,030-30,000(Poor)"/>
-                                        <String fx:value="12,030-24,480(Low-Income)"/>
-                                        <String fx:value="24,061-84,120 (Lower Middle Income)"/>
-                                        <String fx:value="84,121-144,210(Middle Class)"/>
-                                        <String fx:value="144,211-244,350(Upper Middle Income)"/>
+                                        <String fx:value="Less then 12,030 PHP (Poor)"/>
+                                        <String fx:value="12,030 to 24,060 PHP (Low Income)"/>
+                                        <String fx:value="24,061 to 84,210 PHP (Middle Class)"/>
+                                        <String fx:value="84,211 to 144,360 PHP (Upper Middle Income)"/>
+                                        <String fx:value="144,361 t0 240,600 PHP (Upper Income)"/>
                                         <String fx:value="At least 244,350(Rich)"/>
                                     </FXCollections>
                                 </items>
@@ -347,9 +347,9 @@
                             <ComboBox fx:id="educationLevelSelection" promptText="Select education level" styleClass="edit-dropdown" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="No Formal Education"/>
-                                        <String fx:value="Elementary"/>
-                                        <String fx:value="High School"/>
+                                        <String fx:value="No formal education"/>
+                                        <String fx:value="Elementary level completed"/>
+                                        <String fx:value="High school level completed"/>
                                         <String fx:value="Vocational or technical training"/>
                                         <String fx:value="College or university level"/>
                                         <String fx:value="Graduate education"/>
@@ -369,7 +369,7 @@
                                 <FXCollections fx:factory="observableArrayList">
                                     <String fx:value="Reliable Internet and Device Access"/>
                                     <String fx:value="Intermittent internet or device access"/>
-                                    <String fx:value="Device only"/>
+                                    <String fx:value="Limited or shared access only"/>
                                     <String fx:value="No digital access"/>
                                 </FXCollections>
                             </items>

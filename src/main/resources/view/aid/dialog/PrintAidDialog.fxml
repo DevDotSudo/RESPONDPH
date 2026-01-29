@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController"
+      styleClass="dialog-container"
+      spacing="20"
+      prefWidth="500"
+      prefHeight="350">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <FontAwesomeIconView glyphName="PRINT" size="28" styleClass="dialog-icon"/>
+        <VBox>
+            <Label text="Print Aid Distribution Report" styleClass="dialog-title">
+                <font>
+                    <Font name="System Bold" size="18"/>
+                </font>
+            </Label>
+            <Label text="Select disaster and aid type to print beneficiary list" styleClass="dialog-subtitle">
+                <font>
+                    <Font size="12"/>
+                </font>
+            </Label>
+        </VBox>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Form -->
+    <VBox spacing="15" VBox.vgrow="ALWAYS">
+
+        <!-- Disaster Selection -->
+        <VBox spacing="8">
+            <Label text="Select Disaster:" styleClass="form-label">
+                <font>
+                    <Font name="System Bold" size="12"/>
+                </font>
+            </Label>
+            <ComboBox fx:id="disasterComboBox"
+                      maxWidth="Infinity"
+                      styleClass="custom-combo-box"
+                      promptText="Choose a disaster"/>
+        </VBox>
+
+        <!-- Aid Type Selection -->
+        <VBox spacing="8">
+            <Label text="Select Aid Type:" styleClass="form-label">
+                <font>
+                    <Font name="System Bold" size="12"/>
+                </font>
+            </Label>
+            <ComboBox fx:id="aidTypeComboBox"
+                      maxWidth="Infinity"
+                      styleClass="custom-combo-box"
+                      promptText="Choose aid type"/>
+        </VBox>
+
+        <!-- Info Panel -->
+        <HBox alignment="CENTER_LEFT"
+              spacing="10"
+              styleClass="info-panel"
+              style="-fx-background-color: #e8f4f8; -fx-padding: 15; -fx-background-radius: 5;">
+            <FontAwesomeIconView glyphName="INFO_CIRCLE" size="20" styleClass="info-icon"/>
+            <VBox spacing="5">
+                <Label fx:id="beneficiaryCountLabel"
+                       text="Beneficiaries: 0"
+                       styleClass="info-text">
+                    <font>
+                        <Font name="System Bold" size="13"/>
+                    </font>
+                </Label>
+                <Label text="This will print on bond paper (Letter size)"
+                       styleClass="info-subtext"
+                       style="-fx-text-fill: #666;">
+                    <font>
+                        <Font size="11"/>
+                    </font>
+                </Label>
+            </VBox>
+        </HBox>
+
+    </VBox>
+
+    <!-- Buttons -->
+    <Separator/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+
+        <Button fx:id="printAllButton"
+                text="Print All Records"
+                styleClass="warning-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="6">
+                    <FontAwesomeIconView glyphName="FILE_TEXT" size="12"/>
+                    <Label text="Print All"/>
+                </HBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="previewButton"
+                text="Preview"
+                styleClass="secondary-button"
+                disable="true">
+            <graphic>
+                <HBox alignment="CENTER" spacing="6">
+                    <FontAwesomeIconView glyphName="EYE" size="12"/>
+                    <Label text="Preview"/>
+                </HBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="printButton"
+                text="Print"
+                styleClass="primary-button"
+                disable="true">
+            <graphic>
+                <HBox alignment="CENTER" spacing="6">
+                    <FontAwesomeIconView glyphName="PRINT" size="12"/>
+                    <Label text="Print"/>
+                </HBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="cancelButton"
+                text="Cancel"
+                styleClass="secondary-button">
+            <graphic>
+                <HBox alignment="CENTER" spacing="6">
+                    <FontAwesomeIconView glyphName="TIMES" size="12"/>
+                    <Label text="Cancel"/>
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

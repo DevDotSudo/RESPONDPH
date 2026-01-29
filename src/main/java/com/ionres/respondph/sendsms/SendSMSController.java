@@ -61,7 +61,6 @@ public class SendSMSController implements Initializable {
 
     private final ObservableList<smsModel> logRows = FXCollections.observableArrayList();
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {

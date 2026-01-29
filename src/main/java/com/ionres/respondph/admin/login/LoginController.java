@@ -2,24 +2,22 @@ package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.AppPreferences;
-import com.ionres.respondph.util.SceneManager;
-import com.ionres.respondph.util.SessionManager;
+import com.ionres.respondph.util.*;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class LoginController {
-    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
-    
     private final LoginService loginService = AppContext.loginService;
+    private AdminModel admin = new AdminModel();
+    private AppPreferences prefs = new AppPreferences();
 
     @FXML
     private TextField usernameField;
@@ -32,137 +30,129 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        loadRememberedCredentials();
-        setupEnterKeyHandlers();
-        attemptAutoLogin();
-    }
+        System.out.println("LoginController initialized");
 
-    private void attemptAutoLogin() {
-        if (AppPreferences.isRememberMeEnabled() && AppPreferences.hasToken()) {
-            if (usernameField.getText() != null && !usernameField.getText().isEmpty()) {
-                passwordField.requestFocus();
-            }
-        }
-    }
-
-    private void loadRememberedCredentials() {
-        if (AppPreferences.isRememberMeEnabled()) {
-            String savedUsername = AppPreferences.getSavedUsername();
-            if (savedUsername != null && !savedUsername.trim().isEmpty()) {
-                usernameField.setText(savedUsername);
-                rememberMeCheck.setSelected(true);
-                passwordField.requestFocus();
-            }
-        }
-    }
-
-    private void setupEnterKeyHandlers() {
         if (usernameField != null) {
             usernameField.setOnKeyPressed(e -> {
-                if (e.getCode() == KeyCode.ENTER) {
-                    handleLogin();
-                }
+                if (e.getCode() == KeyCode.ENTER) handleLogin();
             });
         }
-        
         if (passwordField != null) {
             passwordField.setOnKeyPressed(e -> {
-                if (e.getCode() == KeyCode.ENTER) {
-                    handleLogin();
-                }
+                if (e.getCode() == KeyCode.ENTER) handleLogin();
             });
+        }
+
+        // Wait for scene to be available before checking auto-login
+        usernameField.sceneProperty().addListener(new ChangeListener<Scene>() {
+            @Override
+            public void changed(ObservableValue<? extends Scene> observable, Scene oldScene, Scene newScene) {
+                if (newScene != null) {
+                    System.out.println("Scene is now available, running auto-login check...");
+                    // Remove listener after first call
+                    usernameField.sceneProperty().removeListener(this);
+                    // Run auto-login check
+                    Platform.runLater(() -> checkRememberedLogin());
+                }
+            }
+        });
+    }
+
+    private void checkRememberedLogin() {
+        try {
+            String rememberedToken = prefs.getRememberMeToken();
+            System.out.println("Checking remembered token: " + rememberedToken);
+
+            if (rememberedToken != null && !rememberedToken.isEmpty()) {
+                System.out.println("Token found, attempting login...");
+
+                admin = loginService.loginWithToken(rememberedToken);
+
+                System.out.println("Admin after token login: " + admin);
+
+                if (admin != null) {
+                    System.out.println("Admin details - ID: " + admin.getId() + ", Username: " + admin.getUsername());
+
+                    // Auto-login successful
+                    SessionManager.getInstance().setCurrentAdmin(admin);
+                    System.out.println("Session manager updated");
+
+                    // Get the stage
+                    System.out.println("Checking scene availability...");
+                    System.out.println("usernameField.getScene(): " + usernameField.getScene());
+
+                    if (usernameField.getScene() != null && usernameField.getScene().getWindow() != null) {
+                        Stage loginStage = (Stage) usernameField.getScene().getWindow();
+                        System.out.println("Closing login stage...");
+                        loginStage.close();
+
+                        System.out.println("Opening main screen...");
+                        SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
+                        System.out.println("Auto-login completed successfully!");
+                    } else {
+                        System.out.println("ERROR: Scene or Window is not available!");
+                    }
+                } else {
+                    // Token invalid or expired, clear it
+                    System.out.println("Token invalid or expired, clearing...");
+                    prefs.clearRememberMe();
+                }
+            } else {
+                System.out.println("No remembered token found");
+            }
+        } catch (Exception e) {
+            System.out.println("Exception during auto-login: " + e.getMessage());
+            e.printStackTrace();
+            prefs.clearRememberMe();
         }
     }
 
     @FXML
     private void handleLogin() {
-        String username = usernameField.getText().trim();
+        String username = usernameField.getText();
         String password = passwordField.getText();
         boolean rememberMe = rememberMeCheck.isSelected();
 
-        if (!validateInput(username, password)) {
-            return;
-        }
-
         try {
-            AdminModel admin = loginService.login(username, password);
+            if (username.isEmpty() || password.isEmpty()) {
+                AlertDialogManager.showWarning("Validation Error",
+                        "Please enter both username and password.");
+                return;
+            }
+
+            admin = loginService.login(username, password);
 
             if (admin != null) {
-                handleSuccessfulLogin(admin, rememberMe, username);
-            } else {
-                handleFailedLogin();
+                // Handle remember me
+                if (rememberMe) {
+                    String token = loginService.createRememberMeToken(admin.getId());
+                    prefs.saveRememberMeToken(token);
+                    System.out.println("Remember me token saved: " + token);
+                } else {
+                    prefs.clearRememberMe();
+                    System.out.println("Remember me cleared");
+                }
+
+                AlertDialogManager.showSuccess("Login Successful",
+                        "Welcome back. You are now logged in.");
+
+                SessionManager.getInstance().setCurrentAdmin(admin);
+                Stage loginStage = (Stage) usernameField.getScene().getWindow();
+                loginStage.close();
+                SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
             }
-        } catch (Exception e) {
-            handleLoginError(e);
-        }
-    }
 
-    private boolean validateInput(String username, String password) {
-        if (username.isEmpty() || password.isEmpty()) {
-            AlertDialogManager.showWarning(
-                "Validation Error",
-                "Please enter both username and password."
-            );
-            return false;
-        }
-        return true;
-    }
-
-    private void handleSuccessfulLogin(AdminModel admin, boolean rememberMe, String username) {
-        if (rememberMe) {
-            AppPreferences.setRememberMe(true);
-            AppPreferences.saveUsername(username);
-            String token = generateSessionToken(admin.getId(), username);
-            AppPreferences.saveLoginToken(token);
-        } else {
-            AppPreferences.clearRememberMe();
-            AppPreferences.clearToken();
+            else {
+                AlertDialogManager.showError("Login Failed",
+                        "Incorrect username or password.");
+                passwordField.clear();
+            }
         }
 
-        SessionManager.getInstance().setCurrentAdmin(admin);
-        
-        LOGGER.info("User logged in successfully: " + username);
-
-        AlertDialogManager.showSuccess(
-            "Login Successful",
-            "Welcome back, " + admin.getFirstname() + "!"
-        );
-
-        Stage loginStage = (Stage) usernameField.getScene().getWindow();
-        loginStage.close();
-        
-        SceneManager.showStage(
-            "/view/main/MainScreen.fxml",
-            "ResponPH - Main Screen"
-        );
-    }
-
-    private String generateSessionToken(int adminId, String username) {
-        return adminId + ":" + username + ":" + System.currentTimeMillis();
-    }
-
-    private void handleFailedLogin() {
-        AlertDialogManager.showError(
-            "Login Failed",
-            "Incorrect username or password. Please try again."
-        );
-        passwordField.clear();
-        passwordField.requestFocus();
-    }
-
-    private void handleLoginError(Exception e) {
-        LOGGER.log(Level.SEVERE, "Login error occurred", e);
-        
-        String errorMessage = e.getMessage();
-        if (errorMessage == null || errorMessage.trim().isEmpty()) {
-            errorMessage = "An unexpected error occurred during login.";
+        catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Error",
+                    "Failed to login: " + e.getMessage());
         }
-        
-        AlertDialogManager.showError(
-            "Login Error",
-            errorMessage
-        );
-        
-        passwordField.clear();
     }
 }

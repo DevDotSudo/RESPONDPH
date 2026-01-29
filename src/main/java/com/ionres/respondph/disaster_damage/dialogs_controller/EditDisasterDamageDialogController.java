@@ -6,9 +6,9 @@ import com.ionres.respondph.disaster_damage.DisasterDamageController;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -69,21 +69,9 @@ public class EditDisasterDamageDialogController {
 
     @FXML
     private void initialize() {
+        initializeDamageSeverityDropdown();
+        setupEventHandlers();
         setupKeyHandlers();
-        EventHandler<ActionEvent> handler = this::handleActions;
-        updateBtn.setOnAction(handler);
-        exitBtn.setOnAction(handler);
-    }
-
-    private void handleActions(ActionEvent event) {
-        Object src = event.getSource();
-
-        if (src == exitBtn) {
-            closeDialog();
-        }
-        else if (src == updateBtn) {
-            updateDisasterDamage();
-        }
     }
 
     private void setupKeyHandlers() {
@@ -94,6 +82,29 @@ public class EditDisasterDamageDialogController {
             }
         });
         root.requestFocus();
+    }
+
+    private void setupEventHandlers() {
+        updateBtn.setOnAction(this::handleUpdate);
+        exitBtn.setOnAction(this::handleExit);
+    }
+
+    private void handleUpdate(ActionEvent event) {
+        updateDisasterDamage();
+    }
+
+    private void handleExit(ActionEvent event) {
+        closeDialog();
+    }
+
+    private void initializeDamageSeverityDropdown() {
+        damageSeverityFld.getItems().addAll(
+                "No visible damage",
+                "Minor damage (non-structural)",
+                "Moderate damage (partially unusable)",
+                "Severe damage (unsafe for use)",
+                "Destruction or collapse"
+        );
     }
 
     private void loadBeneficiaries() {
@@ -386,6 +397,7 @@ public class EditDisasterDamageDialogController {
             boolean success = disasterDamageService.updateDisasterDamage(updatedDisasterDamage);
 
             if (success) {
+
                 AlertDialogManager.showSuccess("Update Successful",
                         "Disaster damage record has been successfully updated.");
 

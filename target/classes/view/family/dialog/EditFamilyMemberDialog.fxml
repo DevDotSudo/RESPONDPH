@@ -83,7 +83,6 @@
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="Male"/>
                                         <String fx:value="Female"/>
-                                        <String fx:value="Other"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -101,7 +100,6 @@
                                         <String fx:value="Married"/>
                                         <String fx:value="Widowed"/>
                                         <String fx:value="Separated"/>
-                                        <String fx:value="Divorced"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -123,6 +121,16 @@
                                     <String fx:value="Nephew"/>
                                     <String fx:value="Brother"/>
                                     <String fx:value="Sister"/>
+                                    <String fx:value="Uncle"/>
+                                    <String fx:value="Auntie"/>
+                                    <String fx:value="Wife"/>
+                                    <String fx:value="Husband"/>
+                                    <String fx:value="Common Law"/>
+                                    <String fx:value="Step Father"/>
+                                    <String fx:value="Step Mother"/>
+                                    <String fx:value="Grandmother"/>
+                                    <String fx:value="Grandfather"/>
+                                    <String fx:value="Other relative"/>
                                 </FXCollections>
                             </items>
                         </ComboBox>
@@ -152,6 +160,7 @@
                                         <String fx:value="Intellectual"/>
                                         <String fx:value="Mental/Psychosocial"/>
                                         <String fx:value="Due to Chronic Illness"/>
+                                        <String fx:value="Multiple Disabilities"/>
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -198,7 +207,7 @@
                                         <String fx:value="Regular full-time employment"/>
                                         <String fx:value="Self-employed with stable income"/>
                                         <String fx:value="Self-employed with unstable income"/>
-                                        <String fx:value="Irregular employment (odd jobs, seasonal work)"/>
+                                        <String fx:value="Informal or irregular employment"/>
                                         <String fx:value="Unemployed"/>
                                     </FXCollections>
                                 </items>

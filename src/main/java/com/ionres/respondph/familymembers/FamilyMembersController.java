@@ -2,9 +2,10 @@ package com.ionres.respondph.familymembers;
 
 import com.ionres.respondph.familymembers.dialogs_controller.AddFamilyController;
 import com.ionres.respondph.familymembers.dialogs_controller.EditFamilyController;
-import com.ionres.respondph.household_score.HouseholdScoreCalculator;
+import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.UpdateTrigger;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -128,8 +129,6 @@ public class FamilyMembersController {
         String memberName = familyMember.getFirstName() + " " + familyMember.getLastName();
         String beneficiaryName = familyMember.getBeneficiaryName();
 
-
-
         boolean confirm = AlertDialogManager.showConfirmation(
                 "Delete Family Member",
                 "Are you sure you want to delete family member:\n" +
@@ -144,9 +143,10 @@ public class FamilyMembersController {
                 boolean success = familyMembersService.deletefamilyMember(familyMember);
 
                 if (success) {
-                    HouseholdScoreCalculator calculator =
-                            new HouseholdScoreCalculator();
-                    calculator.autoRecalculateHouseholdScore(familyMember.getBeneficiaryId());
+
+                    UpdateTrigger beneficiaryUpdateTrigger = new UpdateTrigger();
+                    beneficiaryUpdateTrigger.triggerCascadeUpdate(familyMember.getBeneficiaryId());
+
                     familyMembersList.remove(familyMember);
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Family member has been successfully deleted.");

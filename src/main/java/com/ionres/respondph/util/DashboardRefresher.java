@@ -1,5 +1,6 @@
 package com.ionres.respondph.util;
 
+import com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController;
 import com.ionres.respondph.dashboard.DashboardController;
 import com.ionres.respondph.disaster.DisasterController;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorController;
@@ -9,7 +10,7 @@ public final class DashboardRefresher {
 
     private static DashboardController controller;
     private static VulnerabilityIndicatorController vulnerabilityIndicatorController;
-    private static DisasterController disasterController;
+    private static PrintAidDialogController printAidDialogController;
 
     private DashboardRefresher() {}
 
@@ -21,8 +22,14 @@ public final class DashboardRefresher {
         vulnerabilityIndicatorController = controller;
     }
 
-    public static  void registerLoadDisaster(DisasterController controller){
-        disasterController = controller;
+    public static  void  registerDisasterNameAndAidtypeName(PrintAidDialogController controller){
+        printAidDialogController = controller;
+    }
+
+    public static void refreshComboBoxOfDNAndAN(){
+        if (printAidDialogController != null){
+            Platform.runLater(printAidDialogController::refreshComboBoxes);
+        }
     }
 
     public static void refresh() {

@@ -6,8 +6,9 @@ import com.ionres.respondph.disaster_damage.DisasterDamageController;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.SessionManager;
+import com.ionres.respondph.util.UpdateTrigger;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -47,21 +48,9 @@ public class AddDisasterDamageDialogController {
 
     @FXML
     private void initialize() {
+        initializeDamageSeverityDropdown();
+        setupEventHandlers();
         setupKeyHandlers();
-        EventHandler<ActionEvent> handler = this::handleActions;
-        saveBtn.setOnAction(handler);
-        exitBtn.setOnAction(handler);
-    }
-
-    private void handleActions(ActionEvent event) {
-        Object src = event.getSource();
-
-        if (src == saveBtn) {
-            addDisasterDamage();
-        }
-        else if (src == exitBtn) {
-            closeDialog();
-        }
     }
 
     private void setupKeyHandlers() {
@@ -72,6 +61,29 @@ public class AddDisasterDamageDialogController {
             }
         });
         root.requestFocus();
+    }
+
+    private void setupEventHandlers() {
+        saveBtn.setOnAction(this::handleSave);
+        exitBtn.setOnAction(this::handleExit);
+    }
+
+    private void handleSave(ActionEvent event) {
+        addDisasterDamage();
+    }
+
+    private void handleExit(ActionEvent event) {
+        closeDialog();
+    }
+
+    private void initializeDamageSeverityDropdown() {
+        damageSeverityFld.getItems().addAll(
+                "No visible damage",
+                "Minor damage (non-structural)",
+                "Moderate damage (partially unusable)",
+                "Severe damage (unsafe for use)",
+                "Destruction or collapse"
+        );
     }
 
     private void closeDialog() {
@@ -268,11 +280,29 @@ public class AddDisasterDamageDialogController {
             boolean success = disasterDamageService.createDisasterDamage(disasterDamage);
 
             if (success) {
-                AlertDialogManager.showSuccess("Success",
-                        "Disaster damage record has been successfully added.");
+
+                System.out.println("========== DISASTER DAMAGE ADDED - TRIGGERING CASCADE ==========");
+
+
+                int beneficiaryId = beneficiary.getBeneficiaryId();
+                int adminId = SessionManager.getInstance().getCurrentAdminId();
+
+                UpdateTrigger trigger = new UpdateTrigger();
+                boolean cascadeSuccess = trigger.triggerCascadeUpdateForNewBeneficiaryWithDisaster(beneficiaryId, adminId, disaster.getDisasterId());
+
+                if (cascadeSuccess) {
+                    AlertDialogManager.showSuccess("Success",
+                            "Disaster damage record has been successfully added.\n"
+                    );
+                } else {
+                    AlertDialogManager.showWarning("Partial Success",
+                            "Disaster damage record has been added, but score recalculation encountered issues.\n" +
+                                    "Please check the console for details.");
+                }
+
                 disasterDamageController.loadTable();
                 clearFields();
-                closeDialog();
+
             } else {
                 AlertDialogManager.showError("Error",
                         "Failed to add disaster damage record. Please try again.");

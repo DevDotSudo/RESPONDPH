@@ -1,36 +1,63 @@
 package com.ionres.respondph.aid_type;
 
 import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.util.ResourceUtils;
+import com.ionres.respondph.util.Cryptography;
+
+import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class AidTypeDAOImpl implements AidTypeDAO {
-    private static final Logger LOGGER = Logger.getLogger(AidTypeDAOImpl.class.getName());
+public class AidTypeDAOImpl implements AidTypeDAO{
     private final DBConnection dbConnection;
+    private Connection conn;
+    private final Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
+
 
     public AidTypeDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
+
     }
 
+    @Override
+    public List<AidTypeModelComboBox> findAll() {
+        List<AidTypeModelComboBox> aidTypes = new ArrayList<>();
+        String sql = "SELECT * FROM aid_type ORDER BY aid_name";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                AidTypeModelComboBox aidType = mapResultSetToAidType(rs);
+                aidTypes.add(aidType);
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("Loaded " + aidTypes.size() + " aid types");
+
+        } catch (Exception e) {
+            System.err.println("Error fetching all aid types: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return aidTypes;
+    }
     @Override
     public boolean saving(AidTypeModel atm) {
         String sql = "INSERT INTO aid_type (aid_name, age_weight, gender_weight, marital_status_weight, solo_parent_weight, disability_weight, health_condition_weight, access_to_clean_water_weight, sanitation_facilities_weight, house_construction_type_weight, ownership_weight, damage_severity_weight, employment_status_weight, monthly_income_weight, education_level_weight, digital_access_weight, dependency_ratio_weight, notes, admin_id, reg_date)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        Connection conn = null;
-        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
 
-            ps.setString(1, atm.getAidTypeName());
+            ps.setString(1,atm.getAidTypeName());
             ps.setDouble(2, atm.getAgeWeight());
             ps.setDouble(3, atm.getGenderWeight());
             ps.setDouble(4, atm.getMaritalStatusWeight());
@@ -55,45 +82,63 @@ public class AidTypeDAOImpl implements AidTypeDAO {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error occurred while saving aid type", e);
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 
     @Override
     public List<AidTypeModel> getAll() {
+
         List<AidTypeModel> list = new ArrayList<>();
+
         String sql = "SELECT at.aid_type_id, at.aid_name, at.notes, at.reg_date, at.admin_id, " +
                 "a.first_name AS admin_firstname " +
                 "FROM aid_type at " +
-                "INNER JOIN admin a ON at.admin_id = a.admin_id";
+                "INNER JOIN admin a " +
+                "ON at.admin_id = a.admin_id";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 AidTypeModel at = new AidTypeModel();
-                at.setAidTypeId(rs.getInt("aid_type_id"));
+
+                at.setAidTypeId(rs.getInt("aid_type_id"));         // You may need to add this setter
                 at.setAidTypeName(rs.getString("aid_name"));
                 at.setNotes(rs.getString("notes"));
                 at.setRegDate(rs.getString("reg_date"));
                 at.setAdminId(rs.getInt("admin_id"));
-                at.setAdminName(rs.getString("admin_firstname"));
+
+                at.setAdminName(rs.getString("admin_firstname")); // You need a new field + setter in AidTypeModel
+
                 list.add(at);
             }
 
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error fetching aid types", ex);
+            ex.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(
+                    null,
+                    "Error fetching aid types: " + ex.getMessage()
+            );
         } finally {
-            ResourceUtils.closeResources(rs, ps);
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
+
         return list;
     }
 
@@ -101,40 +146,42 @@ public class AidTypeDAOImpl implements AidTypeDAO {
     public boolean delete(AidTypeModel atm) {
         String sql = "DELETE FROM aid_type WHERE aid_type_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try {conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, atm.getAidTypeId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error occurred while deleting aid type", e);
+            JOptionPane.showMessageDialog(null, "Database error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
+        }
+        finally {
+            try {
+                conn.close();
+            }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 
     @Override
     public AidTypeModel getById(int id) {
         AidTypeModel at = null;
+
         String sql = "SELECT * FROM aid_type WHERE aid_type_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
-            rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
                 at = new AidTypeModel();
+
                 at.setAidTypeId(rs.getInt("aid_type_id"));
                 at.setAidTypeName(rs.getString("aid_name"));
                 at.setAgeWeight(rs.getDouble("age_weight"));
@@ -158,15 +205,27 @@ public class AidTypeDAOImpl implements AidTypeDAO {
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching aid type by ID", e);
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Error fetching aid type: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         } finally {
-            ResourceUtils.closeResources(rs, ps);
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
+
         return at;
     }
 
+
+
     @Override
     public boolean update(AidTypeModel atm) {
+
         String sql = "UPDATE aid_type SET " +
                 "aid_name = ?, " +
                 "age_weight = ?, " +
@@ -190,11 +249,9 @@ public class AidTypeDAOImpl implements AidTypeDAO {
                 "reg_date = ? " +
                 "WHERE aid_type_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
         try {
             conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, atm.getAidTypeName());
             ps.setDouble(2, atm.getAgeWeight());
@@ -221,10 +278,108 @@ public class AidTypeDAOImpl implements AidTypeDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error occurred while updating aid type", e);
+            JOptionPane.showMessageDialog(null,
+                    "Database error occurred: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return false;
+
         } finally {
-            ResourceUtils.closePreparedStatement(ps);
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
+
+    @Override
+    public AidTypeModelComboBox mapResultSetToAidType(ResultSet rs) throws Exception {
+        AidTypeModelComboBox aidType = new AidTypeModelComboBox();
+
+        aidType.setAidTypeId(rs.getInt("aid_type_id"));
+
+        String encryptedName = rs.getString("aid_name");
+        aidType.setAidName(cs.decryptWithOneParameter(encryptedName));
+
+        String encryptedNotes = rs.getString("notes");
+        if (encryptedNotes != null && !encryptedNotes.isEmpty()) {
+            aidType.setNotes(cs.decryptWithOneParameter(encryptedNotes));
+        }
+
+        aidType.setCreatedByAdminId(rs.getInt("admin_id"));
+
+
+        return aidType;
+    }
+
+    @Override
+    public List<Integer> getAllAidTypeIds() {
+        List<Integer> aidTypeIds = new ArrayList<>();
+        String sql = "SELECT aid_type_id FROM aid_type";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                aidTypeIds.add(rs.getInt("aid_type_id"));
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching aid type IDs: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return aidTypeIds;
+    }
+
+    @Override
+    public boolean hasAnyAidTypes() {
+        String sql = "SELECT COUNT(*) as count FROM aid_type";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int count = rs.getInt("count");
+                rs.close();
+                ps.close();
+                return count > 0;
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error checking for aid types: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
 }

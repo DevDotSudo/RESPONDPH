@@ -93,6 +93,7 @@ public class AppLoader {
         SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");
         SceneManager.preload("/view/send_sms/SendSMS.fxml");
         SceneManager.preload("/view/settings/Settings.fxml");
+        SceneManager.preload( "/view/aid/Aid.fxml");
     }
     
     /**
@@ -124,5 +125,9 @@ public class AppLoader {
         // Utility dialogs
         DialogManager.preload("mapping", "/view/mapping/MapDialog.fxml");
         DialogManager.preload("beneficiariesInCircle", "/view/disaster_mapping/dialog/BeneficiariesInCircleDialog.fxml");
+
+        // Aid Dialogs
+        DialogManager.preload("addAid", "/view/aid/dialog/AddAidDialog.fxml");
+        DialogManager.preload("printAidDialog", "/view/aid/dialog/PrintAidDialog.fxml");
     }
 }

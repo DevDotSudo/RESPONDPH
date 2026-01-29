@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="aidRootPane"
+            styleClass="root-pane"
+            stylesheets="@/styles/aid/aid.css"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ionres.respondph.aid.AidController">
+
+    <VBox AnchorPane.topAnchor="0.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0">
+
+        <VBox styleClass="header-section" VBox.vgrow="NEVER">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24"/>
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="24" styleClass="page-icon"/>
+                <Label text="Manage Aid" styleClass="page-title"/>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
+                <VBox.margin>
+                    <Insets top="20"/>
+                </VBox.margin>
+
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                    <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon"/>
+                    <TextField fx:id="aidSearchField"
+                               promptText="Search aid..."
+                               styleClass="search-field"
+                               HBox.hgrow="ALWAYS"/>
+                </HBox>
+
+                <Button fx:id="aidSearchButton" styleClass="primary-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon"/>
+                            <Label text="Search" styleClass="button-label"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="printButton" styleClass="primary-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon"/>
+                            <Label text="Print" styleClass="button-label"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="addAidButton" styleClass="primary-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon"/>
+                            <Label text="Add Aid" styleClass="button-label"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="refreshAidButton" styleClass="secondary-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="REFRESH" size="14" styleClass="refresh-icon"/>
+                            <Label text="Refresh" styleClass="button-label"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="aidTable" styleClass="admin-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="aidIdColumn" text="ID" minWidth="80" maxWidth="80"/>
+                    <TableColumn fx:id="beneficiaryColumn" text="Beneficiary Name" minWidth="80" maxWidth="160"/>
+                    <TableColumn fx:id="disasterColumn" text="Disaster Name" minWidth="80" maxWidth="160"/>
+                    <TableColumn fx:id="nameColumn" text="Aid Name" prefWidth="160"/>
+                    <TableColumn fx:id="dateColumn" text="Date" prefWidth="140"/>
+                    <TableColumn fx:id="qtyColumn" text="Quantity" prefWidth="120"/>
+                    <TableColumn fx:id="costColumn" text="Cost" prefWidth="160"/>
+                    <TableColumn fx:id="providerColumn" text="Provider" prefWidth="150"/>
+                    <TableColumn fx:id="notesColumn" text="Notes" minWidth="120" maxWidth="120"/>
+                    <!--                    <TableColumn fx:id="actionsColumn" text="Actions" minWidth="120" maxWidth="120"/>-->
+                </columns>
+
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+
+    </VBox>
+</AnchorPane>

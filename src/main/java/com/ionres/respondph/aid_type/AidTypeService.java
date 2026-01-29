@@ -13,4 +13,6 @@ public interface AidTypeService {
     boolean updateAidType(AidTypeModel atm);
     AidTypeModel getAidTypeById(int id);
     public List<AidTypeModel> searchAidType(String searchTxt);
+    List<Integer> getAllAidTypeIds();
+    boolean hasAnyAidTypes();
 }

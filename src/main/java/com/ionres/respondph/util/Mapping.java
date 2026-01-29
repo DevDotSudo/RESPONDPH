@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class Mapping {
     private static final Logger LOGGER = Logger.getLogger(Mapping.class.getName());
-    
+
     private Canvas canvas;
     private GraphicsContext gc;
     private Runnable afterRedraw;
@@ -30,7 +30,7 @@ public class Mapping {
     private Image markerImage;
     private double zoom;
     private static final double MIN_ZOOM = 13.2;
-    private static final double MAX_ZOOM = 18;
+    private static final double MAX_ZOOM = 21;
     private static final int TILE_SIZE = 256;
     private static final double BOUND_NORTH = 11.116584029742963;
     private static final double BOUND_SOUTH = 10.984159872049194;
@@ -47,13 +47,13 @@ public class Mapping {
         } catch (Exception e) {
             LOGGER.severe("There was an error getting tile directory");
         }
-        
+
         String sysProp = System.getProperty("map.tile.directory");
         if (sysProp != null && !sysProp.trim().isEmpty()) {
             return sysProp.trim();
         }
-        
-        return "C:/Users/Davie/OneDrive/Documents/IntellijIDEA Projects/tiles";
+
+        return "C:/Users/Davie/IdeaProjects/tiles";
     }
 
     public Mapping() {
@@ -61,10 +61,9 @@ public class Mapping {
         this.initialized = false;
         loadMarkerImage();
     }
-    
+
     private void loadMarkerImage() {
         try {
-            // Try to load from resources first
             markerImage = new Image(getClass().getResourceAsStream("/images/placeholder.png"));
             if (markerImage.isError()) {
                 LOGGER.warning("Failed to load marker image from resources, using null");
@@ -81,14 +80,14 @@ public class Mapping {
             LOGGER.severe("Cannot initialize Mapping: container is null");
             return;
         }
-        
+
         try {
             canvas = new Canvas();
             gc = canvas.getGraphicsContext2D();
 
             canvas.widthProperty().bind(container.widthProperty());
             canvas.heightProperty().bind(container.heightProperty());
-            
+
             container.getChildren().setAll(canvas);
 
             canvas.setOnMousePressed(this::mousePressed);
@@ -98,7 +97,7 @@ public class Mapping {
 
             canvas.widthProperty().addListener((o,a,b) -> redrawSafe());
             canvas.heightProperty().addListener((o,a,b) -> redrawSafe());
-            
+
             center();
             initialized = true;
             LOGGER.fine("Mapping initialized successfully");
@@ -107,16 +106,16 @@ public class Mapping {
             initialized = false;
         }
     }
-    
+
     public boolean isInitialized() {
-        return initialized && canvas != null && gc != null && 
-               canvas.getWidth() > 0 && canvas.getHeight() > 0;
+        return initialized && canvas != null && gc != null &&
+                canvas.getWidth() > 0 && canvas.getHeight() > 0;
     }
-    
+
     public boolean isDragging() {
         return dragging;
     }
-    
+
     public static boolean isValidCoordinate(double lat, double lon) {
         if (Double.isNaN(lat) || lat < -90.0 || lat > 90.0) {
             return false;
@@ -125,9 +124,8 @@ public class Mapping {
             return false;
         }
         if (lat < BOUND_SOUTH || lat > BOUND_NORTH ||
-            lon < BOUND_WEST || lon > BOUND_EAST) {
+                lon < BOUND_WEST || lon > BOUND_EAST) {
             LOGGER.fine("Coordinate outside application bounds: " + lat + ", " + lon);
-            // Still return true as coordinates are valid, just outside our region
         }
         return true;
     }
@@ -136,7 +134,7 @@ public class Mapping {
         if (!isInitialized()) {
             return;
         }
-        
+
         if (!centered && canvas.getWidth() > 0 && canvas.getHeight() > 0) {
             zoom = MIN_ZOOM;
             center();
@@ -186,7 +184,7 @@ public class Mapping {
         if (!isInitialized()) {
             return;
         }
-        
+
         try {
             Point p = latLonToPixel(11.052390, 122.786762, zoom);
             offsetX = canvas.getWidth() / 2 - p.x;
@@ -202,7 +200,7 @@ public class Mapping {
         if (!isInitialized()) {
             return;
         }
-        
+
         try {
             int baseZoom = (int) Math.floor(zoom);
             double scale = Math.pow(2, zoom - baseZoom);
@@ -243,7 +241,7 @@ public class Mapping {
             LOGGER.warning("Cannot convert screen to lat/lon: mapping not initialized");
             return new LatLng(0, 0);
         }
-        
+
         try {
             double px = x - offsetX;
             double py = y - offsetY;
@@ -258,7 +256,7 @@ public class Mapping {
             if (!isValidCoordinate(lat, lon)) {
                 LOGGER.fine("Invalid coordinate conversion result: " + lat + ", " + lon);
             }
-            
+
             return new LatLng(lat, lon);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error converting screen to lat/lon", e);
@@ -271,7 +269,7 @@ public class Mapping {
         if (!isInitialized()) {
             return;
         }
-        
+
         try {
             Point nw = latLonToPixel(BOUND_NORTH, BOUND_WEST, zoom);
             Point se = latLonToPixel(BOUND_SOUTH, BOUND_EAST, zoom);
@@ -327,7 +325,7 @@ public class Mapping {
         if (!isInitialized()) {
             return;
         }
-        
+
         try {
             double oldZoom = zoom;
             zoom += e.getDeltaY() > 0 ? 0.2 : -0.2;
@@ -358,26 +356,26 @@ public class Mapping {
         try {
             String tileDir = getTileDirectory();
             File tileFile = new File(tileDir, key + ".png");
-            
+
             if (!tileFile.exists() || !tileFile.isFile()) {
                 LOGGER.finest("Tile file does not exist: " + tileFile.getAbsolutePath());
                 return null;
             }
-            
+
             String tilePath = tileFile.toURI().toString();
             img = new Image(tilePath, false);
-            
+
             if (img.isError()) {
                 String fallbackPath = "file:/" + tileFile.getAbsolutePath().replace("\\", "/");
                 fallbackPath = fallbackPath.replace(" ", "%20");
                 img = new Image(fallbackPath, false);
-                
+
                 if (img.isError()) {
                     LOGGER.fine("Failed to load tile: " + key + " from both " + tilePath + " and " + fallbackPath);
                     return null;
                 }
             }
-            
+
             if (img.getWidth() > 0 && img.getHeight() > 0) {
                 tileCache.put(key, img);
                 LOGGER.finest("Loaded tile: " + key);
@@ -385,7 +383,7 @@ public class Mapping {
                 LOGGER.fine("Tile loaded but has zero dimensions: " + key);
                 return null;
             }
-            
+
         } catch (Exception e) {
             LOGGER.log(Level.FINE, "Error loading tile: " + key + " - " + e.getMessage(), e);
             return null;
@@ -399,7 +397,7 @@ public class Mapping {
             LOGGER.fine("Invalid coordinate in latLonToPixel: " + lat + ", " + lon);
             return new Point(0, 0);
         }
-        
+
         try {
             double n = Math.pow(2, z);
             double x = (lon + 180) / 360 * n * TILE_SIZE;
@@ -416,7 +414,7 @@ public class Mapping {
             LOGGER.warning("Cannot convert lat/lon to screen: mapping not initialized");
             return new Point(0, 0);
         }
-        
+
         try {
             Point p = latLonToPixel(lat, lon, zoom);
             return new Point(p.x + offsetX, p.y + offsetY);
@@ -431,7 +429,7 @@ public class Mapping {
             LOGGER.fine("Invalid latitude in metersPerPixel: " + lat);
             return 1.0; // Default fallback
         }
-        
+
         try {
             double earth = 40075016.686;
             return earth * Math.cos(Math.toRadians(lat)) / Math.pow(2, zoom + 8);
@@ -440,11 +438,11 @@ public class Mapping {
             return 1.0;
         }
     }
-    
+
     public double getZoom() {
         return zoom;
     }
-    
+
     public void setZoom(double newZoom) {
         if (newZoom >= MIN_ZOOM && newZoom <= MAX_ZOOM) {
             this.zoom = newZoom;
@@ -473,3 +471,4 @@ public class Mapping {
         public LatLng(double lat, double lon) { this.lat = lat; this.lon = lon; }
     }
 }
+

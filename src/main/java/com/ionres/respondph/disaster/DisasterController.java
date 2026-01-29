@@ -45,7 +45,6 @@ public class DisasterController {
         setupActionButtons();
         setupSearchListener();
         loadTable();
-        DashboardRefresher.registerLoadDisaster(this);
         EventHandler<ActionEvent> handler = this::handleActions;
         searchBtn.setOnAction(handler);
         addBtn.setOnAction(handler);
@@ -129,6 +128,7 @@ public class DisasterController {
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Disaster has been successfully deleted.");
                     DashboardRefresher.refresh();
+                    DashboardRefresher.refreshComboBoxOfDNAndAN();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete disaster. Please try again.");

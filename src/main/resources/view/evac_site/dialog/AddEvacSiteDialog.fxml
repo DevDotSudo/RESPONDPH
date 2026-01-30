@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import java.lang.*?>
+<?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" styleClass="evacuation-dialog-container" stylesheets="@/styles/evac_site/dialog/addevacsitedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evac_site.dialogs_controller.AddEvacSiteController">
 
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-dialog-header">
@@ -52,19 +52,19 @@
                             <ComboBox fx:id="centerType" promptText="Select center type" styleClass="evacuation-dropdown" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="School"/>
-                                        <String fx:value="Community Center"/>
-                                        <String fx:value="Gymnasium"/>
-                                        <String fx:value="Government Building"/>
-                                        <String fx:value="Religious Institution"/>
-                                        <String fx:value="Sports Complex"/>
-                                        <String fx:value="Hospital Annex"/>
-                                        <String fx:value="Military Base"/>
-                                        <String fx:value="Hotel/Motel"/>
-                                        <String fx:value="Convention Center"/>
-                                        <String fx:value="Warehouse"/>
-                                        <String fx:value="Shopping Mall"/>
-                                        <String fx:value="Other"/>
+                                        <String fx:value="School" />
+                                        <String fx:value="Community Center" />
+                                        <String fx:value="Gymnasium" />
+                                        <String fx:value="Government Building" />
+                                        <String fx:value="Religious Institution" />
+                                        <String fx:value="Sports Complex" />
+                                        <String fx:value="Hospital Annex" />
+                                        <String fx:value="Military Base" />
+                                        <String fx:value="Hotel/Motel" />
+                                        <String fx:value="Convention Center" />
+                                        <String fx:value="Warehouse" />
+                                        <String fx:value="Shopping Mall" />
+                                        <String fx:value="Other" />
                                     </FXCollections>
                                 </items>
                             </ComboBox>
@@ -101,47 +101,18 @@
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
                     <!-- Address -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label styleClass="evacuation-field-label" text="Address *" />
+                        <Label styleClass="evacuation-field-label" text="Latitude *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-input-container" HBox.hgrow="ALWAYS">
                             <FontAwesomeIconView glyphName="MAP_PIN" size="16" styleClass="evacuation-field-icon" />
-                            <TextField fx:id="addressFld" promptText="Enter full address" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
                     <!-- City -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label styleClass="evacuation-field-label" text="City *" />
+                        <Label styleClass="evacuation-field-label" text="Longitude *" />
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-input-container" HBox.hgrow="ALWAYS">
-                            <FontAwesomeIconView glyphName="BUILDING" size="16" styleClass="evacuation-field-icon" />
-                            <TextField fx:id="cityFld" promptText="Enter city" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
-
-                    <!-- Region -->
-                    <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label styleClass="evacuation-field-label" text="Region *" />
-                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-input-container" HBox.hgrow="ALWAYS">
-                            <FontAwesomeIconView glyphName="GLOBE" size="16" styleClass="evacuation-field-icon" />
-                            <TextField fx:id="regionFld" promptText="Enter region" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
-                </HBox>
-
-                <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
-                    <!-- Latitude -->
-                    <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label styleClass="evacuation-field-label" text="Latitude" />
-                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-input-container" HBox.hgrow="ALWAYS">
-                            <FontAwesomeIconView glyphName="GLOBE" size="16" styleClass="evacuation-field-icon" />
-                            <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
-
-                    <!-- Longitude -->
-                    <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label styleClass="evacuation-field-label" text="Longitude" />
-                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-input-container" HBox.hgrow="ALWAYS">
-                            <FontAwesomeIconView glyphName="GLOBE" size="16" styleClass="evacuation-field-icon" />
+                            <FontAwesomeIconView glyphName="MAP_PIN" size="16" styleClass="evacuation-field-icon" />
                             <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
@@ -149,10 +120,6 @@
             </VBox>
 
             <VBox spacing="20" styleClass="evacuation-form-section">
-                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="evacuation-section-header">
-                    <FontAwesomeIconView glyphName="STICKY_NOTE" size="20" styleClass="evacuation-section-icon" />
-                    <Label styleClass="evacuation-section-title" text="Additional Information" />
-                </HBox>
 
                 <VBox spacing="8">
                     <Label styleClass="evacuation-field-label" text="Notes" />

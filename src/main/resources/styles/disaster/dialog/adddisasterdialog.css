@@ -1,4 +1,3 @@
-/* ===== DISASTER DIALOG CONTAINER ===== */
 .disaster-dialog-container {
     -fx-background-color: #1e293b;
     -fx-border-color: #475569;
@@ -11,7 +10,6 @@
     -fx-pref-height: 700px;
 }
 
-/* ===== DISASTER DIALOG HEADER ===== */
 .disaster-dialog-header {
     -fx-background-color: #334155;
     -fx-background-radius: 16px 16px 0 0;
@@ -53,7 +51,6 @@
     -fx-fill: #f97316;
 }
 
-/* ===== DISASTER ERROR CONTAINER ===== */
 .disaster-error-container {
     -fx-padding: 0 32px 0 32px;
     -fx-background-color: transparent;
@@ -76,7 +73,6 @@
     -fx-margin: 10px 0;
 }
 
-/* ===== DISASTER FORM SCROLL PANE ===== */
 .disaster-form-scroll-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;

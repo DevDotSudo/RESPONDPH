@@ -10,10 +10,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class smsDAOImpl implements smsDAO{
+public class SmsDAOImpl implements SmsDAO {
 
     @Override
-    public void saveSMS(smsModel sms) {
+    public void saveSMS(SmsModel sms) {
         String sql = "INSERT INTO sms_logs(date_sent, fullname, phonenumber, message, status) VALUES (?,?,?,?,?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -31,9 +31,9 @@ public class smsDAOImpl implements smsDAO{
     }
 
     @Override
-    public List<smsModel> getAllSMS() {
+    public List<SmsModel> getAllSMS() {
 
-        List<smsModel> logs = new ArrayList<>();
+        List<SmsModel> logs = new ArrayList<>();
         String sql = "SELECT * FROM sms_logs ORDER BY date_sent DESC";
 
         try (Connection conn = DBConnection.getInstance().getConnection();
@@ -41,7 +41,7 @@ public class smsDAOImpl implements smsDAO{
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                smsModel log = new smsModel();
+                SmsModel log = new SmsModel();
                 log.setDateSent(rs.getTimestamp("date_sent"));
                 log.setFullname(rs.getString("fullname"));
                 String phone = rs.getString("phonenumber");
@@ -59,7 +59,7 @@ public class smsDAOImpl implements smsDAO{
     }
 
     @Override
-    public void resendSMS(smsModel sms) {
+    public void resendSMS(SmsModel sms) {
         if (sms == null) return;
         String phone = sms.getPhonenumber();
         Timestamp ts = sms.getDateSent();

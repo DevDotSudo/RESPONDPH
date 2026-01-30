@@ -9,6 +9,7 @@ import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.SessionManager;
 import com.ionres.respondph.util.UpdateTrigger;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -30,7 +31,6 @@ public class AddDisasterDamageDialogController {
     @FXML private DatePicker assessmentDatePicker;
     @FXML private TextField notesFld;
     @FXML private Button saveBtn, exitBtn;
-
     private List<BeneficiaryModel> allBeneficiaries;
     private List<DisasterModel> allDisaster;
     private DisasterDamageService disasterDamageService;
@@ -49,8 +49,21 @@ public class AddDisasterDamageDialogController {
     @FXML
     private void initialize() {
         initializeDamageSeverityDropdown();
-        setupEventHandlers();
         setupKeyHandlers();
+        EventHandler<ActionEvent> handler = this::handleActions;
+        saveBtn.setOnAction(handler);
+        exitBtn.setOnAction(handler);
+    }
+
+    private void handleActions(ActionEvent event) {
+        Object src =  event.getSource();
+
+        if(src == saveBtn){
+            addDisasterDamage();
+        }
+        else if (src == exitBtn){
+            closeDialog();
+        }
     }
 
     private void setupKeyHandlers() {
@@ -61,19 +74,6 @@ public class AddDisasterDamageDialogController {
             }
         });
         root.requestFocus();
-    }
-
-    private void setupEventHandlers() {
-        saveBtn.setOnAction(this::handleSave);
-        exitBtn.setOnAction(this::handleExit);
-    }
-
-    private void handleSave(ActionEvent event) {
-        addDisasterDamage();
-    }
-
-    private void handleExit(ActionEvent event) {
-        closeDialog();
     }
 
     private void initializeDamageSeverityDropdown() {
@@ -283,7 +283,6 @@ public class AddDisasterDamageDialogController {
 
                 System.out.println("========== DISASTER DAMAGE ADDED - TRIGGERING CASCADE ==========");
 
-
                 int beneficiaryId = beneficiary.getBeneficiaryId();
                 int adminId = SessionManager.getInstance().getCurrentAdminId();
 
@@ -351,7 +350,6 @@ public class AddDisasterDamageDialogController {
             notesFld.requestFocus();
             return false;
         }
-
         return true;
     }
 

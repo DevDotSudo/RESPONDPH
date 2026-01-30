@@ -21,14 +21,17 @@ public class MainFrameController {
     @FXML private Button managementSectionBtn;
     @FXML private Button disasterSectionBtn;
     @FXML private Button aidsSectionBtn;
+    @FXML private Button evacSectionBtn;
 
     @FXML private VBox managementSectionContent;
     @FXML private VBox disasterSectionContent;
     @FXML private VBox aidsSectionContent;
+    @FXML private VBox evacSectionContent;
 
     @FXML private FontAwesomeIconView managementSectionIcon;
     @FXML private FontAwesomeIconView disasterSectionIcon;
     @FXML private FontAwesomeIconView aidsSectionIcon;
+    @FXML private FontAwesomeIconView evacSectionIcon;
 
     @FXML private Button dashboardBtn;
     @FXML private Button manageAdminBtn;
@@ -38,7 +41,9 @@ public class MainFrameController {
     @FXML private Button disasterMappingBtn;
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
-    @FXML private Button aidsBtn;
+    @FXML private Button evacBtn;
+    @FXML private Button aidTypeBtn;
+    @FXML private Button aidBtn;
     @FXML private Button sendSmsBtn;
     @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
@@ -47,19 +52,15 @@ public class MainFrameController {
 
     @FXML
     public void initialize() {
-        // Setup section toggles - all sections start collapsed
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn, disasterSectionContent, disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn, aidsSectionContent, aidsSectionIcon);
-        
-        // Collapse all sections at startup
+        setupSectionToggle(evacSectionBtn, evacSectionContent, evacSectionIcon);
         collapseAllSections();
         
-        // Load default page
         loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
 
-        // Setup action handlers
         EventHandler<ActionEvent> handlers = this::handleActions;
         dashboardBtn.setOnAction(handlers);
         manageAdminBtn.setOnAction(handlers);
@@ -67,26 +68,23 @@ public class MainFrameController {
         disasterBtn.setOnAction(handlers);
         disasterMappingBtn.setOnAction(handlers);
         disasterDamageBtn.setOnAction(handlers);
-        aidsBtn.setOnAction(handlers);
+        aidBtn.setOnAction(handlers);
+        aidTypeBtn.setOnAction(handlers);
+        evacBtn.setOnAction(handlers);
         vulnerabilityBtn.setOnAction(handlers);
         familyMembersBtn.setOnAction(handlers);
         sendSmsBtn.setOnAction(handlers);
         settingsBtn.setOnAction(handlers);
         logoutBtn.setOnAction(handlers);
     }
-    
-    /**
-     * Collapses all navigation sections at startup.
-     */
+
     private void collapseAllSections() {
         collapseSection(managementSectionContent, managementSectionIcon);
         collapseSection(disasterSectionContent, disasterSectionIcon);
         collapseSection(aidsSectionContent, aidsSectionIcon);
+        collapseSection(evacSectionContent, evacSectionIcon);
     }
-    
-    /**
-     * Collapses a specific section.
-     */
+
     private void collapseSection(VBox sectionContent, FontAwesomeIconView chevronIcon) {
         sectionContent.setVisible(false);
         sectionContent.setManaged(false);
@@ -120,8 +118,14 @@ public class MainFrameController {
         else if(src == manageBeneficiariesBtn) {
             handleManageBeneficiaries();
         }
-        else if(src == aidsBtn) {
-            handleAids();
+        else if(src == aidBtn) {
+            handleAid();
+        }
+        else if (src == aidTypeBtn) {
+            handleAidType();
+        }
+        else if (src == evacBtn) {
+            handleEvacSite();
         }
         else if(src == vulnerabilityBtn) {
             handleVulnerabilityIndicator();
@@ -164,9 +168,19 @@ public class MainFrameController {
         activeButton(manageBeneficiariesBtn);
     }
 
-    private void handleAids() {
+    private void handleAid() {
+        loadPage("/view/aid/Aid.fxml");
+        activeButton(aidBtn);
+    }
+
+    private void handleAidType() {
         loadPage("/view/aid_type/AidType.fxml");
-        activeButton(aidsBtn);
+        activeButton(aidTypeBtn);
+    }
+
+    private void handleEvacSite() {
+        loadPage("/view/evac_site/EvacSite.fxml");
+        activeButton(evacBtn);
     }
 
     private void handleVulnerabilityIndicator() {
@@ -237,21 +251,13 @@ public class MainFrameController {
         contentArea.getChildren().setAll(root);
     }
 
-
-    /**
-     * Sets the active button state for navigation highlighting.
-     * Removes active state from previous button and applies to new button.
-     * 
-     * @param btnId The button to set as active
-     */
     private void activeButton(Button btnId) {
         if (activeBtn != null) {
             activeBtn.getStyleClass().remove("nav-button-active");
             activeBtn.getStyleClass().remove("nav-button-child-active");
         }
         activeBtn = btnId;
-        
-        // Determine if it's a child button or main button
+
         if (btnId.getStyleClass().contains("nav-button-child")) {
             activeBtn.getStyleClass().add("nav-button-child-active");
         } else {

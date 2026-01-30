@@ -14,58 +14,34 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class AddAidTypeController {
 
-    @FXML
-    private VBox root;
-    @FXML
-    private TextField aidNameFld;
-    @FXML
-    private TextField ageWeightFld;
-    @FXML
-    private TextField genderWeightFld;
-    @FXML
-    private TextField maritalStatusWeightFld;
-    @FXML
-    private TextField soloParentWeightFld;
-    @FXML
-    private TextField disabilityWeightFld;
-    @FXML
-    private TextField healthConditionWeightFld;
-    @FXML
-    private TextField waterAccessWeightFld;
-    @FXML
-    private TextField sanitationWeightFld;
-    @FXML
-    private TextField houseTypeWeightFld;
-    @FXML
-    private TextField ownershipWeightFld;
-    @FXML
-    private TextField damageSeverityWeightFld;
-    @FXML
-    private TextField employmentWeightFld;
-    @FXML
-    private TextField monthlyIncomeWeightFld;
-    @FXML
-    private TextField educationWeightFld;
-    @FXML
-    private TextField digitalAccessWeightFld;
-    @FXML
-    private TextField dependencyRatioWeightFld;
-    @FXML
-    private TextArea notesFld;
-
-    @FXML
-    private Button saveBtn;
-    @FXML
-    private Button exitBtn;
+    @FXML private VBox root;
+    @FXML private TextField aidNameFld;
+    @FXML private TextField ageWeightFld;
+    @FXML private TextField genderWeightFld;
+    @FXML private TextField maritalStatusWeightFld;
+    @FXML private TextField soloParentWeightFld;
+    @FXML private TextField disabilityWeightFld;
+    @FXML private TextField healthConditionWeightFld;
+    @FXML private TextField waterAccessWeightFld;
+    @FXML private TextField sanitationWeightFld;
+    @FXML private TextField houseTypeWeightFld;
+    @FXML private TextField ownershipWeightFld;
+    @FXML private TextField damageSeverityWeightFld;
+    @FXML private TextField employmentWeightFld;
+    @FXML private TextField monthlyIncomeWeightFld;
+    @FXML private TextField educationWeightFld;
+    @FXML private TextField digitalAccessWeightFld;
+    @FXML private TextField dependencyRatioWeightFld;
+    @FXML private TextArea notesFld;
+    @FXML private Button saveBtn;
+    @FXML private Button exitBtn;
     private double xOffset = 0;
     private double yOffset = 0;
-
     private AidTypeService aidTypeService;
     private AidTypeController aidTypeController;
 

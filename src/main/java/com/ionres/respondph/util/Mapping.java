@@ -39,19 +39,20 @@ public class Mapping {
     private final Map<String, Image> tileCache = new HashMap<>();
 
     private static String getTileDirectory() {
-        try {
-            String configPath = ConfigLoader.get("map.tile.directory");
-            if (configPath != null && !configPath.trim().isEmpty()) {
-                return configPath.trim();
-            }
-        } catch (Exception e) {
-            LOGGER.severe("There was an error getting tile directory");
-        }
-
-        String sysProp = System.getProperty("map.tile.directory");
-        if (sysProp != null && !sysProp.trim().isEmpty()) {
-            return sysProp.trim();
-        }
+        
+//        try {
+//            String configPath = ConfigLoader.get("map.tile.directory");
+//            if (configPath != null && !configPath.trim().isEmpty()) {
+//                return configPath.trim();
+//            }
+//        } catch (Exception e) {
+//            LOGGER.severe("There was an error getting tile directory");
+//        }
+//
+//        String sysProp = System.getProperty("map.tile.directory");
+//        if (sysProp != null && !sysProp.trim().isEmpty()) {
+//            return sysProp.trim();
+//        }
 
         return "C:/Users/Davie/IdeaProjects/tiles";
     }
@@ -355,10 +356,16 @@ public class Mapping {
 
         try {
             String tileDir = getTileDirectory();
-            File tileFile = new File(tileDir, key + ".png");
+            // Construct path: tileDir/z/x/y.png
+            File zoomFolder = new File(tileDir, String.valueOf(z));
+            File xFolder = new File(zoomFolder, String.valueOf(x));
+            File tileFile = new File(xFolder, fy + ".png");
+
+            // Log the full path being attempted - ADD THIS FOR DEBUGGING
+            LOGGER.info("Attempting to load tile: " + tileFile.getAbsolutePath() + " (exists: " + tileFile.exists() + ")");
 
             if (!tileFile.exists() || !tileFile.isFile()) {
-                LOGGER.finest("Tile file does not exist: " + tileFile.getAbsolutePath());
+                LOGGER.warning("Tile file does not exist: " + tileFile.getAbsolutePath());
                 return null;
             }
 
@@ -371,21 +378,21 @@ public class Mapping {
                 img = new Image(fallbackPath, false);
 
                 if (img.isError()) {
-                    LOGGER.fine("Failed to load tile: " + key + " from both " + tilePath + " and " + fallbackPath);
+                    LOGGER.warning("Failed to load tile: " + key + " from both " + tilePath + " and " + fallbackPath);
                     return null;
                 }
             }
 
             if (img.getWidth() > 0 && img.getHeight() > 0) {
                 tileCache.put(key, img);
-                LOGGER.finest("Loaded tile: " + key);
+                LOGGER.info("Successfully loaded tile: " + key);
             } else {
-                LOGGER.fine("Tile loaded but has zero dimensions: " + key);
+                LOGGER.warning("Tile loaded but has zero dimensions: " + key);
                 return null;
             }
 
         } catch (Exception e) {
-            LOGGER.log(Level.FINE, "Error loading tile: " + key + " - " + e.getMessage(), e);
+            LOGGER.log(Level.WARNING, "Error loading tile: " + key + " - " + e.getMessage(), e);
             return null;
         }
 
@@ -471,4 +478,3 @@ public class Mapping {
         public LatLng(double lat, double lon) { this.lat = lat; this.lon = lon; }
     }
 }
-

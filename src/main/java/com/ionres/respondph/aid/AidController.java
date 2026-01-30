@@ -38,7 +38,6 @@ public class AidController {
     @FXML private TableColumn<AidModel, Double> costColumn;
     @FXML private TableColumn<AidModel, String> providerColumn;
     @FXML private TableColumn<AidModel, String> notesColumn;
-    //    @FXML private TableColumn<AidModel, Void> actionsColumn;
     @FXML private TableView<AidModel> aidTable;
 
     private AidTypeDAO aidTypeDAO;

@@ -1,8 +1,8 @@
 package com.ionres.respondph.util;
 import com.fazecast.jSerialComm.SerialPort;
-import com.ionres.respondph.sendsms.smsDAO;
-import com.ionres.respondph.sendsms.smsDAOImpl;
-import com.ionres.respondph.sendsms.smsModel;
+import com.ionres.respondph.sendsms.SmsDAO;
+import com.ionres.respondph.sendsms.SmsDAOImpl;
+import com.ionres.respondph.sendsms.SmsModel;
 import javafx.application.Platform;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,11 +25,11 @@ public class SMSSender {
         return t;
     });
 
-    private final smsDAO smsDao = new smsDAOImpl();
+    private final SmsDAO smsDao = new SmsDAOImpl();
     private final CopyOnWriteArrayList<SmsLogListener> listeners = new CopyOnWriteArrayList<>();
 
     public interface SmsLogListener {
-        void onSmsLogSaved(smsModel log);
+        void onSmsLogSaved(SmsModel log);
     }
 
     public void addSmsLogListener(SmsLogListener l) {
@@ -195,7 +195,7 @@ public class SMSSender {
 
     private void submitSmsLog(String phone, String fullname, String message, boolean success, int beneficiaryId) {
         try {
-            smsModel log = new smsModel();
+            SmsModel log = new SmsModel();
             log.setDateSent(new Timestamp(System.currentTimeMillis()));
             log.setPhonenumber(phone == null ? "" : phone);
             log.setPhoneString(phone == null ? "" : phone);
@@ -227,7 +227,7 @@ public class SMSSender {
         }
     }
 
-    public boolean resendSMS(smsModel log, String portName, int timeoutMs) {
+    public boolean resendSMS(SmsModel log, String portName, int timeoutMs) {
         if (log == null) return false;
         if (!isConnected()) {
             if (portName == null) {
@@ -259,7 +259,7 @@ public class SMSSender {
                 System.err.println("resendSMS: failed to update DB status: " + t.getMessage());
             }
 
-            final smsModel updated = log;
+            final SmsModel updated = log;
              Platform.runLater(() -> {
                  for (SmsLogListener l : listeners) {
                      try {

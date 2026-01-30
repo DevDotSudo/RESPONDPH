@@ -20,8 +20,6 @@ public class MappingDialogController {
     private final Mapping mapping = new Mapping();
     private Mapping.LatLng selectedLatLng;
     private ControllerListener listener;
-    private double xOffset= 0;
-    private double yOffset = 0;
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
@@ -31,7 +29,6 @@ public class MappingDialogController {
     }
 
     public void initialize() {
-        makeDraggable();
         Platform.runLater(() -> {
             try {
                 mapping.init(mapContainer);
@@ -91,18 +88,5 @@ public class MappingDialogController {
             listener.onLocationSelected(selectedLatLng);
         }
         dialogStage.hide();
-    }
-
-    private void makeDraggable() {
-        mappingDialogRoot.setOnMousePressed(event -> {
-            xOffset = event.getSceneX();
-            yOffset = event.getSceneY();
-        });
-        mappingDialogRoot.setOnMouseDragged(event -> {
-            if(dialogStage != null) {
-                dialogStage.setX(event.getScreenX() - xOffset);
-                dialogStage.setY(event.getScreenY() - yOffset);
-            }
-        });
     }
 }

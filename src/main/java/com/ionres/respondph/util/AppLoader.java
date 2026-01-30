@@ -75,30 +75,25 @@ public class AppLoader {
         
         LOGGER.info("UI components preloaded successfully");
     }
-    
-    /**
-     * Preloads all main application scenes.
-     */
+
     private static void preloadScenes() {
         SceneManager.preload("/view/auth/Login.fxml");
         SceneManager.preload("/view/main/MainScreen.fxml");
         SceneManager.preload("/view/dashboard/Dashboard.fxml");
         SceneManager.preload("/view/admin/ManageAdmins.fxml");
         SceneManager.preload("/view/beneficiary/ManageBeneficiaries.fxml");
+        SceneManager.preload("/view/aid/Aid.fxml");
         SceneManager.preload("/view/aid_type/AidType.fxml");
         SceneManager.preload("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");
         SceneManager.preload("/view/family/FamilyMembers.fxml");
         SceneManager.preload("/view/disaster/Disaster.fxml");
+        SceneManager.preload("/view/evac_site/EvacSite.fxml");
         SceneManager.preload("/view/disaster_mapping/DisasterMapping.fxml");
         SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");
         SceneManager.preload("/view/send_sms/SendSMS.fxml");
         SceneManager.preload("/view/settings/Settings.fxml");
-        SceneManager.preload( "/view/aid/Aid.fxml");
     }
-    
-    /**
-     * Preloads all dialog FXML files.
-     */
+
     private static void preloadDialogs() throws Exception {
         // Admin dialogs
         DialogManager.preload("addAdmin", "/view/admin/dialog/AddAdminDialog.fxml");
@@ -129,5 +124,8 @@ public class AppLoader {
         // Aid Dialogs
         DialogManager.preload("addAid", "/view/aid/dialog/AddAidDialog.fxml");
         DialogManager.preload("printAidDialog", "/view/aid/dialog/PrintAidDialog.fxml");
+
+        // Evac Site
+        DialogManager.preload("evacSite", "/view/evac_site/dialog/AddEvacSiteDialog.fxml");
     }
 }

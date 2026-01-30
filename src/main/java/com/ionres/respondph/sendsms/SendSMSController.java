@@ -39,27 +39,27 @@ public class SendSMSController implements Initializable {
     private Button btnSendSMS;
 
     @FXML
-    private TableView<smsModel> adminTable;
+    private TableView<SmsModel> adminTable;
 
     @FXML
-    private TableColumn<smsModel, String> dateSentColumn;
+    private TableColumn<SmsModel, String> dateSentColumn;
 
     @FXML
-    private TableColumn<smsModel, String> fullNameColumn;
+    private TableColumn<SmsModel, String> fullNameColumn;
 
     @FXML
-    private TableColumn<smsModel, String> msgColumn;
+    private TableColumn<SmsModel, String> msgColumn;
 
     @FXML
-    private TableColumn<smsModel, String> statusColumn;
+    private TableColumn<SmsModel, String> statusColumn;
 
     @FXML
-    private TableColumn<smsModel, String> phoneColumn;
+    private TableColumn<SmsModel, String> phoneColumn;
 
     @FXML
-    private TableColumn<smsModel, Void> actionsColumn;
+    private TableColumn<SmsModel, Void> actionsColumn;
 
-    private final ObservableList<smsModel> logRows = FXCollections.observableArrayList();
+    private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -71,7 +71,7 @@ public class SendSMSController implements Initializable {
             if (charCount != null) charCount.setText("0/160 characters");
 
             try {
-                List<smsModel> saved = new smsDAOImpl().getAllSMS();
+                List<SmsModel> saved = new SmsDAOImpl().getAllSMS();
                 if (saved != null) {
                     logRows.clear();
                     logRows.addAll(saved);
@@ -132,12 +132,12 @@ public class SendSMSController implements Initializable {
             }
 
             if (actionsColumn != null) {
-                actionsColumn.setCellFactory(col -> new TableCell<smsModel, Void>() {
+                actionsColumn.setCellFactory(col -> new TableCell<SmsModel, Void>() {
                     private final Button resendBtn = new Button("Resend");
 
                     {
                         resendBtn.setOnAction(evt -> {
-                            smsModel row = getTableRow() == null ? null : getTableRow().getItem();
+                            SmsModel row = getTableRow() == null ? null : getTableRow().getItem();
                             if (row == null) return;
                             resendBtn.setDisable(true);
 
@@ -180,7 +180,7 @@ public class SendSMSController implements Initializable {
                             setGraphic(null);
                             return;
                         }
-                        smsModel row = getTableView().getItems().get(getIndex());
+                        SmsModel row = getTableView().getItems().get(getIndex());
                         if (row == null) {
                             setGraphic(null);
                             return;
@@ -319,7 +319,6 @@ public class SendSMSController implements Initializable {
             }
         };
 
-
         Thread t = new Thread(task, "SMSSender-UI-Task");
         t.setDaemon(true);
         t.start();
@@ -335,5 +334,4 @@ public class SendSMSController implements Initializable {
         FXMLLoader loader = loadFXML();
         return loader.getRoot();
     }
-
 }

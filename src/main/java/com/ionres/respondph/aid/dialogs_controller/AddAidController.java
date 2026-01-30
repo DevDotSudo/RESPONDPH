@@ -45,11 +45,9 @@ public class AddAidController {
     private AidController aidController;
     private Stage dialogStage;
 
-
     public void setAidService(AidService aidService) {
         this.aidService = aidService;
     }
-
 
     public void setAidController(AidController aidController) {
         this.aidController = aidController;
@@ -140,7 +138,6 @@ public class AddAidController {
                     selectedDisaster.getDisasterId()
             ));
         } else {
-            // Hide summary box
             selectionSummaryBox.setVisible(false);
             selectionSummaryBox.setManaged(false);
             infoLabel.setText("Select aid type and disaster to begin distribution");
@@ -150,7 +147,6 @@ public class AddAidController {
 
     private int getEligibleBeneficiaryCount(int aidTypeId, int disasterId) {
         try {
-            // Get the quantity per beneficiary from the field, default to 1 if empty or invalid
             int qtyPerBeneficiary = 1;
             try {
                 String qtyText = quantityPerBeneficiaryFld.getText().trim();
@@ -191,7 +187,6 @@ public class AddAidController {
                 boolean useKMeans = useKMeansCheckbox.isSelected();
                 clusterSpinner.setDisable(!useKMeans);
 
-                // Show/hide warning box
                 if (simpleDistributionWarning != null) {
                     simpleDistributionWarning.setVisible(!useKMeans);
                     simpleDistributionWarning.setManaged(!useKMeans);

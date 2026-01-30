@@ -2,7 +2,7 @@ package com.ionres.respondph.sendsms;
 
 import java.sql.Timestamp;
 
-public class smsModel {
+public class SmsModel {
 
     private int MessageID;
     private  int beneficiaryID;

@@ -1,7 +1,10 @@
 package com.ionres.respondph.evac_plan.dialogs_controller;
 
+import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.evac_plan.EvacPlanController;
+import com.ionres.respondph.evac_plan.GeoBasedEvacPlanService;
 import com.ionres.respondph.evac_plan.RankedBeneficiaryModel;
+import com.ionres.respondph.evac_plan.RankedBeneficiaryWithLocation;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.disaster.DisasterModel;
@@ -16,20 +19,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Dialog controller for allocating beneficiaries to an evacuation site.
- *
- * This dialog lets users:
- * 1. Select an evacuation site
- * 2. Select a disaster
- * 3. Click "Allocate" to automatically fill the site with highest-priority beneficiaries
- *
- * The allocation uses the EvacPlanController to:
- * - Fetch all beneficiaries ranked by final_score for the selected disaster
- * - Fill the evacuation site up to its capacity (counting household members)
- * - Insert records into evac_plan table
- */
+
 public class AllocateEvacSiteController {
 
     @FXML private VBox root;
@@ -122,7 +115,7 @@ public class AllocateEvacSiteController {
         Object src = event.getSource();
 
         if (src == allocateBtn) {
-            performAllocation();
+//            performAllocation();
         } else if (src == closeBtn) {
             closeDialog();
         }
@@ -139,8 +132,52 @@ public class AllocateEvacSiteController {
         }
     }
 
+    private void showAllocationResults(List<RankedBeneficiaryWithLocation> assigned) {
+        StringBuilder results = new StringBuilder();
+        results.append("ALLOCATION RESULTS\n");
+        results.append("==================\n\n");
+
+        // Group by evacuation site
+        Map<String, List<RankedBeneficiaryWithLocation>> groupedBySite = assigned.stream()
+                .collect(Collectors.groupingBy(RankedBeneficiaryWithLocation::getAssignedEvacSiteName));
+
+        for (Map.Entry<String, List<RankedBeneficiaryWithLocation>> entry : groupedBySite.entrySet()) {
+            String siteName = entry.getKey();
+            List<RankedBeneficiaryWithLocation> beneficiaries = entry.getValue();
+
+            int totalPersons = beneficiaries.stream()
+                    .mapToInt(RankedBeneficiaryWithLocation::getHouseholdMembers)
+                    .sum();
+
+            results.append(String.format("%s (%d beneficiaries, %d persons):\n",
+                    siteName, beneficiaries.size(), totalPersons));
+
+            for (RankedBeneficiaryWithLocation ben : beneficiaries) {
+                results.append(String.format("  - %s %s (%.2f km, %d persons)\n",
+                        ben.getFirstName(),
+                        ben.getLastName(),
+                        ben.getDistanceToEvacSite(),
+                        ben.getHouseholdMembers()));
+            }
+            results.append("\n");
+        }
+
+        // Show in a dialog or text area
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Allocation Results");
+        alert.setHeaderText("Beneficiaries assigned to evacuation sites:");
+
+        TextArea textArea = new TextArea(results.toString());
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+
+        alert.getDialogPane().setContent(textArea);
+        alert.showAndWait();
+    }
+
     private void performAllocation() {
-        // Validate selections
         if (evacSiteComboBox.getValue() == null) {
             AlertDialogManager.showWarning("Validation Error", "Please select an evacuation site.");
             evacSiteComboBox.requestFocus();
@@ -158,36 +195,38 @@ public class AllocateEvacSiteController {
 
         try {
             // Call the controller to perform allocation
-            List<RankedBeneficiaryModel> assigned = evacPlanController.allocateEvacSite(evacSiteId, disasterId);
+//            List<RankedBeneficiaryModel> assigned = evacPlanController.allocateEvacSite(evacSiteId, disasterId);
+            GeoBasedEvacPlanService geoBasedEvacPlanService = new GeoBasedEvacPlanService(DBConnection.getInstance());
+            geoBasedEvacPlanService.autoAllocateByProximity(disasterId);
 
-            if (assigned.isEmpty()) {
-                AlertDialogManager.showInfo("No Allocation",
-                        "No beneficiaries were allocated. The site may be full or there are no eligible beneficiaries.");
-                resultTextArea.setText("No beneficiaries allocated.");
-            } else {
-                // Build result message
-                StringBuilder result = new StringBuilder();
-                result.append("Successfully allocated ").append(assigned.size()).append(" beneficiaries:\n\n");
-
-                int totalPersons = 0;
-                for (int i = 0; i < assigned.size(); i++) {
-                    RankedBeneficiaryModel ben = assigned.get(i);
-                    totalPersons += ben.getHouseholdMembers();
-                    result.append(String.format("%d. %s %s | Score: %.2f | Household: %d persons\n",
-                            i + 1,
-                            ben.getFirstName(),
-                            ben.getLastName(),
-                            ben.getFinalScore(),
-                            ben.getHouseholdMembers()));
-                }
-
-                result.append("\nTotal persons allocated: ").append(totalPersons);
-
-                resultTextArea.setText(result.toString());
-
-                AlertDialogManager.showSuccess("Allocation Complete",
-                        "Successfully allocated " + assigned.size() + " beneficiaries (" + totalPersons + " persons).");
-            }
+//            if (assigned.isEmpty()) {
+//                AlertDialogManager.showInfo("No Allocation",
+//                        "No beneficiaries were allocated. The site may be full or there are no eligible beneficiaries.");
+//                resultTextArea.setText("No beneficiaries allocated.");
+//            } else {
+//                // Build result message
+//                StringBuilder result = new StringBuilder();
+//                result.append("Successfully allocated ").append(assigned.size()).append(" beneficiaries:\n\n");
+//
+//                int totalPersons = 0;
+//                for (int i = 0; i < assigned.size(); i++) {
+//                    RankedBeneficiaryModel ben = assigned.get(i);
+//                    totalPersons += ben.getHouseholdMembers();
+//                    result.append(String.format("%d. %s %s | Score: %.2f | Household: %d persons\n",
+//                            i + 1,
+//                            ben.getFirstName(),
+//                            ben.getLastName(),
+//                            ben.getFinalScore(),
+//                            ben.getHouseholdMembers()));
+//                }
+//
+//                result.append("\nTotal persons allocated: ").append(totalPersons);
+//
+//                resultTextArea.setText(result.toString());
+//
+//                AlertDialogManager.showSuccess("Allocation Complete",
+//                        "Successfully allocated " + assigned.size() + " beneficiaries (" + totalPersons + " persons).");
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();

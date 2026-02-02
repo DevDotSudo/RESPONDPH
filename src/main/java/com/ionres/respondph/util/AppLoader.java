@@ -10,6 +10,7 @@ import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
 import com.ionres.respondph.disaster_mapping.DisasterMappingServiceImpl;
 import com.ionres.respondph.evac_plan.EvacPlanController;
 import com.ionres.respondph.evac_plan.EvacPlanServiceImpl;
+import com.ionres.respondph.evac_plan.GeoBasedEvacPlanService;
 import com.ionres.respondph.evac_site.EvacSiteServiceImpl;
 import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
 import com.ionres.respondph.dashboard.DashBoardServiceImpl;
@@ -59,6 +60,7 @@ public class AppLoader {
         AppContext.disasterMappingService = new DisasterMappingServiceImpl(AppContext.db);
         AppContext.evacSiteService = new EvacSiteServiceImpl(AppContext.db);
         AppContext.evacPlanService = new EvacPlanServiceImpl(AppContext.db);
+        AppContext.geoBasedEvacPlanService = new GeoBasedEvacPlanService(AppContext.db);
         AppContext.evacPlanController = new EvacPlanController();
         LOGGER.info("All services loaded successfully");
     }

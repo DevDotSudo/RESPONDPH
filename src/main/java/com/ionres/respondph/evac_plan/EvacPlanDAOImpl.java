@@ -23,11 +23,9 @@ public class EvacPlanDAOImpl implements EvacPlanDAO {
         this.cs = new Cryptography(secretKey);
     }
 
-
     @Override
     public List<RankedBeneficiaryModel> getRankedBeneficiariesByDisaster(int disasterId) {
         List<RankedBeneficiaryModel> ranked = new ArrayList<>();
-
 
         String sql =
                 "SELECT " +
@@ -84,7 +82,6 @@ public class EvacPlanDAOImpl implements EvacPlanDAO {
         return ranked;
     }
 
-
     @Override
     public boolean insertEvacPlan(int beneficiaryId, int evacSiteId, int disasterId, String notes) {
         String sql = "INSERT INTO evac_plan (beneficiary_id, evac_site_id, disaster_id, datetime, notes) " +
@@ -111,10 +108,8 @@ public class EvacPlanDAOImpl implements EvacPlanDAO {
         }
     }
 
-
     @Override
     public int getOccupiedPersonCount(int evacSiteId, int disasterId) {
-
         String sql =
                 "SELECT COALESCE(SUM(" +
                         "    CASE " +
@@ -154,7 +149,6 @@ public class EvacPlanDAOImpl implements EvacPlanDAO {
         }
     }
 
-
     @Override
     public boolean isAlreadyAssigned(int beneficiaryId, int evacSiteId, int disasterId) {
         String sql = "SELECT evac_event_id FROM evac_plan " +
@@ -177,6 +171,41 @@ public class EvacPlanDAOImpl implements EvacPlanDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("Error checking assignment: " + e.getMessage());
+            return false;
+        } finally {
+            closeConnection();
+        }
+    }
+
+    @Override
+    public boolean decrementEvacSiteCapacity(int evacSiteId, int personCount) {
+        // Update the capacity by subtracting personCount
+        // The WHERE clause ensures we don't go negative (capacity >= personCount)
+        String sql = "UPDATE evac_site SET capacity = capacity - ? WHERE evac_id = ? AND capacity >= ?";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, personCount);
+            ps.setInt(2, evacSiteId);
+            ps.setInt(3, personCount); // Prevents negative capacity
+
+            int rowsAffected = ps.executeUpdate();
+            ps.close();
+
+            if (rowsAffected == 0) {
+                System.err.println("WARNING: Could not decrement capacity for evac_site " + evacSiteId +
+                        ". Site may not have enough remaining capacity (" + personCount + " persons requested).");
+                return false;
+            }
+
+            System.out.println("Successfully decremented capacity of evac_site " + evacSiteId +
+                    " by " + personCount + " persons.");
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error decrementing evac_site capacity: " + e.getMessage());
             return false;
         } finally {
             closeConnection();

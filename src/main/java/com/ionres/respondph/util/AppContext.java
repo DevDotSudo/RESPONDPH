@@ -10,6 +10,7 @@ import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.disaster_mapping.DisasterMappingService;
 import com.ionres.respondph.evac_plan.EvacPlanController;
 import com.ionres.respondph.evac_plan.EvacPlanService;
+import com.ionres.respondph.evac_plan.GeoBasedEvacPlanService;
 import com.ionres.respondph.evac_site.EvacSiteController;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.familymembers.FamilyMemberService;
@@ -35,6 +36,7 @@ public final class AppContext {
     public static EvacSiteService evacSiteService;
     public static EvacPlanService evacPlanService;
     public static EvacPlanController evacPlanController;
+    public static GeoBasedEvacPlanService geoBasedEvacPlanService;
     /**
      * Private constructor to prevent instantiation.
      * This is a utility class that only contains static fields.

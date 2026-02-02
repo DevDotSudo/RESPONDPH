@@ -15,4 +15,7 @@ public interface EvacPlanDAO {
 
 
     boolean isAlreadyAssigned(int beneficiaryId, int evacSiteId, int disasterId);
+
+
+    boolean decrementEvacSiteCapacity(int evacSiteId, int personCount);
 }

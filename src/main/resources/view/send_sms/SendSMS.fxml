@@ -8,60 +8,116 @@
 
 <AnchorPane styleClass="send-sms-root" stylesheets="@/styles/send_sms/sendsms.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.sendsms.SendSMSController">
 
-    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <!-- Define ToggleGroup outside of scene graph -->
+    <fx:define>
+        <ToggleGroup fx:id="newsToggleGroup" />
+    </fx:define>
 
-        <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
-            <padding>
-                <Insets bottom="20" left="30" right="30" top="20" />
-            </padding>
+    <ScrollPane fitToWidth="true" fitToHeight="false"
+                AnchorPane.bottomAnchor="0.0"
+                AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0"
+                AnchorPane.topAnchor="0.0">
 
-            <VBox spacing="8">
-                <Label styleClass="page-title" text="Send SMS" />
-                <Label styleClass="page-subtitle" text="Send emergency alerts and notifications to beneficiaries" />
-            </VBox>
-        </HBox>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
+                <padding>
+                    <Insets bottom="20" left="30" right="30" top="20" />
+                </padding>
 
-        <VBox styleClass="content-container" VBox.vgrow="ALWAYS">
+                <VBox spacing="8">
+                    <Label styleClass="page-title" text="Send SMS" />
+                    <Label styleClass="page-subtitle" text="Send emergency alerts and notifications to beneficiaries" />
+                </VBox>
+            </HBox>
 
-            <VBox spacing="30">
-                <VBox spacing="15" styleClass="message-section">
-                    <Label styleClass="section-title" text="Message Content" />
+            <VBox styleClass="content-container" VBox.vgrow="ALWAYS">
 
-                    <VBox spacing="10" styleClass="message-input-container">
-                        <HBox alignment="CENTER_LEFT" spacing="10">
-                            <Label styleClass="input-label" text="Recipient Group:" />
-                            <ComboBox fx:id="cbSelectBeneficiary" prefWidth="300" styleClass="recipient-combo">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="All Beneficiaries" />
-                                        <String fx:value="By Barangay" />
-                                        <String fx:value="Selected Beneficiaries" />
-                                        <String fx:value="By Disaster Area" />
-                                        <String fx:value="Custom List" />
-                                    </FXCollections>
-                                </items>
-                            </ComboBox>
-                        </HBox>
+                <VBox spacing="30">
+                    <!-- AI News Generator Section -->
+                    <VBox spacing="15" styleClass="message-section">
+                        <Label styleClass="section-title" text="AI News Generator (Hiligaynon)" />
 
-                        <VBox spacing="5">
-                            <Label styleClass="input-label" text="Message:" />
-                            <TextArea prefRowCount="6" promptText="Type your message here..." styleClass="message-textarea" wrapText="true" />
+                        <VBox spacing="10" styleClass="message-input-container">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label styleClass="input-label" text="News Category:" />
+                                <ComboBox fx:id="cbNewsCategory" prefWidth="300" styleClass="recipient-combo">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="National News" />
+                                            <String fx:value="Local News" />
+                                            <String fx:value="Weather News" />
+                                            <String fx:value="Politics News" />
+                                            <String fx:value="Health News" />
+                                            <String fx:value="Crime / Law / Public Safety News" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                                <Button fx:id="btnGenerateNews" styleClass="primary-button" text="Generate News" onAction="#handleGenerateNews">
+                                    <padding>
+                                        <Insets left="20" right="20" />
+                                    </padding>
+                                </Button>
+                            </HBox>
+
+                            <!-- Loading Indicator -->
+                            <HBox fx:id="loadingBox" alignment="CENTER_LEFT" spacing="10" visible="false" managed="false">
+                                <ProgressIndicator prefHeight="30" prefWidth="30" />
+                                <Label text="Generating news headlines..." styleClass="input-label" />
+                            </HBox>
+
+                            <!-- News Selection Buttons -->
+                            <VBox fx:id="newsButtonsContainer" spacing="8" visible="false" managed="false">
+                                <Label styleClass="input-label" text="Select a news headline:" />
+                                <RadioButton fx:id="news1" toggleGroup="$newsToggleGroup" wrapText="true" styleClass="news-radio" onAction="#handleNewsSelection" />
+                                <RadioButton fx:id="news2" toggleGroup="$newsToggleGroup" wrapText="true" styleClass="news-radio" onAction="#handleNewsSelection" />
+                                <RadioButton fx:id="news3" toggleGroup="$newsToggleGroup" wrapText="true" styleClass="news-radio" onAction="#handleNewsSelection" />
+                                <RadioButton fx:id="news4" toggleGroup="$newsToggleGroup" wrapText="true" styleClass="news-radio" onAction="#handleNewsSelection" />
+                                <RadioButton fx:id="news5" toggleGroup="$newsToggleGroup" wrapText="true" styleClass="news-radio" onAction="#handleNewsSelection" />
+                            </VBox>
                         </VBox>
+                    </VBox>
 
-                        <HBox alignment="CENTER_RIGHT" spacing="10">
-                            <Label styleClass="char-count" text="0/160 characters" />
-                        </HBox>
+                    <!-- Message Section -->
+                    <VBox spacing="15" styleClass="message-section">
+                        <Label styleClass="section-title" text="Message Content" />
 
-                        <HBox alignment="CENTER_LEFT" styleClass="action-buttons-container">
-                            <Button styleClass="primary-button" text="Send SMS">
-                                <padding>
-                                    <Insets left="30" right="30" />
-                                </padding>
-                            </Button>
-                        </HBox>
+                        <VBox spacing="10" styleClass="message-input-container">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label styleClass="input-label" text="Recipient Group:" />
+                                <ComboBox fx:id="cbSelectBeneficiary" prefWidth="300" styleClass="recipient-combo">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="All Beneficiaries" />
+                                            <String fx:value="By Barangay" />
+                                            <String fx:value="Selected Beneficiaries" />
+                                            <String fx:value="By Disaster Area" />
+                                            <String fx:value="Custom List" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                            </HBox>
+
+                            <VBox spacing="5">
+                                <Label styleClass="input-label" text="Message:" />
+                                <TextArea fx:id="messageTextArea" prefRowCount="6" promptText="Type your message here or select AI-generated news above..." styleClass="message-textarea" wrapText="true" />
+                            </VBox>
+
+                            <HBox alignment="CENTER_RIGHT" spacing="10">
+                                <Label fx:id="charCountLabel" styleClass="char-count" text="0/160 characters" />
+                            </HBox>
+
+                            <HBox alignment="CENTER_LEFT" styleClass="action-buttons-container">
+                                <Button fx:id="btnSendSMS" styleClass="primary-button" text="Send SMS" onAction="#handleSendSMS">
+                                    <padding>
+                                        <Insets left="30" right="30" />
+                                    </padding>
+                                </Button>
+                            </HBox>
+                        </VBox>
                     </VBox>
                 </VBox>
             </VBox>
         </VBox>
-    </VBox>
+    </ScrollPane>
 </AnchorPane>

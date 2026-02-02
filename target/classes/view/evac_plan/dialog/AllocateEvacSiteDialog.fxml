@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="root" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.ionres.respondph.evac_plan.dialogs_controller.AllocateEvacSiteController"
+      prefHeight="600.0" prefWidth="550.0" spacing="15" style="-fx-background-color: #f5f5f5; -fx-padding: 20;">
+
+    <!-- Title -->
+    <Label text="Allocate Evacuation Site" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <Separator prefWidth="200.0"/>
+
+    <!-- Form Section -->
+    <GridPane hgap="10" vgap="12">
+        <columnConstraints>
+            <ColumnConstraints minWidth="120" prefWidth="120" hgrow="NEVER"/>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="300" prefWidth="380"/>
+        </columnConstraints>
+
+        <!-- Evacuation Site Selection -->
+        <Label text="Evacuation Site:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="evacSiteComboBox" promptText="Select evacuation site..."
+                  GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity" prefHeight="32.0"/>
+
+        <!-- Disaster Selection -->
+        <Label text="Disaster:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="disasterComboBox" promptText="Select disaster..."
+                  GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity" prefHeight="32.0"/>
+    </GridPane>
+
+    <!-- Capacity Information Section -->
+    <VBox spacing="8" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-border-radius: 3; -fx-background-radius: 3; -fx-padding: 10;">
+        <Label text="Site Capacity Information" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+
+        <GridPane hgap="10" vgap="6">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" prefWidth="100"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <Label text="Capacity:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="capacityLabel" text="N/A" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                   style="-fx-text-fill: #2980b9; -fx-font-weight: bold;"/>
+
+            <Label text="Occupied:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="occupiedLabel" text="N/A" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                   style="-fx-text-fill: #2980b9; -fx-font-weight: bold;"/>
+
+            <Label text="Remaining:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="remainingLabel" text="N/A" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                   style="-fx-text-fill: #2980b9; -fx-font-weight: bold;"/>
+        </GridPane>
+    </VBox>
+
+    <!-- Result Section -->
+    <VBox spacing="5" VBox.vgrow="ALWAYS">
+        <Label text="Allocation Results:" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+        <TextArea fx:id="resultTextArea" editable="false" wrapText="true"
+                  promptText="Results will appear here after allocation..."
+                  prefRowCount="12" VBox.vgrow="ALWAYS"
+                  style="-fx-font-family: 'Consolas', 'Monaco', monospace; -fx-font-size: 12px;"/>
+    </VBox>
+
+    <!-- Button Bar -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <padding>
+            <Insets top="10"/>
+        </padding>
+
+        <Button fx:id="allocateBtn" text="Allocate" prefWidth="100" defaultButton="true"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px; -fx-cursor: hand;">
+        </Button>
+
+        <Button fx:id="closeBtn" text="Close" prefWidth="100" cancelButton="true"
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 12px; -fx-cursor: hand;">
+        </Button>
+    </HBox>
+
+</VBox>

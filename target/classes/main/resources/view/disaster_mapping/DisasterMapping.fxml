@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane styleClass="mapping-root" stylesheets="@/styles/disaster_mapping/disaster_mapping.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.DisasterMappingController">
+
+    <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <HBox alignment="CENTER_LEFT" styleClass="mapping-header">
+            <Label styleClass="page-title" text="Disaster Mapping" />
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="16.0" VBox.vgrow="NEVER">
+
+            <VBox spacing="6" styleClass="control-group">
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <FontAwesomeIconView glyphName="FILTER" styleClass="control-icon" />
+                    <Label styleClass="control-label" text="Select Disaster Type" />
+                </HBox>
+                <ComboBox fx:id="disasterTypeComboBox" prefWidth="220" promptText="Filter by type..." styleClass="disaster-combo" />
+            </VBox>
+            <VBox spacing="6" styleClass="control-group">
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <FontAwesomeIconView glyphName="MAP_MARKER" styleClass="control-icon" />
+                    <Label styleClass="control-label" text="Select Disaster Name" />
+                </HBox>
+                <ComboBox fx:id="disasterComboBox" prefWidth="320" promptText="Choose a disaster..." styleClass="disaster-combo" />
+            </VBox>
+        </HBox>
+
+        <!-- Map Container -->
+        <StackPane VBox.vgrow="ALWAYS">
+            <Pane fx:id="mapContainer" styleClass="map-container" />
+        </StackPane>
+    </VBox>
+</AnchorPane>

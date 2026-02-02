@@ -184,3 +184,41 @@
     -fx-padding: 15px 0 0 0;
     -fx-alignment: TOP_RIGHT;
 }
+
+.news-radio {
+    -fx-font-size: 13px;
+    -fx-padding: 8px;
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.news-radio:hover {
+    -fx-background-color: #e8e8e8;
+}
+
+.news-radio:selected {
+    -fx-background-color: #d0e8ff;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #888;
+    -fx-background-radius: 5px;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #555;
+}

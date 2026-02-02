@@ -109,9 +109,7 @@ public class KMeansAidDistribution {
         return prioritized;
     }
 
-    /**
-     * Performs K-means clustering on beneficiaries based on their scores
-     */
+
     private void performKMeansClustering(List<BeneficiaryCluster> beneficiaries, int k) {
         // Initialize centroids using k-means++ algorithm
         double[] centroids = initializeCentroidsKMeansPlusPlus(beneficiaries, k);

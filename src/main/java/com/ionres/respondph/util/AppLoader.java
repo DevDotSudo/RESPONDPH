@@ -8,6 +8,9 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterServiceImpl;
 import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
 import com.ionres.respondph.disaster_mapping.DisasterMappingServiceImpl;
+import com.ionres.respondph.evac_plan.EvacPlanController;
+import com.ionres.respondph.evac_plan.EvacPlanServiceImpl;
+import com.ionres.respondph.evac_site.EvacSiteServiceImpl;
 import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
 import com.ionres.respondph.dashboard.DashBoardServiceImpl;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorServiceImpl;
@@ -54,6 +57,9 @@ public class AppLoader {
         AppContext.dashBoardService = new DashBoardServiceImpl(AppContext.db);
         AppContext.vulnerabilityIndicatorService = new VulnerabilityIndicatorServiceImpl(AppContext.db);
         AppContext.disasterMappingService = new DisasterMappingServiceImpl(AppContext.db);
+        AppContext.evacSiteService = new EvacSiteServiceImpl(AppContext.db);
+        AppContext.evacPlanService = new EvacPlanServiceImpl(AppContext.db);
+        AppContext.evacPlanController = new EvacPlanController();
         LOGGER.info("All services loaded successfully");
     }
 
@@ -94,6 +100,7 @@ public class AppLoader {
         SceneManager.preload("/view/send_sms/SendSMS.fxml");
         SceneManager.preload("/view/settings/Settings.fxml");
         SceneManager.preload( "/view/aid/Aid.fxml");
+        SceneManager.preload("/view/evac_site/EvacSite.fxml");
     }
     
     /**
@@ -129,5 +136,12 @@ public class AppLoader {
         // Aid Dialogs
         DialogManager.preload("addAid", "/view/aid/dialog/AddAidDialog.fxml");
         DialogManager.preload("printAidDialog", "/view/aid/dialog/PrintAidDialog.fxml");
+
+
+        DialogManager.preload("evacSite", "/view/evac_site/dialog/AddEvacSiteDialog.fxml");
+        DialogManager.preload("editEvacSite", "/view/evac_site/dialog/EditEvacSiteDialog.fxml");
+
+
+        DialogManager.preload("allocateEvacSite", "/view/evac_plan/dialog/AllocateEvacSiteDialog.fxml");
     }
 }

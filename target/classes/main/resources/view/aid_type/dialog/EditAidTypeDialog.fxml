@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="900" prefWidth="1000" spacing="0" styleClass="dialog-container" stylesheets="@/styles/aid_type/dialog/addaidtypedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid_type.dialogs_controller.EditAidTypeController">
+
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
+        <FontAwesomeIconView glyphName="MEDKIT" size="24" styleClass="header-icon" />
+        <Label styleClass="dialog-title" text="Add Aid Type" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="exitBtn" styleClass="close-button">
+            <graphic>
+                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="close-icon" />
+            </graphic>
+        </Button>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="24" styleClass="form-container">
+            <padding>
+                <Insets bottom="32" left="32" right="32" top="32" />
+            </padding>
+
+            <!-- Aid Name Field -->
+            <VBox spacing="8">
+                <Label styleClass="field-label" text="Aid Name" />
+                <HBox spacing="12" styleClass="field-container">
+                    <FontAwesomeIconView glyphName="TAG" styleClass="field-icon" />
+                    <TextField fx:id="aidNameFld" promptText="Enter aid type name" styleClass="text-field" />
+                </HBox>
+            </VBox>
+
+            <!-- Weights Grid -->
+            <GridPane hgap="20" vgap="20">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33" />
+                    <ColumnConstraints percentWidth="33" />
+                    <ColumnConstraints percentWidth="34" />
+                </columnConstraints>
+
+                <!-- Row 1 -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label styleClass="field-label" text="Age Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="BIRTHDAY_CAKE" styleClass="field-icon" />
+                        <TextField fx:id="ageWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label styleClass="field-label" text="Gender Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="VENUS_MARS" styleClass="field-icon" />
+                        <TextField fx:id="genderWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label styleClass="field-label" text="Marital Status Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="HEART" styleClass="field-icon" />
+                        <TextField fx:id="maritalStatusWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <!-- Row 2 -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label styleClass="field-label" text="Solo Parent Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="USER" styleClass="field-icon" />
+                        <TextField fx:id="soloParentWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label styleClass="field-label" text="Disability Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="WHEELCHAIR" styleClass="field-icon" />
+                        <TextField fx:id="disabilityWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <Label styleClass="field-label" text="Health Condition Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="HEARTBEAT" styleClass="field-icon" />
+                        <TextField fx:id="healthConditionWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <!-- Row 3 -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                    <Label styleClass="field-label" text="Access to Clean Water Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="TINT" styleClass="field-icon" />
+                        <TextField fx:id="waterAccessWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <Label styleClass="field-label" text="Sanitation Facilities Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="SHOWER" styleClass="field-icon" />
+                        <TextField fx:id="sanitationWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                    <Label styleClass="field-label" text="House Construction Type Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="HOME" styleClass="field-icon" />
+                        <TextField fx:id="houseTypeWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <!-- Row 4 -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                    <Label styleClass="field-label" text="Ownership Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="KEY" styleClass="field-icon" />
+                        <TextField fx:id="ownershipWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                    <Label styleClass="field-label" text="Damage Severity Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="BOLT" styleClass="field-icon" />
+                        <TextField fx:id="damageSeverityWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                    <Label styleClass="field-label" text="Employment Status Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="BRIEFCASE" styleClass="field-icon" />
+                        <TextField fx:id="employmentWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <!-- Row 5 -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                    <Label styleClass="field-label" text="Monthly Income Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="MONEY" styleClass="field-icon" />
+                        <TextField fx:id="monthlyIncomeWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <Label styleClass="field-label" text="Education Level Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="GRADUATION_CAP" styleClass="field-icon" />
+                        <TextField fx:id="educationWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="4">
+                    <Label styleClass="field-label" text="Digital Access Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="LAPTOP" styleClass="field-icon" />
+                        <TextField fx:id="digitalAccessWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <!-- Row 6 -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="5">
+                    <Label styleClass="field-label" text="Dependency Ratio Weight" />
+                    <HBox spacing="8" styleClass="field-container">
+                        <FontAwesomeIconView glyphName="USERS" styleClass="field-icon" />
+                        <TextField fx:id="dependencyRatioWeightFld" promptText="0.0" styleClass="weight-field" />
+                    </HBox>
+                </VBox>
+
+                <rowConstraints>
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                </rowConstraints>
+            </GridPane>
+
+            <!-- Notes Section -->
+            <VBox spacing="8">
+                <Label styleClass="field-label" text="Notes" />
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <FontAwesomeIconView glyphName="STICKY_NOTE" styleClass="field-icon" />
+                    <TextArea fx:id="notesFld" prefRowCount="4" promptText="Enter additional notes about this aid type..." styleClass="text-area" />
+                </HBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- Action Buttons -->
+    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="button-container">
+        <padding>
+            <Insets bottom="32" left="32" right="32" top="24" />
+        </padding>
+        <Button fx:id="updateBtn" styleClass="primary-btn">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="SAVE" styleClass="btn-icon" />
+                    <Label styleClass="btn-label" text="Update Aid Type" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

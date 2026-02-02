@@ -1,0 +1,410 @@
+.edit-disaster-dialog-container {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 25, 0, 0, 8);
+    -fx-min-width: 1000px;
+    -fx-min-height: 700px;
+    -fx-pref-width: 1000px;
+    -fx-pref-height: 700px;
+}
+
+.edit-disaster-dialog-header {
+    -fx-background-color: #334155;
+    -fx-background-radius: 16px 16px 0 0;
+    -fx-padding: 20px 32px;
+    -fx-border-color: #475569;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.edit-disaster-header-icon {
+    -fx-fill: #f97316;
+}
+
+.edit-disaster-dialog-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: 700;
+    -fx-font-size: 24px;
+    -fx-text-fill: #f8fafc;
+}
+
+.edit-disaster-close-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 8px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+}
+
+.edit-disaster-close-button:hover {
+    -fx-background-color: #475569;
+}
+
+.edit-disaster-close-icon {
+    -fx-fill: #94a3b8;
+}
+
+.edit-disaster-close-button:hover .edit-disaster-close-icon {
+    -fx-fill: #f97316;
+}
+
+.edit-disaster-error-container {
+    -fx-padding: 0 32px 0 32px;
+    -fx-background-color: transparent;
+}
+
+.edit-disaster-error-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-text-fill: #f97316;
+    -fx-padding: 14px 24px;
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+    -fx-background-radius: 10px;
+    -fx-border-color: #f97316;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+    -fx-wrap-text: true;
+    -fx-margin: 10px 0;
+}
+
+/* ===== EDIT DISASTER FORM SCROLL PANE ===== */
+.edit-disaster-form-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.edit-disaster-form-scroll-pane .viewport {
+    -fx-background-color: #1e293b;
+}
+
+.edit-disaster-form-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: #334155;
+    -fx-background-radius: 0;
+}
+
+.edit-disaster-form-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #475569;
+    -fx-background-radius: 0;
+}
+
+.edit-disaster-form-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #64748b;
+}
+
+/* ===== EDIT DISASTER FORM CONTAINER ===== */
+.edit-disaster-forms-container {
+    -fx-background-color: #1e293b;
+}
+
+/* ===== EDIT DISASTER FORM SECTION ===== */
+.edit-disaster-form-section {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 12px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-padding: 20px;
+}
+
+.edit-disaster-section-header {
+    -fx-padding: 0 0 16px 0;
+    -fx-border-color: #475569;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.edit-disaster-section-icon {
+    -fx-fill: #f97316;
+}
+
+.edit-disaster-section-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: 700;
+    -fx-font-size: 18px;
+    -fx-text-fill: #f8fafc;
+}
+
+/* ===== EDIT DISASTER FIELD LABELS ===== */
+.edit-disaster-field-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #e2e8f0;
+}
+
+/* ===== EDIT DISASTER INPUT CONTAINERS ===== */
+.edit-disaster-input-container {
+    -fx-background-color: #0f172a;
+    -fx-background-radius: 10px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-padding: 14px 18px;
+    -fx-min-height: 52px;
+}
+
+.edit-disaster-input-container:focused {
+    -fx-border-color: #f97316;
+    -fx-background-color: #0f172a;
+}
+
+.edit-disaster-field-icon {
+    -fx-fill: #94a3b8;
+}
+
+.edit-disaster-input-container:focused .edit-disaster-field-icon {
+    -fx-fill: #f97316;
+}
+
+/* ===== EDIT DISASTER INPUT FIELDS ===== */
+.edit-disaster-input-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 15px;
+    -fx-text-fill: #f8fafc;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.edit-disaster-input-field:focused {
+    -fx-background-color: transparent;
+}
+
+/* ===== EDIT DISASTER DROPDOWN (COMBO BOX) ===== */
+.edit-disaster-dropdown {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 15px;
+    -fx-text-fill: #f8fafc;
+    -fx-pref-width: 100%;
+    -fx-max-width: Infinity;
+}
+
+.edit-disaster-dropdown .list-cell {
+    -fx-text-fill: #f8fafc !important;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-wrap-text: true;
+}
+
+.edit-disaster-dropdown .list-cell:empty {
+    -fx-text-fill: #94a3b8 !important;
+}
+
+.edit-disaster-dropdown .list-view {
+    -fx-background-color: #1e293b !important;
+    -fx-background-insets: 0;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 2);
+    -fx-min-width: 300px;
+    -fx-pref-width: 350px;
+    -fx-max-width: 400px;
+}
+
+.edit-disaster-dropdown .list-view .list-cell {
+    -fx-background-color: #1e293b !important;
+    -fx-text-fill: #f8fafc !important;
+    -fx-padding: 8px 12px;
+    -fx-pref-height: 36px;
+    -fx-wrap-text: true;
+    -fx-text-overrun: clip;
+}
+
+.edit-disaster-dropdown .list-view .list-cell:hover {
+    -fx-background-color: #334155 !important;
+}
+
+.edit-disaster-dropdown .list-view .list-cell:selected {
+    -fx-background-color: #475569 !important;
+}
+
+/* ===== EDIT DISASTER DATE PICKER ===== */
+.edit-disaster-date-picker {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-pref-width: 100%;
+    -fx-max-width: Infinity;
+}
+
+.edit-disaster-date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 15px;
+    -fx-text-fill: #f8fafc;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.edit-disaster-date-picker .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.edit-disaster-date-picker .arrow {
+    -fx-background-color: #94a3b8;
+}
+
+/* DatePicker popup (calendar) - GLOBAL STYLES */
+.date-picker-popup {
+    -fx-background-color: #1e293b !important;
+    -fx-border-color: #475569 !important;
+    -fx-border-width: 1px !important;
+    -fx-border-radius: 4px !important;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 2) !important;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #334155 !important;
+    -fx-text-fill: #f8fafc !important;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #f8fafc !important;
+    -fx-font-family: "Segoe UI" !important;
+    -fx-font-size: 14px !important;
+    -fx-font-weight: 600 !important;
+}
+
+.date-picker-popup .spinner .button {
+    -fx-background-color: transparent !important;
+    -fx-text-fill: #f8fafc !important;
+}
+
+.date-picker-popup .spinner .button:hover {
+    -fx-background-color: #475569 !important;
+}
+
+.date-picker-popup .spinner .button .arrow {
+    -fx-background-color: #94a3b8 !important;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-background-color: #334155 !important;
+    -fx-text-fill: #f8fafc !important;
+    -fx-font-family: "Segoe UI" !important;
+    -fx-font-size: 13px !important;
+    -fx-font-weight: 600 !important;
+}
+
+.date-picker-popup .day-name-cell .label {
+    -fx-text-fill: #f8fafc !important;
+}
+
+.date-picker-popup .week-number-cell {
+    -fx-background-color: #334155 !important;
+    -fx-text-fill: #94a3b8 !important;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: #1e293b !important;
+    -fx-text-fill: #f8fafc !important;
+    -fx-border-color: transparent !important;
+    -fx-font-family: "Segoe UI" !important;
+    -fx-font-size: 13px !important;
+}
+
+.date-picker-popup .today {
+    -fx-background-color: #475569 !important;
+    -fx-text-fill: #f8fafc !important;
+    -fx-border-color: #f97316 !important;
+    -fx-border-width: 1px !important;
+}
+
+.date-picker-popup .selected {
+    -fx-background-color: #f97316 !important;
+    -fx-text-fill: #ffffff !important;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #334155 !important;
+    -fx-text-fill: #f8fafc !important;
+}
+
+.date-picker-popup .day-cell:disabled {
+    -fx-background-color: #0f172a !important;
+    -fx-text-fill: #64748b !important;
+}
+
+.date-picker-popup .previous-month,
+.date-picker-popup .next-month {
+    -fx-text-fill: #64748b !important;
+}
+
+.date-picker-popup .spinner {
+    -fx-background-color: transparent !important;
+}
+
+/* ===== EDIT DISASTER BUTTONS ===== */
+.edit-disaster-button-icon {
+    -fx-fill: #ffffff;
+}
+
+.edit-disaster-button-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+/* Location button */
+.edit-disaster-location-button {
+    -fx-background-color: #334155;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 14px 20px;
+    -fx-min-height: 52px;
+    -fx-min-width: 180px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+}
+
+.edit-disaster-location-button:hover {
+    -fx-background-color: #475569;
+    -fx-border-color: #f97316;
+}
+
+/* Update button */
+.edit-disaster-update-button {
+    -fx-background-color: #f97316;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 14px 40px;
+    -fx-min-height: 52px;
+    -fx-min-width: 180px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #ffffff;
+}
+
+.edit-disaster-update-button:hover {
+    -fx-background-color: #f97316;
+}
+
+.edit-disaster-update-button:pressed {
+    -fx-background-color: #f97316;
+}
+
+.edit-disaster-button-container {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 20px;
+}
+
+/* ===== REGION ===== */
+Region {
+    -fx-background-color: transparent;
+}

@@ -137,6 +137,30 @@
                         </VBox>
                     </VBox>
 
+
+                    <VBox styleClass="tree-section">
+                        <Button fx:id="evacSectionBtn" maxWidth="1.7976931348623157E308" styleClass="tree-section-header">
+                            <graphic>
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <FontAwesomeIconView fx:id="evacSectionIcon" glyphName="CHEVRON_RIGHT" size="12" styleClass="tree-chevron" />
+                                    <Label styleClass="tree-section-title" text="Evacuation Site Management" />
+                                </HBox>
+                            </graphic>
+                        </Button>
+
+                        <VBox fx:id="evacSectionContent" managed="false" styleClass="tree-section-content" visible="false">
+                            <Button fx:id="evacBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
+                                <graphic>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <FontAwesomeIconView glyphName="BUILDING" size="16" styleClass="nav-icon" />
+                                        <Label styleClass="nav-text" text="Evacuation Site" />
+                                    </HBox>
+                                </graphic>
+                            </Button>
+
+                        </VBox>
+                    </VBox>
+
                     <Button fx:id="sendSmsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                         <graphic>
                             <HBox alignment="CENTER_LEFT" spacing="16">

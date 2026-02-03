@@ -42,6 +42,7 @@ public class MainFrameController {
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
     @FXML private Button evacBtn;
+    @FXML private Button evacPlanBtn;
     @FXML private Button aidTypeBtn;
     @FXML private Button aidBtn;
     @FXML private Button sendSmsBtn;
@@ -71,6 +72,7 @@ public class MainFrameController {
         aidBtn.setOnAction(handlers);
         aidTypeBtn.setOnAction(handlers);
         evacBtn.setOnAction(handlers);
+        evacPlanBtn.setOnAction(handlers);
         vulnerabilityBtn.setOnAction(handlers);
         familyMembersBtn.setOnAction(handlers);
         sendSmsBtn.setOnAction(handlers);
@@ -127,6 +129,9 @@ public class MainFrameController {
         else if (src == evacBtn) {
             handleEvacSite();
         }
+        else if (src == evacPlanBtn) {
+            handleEvacPlan();
+        }
         else if(src == vulnerabilityBtn) {
             handleVulnerabilityIndicator();
         }
@@ -181,6 +186,11 @@ public class MainFrameController {
     private void handleEvacSite() {
         loadPage("/view/evac_site/EvacSite.fxml");
         activeButton(evacBtn);
+    }
+
+    private void handleEvacPlan() {
+        loadPage("/view/evacuation_plan/EvacuationPlan.fxml");
+        activeButton(evacPlanBtn);
     }
 
     private void handleVulnerabilityIndicator() {

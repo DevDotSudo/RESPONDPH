@@ -15,7 +15,6 @@ import java.util.List;
 public class DisasterDAOImpl implements DisasterDAO{
     private final DBConnection dbConnection;
     private final Cryptography cs;
-    private Connection conn;
 
     public DisasterDAOImpl(DBConnection dbConnection) {
         this.dbConnection = dbConnection;
@@ -28,9 +27,8 @@ public class DisasterDAOImpl implements DisasterDAO{
         String sql = "INSERT INTO disaster (type, name, date, lat, `long`, radius, notes, reg_date)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1,dm.getDisasterType());
             ps.setString(2,dm.getDisasterName());
@@ -49,14 +47,6 @@ public class DisasterDAOImpl implements DisasterDAO{
             e.printStackTrace();
             return false;
         }
-        finally {
-            try {
-                conn.close();
-            }
-            catch (SQLException e) {
-                System.out.println("Error: " +  e.getMessage());
-            }
-        }
     }
 
     @Override
@@ -64,10 +54,9 @@ public class DisasterDAOImpl implements DisasterDAO{
         List<DisasterModel> disaster = new ArrayList<>();
         String sql = "SELECT disaster_id, type, name, date, notes, reg_date  FROM disaster";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
 
@@ -101,14 +90,6 @@ public class DisasterDAOImpl implements DisasterDAO{
             ex.printStackTrace();
             javax.swing.JOptionPane.showMessageDialog(null, "Error fetching data: " + ex.getMessage());
         }
-        finally {
-            try {
-                conn.close();
-            }
-            catch (SQLException e) {
-                System.out.println("Error: " +  e.getMessage());
-            }
-        }
 
         return disaster;
     }
@@ -117,10 +98,8 @@ public class DisasterDAOImpl implements DisasterDAO{
     public boolean delete(DisasterModel dm) {
         String sql = "DELETE FROM disaster WHERE disaster_id = ?";
 
-        try {
-            conn = dbConnection.getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, dm.getDisasterId());
 
@@ -133,14 +112,6 @@ public class DisasterDAOImpl implements DisasterDAO{
             e.printStackTrace();
             return false;
         }
-        finally {
-            try {
-                conn.close();
-            }
-            catch (SQLException e) {
-                System.out.println("Error: " +  e.getMessage());
-            }
-        }
     }
 
     @Override
@@ -149,9 +120,8 @@ public class DisasterDAOImpl implements DisasterDAO{
                 "type = ?, name = ?, date = ?, lat = ?, `long` = ?, radius = ?, notes = ?, reg_date = ? " +
                 "WHERE disaster_id = ?";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, dm.getDisasterType());
             ps.setString(2, dm.getDisasterName());
@@ -171,14 +141,6 @@ public class DisasterDAOImpl implements DisasterDAO{
             e.printStackTrace();
             return false;
         }
-        finally {
-            try {
-                conn.close();
-            }
-            catch (SQLException e) {
-                System.out.println("Error: " +  e.getMessage());
-            }
-        }
     }
 
     @Override
@@ -186,49 +148,40 @@ public class DisasterDAOImpl implements DisasterDAO{
         DisasterModel dm = null;
         String sql = "SELECT * FROM disaster WHERE disaster_id = ?";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    dm = new DisasterModel();
 
-            if (rs.next()) {
-                dm = new DisasterModel();
+                    List<String> encrypted = new ArrayList<>();
+                    encrypted.add(rs.getString("type"));
+                    encrypted.add(rs.getString("name"));
+                    encrypted.add(rs.getString("date"));
+                    encrypted.add(rs.getString("lat"));
+                    encrypted.add(rs.getString("long"));
+                    encrypted.add(rs.getString("radius"));
+                    encrypted.add(rs.getString("notes"));
+                    encrypted.add(rs.getString("reg_date"));
 
-                List<String> encrypted = new ArrayList<>();
-                encrypted.add(rs.getString("type"));
-                encrypted.add(rs.getString("name"));
-                encrypted.add(rs.getString("date"));
-                encrypted.add(rs.getString("lat"));
-                encrypted.add(rs.getString("long"));
-                encrypted.add(rs.getString("radius"));
-                encrypted.add(rs.getString("notes"));
-                encrypted.add(rs.getString("reg_date"));
+                    List<String> decrypted = cs.decrypt(encrypted);
 
-                List<String> decrypted = cs.decrypt(encrypted);
-
-                dm.setDisasterId(rs.getInt("disaster_id"));
-                dm.setDisasterType(decrypted.get(0));
-                dm.setDisasterName(decrypted.get(1));
-                dm.setDate(decrypted.get(2));
-                dm.setLat(decrypted.get(3));
-                dm.setLongi(decrypted.get(4));
-                dm.setRadius(decrypted.get(5));
-                dm.setNotes(decrypted.get(6));
-                dm.setRegDate(decrypted.get(7));
+                    dm.setDisasterId(rs.getInt("disaster_id"));
+                    dm.setDisasterType(decrypted.get(0));
+                    dm.setDisasterName(decrypted.get(1));
+                    dm.setDate(decrypted.get(2));
+                    dm.setLat(decrypted.get(3));
+                    dm.setLongi(decrypted.get(4));
+                    dm.setRadius(decrypted.get(5));
+                    dm.setNotes(decrypted.get(6));
+                    dm.setRegDate(decrypted.get(7));
+                }
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error fetching disaster: " + ex.getMessage());
-        }
-        finally {
-            try {
-                conn.close();
-            }
-            catch (SQLException e) {
-                System.out.println("Error: " +  e.getMessage());
-            }
         }
         return dm;
     }
@@ -239,18 +192,14 @@ public class DisasterDAOImpl implements DisasterDAO{
         List<DisasterModelComboBox> aidTypes = new ArrayList<>();
         String sql = "SELECT * FROM disaster ORDER BY date DESC";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 DisasterModelComboBox aidType = mapResultSetToDisaster(rs);
                 aidTypes.add(aidType);
             }
-
-            rs.close();
-            ps.close();
 
             System.out.println("Loaded " + aidTypes.size() + " aid types");
 

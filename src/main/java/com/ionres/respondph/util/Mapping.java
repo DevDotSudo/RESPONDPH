@@ -29,8 +29,8 @@ public class Mapping {
     public Point markerPosition;
     private Image markerImage;
     private double zoom;
-    private static final double MIN_ZOOM = 13.2;
-    private static final double MAX_ZOOM = 21;
+    private static final double MIN_ZOOM = 13;
+    private static final double MAX_ZOOM = 23.0;
     private static final int TILE_SIZE = 256;
     private static final double BOUND_NORTH = 11.116584029742963;
     private static final double BOUND_SOUTH = 10.984159872049194;
@@ -39,27 +39,12 @@ public class Mapping {
     private final Map<String, Image> tileCache = new HashMap<>();
 
     private static String getTileDirectory() {
-        
-//        try {
-//            String configPath = ConfigLoader.get("map.tile.directory");
-//            if (configPath != null && !configPath.trim().isEmpty()) {
-//                return configPath.trim();
-//            }
-//        } catch (Exception e) {
-//            LOGGER.severe("There was an error getting tile directory");
-//        }
-//
-//        String sysProp = System.getProperty("map.tile.directory");
-//        if (sysProp != null && !sysProp.trim().isEmpty()) {
-//            return sysProp.trim();
-//        }
-
-        return "C:/Users/Davie/IdeaProjects/tiles";
+        return "C:/Users/Davie/Documents/BanateTiles/tiles";
     }
 
     public Mapping() {
-        this.zoom = MIN_ZOOM;
         this.initialized = false;
+        this.zoom = MIN_ZOOM;  // Initialize zoom to minimum
         loadMarkerImage();
     }
 
@@ -77,10 +62,7 @@ public class Mapping {
     }
 
     public void init(Pane container) {
-        if (container == null) {
-            LOGGER.severe("Cannot initialize Mapping: container is null");
-            return;
-        }
+        if (container == null) return;
 
         try {
             canvas = new Canvas();
@@ -96,12 +78,19 @@ public class Mapping {
             canvas.setOnMouseReleased(e -> dragging = false);
             canvas.setOnScroll(this::mouseScroll);
 
-            canvas.widthProperty().addListener((o,a,b) -> redrawSafe());
-            canvas.heightProperty().addListener((o,a,b) -> redrawSafe());
+            canvas.widthProperty().addListener((o, a, b) -> redrawSafe());
+            canvas.heightProperty().addListener((o, a, b) -> redrawSafe());
 
-            center();
             initialized = true;
-            LOGGER.fine("Mapping initialized successfully");
+
+            // FIX: Wait for the UI thread to finish layout before centering
+            javafx.application.Platform.runLater(() -> {
+                if (isInitialized()) {
+                    center();
+                    centered = true;
+                }
+            });
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error initializing Mapping", e);
             initialized = false;
@@ -132,16 +121,16 @@ public class Mapping {
     }
 
     private void redrawSafe() {
-        if (!isInitialized()) {
-            return;
-        }
+        if (!isInitialized()) return;
 
-        if (!centered && canvas.getWidth() > 0 && canvas.getHeight() > 0) {
-            zoom = MIN_ZOOM;
-            center();
-            centered = true;
-        } else if (centered) {
-            redraw();
+        if (canvas.getWidth() > 0 && canvas.getHeight() > 0) {
+            if (!centered) {
+                center(); // center() calls clamp() and redraw() internally
+                centered = true;
+                LOGGER.info("Map auto-centered on first layout.");
+            } else {
+                redraw();
+            }
         }
     }
 
@@ -150,14 +139,12 @@ public class Mapping {
     }
 
     public void redraw() {
-        if (!isInitialized()) {
-            LOGGER.fine("Cannot redraw: mapping not initialized");
-            return;
-        }
+        if (!isInitialized()) return;
 
         try {
-            gc.setFill(Color.rgb(240,240,240));
-            gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+            // Set background to the blue color from your screenshot
+            gc.setFill(Color.rgb(63, 91, 156));
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
             drawTiles();
 
@@ -170,11 +157,7 @@ public class Mapping {
             }
 
             if (afterRedraw != null) {
-                try {
-                    afterRedraw.run();
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Error in afterRedraw callback", e);
-                }
+                afterRedraw.run();
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error during redraw", e);
@@ -182,54 +165,55 @@ public class Mapping {
     }
 
     private void center() {
-        if (!isInitialized()) {
-            return;
-        }
+        int baseZoom = (int) Math.floor(zoom);
+        double scale = Math.pow(2, zoom - baseZoom);
 
-        try {
-            Point p = latLonToPixel(11.052390, 122.786762, zoom);
-            offsetX = canvas.getWidth() / 2 - p.x;
-            offsetY = canvas.getHeight() / 2 - p.y;
-            clamp();
-            redraw();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error centering map", e);
-        }
+        Point p = latLonToPixel(11.052390, 122.786762, baseZoom);
+
+        offsetX = canvas.getWidth() / 2 - p.x * scale;
+        offsetY = canvas.getHeight() / 2 - p.y * scale;
+
+        clamp();
+        redraw();
     }
-
     private void drawTiles() {
-        if (!isInitialized()) {
-            return;
-        }
+        if (!isInitialized()) return;
+        gc.setImageSmoothing(true);
 
-        try {
-            int baseZoom = (int) Math.floor(zoom);
-            double scale = Math.pow(2, zoom - baseZoom);
-            int tiles = 1 << baseZoom;
+        int baseZoom = (int) Math.floor(zoom);
+        double scale = Math.pow(2, zoom - baseZoom);
+        int tilesAtBase = 1 << baseZoom;
 
-            int startX = (int)Math.floor(-offsetX / (TILE_SIZE * scale));
-            int startY = (int)Math.floor(-offsetY / (TILE_SIZE * scale));
-            int endX = startX + (int)Math.ceil(canvas.getWidth() / (TILE_SIZE * scale)) + 1;
-            int endY = startY + (int)Math.ceil(canvas.getHeight() / (TILE_SIZE * scale)) + 1;
+        int startX = (int) Math.floor(-offsetX / (TILE_SIZE * scale));
+        int startY = (int) Math.floor(-offsetY / (TILE_SIZE * scale));
+        int endX = startX + (int) Math.ceil(canvas.getWidth() / (TILE_SIZE * scale)) + 1;
+        int endY = startY + (int) Math.ceil(canvas.getHeight() / (TILE_SIZE * scale)) + 1;
 
-            for (int x = startX; x <= endX; x++) {
-                for (int y = startY; y <= endY; y++) {
-                    if (x < 0 || y < 0 || x >= tiles || y >= tiles) continue;
+        for (int x = startX; x <= endX; x++) {
+            for (int y = startY; y <= endY; y++) {
+                if (x < 0 || y < 0 || x >= tilesAtBase || y >= tilesAtBase) continue;
 
-                    Image img = loadTile(baseZoom, x, y);
-                    if (img == null || img.isError()) continue;
+                TileResult result = findBestTile(baseZoom, x, y);
+
+                if (result != null) {
+                    double overzoomScale = Math.pow(2, baseZoom - result.zoom);
+                    double s = scale * overzoomScale;
+
+                    double sx = (x % overzoomScale) * (TILE_SIZE / overzoomScale);
+                    double sy = (y % overzoomScale) * (TILE_SIZE / overzoomScale);
+                    double sw = TILE_SIZE / overzoomScale;
+                    double sh = TILE_SIZE / overzoomScale;
 
                     gc.drawImage(
-                            img,
-                            x * TILE_SIZE * scale + offsetX,
-                            y * TILE_SIZE * scale + offsetY,
-                            TILE_SIZE * scale,
-                            TILE_SIZE * scale
+                            result.image,
+                            sx, sy, sw, sh, // Source (part of the tile)
+                            x * TILE_SIZE * scale + offsetX, // Destination X
+                            y * TILE_SIZE * scale + offsetY, // Destination Y
+                            TILE_SIZE * scale, // Destination Width
+                            TILE_SIZE * scale  // Destination Height
                     );
                 }
             }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error drawing tiles", e);
         }
     }
 
@@ -265,32 +249,41 @@ public class Mapping {
         }
     }
 
-
     private void clamp() {
-        if (!isInitialized()) {
-            return;
+        if (!isInitialized() || canvas.getWidth() <= 0) return;
+
+        int baseZoom = (int) Math.floor(zoom);
+        double scale = Math.pow(2, zoom - baseZoom);
+
+        // 1. Get the pixel bounds of your specific area (Banate)
+        Point nw = latLonToPixel(BOUND_NORTH, BOUND_WEST, baseZoom);
+        Point se = latLonToPixel(BOUND_SOUTH, BOUND_EAST, baseZoom);
+
+        double mapWidthPixels = (se.x - nw.x) * scale;
+        double mapHeightPixels = (se.y - nw.y) * scale;
+
+        // 2. Clamp Horizontal (X)
+        if (mapWidthPixels <= canvas.getWidth()) {
+            // If map is skinnier than the window, center it
+            offsetX = (canvas.getWidth() - mapWidthPixels) / 2 - (nw.x * scale);
+        } else {
+            // Otherwise, prevent showing anything outside BOUND_WEST and BOUND_EAST
+            double minX = canvas.getWidth() - (se.x * scale);
+            double maxX = -nw.x * scale;
+            if (offsetX < minX) offsetX = minX;
+            if (offsetX > maxX) offsetX = maxX;
         }
 
-        try {
-            Point nw = latLonToPixel(BOUND_NORTH, BOUND_WEST, zoom);
-            Point se = latLonToPixel(BOUND_SOUTH, BOUND_EAST, zoom);
-
-            double mapWidth = se.x - nw.x;
-            double mapHeight = se.y - nw.y;
-
-            if (mapWidth < canvas.getWidth()) {
-                offsetX = (canvas.getWidth() - mapWidth) / 2 - nw.x;
-            } else {
-                offsetX = Math.min(-nw.x, Math.max(canvas.getWidth() - se.x, offsetX));
-            }
-
-            if (mapHeight < canvas.getHeight()) {
-                offsetY = (canvas.getHeight() - mapHeight) / 2 - nw.y;
-            } else {
-                offsetY = Math.min(-nw.y, Math.max(canvas.getHeight() - se.y, offsetY));
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error clamping map bounds", e);
+        // 3. Clamp Vertical (Y)
+        if (mapHeightPixels <= canvas.getHeight()) {
+            // If map is shorter than the window, center it
+            offsetY = (canvas.getHeight() - mapHeightPixels) / 2 - (nw.y * scale);
+        } else {
+            // Otherwise, prevent showing anything outside BOUND_NORTH and BOUND_SOUTH
+            double minY = canvas.getHeight() - (se.y * scale);
+            double maxY = -nw.y * scale;
+            if (offsetY < minY) offsetY = minY;
+            if (offsetY > maxY) offsetY = maxY;
         }
     }
 
@@ -323,118 +316,113 @@ public class Mapping {
     }
 
     private void mouseScroll(ScrollEvent e) {
-        if (!isInitialized()) {
-            return;
-        }
+        if (!isInitialized()) return;
 
-        try {
-            double oldZoom = zoom;
-            zoom += e.getDeltaY() > 0 ? 0.2 : -0.2;
-            zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
-            if (zoom == oldZoom) return;
+        double oldZoom = zoom;
+        double delta = e.getDeltaY() > 0 ? 0.2 : -0.2;
+        zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + delta));
 
-            double scale = Math.pow(2, zoom - oldZoom);
-            offsetX = e.getX() - (e.getX() - offsetX) * scale;
-            offsetY = e.getY() - (e.getY() - offsetY) * scale;
+        if (zoom == oldZoom) return;
 
-            clamp();
-            redraw();
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Error during mouse scroll", ex);
-        }
+        // Calculate how much the map scaled
+        double scale = Math.pow(2, zoom - oldZoom);
+
+        // Adjust offsets so the zoom stays centered on the mouse cursor
+        offsetX = e.getX() - (e.getX() - offsetX) * scale;
+        offsetY = e.getY() - (e.getY() - offsetY) * scale;
+
+        // Crucial: snap to bounds immediately so no "dead space" is shown
+        clamp();
+        redraw();
     }
 
     private Image loadTile(int z, int x, int y) {
-        int max = (1 << z) - 1;
-        int fy = max - y;
-        String key = z + "/" + x + "/" + fy;
+        String key = z + "/" + x + "/" + y;
 
-        Image img = tileCache.get(key);
-        if (img != null && !img.isError()) {
-            return img;
+        Image cached = tileCache.get(key);
+        if (cached != null && !cached.isError()) {
+            return cached;
         }
 
         try {
-            String tileDir = getTileDirectory();
-            // Construct path: tileDir/z/x/y.png
-            File zoomFolder = new File(tileDir, String.valueOf(z));
-            File xFolder = new File(zoomFolder, String.valueOf(x));
-            File tileFile = new File(xFolder, fy + ".png");
+            File zoomDir = new File(getTileDirectory(), String.valueOf(z));
+            File xDir = new File(zoomDir, String.valueOf(x));
+            File tileFile = new File(xDir, y + ".png");
 
-            // Log the full path being attempted - ADD THIS FOR DEBUGGING
-            LOGGER.info("Attempting to load tile: " + tileFile.getAbsolutePath() + " (exists: " + tileFile.exists() + ")");
-
-            if (!tileFile.exists() || !tileFile.isFile()) {
-                LOGGER.warning("Tile file does not exist: " + tileFile.getAbsolutePath());
+            if (!tileFile.exists()) {
                 return null;
             }
 
-            String tilePath = tileFile.toURI().toString();
-            img = new Image(tilePath, false);
+            Image img = loadTileFromFile(tileFile);
 
-            if (img.isError()) {
-                String fallbackPath = "file:/" + tileFile.getAbsolutePath().replace("\\", "/");
-                fallbackPath = fallbackPath.replace(" ", "%20");
-                img = new Image(fallbackPath, false);
-
-                if (img.isError()) {
-                    LOGGER.warning("Failed to load tile: " + key + " from both " + tilePath + " and " + fallbackPath);
-                    return null;
-                }
-            }
-
-            if (img.getWidth() > 0 && img.getHeight() > 0) {
+            if (img != null && !img.isError() && !isTileEmpty(img)) {
                 tileCache.put(key, img);
-                LOGGER.info("Successfully loaded tile: " + key);
-            } else {
-                LOGGER.warning("Tile loaded but has zero dimensions: " + key);
-                return null;
+                return img;
             }
+
+            return null;
 
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error loading tile: " + key + " - " + e.getMessage(), e);
+            LOGGER.log(Level.WARNING, "Tile load failed: " + key, e);
             return null;
         }
-
-        return img;
     }
 
-    private Point latLonToPixel(double lat, double lon, double z) {
-        if (!isValidCoordinate(lat, lon)) {
-            LOGGER.fine("Invalid coordinate in latLonToPixel: " + lat + ", " + lon);
-            return new Point(0, 0);
-        }
-
+    private boolean isTileEmpty(Image img) {
         try {
-            double n = Math.pow(2, z);
-            double x = (lon + 180) / 360 * n * TILE_SIZE;
-            double y = (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * n * TILE_SIZE;
-            return new Point(x, y);
+            int width = (int) img.getWidth();
+            int height = (int) img.getHeight();
+            javafx.scene.image.PixelReader reader = img.getPixelReader();
+            if (reader == null) return true;
+
+            for (int i = 0; i < width; i += 16) {
+                for (int j = 0; j < height; j += 16) {
+                    Color c = reader.getColor(i, j);
+                    if (c.getOpacity() > 0 && (c.getRed() < 0.99 || c.getGreen() < 0.99 || c.getBlue() < 0.99)) {
+                        return false; // found a non-white/opaque pixel
+                    }
+                }
+            }
+            return true;
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error converting lat/lon to pixel", e);
-            return new Point(0, 0);
+            LOGGER.log(Level.WARNING, "Error checking if tile is empty", e);
+            return true;
         }
+    }
+
+    private Image loadTileFromFile(File tileFile) {
+        try {
+            return new Image(tileFile.toURI().toString(), false);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    private Point latLonToPixel(double lat, double lon, int z) {
+        double n = Math.pow(2, z);
+        double x = (lon + 180.0) / 360.0 * n * TILE_SIZE;
+        double y = (1 - Math.log(Math.tan(Math.toRadians(lat)) +
+                1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2
+                * n * TILE_SIZE;
+        return new Point(x, y);
     }
 
     public Point latLonToScreen(double lat, double lon) {
-        if (!isInitialized()) {
-            LOGGER.warning("Cannot convert lat/lon to screen: mapping not initialized");
-            return new Point(0, 0);
-        }
+        int baseZoom = (int) Math.floor(zoom);
+        double scale = Math.pow(2, zoom - baseZoom);
 
-        try {
-            Point p = latLonToPixel(lat, lon, zoom);
-            return new Point(p.x + offsetX, p.y + offsetY);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error converting lat/lon to screen", e);
-            return new Point(0, 0);
-        }
+        Point p = latLonToPixel(lat, lon, baseZoom);
+        return new Point(
+                p.x * scale + offsetX,
+                p.y * scale + offsetY
+        );
     }
 
     public double metersPerPixel(double lat) {
         if (!isValidCoordinate(lat, 0)) {
             LOGGER.fine("Invalid latitude in metersPerPixel: " + lat);
-            return 1.0; // Default fallback
+            return 1.0;
         }
 
         try {
@@ -477,4 +465,31 @@ public class Mapping {
         public final double lon;
         public LatLng(double lat, double lon) { this.lat = lat; this.lon = lon; }
     }
+
+    private class TileResult {
+        Image image;
+        int zoom;
+        TileResult(Image i, int z) { this.image = i; this.zoom = z; }
+    }
+
+    private TileResult findBestTile(int z, int x, int y) {
+        int currentZ = z;
+        int currentX = x;
+        int currentY = y;
+
+        while (currentZ >= (int)MIN_ZOOM) {
+            Image img = loadTile(currentZ, currentX, currentY);
+            if (img != null && !img.isError()) {
+                return new TileResult(img, currentZ);
+            }
+            // Move to parent tile
+            currentZ--;
+            currentX /= 2;
+            currentY /= 2;
+        }
+        return null;
+    }
 }
+
+
+

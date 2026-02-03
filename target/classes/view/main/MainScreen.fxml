@@ -157,6 +157,15 @@
                                 </graphic>
                             </Button>
 
+                            <Button fx:id="evacPlanBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
+                                <graphic>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <FontAwesomeIconView glyphName="MAP" size="16" styleClass="nav-icon" />
+                                        <Label styleClass="nav-text" text="Evacuation Plan" />
+                                    </HBox>
+                                </graphic>
+                            </Button>
+
                         </VBox>
                     </VBox>
                     <Button fx:id="vulnerabilityBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">

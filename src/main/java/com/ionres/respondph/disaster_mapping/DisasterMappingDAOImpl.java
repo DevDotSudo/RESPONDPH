@@ -26,13 +26,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
         List<String> types = new ArrayList<>();
         String sql = "SELECT DISTINCT type FROM disaster WHERE type IS NOT NULL ORDER BY type";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 String type = rs.getString("type");
@@ -45,8 +41,6 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disaster types", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
         return types;
     }
@@ -56,13 +50,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
         List<DisasterModel> disasters = new ArrayList<>();
         String sql = "SELECT disaster_id, type, name FROM disaster";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 int id = rs.getInt("disaster_id");
@@ -76,8 +66,6 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disasters", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return disasters;
@@ -88,29 +76,23 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
         List<DisasterModel> disasters = new ArrayList<>();
         String sql = "SELECT disaster_id, type, name FROM disaster WHERE type = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, encryptedType);
-            rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("disaster_id");
+                    String disasterType = rs.getString("type");
+                    String name = rs.getString("name");
 
-            while (rs.next()) {
-                int id = rs.getInt("disaster_id");
-                String disasterType = rs.getString("type");
-                String name = rs.getString("name");
-
-                disasters.add(new DisasterModel(id, disasterType, name));
+                    disasters.add(new DisasterModel(id, disasterType, name));
+                }
             }
 
             LOGGER.info("Fetched " + disasters.size() + " disasters of specified type from database");
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disasters by type", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return disasters;
@@ -122,13 +104,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
         String sql = "SELECT disaster_id, lat, `long`, radius, type, name FROM disaster " +
                 "WHERE lat IS NOT NULL AND `long` IS NOT NULL AND radius IS NOT NULL";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 int disasterId = rs.getInt("disaster_id");
@@ -145,8 +123,6 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disaster circles", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return circles;
@@ -158,32 +134,26 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
         String sql = "SELECT disaster_id, lat, `long`, radius, type, name FROM disaster " +
                 "WHERE disaster_id = ? AND lat IS NOT NULL AND `long` IS NOT NULL AND radius IS NOT NULL";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, disasterId);
-            rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("disaster_id");
+                    String lat = rs.getString("lat");
+                    String lon = rs.getString("long");
+                    String radius = rs.getString("radius");
+                    String type = rs.getString("type");
+                    String name = rs.getString("name");
 
-            while (rs.next()) {
-                int id = rs.getInt("disaster_id");
-                String lat = rs.getString("lat");
-                String lon = rs.getString("long");
-                String radius = rs.getString("radius");
-                String type = rs.getString("type");
-                String name = rs.getString("name");
-
-                circles.add(new DisasterCircleEncrypted(lat, lon, radius, id, name, type));
+                    circles.add(new DisasterCircleEncrypted(lat, lon, radius, id, name, type));
+                }
             }
 
             LOGGER.info("Fetched " + circles.size() + " circles for disaster ID: " + disasterId);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disaster circles by ID", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return circles;
@@ -197,13 +167,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
                 "WHERE latitude IS NOT NULL AND longitude IS NOT NULL " +
                 "AND latitude != '' AND longitude != ''";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 int id = rs.getInt("beneficiary_id");
@@ -224,8 +190,6 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching beneficiaries", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return beneficiaries;
@@ -235,27 +199,21 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
     public DisasterModel getDisasterById(int disasterId) {
         String sql = "SELECT disaster_id, type, name FROM disaster WHERE disaster_id = ?";
 
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = connection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, disasterId);
-            rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("disaster_id");
+                    String type = rs.getString("type");
+                    String name = rs.getString("name");
 
-            if (rs.next()) {
-                int id = rs.getInt("disaster_id");
-                String type = rs.getString("type");
-                String name = rs.getString("name");
-
-                return new DisasterModel(id, type, name);
+                    return new DisasterModel(id, type, name);
+                }
             }
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disaster by ID", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return null;

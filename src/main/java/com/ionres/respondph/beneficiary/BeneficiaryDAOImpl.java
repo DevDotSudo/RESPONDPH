@@ -26,12 +26,8 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 "health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, " +
                 "employment_status, monthly_income, education_level, digital_access, added_by, reg_date) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, bm.getFirstname());
             ps.setString(2, bm.getMiddlename());
@@ -63,8 +59,6 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error occurred while saving beneficiary", e);
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -74,14 +68,9 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
         String sql = "SELECT beneficiary_id, first_name, middle_name, last_name, " +
                 "birthdate, age_score, gender, marital_status, mobile_number, added_by, reg_date " +
                 "FROM beneficiary";
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 BeneficiaryModel bm = new BeneficiaryModel();
@@ -103,8 +92,6 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
 
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Error fetching beneficiaries", ex);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return beneficiaries;
@@ -113,12 +100,8 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
     @Override
     public boolean delete(BeneficiaryModel bm) {
         String sql = "DELETE FROM beneficiary WHERE beneficiary_id = ?";
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bm.getId());
 
             int rowsAffected = ps.executeUpdate();
@@ -127,8 +110,6 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error occurred while deleting beneficiary", e);
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -141,12 +122,8 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                 "sanitation_facility = ?, house_type = ?, ownership_status = ?, employment_status = ?, " +
                 "monthly_income = ?, education_level = ?, digital_access = ?, added_by = ?, reg_date = ? " +
                 "WHERE beneficiary_id = ?";
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, bm.getFirstname());
             ps.setString(2, bm.getMiddlename());
@@ -179,8 +156,6 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error occurred while updating beneficiary", e);
             return false;
-        } finally {
-            ResourceUtils.closePreparedStatement(ps);
         }
     }
 
@@ -188,49 +163,42 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
     public BeneficiaryModel getById(int id) {
         BeneficiaryModel bm = null;
         String sql = "SELECT * FROM beneficiary WHERE beneficiary_id = ?";
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    bm = new BeneficiaryModel();
 
-            if (rs.next()) {
-                bm = new BeneficiaryModel();
-
-                bm.setId(rs.getInt("beneficiary_id"));
-                bm.setFirstname(rs.getString("first_name"));
-                bm.setMiddlename(rs.getString("middle_name"));
-                bm.setLastname(rs.getString("last_name"));
-                bm.setBirthDate(rs.getString("birthdate"));
-                bm.setAgeScore(rs.getDouble("age_score"));
-                bm.setGender(rs.getString("gender"));
-                bm.setMaritalStatus(rs.getString("marital_status"));
-                bm.setSoloParentStatus(rs.getString("solo_parent_status"));
-                bm.setLatitude(rs.getString("latitude"));
-                bm.setLongitude(rs.getString("longitude"));
-                bm.setMobileNumber(rs.getString("mobile_number"));
-                bm.setDisabilityType(rs.getString("disability_type"));
-                bm.setHealthCondition(rs.getString("health_condition"));
-                bm.setCleanWaterAccess(rs.getString("clean_water_access"));
-                bm.setSanitationFacility(rs.getString("sanitation_facility"));
-                bm.setHouseType(rs.getString("house_type"));
-                bm.setOwnerShipStatus(rs.getString("ownership_status"));
-                bm.setEmploymentStatus(rs.getString("employment_status"));
-                bm.setMonthlyIncome(rs.getString("monthly_income"));
-                bm.setEducationalLevel(rs.getString("education_level"));
-                bm.setDigitalAccess(rs.getString("digital_access"));
-                bm.setAddedBy(rs.getString("added_by"));
-                bm.setRegDate(rs.getString("reg_date"));
+                    bm.setId(rs.getInt("beneficiary_id"));
+                    bm.setFirstname(rs.getString("first_name"));
+                    bm.setMiddlename(rs.getString("middle_name"));
+                    bm.setLastname(rs.getString("last_name"));
+                    bm.setBirthDate(rs.getString("birthdate"));
+                    bm.setAgeScore(rs.getDouble("age_score"));
+                    bm.setGender(rs.getString("gender"));
+                    bm.setMaritalStatus(rs.getString("marital_status"));
+                    bm.setSoloParentStatus(rs.getString("solo_parent_status"));
+                    bm.setLatitude(rs.getString("latitude"));
+                    bm.setLongitude(rs.getString("longitude"));
+                    bm.setMobileNumber(rs.getString("mobile_number"));
+                    bm.setDisabilityType(rs.getString("disability_type"));
+                    bm.setHealthCondition(rs.getString("health_condition"));
+                    bm.setCleanWaterAccess(rs.getString("clean_water_access"));
+                    bm.setSanitationFacility(rs.getString("sanitation_facility"));
+                    bm.setHouseType(rs.getString("house_type"));
+                    bm.setOwnerShipStatus(rs.getString("ownership_status"));
+                    bm.setEmploymentStatus(rs.getString("employment_status"));
+                    bm.setMonthlyIncome(rs.getString("monthly_income"));
+                    bm.setEducationalLevel(rs.getString("education_level"));
+                    bm.setDigitalAccess(rs.getString("digital_access"));
+                    bm.setAddedBy(rs.getString("added_by"));
+                    bm.setRegDate(rs.getString("reg_date"));
+                }
             }
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error fetching beneficiary by ID", ex);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
 
         return bm;
@@ -240,13 +208,9 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
     public List<String[]> getEncryptedLocations() {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT beneficiary_id, latitude, longitude FROM beneficiary";
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = dbConnection.getConnection();
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new String[]{
                         rs.getString("beneficiary_id"),
@@ -256,8 +220,6 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching encrypted locations", e);
-        } finally {
-            ResourceUtils.closeResources(rs, ps);
         }
         return list;
     }

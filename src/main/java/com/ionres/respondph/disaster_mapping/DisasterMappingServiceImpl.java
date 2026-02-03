@@ -5,6 +5,7 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.CryptographyManager;
 import com.ionres.respondph.util.GeographicUtils;
+import com.ionres.respondph.util.Mapping;
 import com.ionres.respondph.util.NameDecryptionUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,36 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
 
     public DisasterMappingServiceImpl(DBConnection connection) {
         this.dao = new DisasterMappingDAOImpl(connection);
+    }
+
+    private static Double tryParse(String s) {
+        if (s == null) return Double.NaN;
+        String t = s.trim();
+        if (t.isEmpty()) return Double.NaN;
+        // Replace comma decimal separators if present
+        t = t.replace(',', '.');
+        try {
+            return Double.parseDouble(t);
+        } catch (NumberFormatException e) {
+            return Double.NaN;
+        }
+    }
+
+    private static boolean looksSwapped(double lat, double lon) {
+        // Heuristic: lat outside [-90,90] but within longitude range, and lon within latitude range
+        return (lat < -90 || lat > 90) && (lon >= -90 && lon <= 90) && (lat >= -180 && lat <= 180);
+    }
+
+    private static double[] sanitizeLatLon(double lat, double lon) {
+        if (looksSwapped(lat, lon)) {
+            double tmp = lat;
+            lat = lon;
+            lon = tmp;
+        }
+        if (!Mapping.isValidCoordinate(lat, lon)) {
+            return null;
+        }
+        return new double[]{lat, lon};
     }
 
         @Override
@@ -95,13 +126,18 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
 
             for (DisasterCircleEncrypted c : dao.getAllDisasterCircles()) {
                 try {
-                    double lat = Double.parseDouble(CRYPTO.decryptWithOneParameter(c.lat));
-                    double lon = Double.parseDouble(CRYPTO.decryptWithOneParameter(c.lon));
-                    double radius = Double.parseDouble(CRYPTO.decryptWithOneParameter(c.radius));
+                    Double latVal = tryParse(CRYPTO.decryptWithOneParameter(c.lat));
+                    Double lonVal = tryParse(CRYPTO.decryptWithOneParameter(c.lon));
+                    Double radiusVal = tryParse(CRYPTO.decryptWithOneParameter(c.radius));
+                    if (latVal.isNaN() || lonVal.isNaN() || radiusVal.isNaN() || radiusVal <= 0) {
+                        continue;
+                    }
+                    double[] ll = sanitizeLatLon(latVal, lonVal);
+                    if (ll == null) continue;
                     String type = CRYPTO.decryptWithOneParameter(c.disasterType);
                     String name = CRYPTO.decryptWithOneParameter(c.disasterName);
 
-                    circles.add(new DisasterCircleInfo(lat, lon, radius, name, type));
+                    circles.add(new DisasterCircleInfo(ll[0], ll[1], radiusVal, name, type));
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error decrypting disaster circle", e);
                 }
@@ -116,13 +152,18 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
 
             for (DisasterCircleEncrypted c : dao.getDisasterCirclesByDisasterId(disasterId)) {
                 try {
-                    double lat = Double.parseDouble(CRYPTO.decryptWithOneParameter(c.lat));
-                    double lon = Double.parseDouble(CRYPTO.decryptWithOneParameter(c.lon));
-                    double radius = Double.parseDouble(CRYPTO.decryptWithOneParameter(c.radius));
+                    Double latVal = tryParse(CRYPTO.decryptWithOneParameter(c.lat));
+                    Double lonVal = tryParse(CRYPTO.decryptWithOneParameter(c.lon));
+                    Double radiusVal = tryParse(CRYPTO.decryptWithOneParameter(c.radius));
+                    if (latVal.isNaN() || lonVal.isNaN() || radiusVal.isNaN() || radiusVal <= 0) {
+                        continue;
+                    }
+                    double[] ll = sanitizeLatLon(latVal, lonVal);
+                    if (ll == null) continue;
                     String type = CRYPTO.decryptWithOneParameter(c.disasterType);
                     String name = CRYPTO.decryptWithOneParameter(c.disasterName);
 
-                    circles.add(new DisasterCircleInfo(lat, lon, radius, name, type));
+                    circles.add(new DisasterCircleInfo(ll[0], ll[1], radiusVal, name, type));
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error decrypting disaster circle", e);
                 }
@@ -137,11 +178,16 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
 
             for (BeneficiaryEncrypted b : dao.getAllBeneficiaries()) {
                 try {
-                    double lat = Double.parseDouble(CRYPTO.decryptWithOneParameter(b.lat));
-                    double lon = Double.parseDouble(CRYPTO.decryptWithOneParameter(b.lng));
+                    Double latVal = tryParse(CRYPTO.decryptWithOneParameter(b.lat));
+                    Double lonVal = tryParse(CRYPTO.decryptWithOneParameter(b.lng));
+                    if (latVal.isNaN() || lonVal.isNaN()) {
+                        continue;
+                    }
+                    double[] ll = sanitizeLatLon(latVal, lonVal);
+                    if (ll == null) continue;
                     String fullName = NameDecryptionUtils.decryptFullName(b.encryptedFullName);
 
-                    beneficiaries.add(new BeneficiaryMarker(b.id, fullName, lat, lon));
+                    beneficiaries.add(new BeneficiaryMarker(b.id, fullName, ll[0], ll[1]));
 
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error decrypting beneficiary (ID: " + b.id + ")", e);

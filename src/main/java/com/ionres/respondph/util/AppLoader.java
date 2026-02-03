@@ -8,6 +8,7 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterServiceImpl;
 import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
 import com.ionres.respondph.disaster_mapping.DisasterMappingServiceImpl;
+import com.ionres.respondph.evac_site.EvacSiteServiceImpl;
 import com.ionres.respondph.familymembers.FamilyMemberServiceImpl;
 import com.ionres.respondph.dashboard.DashBoardServiceImpl;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorServiceImpl;
@@ -51,6 +52,7 @@ public class AppLoader {
         AppContext.disasterService = new DisasterServiceImpl(AppContext.db);
         AppContext.disasterDamageService = new DisasterDamageServiceImpl(AppContext.db);
         AppContext.aidTypeService = new AidTypeServiceImpl(AppContext.db);
+        AppContext.evacSiteService = new EvacSiteServiceImpl(AppContext.db);
         AppContext.dashBoardService = new DashBoardServiceImpl(AppContext.db);
         AppContext.vulnerabilityIndicatorService = new VulnerabilityIndicatorServiceImpl(AppContext.db);
         AppContext.disasterMappingService = new DisasterMappingServiceImpl(AppContext.db);
@@ -116,7 +118,9 @@ public class AppLoader {
         // Aid type dialogs
         DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
         DialogManager.preload("editAidType", "/view/aid_type/dialog/EditAidTypeDialog.fxml");
-        
+
+        //Evacuation Plan
+        DialogManager.preload("allocate", "/view/evacuation_plan/dialog/AllocateEvacSiteDialog.fxml");
         // Utility dialogs
         DialogManager.preload("mapping", "/view/mapping/MapDialog.fxml");
         DialogManager.preload("beneficiariesInCircle", "/view/disaster_mapping/dialog/BeneficiariesInCircleDialog.fxml");
@@ -126,6 +130,7 @@ public class AppLoader {
         DialogManager.preload("printAidDialog", "/view/aid/dialog/PrintAidDialog.fxml");
 
         // Evac Site
-        DialogManager.preload("evacSite", "/view/evac_site/dialog/AddEvacSiteDialog.fxml");
+        DialogManager.preload("addEvacSite", "/view/evac_site/dialog/AddEvacSiteDialog.fxml");
+        DialogManager.preload("editEvacSite", "/view/evac_site/dialog/EditEvacSiteDialog.fxml");
     }
 }

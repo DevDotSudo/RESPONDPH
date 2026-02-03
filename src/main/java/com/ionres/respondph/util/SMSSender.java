@@ -1,277 +1,381 @@
 package com.ionres.respondph.util;
+
 import com.fazecast.jSerialComm.SerialPort;
-import com.ionres.respondph.sendsms.SmsDAO;
-import com.ionres.respondph.sendsms.SmsDAOImpl;
-import com.ionres.respondph.sendsms.SmsModel;
 import javafx.application.Platform;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
+/**
+ * Low-level GSM modem communication utility.
+ * Does NOT handle database operations - that's the Service layer's responsibility.
+ */
 public class SMSSender {
 
     private static SMSSender instance;
-    private GSMdongle dongle;
+    private GSMDongle dongle;
 
-    private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "SMSSender-SMSLog");
-        t.setDaemon(true);
-        return t;
-    });
+    private final CopyOnWriteArrayList<Consumer<SendResult>> sendResultListeners = new CopyOnWriteArrayList<>();
 
-    private final SmsDAO smsDao = new SmsDAOImpl();
-    private final CopyOnWriteArrayList<SmsLogListener> listeners = new CopyOnWriteArrayList<>();
+    /**
+     * Result of an SMS send operation
+     */
+    public static class SendResult {
+        private final String phoneNumber;
+        private final String fullname;
+        private final String message;
+        private final boolean success;
+        private final int beneficiaryId;
+        private final long timestamp;
+        private final String errorMessage;
 
-    public interface SmsLogListener {
-        void onSmsLogSaved(SmsModel log);
+        public SendResult(String phoneNumber, String fullname, String message,
+                          boolean success, int beneficiaryId, String errorMessage) {
+            this.phoneNumber = phoneNumber;
+            this.fullname = fullname;
+            this.message = message;
+            this.success = success;
+            this.beneficiaryId = beneficiaryId;
+            this.timestamp = System.currentTimeMillis();
+            this.errorMessage = errorMessage;
+        }
+
+        // Getters
+        public String getPhoneNumber() { return phoneNumber; }
+        public String getFullname() { return fullname; }
+        public String getMessage() { return message; }
+        public boolean isSuccess() { return success; }
+        public int getBeneficiaryId() { return beneficiaryId; }
+        public long getTimestamp() { return timestamp; }
+        public String getErrorMessage() { return errorMessage; }
     }
-
-    public void addSmsLogListener(SmsLogListener l) {
-        if (l != null) listeners.addIfAbsent(l);
-    }
-
-    public void removeSmsLogListener(SmsLogListener l) {
-        if (l != null) listeners.remove(l);
-    }
-
 
     private SMSSender() {}
-
 
     public static synchronized SMSSender getInstance() {
         if (instance == null) instance = new SMSSender();
         return instance;
     }
 
+    /**
+     * Add a listener to be notified when SMS send operations complete
+     */
+    public void addSendResultListener(Consumer<SendResult> listener) {
+        if (listener != null) sendResultListeners.addIfAbsent(listener);
+    }
 
-    private static class GSMdongle {
+    public void removeSendResultListener(Consumer<SendResult> listener) {
+        if (listener != null) sendResultListeners.remove(listener);
+    }
+
+    private void notifyListeners(SendResult result) {
+        Platform.runLater(() -> {
+            for (Consumer<SendResult> listener : sendResultListeners) {
+                try {
+                    listener.accept(result);
+                } catch (Throwable t) {
+                    System.err.println("SendResultListener threw: " + t.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * GSM Dongle wrapper for serial communication
+     */
+    private static class GSMDongle {
         private final SerialPort serialPort;
         private final InputStream in;
         private final OutputStream out;
+        private int consecutiveFails = 0;
 
-        public GSMdongle (SerialPort sp){
+        public GSMDongle(SerialPort sp) {
             this.serialPort = sp;
             this.in = sp.getInputStream();
             this.out = sp.getOutputStream();
         }
 
-        public SerialPort getSerialPort(){
+        public SerialPort getSerialPort() {
             return serialPort;
         }
 
         public void connect() throws Exception {
             serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
             serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 5000, 5000);
-            if(!serialPort.openPort()){
-                throw new IllegalStateException("Failed to open port:" + serialPort.getSystemPortName());
+
+            if (!serialPort.openPort()) {
+                throw new IllegalStateException("Failed to open port: " + serialPort.getSystemPortName());
             }
-            sendAT("ATE0", 500);
-            sendAT("AT+CMGF=1",500);
-            sendAT("AT+CNMI=2,2,0,0,0",500);
+
+            // Initialize modem
+            sendAT("ATE0", 500);           // Echo off
+            sendAT("AT+CMGF=1", 500);      // Text mode
+            sendAT("AT+CNMI=2,2,0,0,0", 500); // New message indication
         }
 
-        public void disconnect(){
-            if(serialPort.isOpen())
+        public void disconnect() {
+            if (serialPort != null && serialPort.isOpen()) {
                 serialPort.closePort();
+            }
         }
-        private int consecutiveFails = 1;
-        public boolean sendMessage(String phoneNumber, String message) throws Exception{
-            try{
+
+        public boolean sendMessage(String phoneNumber, String message) throws Exception {
+            try {
+                // Request to send SMS
                 String resp = sendAT("AT+CMGS=\"" + phoneNumber + "\"", 2000);
-                if(resp == null || !resp.contains(">")){
+                if (resp == null || !resp.contains(">")) {
                     consecutiveFails++;
                     return false;
                 }
 
+                // Send message content + Ctrl+Z
                 out.write((message + "\u001A").getBytes());
                 out.flush();
 
+                // Wait for confirmation
                 String finalResponse = readResponse(15000);
-                boolean success = finalResponse != null && (finalResponse.contains("OK") || finalResponse.contains("+CMGS"));
+                boolean success = finalResponse != null &&
+                        (finalResponse.contains("OK") || finalResponse.contains("+CMGS"));
 
-                if(success) consecutiveFails = 1;
-                else consecutiveFails++;
+                if (success) {
+                    consecutiveFails = 0;
+                } else {
+                    consecutiveFails++;
+                }
 
                 return success;
-            }catch(Exception e){
+            } catch (Exception e) {
                 consecutiveFails++;
                 throw e;
             }
         }
 
-        private String sendAT(String cmd, int timeoutMs) throws Exception{
+        public int getConsecutiveFails() {
+            return consecutiveFails;
+        }
+
+        private String sendAT(String cmd, int timeoutMs) throws Exception {
             out.write((cmd + "\r").getBytes());
             out.flush();
             return readResponse(timeoutMs);
         }
 
-        private String readResponse(int timeoutMs) throws IOException, InterruptedException{
+        private String readResponse(int timeoutMs) throws IOException, InterruptedException {
             StringBuilder response = new StringBuilder();
             long startTime = System.currentTimeMillis();
+
             while (System.currentTimeMillis() - startTime < timeoutMs) {
                 while (in.available() > 0) {
                     response.append((char) in.read());
                 }
+
                 String respText = response.toString();
                 if (respText.contains("OK") || respText.contains("ERROR") || respText.contains(">")) {
                     return respText;
                 }
+
                 Thread.sleep(50);
             }
+
             return response.toString();
         }
     }
 
-    public synchronized List<String> getAvailablePorts(){
+    /**
+     * Get list of available serial ports
+     */
+    public synchronized List<String> getAvailablePorts() {
         SerialPort[] ports = SerialPort.getCommPorts();
         List<String> names = new ArrayList<>();
-        for(SerialPort p : ports) names.add(p.getSystemPortName());
+        for (SerialPort p : ports) {
+            names.add(p.getSystemPortName());
+        }
         return names;
     }
 
+    /**
+     * Connect to a specific serial port
+     */
+    public synchronized boolean connectToPort(String portName, int timeoutMs) {
+        if (portName == null || portName.trim().isEmpty()) {
+            System.err.println("connectToPort: invalid port name");
+            return false;
+        }
 
-    public synchronized boolean connectToPort(String portName, int timeoutMs){
-        if(portName == null) return false;
-        try{
+        try {
+            // Disconnect existing connection
+            if (dongle != null) {
+                dongle.disconnect();
+                dongle = null;
+            }
+
             SerialPort sp = SerialPort.getCommPort(portName);
-            if(sp == null) return false;
-            if(sp.isOpen()) sp.closePort();
-            this.dongle = new GSMdongle(sp);
+            if (sp == null) {
+                System.err.println("connectToPort: port not found: " + portName);
+                return false;
+            }
+
+            if (sp.isOpen()) {
+                sp.closePort();
+            }
+
+            this.dongle = new GSMDongle(sp);
             this.dongle.connect();
+
+            System.out.println("Successfully connected to " + portName);
             return true;
-        }catch(Exception e){
-            System.out.println("Failed to connect to " + portName + ": " + e.getMessage());
+
+        } catch (Exception e) {
+            System.err.println("Failed to connect to " + portName + ": " + e.getMessage());
+            e.printStackTrace();
             this.dongle = null;
             return false;
         }
     }
 
-    public boolean sendSingleMessage(String phoneNumber, String message) throws Exception{
-        if(!isConnected()) throw new IllegalStateException("No connected GSM modem");
-        return dongle.sendMessage(phoneNumber, message);
+    /**
+     * Disconnect from current port
+     */
+    public synchronized void disconnect() {
+        if (dongle != null) {
+            dongle.disconnect();
+            dongle = null;
+        }
     }
 
-    public boolean isConnected() {
+    /**
+     * Check if modem is connected
+     */
+    public synchronized boolean isConnected() {
         return dongle != null && dongle.getSerialPort().isOpen();
     }
 
+    /**
+     * Get the currently connected port name
+     */
+    public synchronized String getConnectedPort() {
+        if (dongle != null && dongle.getSerialPort() != null) {
+            return dongle.getSerialPort().getSystemPortName();
+        }
+        return null;
+    }
 
-    public int sendSMS(List<String> recipients, List<String> fullnames, List<Integer> beneficiaryIds, String message, int delayMsBetween, int maxRetriesPerRecipient) {
-        if (recipients == null || recipients.isEmpty()) return 0;
-        if (!isConnected()) throw new IllegalStateException("No connected GSM modem");
+    /**
+     * Send a single SMS message
+     * @return true if sent successfully
+     */
+    public synchronized boolean sendSingleMessage(String phoneNumber, String message) throws Exception {
+        if (!isConnected()) {
+            throw new IllegalStateException("No connected GSM modem");
+        }
+
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Phone number cannot be empty");
+        }
+
+        if (message == null || message.trim().isEmpty()) {
+            throw new IllegalArgumentException("Message cannot be empty");
+        }
+
+        return dongle.sendMessage(phoneNumber, message);
+    }
+
+    /**
+     * Send SMS to multiple recipients with retry logic
+     * Notifies listeners for each send result
+     *
+     * @param recipients List of phone numbers
+     * @param fullnames List of recipient names (can be null)
+     * @param beneficiaryIds List of beneficiary IDs (can be null)
+     * @param message Message to send
+     * @param delayMsBetween Delay between sends in milliseconds
+     * @param maxRetriesPerRecipient Maximum retry attempts per recipient
+     * @return Number of successful sends
+     */
+    public int sendBulkSMS(List<String> recipients, List<String> fullnames,
+                           List<Integer> beneficiaryIds, String message,
+                           int delayMsBetween, int maxRetriesPerRecipient) {
+
+        if (recipients == null || recipients.isEmpty()) {
+            System.err.println("sendBulkSMS: No recipients provided");
+            return 0;
+        }
+
+        if (!isConnected()) {
+            throw new IllegalStateException("No connected GSM modem");
+        }
+
         int successCount = 0;
+
         for (int i = 0; i < recipients.size(); i++) {
             String phone = recipients.get(i);
-            String fullname = (fullnames != null && fullnames.size() > i) ? fullnames.get(i) : null;
-            int beneficiaryId = (beneficiaryIds != null && beneficiaryIds.size() > i && beneficiaryIds.get(i) != null) ? beneficiaryIds.get(i) : 0;
-            if (phone == null || phone.trim().isEmpty()) continue;
-            int attempts = 0;
+            String fullname = (fullnames != null && fullnames.size() > i) ? fullnames.get(i) : "";
+            int beneficiaryId = (beneficiaryIds != null && beneficiaryIds.size() > i && beneficiaryIds.get(i) != null)
+                    ? beneficiaryIds.get(i) : 0;
+
+            if (phone == null || phone.trim().isEmpty()) {
+                continue;
+            }
+
             boolean sent = false;
-            while (attempts <= maxRetriesPerRecipient && !sent) {
+            String errorMessage = null;
+            int attempts = 0;
+
+            // Retry logic
+            while (attempts < maxRetriesPerRecipient && !sent) {
                 attempts++;
                 try {
-                    sent = sendSingleMessage(phone, message);
+                    sent = sendSingleMessage(phone.trim(), message);
+                    if (!sent) {
+                        errorMessage = "Send failed (attempt " + attempts + ")";
+                    }
                 } catch (Exception e) {
-                    System.err.println("sendSMS: error sending to " + phone + ": " + e.getMessage());
+                    errorMessage = e.getMessage();
+                    System.err.println("sendBulkSMS: error sending to " + phone +
+                            " (attempt " + attempts + "): " + e.getMessage());
                 }
-                if (!sent) {
-                    try { Thread.sleep(500); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+
+                if (!sent && attempts < maxRetriesPerRecipient) {
+                    try {
+                        Thread.sleep(500); // Wait before retry
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
             }
-            if (sent) successCount++;
-            submitSmsLog(phone, fullname, message, sent, beneficiaryId);
 
-            try { Thread.sleep(Math.max(0, delayMsBetween)); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+            if (sent) {
+                successCount++;
+            }
+
+            // Notify listeners about the result
+            SendResult result = new SendResult(phone, fullname, message, sent, beneficiaryId, errorMessage);
+            notifyListeners(result);
+
+            // Delay between sends
+            if (i < recipients.size() - 1) {
+                try {
+                    Thread.sleep(Math.max(0, delayMsBetween));
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
+
         return successCount;
     }
 
-
-    private void submitSmsLog(String phone, String fullname, String message, boolean success, int beneficiaryId) {
-        try {
-            SmsModel log = new SmsModel();
-            log.setDateSent(new Timestamp(System.currentTimeMillis()));
-            log.setPhonenumber(phone == null ? "" : phone);
-            log.setPhoneString(phone == null ? "" : phone);
-            if (beneficiaryId > 0) log.setBeneficiaryID(beneficiaryId);
-            log.setFullname(fullname == null ? "" : fullname);
-            log.setMessage(message == null ? "" : message);
-            log.setStatus(success ? "SENT" : "FAILED");
-
-            logExecutor.submit(() -> {
-                try {
-                    smsDao.saveSMS(log);
-                    Platform.runLater(() -> {
-                        for (SmsLogListener l : listeners) {
-                            try {
-                                l.onSmsLogSaved(log);
-                            } catch (Throwable t) {
-                                System.err.println("SmsLogListener threw: " + t.getMessage());
-                            }
-                        }
-                    });
-                } catch (Throwable t) {
-                    System.err.println("Failed to save sms log: " + t.getMessage());
-                    t.printStackTrace();
-                }
-            });
-        } catch (Throwable t) {
-            System.err.println("submitSmsLog failed: " + t.getMessage());
-            t.printStackTrace();
-        }
+    /**
+     * Get number of consecutive failed attempts
+     */
+    public synchronized int getConsecutiveFails() {
+        return dongle != null ? dongle.getConsecutiveFails() : 0;
     }
-
-    public boolean resendSMS(SmsModel log, String portName, int timeoutMs) {
-        if (log == null) return false;
-        if (!isConnected()) {
-            if (portName == null) {
-                System.err.println("resendSMS: no port available to connect");
-                return false;
-            }
-            boolean ok = connectToPort(portName, timeoutMs);
-            if (!ok) {
-                System.err.println("resendSMS: failed to connect to port " + portName);
-                return false;
-            }
-        }
-
-        String phone = log.getPhoneString() != null && !log.getPhoneString().isEmpty() ? log.getPhoneString() : log.getPhonenumber();
-        String message = log.getMessage() == null ? "" : log.getMessage();
-        boolean sent = false;
-        try {
-            sent = sendSingleMessage(phone, message);
-        } catch (Throwable t) {
-            System.err.println("resendSMS: error while sending to " + phone + " -> " + t.getMessage());
-            sent = false;
-        }
-
-        if (sent) {
-            try {
-                log.setStatus("SENT");
-                smsDao.resendSMS(log);
-            } catch (Throwable t) {
-                System.err.println("resendSMS: failed to update DB status: " + t.getMessage());
-            }
-
-            final SmsModel updated = log;
-             Platform.runLater(() -> {
-                 for (SmsLogListener l : listeners) {
-                     try {
-                         l.onSmsLogSaved(updated);
-                     } catch (Throwable t) {
-                         System.err.println("SmsLogListener threw: " + t.getMessage());
-                     }
-                 }
-             });
-         }
-
-         return sent;
-     }
-
 }

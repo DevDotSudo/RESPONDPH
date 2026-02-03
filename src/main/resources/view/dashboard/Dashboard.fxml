@@ -5,25 +5,35 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane styleClass="dashboard-root" stylesheets="@/styles/dashboard/dashboard.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.dashboard.DashboardController">
+<AnchorPane styleClass="dashboard-root" stylesheets="@/styles/dashboard/dashboard.css"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ionres.respondph.dashboard.DashboardController">
 
-    <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox spacing="15.0" AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
 
+        <!-- Header -->
         <HBox alignment="CENTER_LEFT" styleClass="dashboard-header">
             <Label styleClass="page-title" text="Dashboard" />
         </HBox>
 
-        <GridPane hgap="20.0" vgap="20.0" VBox.vgrow="NEVER">
+        <!-- Cards -->
+        <GridPane hgap="20.0" vgap="20.0" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" />
                 <ColumnConstraints hgrow="ALWAYS" />
                 <ColumnConstraints hgrow="ALWAYS" />
             </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS" />
+            </rowConstraints>
 
+            <!-- Total Beneficiary Card -->
             <StackPane styleClass="beneficiary-card" GridPane.columnIndex="0">
                 <VBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-container">
                     <padding>
-                        <Insets bottom="20" left="20" right="20" top="20" />
+                        <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <StackPane styleClass="beneficiary-icon">
@@ -37,10 +47,11 @@
                 </VBox>
             </StackPane>
 
+            <!-- Total Disasters Card -->
             <StackPane styleClass="disasters-card" GridPane.columnIndex="1">
                 <VBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-container">
                     <padding>
-                        <Insets bottom="20" left="20" right="20" top="20" />
+                        <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <StackPane styleClass="disasters-icon">
@@ -54,10 +65,11 @@
                 </VBox>
             </StackPane>
 
+            <!-- Total Aids Card -->
             <StackPane styleClass="aids-card" GridPane.columnIndex="2">
                 <VBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-container">
                     <padding>
-                        <Insets bottom="20" left="20" right="20" top="20" />
+                        <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <StackPane styleClass="aids-icon">
@@ -70,27 +82,9 @@
                     </HBox>
                 </VBox>
             </StackPane>
-         <rowConstraints>
-            <RowConstraints />
-         </rowConstraints>
         </GridPane>
 
-        <Label styleClass="section-title" text="Disaster Mapping" />
-
-        <StackPane VBox.vgrow="ALWAYS">
-
-            <Pane fx:id="mapContainer" styleClass="map-container" />
-
-            <VBox alignment="TOP_RIGHT" fillWidth="false" maxWidth="-Infinity" pickOnBounds="false" spacing="6" styleClass="map-status-wrapper" StackPane.alignment="TOP_RIGHT">
-
-                <VBox alignment="CENTER_LEFT" fillWidth="false" maxWidth="-Infinity" spacing="6" styleClass="map-status-pane" VBox.vgrow="NEVER">
-                    <Label styleClass="map-status-title" text="Map Status" />
-                    <VBox alignment="CENTER_LEFT" spacing="8">
-                        <RadioButton fx:id="offlineRadio" text="Offline" />
-                        <RadioButton fx:id="onlineRadio" text="Online" />
-                    </VBox>
-                </VBox>
-            </VBox>
-        </StackPane>
+        <!-- Map Container -->
+        <Pane fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
     </VBox>
 </AnchorPane>

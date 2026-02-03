@@ -22,8 +22,6 @@ public class DashboardController {
     private final List<BeneficiaryMarker> beneficiaries = new ArrayList<>();
 
     @FXML private Pane mapContainer;
-    @FXML private RadioButton offlineRadio;
-    @FXML private RadioButton onlineRadio;
     @FXML private Label totalBeneficiaryLabel;
     @FXML private Label totalDisastersLabel;
     @FXML private Label totalAidsLabel;
@@ -53,10 +51,6 @@ public class DashboardController {
             loadDashBoardData();
             loadBeneficiariesFromDb();
         });
-        ToggleGroup mapStatusGroup = new ToggleGroup();
-        offlineRadio.setToggleGroup(mapStatusGroup);
-        onlineRadio.setToggleGroup(mapStatusGroup);
-        offlineRadio.setSelected(true);
     }
 
     public void loadBeneficiariesFromDb() {

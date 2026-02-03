@@ -193,6 +193,50 @@
     -fx-background-color: #94a3b8;
 }
 
+/* Radio Buttons */
+.radio-button {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #e2e8f0;
+    -fx-cursor: hand;
+}
+
+.radio-button .radio {
+    -fx-background-color: #0f172a;
+    -fx-border-color: #475569;
+    -fx-border-width: 2px;
+    -fx-border-radius: 50%;
+    -fx-padding: 4px;
+}
+
+.radio-button:selected .radio {
+    -fx-border-color: #f97316;
+    -fx-background-color: #0f172a;
+}
+
+.radio-button:selected .radio .dot {
+    -fx-background-color: #f97316;
+    -fx-background-radius: 50%;
+}
+
+.radio-button:hover .radio {
+    -fx-border-color: #f97316;
+}
+
+.radio-button:focused .radio {
+    -fx-border-color: #f97316;
+}
+
+/* Disabled Radio */
+.radio-button:disabled {
+    -fx-text-fill: #64748b;
+}
+
+.radio-button:disabled .radio {
+    -fx-border-color: #475569;
+    -fx-background-color: #1e293b;
+}
 /* Primary Button */
 .primary-button {
     -fx-background-color: #f97316;

@@ -13,7 +13,6 @@ import java.util.List;
 
 public class AidTypeDAOImpl implements AidTypeDAO{
     private final DBConnection dbConnection;
-    private Connection conn;
     private final Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
 
@@ -27,18 +26,14 @@ public class AidTypeDAOImpl implements AidTypeDAO{
         List<AidTypeModelComboBox> aidTypes = new ArrayList<>();
         String sql = "SELECT * FROM aid_type ORDER BY aid_name";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 AidTypeModelComboBox aidType = mapResultSetToAidType(rs);
                 aidTypes.add(aidType);
             }
-
-            rs.close();
-            ps.close();
 
             System.out.println("Loaded " + aidTypes.size() + " aid types");
 
@@ -53,9 +48,8 @@ public class AidTypeDAOImpl implements AidTypeDAO{
     public boolean saving(AidTypeModel atm) {
         String sql = "INSERT INTO aid_type (aid_name, age_weight, gender_weight, marital_status_weight, solo_parent_weight, disability_weight, health_condition_weight, access_to_clean_water_weight, sanitation_facilities_weight, house_construction_type_weight, ownership_weight, damage_severity_weight, employment_status_weight, monthly_income_weight, education_level_weight, digital_access_weight, dependency_ratio_weight, notes, admin_id, reg_date)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1,atm.getAidTypeName());
             ps.setDouble(2, atm.getAgeWeight());
@@ -86,13 +80,6 @@ public class AidTypeDAOImpl implements AidTypeDAO{
             e.printStackTrace();
             return false;
         }
-        finally {
-            try {
-                conn.close();
-            }catch(SQLException e){
-                System.out.println(e.getMessage());
-            }
-        }
     }
 
     @Override
@@ -106,10 +93,9 @@ public class AidTypeDAOImpl implements AidTypeDAO{
                 "INNER JOIN admin a " +
                 "ON at.admin_id = a.admin_id";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 AidTypeModel at = new AidTypeModel();
@@ -131,12 +117,6 @@ public class AidTypeDAOImpl implements AidTypeDAO{
                     null,
                     "Error fetching aid types: " + ex.getMessage()
             );
-        } finally {
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
         }
 
         return list;
@@ -146,8 +126,8 @@ public class AidTypeDAOImpl implements AidTypeDAO{
     public boolean delete(AidTypeModel atm) {
         String sql = "DELETE FROM aid_type WHERE aid_type_id = ?";
 
-        try {conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, atm.getAidTypeId());
 
             int rowsAffected = ps.executeUpdate();
@@ -158,13 +138,6 @@ public class AidTypeDAOImpl implements AidTypeDAO{
             e.printStackTrace();
             return false;
         }
-        finally {
-            try {
-                conn.close();
-            }catch(SQLException e){
-                System.out.println(e.getMessage());
-            }
-        }
     }
 
     @Override
@@ -173,35 +146,35 @@ public class AidTypeDAOImpl implements AidTypeDAO{
 
         String sql = "SELECT * FROM aid_type WHERE aid_type_id = ?";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
 
-            if (rs.next()) {
-                at = new AidTypeModel();
+                if (rs.next()) {
+                    at = new AidTypeModel();
 
-                at.setAidTypeId(rs.getInt("aid_type_id"));
-                at.setAidTypeName(rs.getString("aid_name"));
-                at.setAgeWeight(rs.getDouble("age_weight"));
-                at.setGenderWeight(rs.getDouble("gender_weight"));
-                at.setMaritalStatusWeight(rs.getDouble("marital_status_weight"));
-                at.setSoloParentWeight(rs.getDouble("solo_parent_weight"));
-                at.setDisabilityWeight(rs.getDouble("disability_weight"));
-                at.setHealthConditionWeight(rs.getDouble("health_condition_weight"));
-                at.setAccessToCleanWaterWeight(rs.getDouble("access_to_clean_water_weight"));
-                at.setSanitationFacilityWeight(rs.getDouble("sanitation_facilities_weight"));
-                at.setHouseConstructionTypeWeight(rs.getDouble("house_construction_type_weight"));
-                at.setOwnershipWeight(rs.getDouble("ownership_weight"));
-                at.setDamageSeverityWeight(rs.getDouble("damage_severity_weight"));
-                at.setEmploymentStatusWeight(rs.getDouble("employment_status_weight"));
-                at.setMonthlyIncomeWeight(rs.getDouble("monthly_income_weight"));
-                at.setEducationalLevelWeight(rs.getDouble("education_level_weight"));
-                at.setDigitalAccessWeight(rs.getDouble("digital_access_weight"));
-                at.setDependencyRatioWeight(rs.getDouble("dependency_ratio_weight"));
-                at.setNotes(rs.getString("notes"));
-                at.setRegDate(rs.getString("reg_date"));
+                    at.setAidTypeId(rs.getInt("aid_type_id"));
+                    at.setAidTypeName(rs.getString("aid_name"));
+                    at.setAgeWeight(rs.getDouble("age_weight"));
+                    at.setGenderWeight(rs.getDouble("gender_weight"));
+                    at.setMaritalStatusWeight(rs.getDouble("marital_status_weight"));
+                    at.setSoloParentWeight(rs.getDouble("solo_parent_weight"));
+                    at.setDisabilityWeight(rs.getDouble("disability_weight"));
+                    at.setHealthConditionWeight(rs.getDouble("health_condition_weight"));
+                    at.setAccessToCleanWaterWeight(rs.getDouble("access_to_clean_water_weight"));
+                    at.setSanitationFacilityWeight(rs.getDouble("sanitation_facilities_weight"));
+                    at.setHouseConstructionTypeWeight(rs.getDouble("house_construction_type_weight"));
+                    at.setOwnershipWeight(rs.getDouble("ownership_weight"));
+                    at.setDamageSeverityWeight(rs.getDouble("damage_severity_weight"));
+                    at.setEmploymentStatusWeight(rs.getDouble("employment_status_weight"));
+                    at.setMonthlyIncomeWeight(rs.getDouble("monthly_income_weight"));
+                    at.setEducationalLevelWeight(rs.getDouble("education_level_weight"));
+                    at.setDigitalAccessWeight(rs.getDouble("digital_access_weight"));
+                    at.setDependencyRatioWeight(rs.getDouble("dependency_ratio_weight"));
+                    at.setNotes(rs.getString("notes"));
+                    at.setRegDate(rs.getString("reg_date"));
+                }
             }
 
         } catch (SQLException e) {
@@ -210,12 +183,6 @@ public class AidTypeDAOImpl implements AidTypeDAO{
                     "Error fetching aid type: " + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
-        } finally {
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
         }
 
         return at;
@@ -249,9 +216,8 @@ public class AidTypeDAOImpl implements AidTypeDAO{
                 "reg_date = ? " +
                 "WHERE aid_type_id = ?";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, atm.getAidTypeName());
             ps.setDouble(2, atm.getAgeWeight());
@@ -285,12 +251,6 @@ public class AidTypeDAOImpl implements AidTypeDAO{
             e.printStackTrace();
             return false;
 
-        } finally {
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
         }
     }
 
@@ -319,27 +279,17 @@ public class AidTypeDAOImpl implements AidTypeDAO{
         List<Integer> aidTypeIds = new ArrayList<>();
         String sql = "SELECT aid_type_id FROM aid_type";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 aidTypeIds.add(rs.getInt("aid_type_id"));
             }
 
-            rs.close();
-            ps.close();
-
         } catch (SQLException e) {
             System.err.println("Error fetching aid type IDs: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
         }
 
         return aidTypeIds;
@@ -349,30 +299,18 @@ public class AidTypeDAOImpl implements AidTypeDAO{
     public boolean hasAnyAidTypes() {
         String sql = "SELECT COUNT(*) as count FROM aid_type";
 
-        try {
-            conn = dbConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             if (rs.next()) {
                 int count = rs.getInt("count");
-                rs.close();
-                ps.close();
                 return count > 0;
             }
-
-            rs.close();
-            ps.close();
 
         } catch (SQLException e) {
             System.err.println("Error checking for aid types: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
         }
 
         return false;

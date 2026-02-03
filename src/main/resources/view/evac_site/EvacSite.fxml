@@ -65,7 +65,7 @@
                 <Insets bottom="24" left="24" right="24" top="18" />
             </padding>
 
-            <TableView fx:id="evacuationTbl" styleClass="evacuation-table" VBox.vgrow="ALWAYS">
+            <TableView fx:id="evacSitesTbl" styleClass="evacuation-table" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="idColumn" maxWidth="80" minWidth="80" text="ID" />
                     <TableColumn fx:id="nameColumn" prefWidth="1" text="Name" />

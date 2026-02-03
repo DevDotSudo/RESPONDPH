@@ -73,7 +73,6 @@ public class LoginController {
                 if (admin != null) {
                     System.out.println("Admin details - ID: " + admin.getId() + ", Username: " + admin.getUsername());
 
-                    // Auto-login successful
                     SessionManager.getInstance().setCurrentAdmin(admin);
                     System.out.println("Session manager updated");
 

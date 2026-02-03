@@ -2,11 +2,7 @@ package com.ionres.respondph.sendsms;
 
 import com.ionres.respondph.database.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,25 +10,35 @@ public class SmsDAOImpl implements SmsDAO {
 
     @Override
     public void saveSMS(SmsModel sms) {
-        String sql = "INSERT INTO sms_logs(date_sent, fullname, phonenumber, message, status) VALUES (?,?,?,?,?)";
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "INSERT INTO sms_logs(beneficiary_id, date_sent, fullname, phonenumber, message, status, send_method) VALUES (?,?,?,?,?,?,?)";
 
-            ps.setTimestamp(1, sms.getDateSent());
-            ps.setString(2, sms.getFullname());
-            ps.setString(3, sms.getPhonenumber());
-            ps.setString(4, sms.getMessage());
-            ps.setString(5, sms.getStatus());
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, sms.getBeneficiaryID());
+            ps.setTimestamp(2, sms.getDateSent());
+            ps.setString(3, sms.getFullname());
+            ps.setString(4, sms.getPhonenumber());
+            ps.setString(5, sms.getMessage());
+            ps.setString(6, sms.getStatus());
+            ps.setString(7, sms.getSendMethod());
+
             ps.executeUpdate();
 
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    sms.setMessageID(generatedKeys.getInt(1));
+                }
+            }
+
         } catch (SQLException e) {
+            System.err.println("Error saving SMS: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     @Override
     public List<SmsModel> getAllSMS() {
-
         List<SmsModel> logs = new ArrayList<>();
         String sql = "SELECT * FROM sms_logs ORDER BY date_sent DESC";
 
@@ -41,56 +47,129 @@ public class SmsDAOImpl implements SmsDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                SmsModel log = new SmsModel();
-                log.setDateSent(rs.getTimestamp("date_sent"));
-                log.setFullname(rs.getString("fullname"));
-                String phone = rs.getString("phonenumber");
-                log.setPhonenumber(phone);
-                log.setPhoneString(phone);
-                log.setMessage(rs.getString("message"));
-                log.setStatus(rs.getString("status"));
-                logs.add(log);
+                logs.add(mapResultSetToModel(rs));
             }
 
         } catch (SQLException e) {
+            System.err.println("Error retrieving all SMS: " + e.getMessage());
             e.printStackTrace();
         }
         return logs;
     }
 
     @Override
-    public void resendSMS(SmsModel sms) {
-        if (sms == null) return;
-        String phone = sms.getPhonenumber();
-        Timestamp ts = sms.getDateSent();
+    public List<SmsModel> getSMSByStatus(String status) {
+        List<SmsModel> logs = new ArrayList<>();
+        String sql = "SELECT * FROM sms_logs WHERE status = ? ORDER BY date_sent DESC";
 
-        if (phone != null && !phone.isEmpty()) {
-            String sql = "UPDATE sms_logs SET status = ? WHERE phonenumber = ? AND date_sent = (SELECT mx FROM (SELECT MAX(date_sent) AS mx FROM sms_logs WHERE phonenumber = ?) AS tmp)";
-            try (Connection conn = DBConnection.getInstance().getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-                ps.setString(1, sms.getStatus());
-                ps.setString(2, phone);
-                ps.setString(3, phone);
-                ps.executeUpdate();
+            ps.setString(1, status);
 
-            } catch (SQLException e) {
-                e.printStackTrace();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logs.add(mapResultSetToModel(rs));
+                }
             }
-            return;
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving SMS by status: " + e.getMessage());
+            e.printStackTrace();
         }
-        if (ts != null) {
-            String sql = "UPDATE sms_logs SET status = ? WHERE date_sent = ?";
-            try (Connection conn = DBConnection.getInstance().getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
+        return logs;
+    }
 
-                ps.setString(1, sms.getStatus());
-                ps.setTimestamp(2, ts);
-                ps.executeUpdate();
+    @Override
+    public List<SmsModel> getSMSByPhoneNumber(String phoneNumber) {
+        List<SmsModel> logs = new ArrayList<>();
+        String sql = "SELECT * FROM sms_logs WHERE phonenumber = ? ORDER BY date_sent DESC";
 
-            } catch (SQLException e) {
-                e.printStackTrace();
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, phoneNumber);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logs.add(mapResultSetToModel(rs));
+                }
             }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving SMS by phone number: " + e.getMessage());
+            e.printStackTrace();
         }
+        return logs;
+    }
+
+    @Override
+    public void updateSMSStatus(int messageID, String status) {
+        String sql = "UPDATE sms_logs SET status = ? WHERE message_id = ?";
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setInt(2, messageID);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println("Error updating SMS status: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteSMS(int messageID) {
+        String sql = "DELETE FROM sms_logs WHERE message_id = ?";
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, messageID);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println("Error deleting SMS: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public SmsModel getSMSById(int messageID) {
+        String sql = "SELECT * FROM sms_logs WHERE message_id = ?";
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, messageID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToModel(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving SMS by ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SmsModel mapResultSetToModel(ResultSet rs) throws SQLException {
+        SmsModel log = new SmsModel();
+        log.setMessageID(rs.getInt("message_id"));
+        log.setBeneficiaryID(rs.getInt("beneficiary_id"));
+        log.setDateSent(rs.getTimestamp("date_sent"));
+        log.setFullname(rs.getString("fullname"));
+        String phone = rs.getString("phonenumber");
+        log.setPhonenumber(phone);
+        log.setPhoneString(phone);
+        log.setMessage(rs.getString("message"));
+        log.setStatus(rs.getString("status"));
+        log.setSendMethod(rs.getString("send_method"));
+        return log;
     }
 }

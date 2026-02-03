@@ -1,24 +1,39 @@
 package com.ionres.respondph.sendsms;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public class SmsModel {
-
-    private int MessageID;
-    private  int beneficiaryID;
+    private int messageID;
+    private int beneficiaryID;
     private Timestamp dateSent;
     private String phonenumber;
     private String fullname;
     private String message;
     private String status;
     private String phoneString;
+    private String sendMethod; // "GSM" or "API"
 
+    // Constructors
+    public SmsModel() {
+    }
+
+    public SmsModel(String phonenumber, String fullname, String message) {
+        this.phonenumber = phonenumber;
+        this.fullname = fullname;
+        this.message = message;
+        this.dateSent = Timestamp.valueOf(LocalDateTime.now());
+        this.status = "PENDING";
+        this.sendMethod = "GSM";
+    }
+
+    // Getters and Setters
     public int getMessageID() {
-        return MessageID;
+        return messageID;
     }
 
     public void setMessageID(int messageID) {
-        MessageID = messageID;
+        this.messageID = messageID;
     }
 
     public int getBeneficiaryID() {
@@ -77,4 +92,11 @@ public class SmsModel {
         this.phoneString = phoneString;
     }
 
+    public String getSendMethod() {
+        return sendMethod;
+    }
+
+    public void setSendMethod(String sendMethod) {
+        this.sendMethod = sendMethod;
+    }
 }

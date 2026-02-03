@@ -9,6 +9,8 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -140,19 +142,36 @@ public class AdminController {
     }
 
     public void loadTable() {
-        try {
-            List<AdminModel> admins = adminService.getAllAdmins();
+        // Show a temporary placeholder while loading
+        adminTable.setPlaceholder(new Label("Loading administrators..."));
+
+        Task<List<AdminModel>> task = new Task<>() {
+            @Override
+            protected List<AdminModel> call() {
+                return adminService.getAllAdmins();
+            }
+        };
+
+        task.setOnSucceeded(evt -> {
+            List<AdminModel> admins = task.getValue();
             adminList = FXCollections.observableArrayList(admins);
             adminTable.setItems(adminList);
-
-            if (admins.isEmpty()) {
+            if (admins == null || admins.isEmpty()) {
                 adminTable.setPlaceholder(new Label("No administrators found"));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        });
+
+        task.setOnFailed(evt -> {
+            Throwable e = task.getException();
+            if (e != null) e.printStackTrace();
             AlertDialogManager.showError("Load Error",
-                    "Failed to load administrators: " + e.getMessage());
-        }
+                    "Failed to load administrators: " + (e != null ? e.getMessage() : "Unknown error"));
+            adminTable.setPlaceholder(new Label("Failed to load administrators"));
+        });
+
+        Thread th = new Thread(task, "admin-load-table-thread");
+        th.setDaemon(true);
+        th.start();
     }
 
     public void refreshAdminTable() {

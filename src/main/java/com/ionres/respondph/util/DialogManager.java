@@ -48,24 +48,53 @@ public final class DialogManager {
             stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initStyle(StageStyle.UNDECORATED);
-            stage.setScene(new Scene(root));
+
+            // Reuse existing Scene if this root already belongs to one to avoid
+            // "Node is already set as root of another scene" IllegalArgumentException
+            javafx.scene.Scene existingScene = root.getScene();
+            if (existingScene != null) {
+                stage.setScene(existingScene);
+            } else {
+                stage.setScene(new javafx.scene.Scene(root));
+            }
 
             try {
                 controller.getClass().getMethod("setDialogStage", Stage.class)
                         .invoke(controller, stage);
             }
             catch (NoSuchMethodException ignored) {
-
+                // Controller does not expose setDialogStage; ignore
             }
-
             catch (InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
             stages.put(key, stage);
-            
-            // Remove stage from map when closed, so it can be recreated with fresh data
-            stage.setOnCloseRequest(e -> stages.remove(key));
+            // When dialog closes, clear only the Stage/Scene; keep preloaded controller/root for reuse
+            stage.setOnHidden(e -> unloadStage(key));
         }
         stage.showAndWait();
+    }
+
+    /**
+     * Unloads cached resources for a dialog so they can be garbage collected.
+     */
+    public static void unload(String key) {
+        Stage s = stages.remove(key);
+        if (s != null) {
+            s.setScene(null);
+        }
+        controllers.remove(key);
+        roots.remove(key);
+    }
+
+    /**
+     * Clears only the Stage/Scene for the given key, keeping the preloaded controller and root.
+      * This preserves AppLoader.preload semantics while avoiding Stage leaks.
+     */
+    public static void unloadStage(String key) {
+        Stage s = stages.remove(key);
+        if (s != null) {
+            s.setScene(null);
+        }
     }
 }

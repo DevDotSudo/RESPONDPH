@@ -39,6 +39,7 @@ public class AddFamilyController {
     @FXML private ComboBox<String> relationshipSelection;
     @FXML private Button saveBtn;
     @FXML private Button exitBtn;
+    private boolean isSaving = false;
 
     private double xOffset = 0;
     private double yOffset = 0;
@@ -109,7 +110,11 @@ public class AddFamilyController {
 
     private void addFamilyMembers() {
         try {
+            isSaving = true;
+            beneficiaryNameFld.hide();
+
             if (!validateInput()) {
+                isSaving = false;
                 return;
             }
 
@@ -264,8 +269,70 @@ public class AddFamilyController {
             allBeneficiaries = familyMemberService.getAllBeneficiaries();
             allBeneficiaries.sort(Comparator.comparing(b -> b.getFirstName().toLowerCase()));
 
-            // ✅ POPULATE BOTH COMBO BOXES
-            setupBeneficiaryNameComboBox();
+            beneficiaryNameFld.setEditable(true);
+            beneficiaryNameFld.getItems().setAll(allBeneficiaries);
+
+            beneficiaryNameFld.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(BeneficiaryModel b) {
+                    if (b == null) return "";
+                    return b.getBeneficiaryId() + " - " +
+                            b.getFirstName() + " " +
+                            (b.getMiddlename() != null ? b.getMiddlename() : "") + " " +
+                            (b.getLastname() != null ? b.getLastname() : "");
+                }
+
+                @Override
+                public BeneficiaryModel fromString(String text) {
+                    if (text == null || text.trim().isEmpty()) {
+                        return null;
+                    }
+
+                    String searchText = text.trim();
+                    return allBeneficiaries.stream()
+                            .filter(b -> {
+                                String fullDisplay = b.getBeneficiaryId() + " - " +
+                                        b.getFirstName() + " " +
+                                        (b.getMiddlename() != null ? b.getMiddlename() : "") + " " +
+                                        (b.getLastname() != null ? b.getLastname() : "");
+                                return fullDisplay.equalsIgnoreCase(searchText);
+                            })
+                            .findFirst()
+                            .orElse(null);
+                }
+            });
+
+            beneficiaryNameFld.setCellFactory(cb -> new ListCell<>() {
+                @Override
+                protected void updateItem(BeneficiaryModel item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText("");
+                    } else {
+                        setText(item.getBeneficiaryId() + " - " +
+                                item.getFirstName() + " " +
+                                (item.getMiddlename() != null ? item.getMiddlename() : "") + " " +
+                                (item.getLastname() != null ? item.getLastname() : ""));
+                    }
+                }
+            });
+
+            beneficiaryNameFld.setButtonCell(new ListCell<>() {
+                @Override
+                protected void updateItem(BeneficiaryModel item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText("");
+                    } else {
+                        setText(item.getBeneficiaryId() + " - " +
+                                item.getFirstName() + " " +
+                                (item.getMiddlename() != null ? item.getMiddlename() : "") + " " +
+                                (item.getLastname() != null ? item.getLastname() : ""));
+                    }
+                }
+            });
+
+            setupBeneficiarySearchFilter();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -274,57 +341,49 @@ public class AddFamilyController {
         }
     }
 
-    // ✅ Setup for adding family members
-    private void setupBeneficiaryNameComboBox() {
-        beneficiaryNameFld.getItems().setAll(allBeneficiaries);
-
-        beneficiaryNameFld.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(BeneficiaryModel beneficiary) {
-                return beneficiary != null ? beneficiary.getFirstName() : "";
-            }
-
-            @Override
-            public BeneficiaryModel fromString(String string) {
-                return allBeneficiaries.stream()
-                        .filter(b -> b.getFirstName().equalsIgnoreCase(string))
-                        .findFirst()
-                        .orElse(null);
-            }
-        });
-
-        beneficiaryNameFld.setCellFactory(cb -> new ListCell<>() {
-            @Override
-            protected void updateItem(BeneficiaryModel item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getFirstName());
-            }
-        });
-
-        beneficiaryNameFld.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(BeneficiaryModel item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getFirstName());
-            }
-        });
-
+    private void setupBeneficiarySearchFilter() {
         beneficiaryNameFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
-            String searchText = newText.toLowerCase().trim();
+            // Don't show dropdown if we're saving
+            if (isSaving) {
+                return;
+            }
+
+            String search = (newText == null) ? "" : newText.toLowerCase().trim();
+
+            BeneficiaryModel selected = beneficiaryNameFld.getSelectionModel().getSelectedItem();
+            if (selected != null && newText != null) {
+                String selectedText = selected.getBeneficiaryId() + " - " +
+                        selected.getFirstName() + " " +
+                        (selected.getMiddlename() != null ? selected.getMiddlename() : "") + " " +
+                        (selected.getLastname() != null ? selected.getLastname() : "");
+                if (selectedText.equalsIgnoreCase(newText.trim())) {
+                    return;
+                }
+            }
 
             List<BeneficiaryModel> filtered;
-            if (searchText.isEmpty()) {
+            if (search.isEmpty()) {
                 filtered = allBeneficiaries;
             } else {
                 filtered = allBeneficiaries.stream()
-                        .filter(b -> b.getFirstName().toLowerCase().contains(searchText))
+                        .filter(b -> {
+                            String id = String.valueOf(b.getBeneficiaryId());
+                            String firstName = (b.getFirstName() != null) ? b.getFirstName().toLowerCase() : "";
+                            String middleName = (b.getMiddlename() != null) ? b.getMiddlename().toLowerCase() : "";
+                            String lastName = (b.getLastname() != null) ? b.getLastname().toLowerCase() : "";
+
+                            return id.contains(search) ||
+                                    firstName.contains(search) ||
+                                    middleName.contains(search) ||
+                                    lastName.contains(search);
+                        })
                         .sorted(Comparator.comparing(b -> b.getFirstName().toLowerCase()))
                         .collect(Collectors.toList());
             }
 
             beneficiaryNameFld.getItems().setAll(filtered);
 
-            if (!beneficiaryNameFld.isShowing() && !filtered.isEmpty()) {
+            if (!beneficiaryNameFld.isShowing() && !filtered.isEmpty() && !search.isEmpty()) {
                 beneficiaryNameFld.show();
             }
         });

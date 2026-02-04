@@ -185,6 +185,7 @@ public class AddAidTypeController {
                                 "Household scores have been calculated for all beneficiaries.");
 
                 DashboardRefresher.refreshComboBoxOfDNAndAN();
+                DashboardRefresher.refresh();
                 clearFields();
             } else {
                 AlertDialogManager.showWarning("Error", "Failed to add Aid Type.");
@@ -291,7 +292,6 @@ public class AddAidTypeController {
 
     private java.util.List<BeneficiaryDisasterPair> getAllBeneficiaryDisasterPairsWithHouseholdScores() {
         java.util.List<BeneficiaryDisasterPair> pairs = new java.util.ArrayList<>();
-        // ✅ MODIFIED: Select both beneficiary_id and disaster_id
         String sql = "SELECT DISTINCT beneficiary_id, disaster_id FROM household_score";
 
         java.sql.Connection conn = null;

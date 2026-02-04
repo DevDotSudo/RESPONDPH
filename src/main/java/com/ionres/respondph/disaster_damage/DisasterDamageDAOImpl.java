@@ -358,7 +358,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
     @Override
     public List<BeneficiaryModel> getAllBeneficiaryByFirstname() {
         List<BeneficiaryModel> list = new ArrayList<>();
-        String sql = "SELECT beneficiary_id, first_name FROM beneficiary";
+        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name FROM beneficiary";
 
         try {
             conn = dbConnection.getConnection();
@@ -369,7 +369,9 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             while (rs.next()) {
                 list.add(new BeneficiaryModel(
                         rs.getInt("beneficiary_id"),
-                        rs.getString("first_name")
+                        rs.getString("first_name"),
+                        rs.getString("middle_name"),
+                        rs.getString("last_name")
                 ));
             }
 

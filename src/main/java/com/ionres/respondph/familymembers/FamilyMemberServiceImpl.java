@@ -273,6 +273,8 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
             List<String> encryptedNames = new ArrayList<>();
             for (BeneficiaryModel b : encryptedList) {
                 encryptedNames.add(b.getFirstName());
+                encryptedNames.add(b.getMiddlename());
+                encryptedNames.add(b.getLastname());
             }
 
             List<String> decryptedNames = cs.decrypt(encryptedNames);
@@ -280,9 +282,14 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
             List<BeneficiaryModel> decryptedModels = new ArrayList<>();
             for (int i = 0; i < encryptedList.size(); i++) {
                 BeneficiaryModel original = encryptedList.get(i);
+
+                int baseIndex = i * 3;
+
                 decryptedModels.add(new BeneficiaryModel(
                         original.getBeneficiaryId(),
-                        decryptedNames.get(i)
+                        decryptedNames.get(baseIndex),      // firstName
+                        decryptedNames.get(baseIndex + 1),  // middlename
+                        decryptedNames.get(baseIndex + 2)   // lastname
                 ));
             }
             return decryptedModels;

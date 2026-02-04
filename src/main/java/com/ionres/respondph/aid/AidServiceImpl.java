@@ -2,7 +2,6 @@ package com.ionres.respondph.aid;
 
 import com.ionres.respondph.aid.KMeansAidDistribution.BeneficiaryCluster;
 import com.ionres.respondph.database.DBConnection;
-
 import java.time.LocalDate;
 import java.util.List;
 

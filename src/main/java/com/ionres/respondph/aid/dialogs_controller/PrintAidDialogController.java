@@ -31,7 +31,6 @@ public class PrintAidDialogController {
     @FXML private Button printButton;
     @FXML private Button cancelButton;
     @FXML private Button previewButton;
-    @FXML private Button printAllButton;
 
     private DisasterDAO disasterDAO;
     private AidTypeDAO aidTypeDAO;
@@ -72,7 +71,6 @@ public class PrintAidDialogController {
         printButton.setOnAction(e -> handlePrint());
         cancelButton.setOnAction(e -> handleCancel());
         previewButton.setOnAction(e -> handlePreview());
-        printAllButton.setOnAction(e -> handlePrintAll());
     }
 
     private void updateBeneficiaryCount() {
@@ -172,34 +170,33 @@ public class PrintAidDialogController {
         stage.close();
     }
 
-    private void handlePrintAll() {
-        boolean confirmed = AlertDialogManager.showConfirmation(
-                "Print All Records",
-                "This will print ALL aid distribution records grouped by disaster and aid type.\n\n" +
-                        "This may generate multiple pages. Continue?"
-        );
+//    private void handlePrintAll() {
+//        boolean confirmed = AlertDialogManager.showConfirmation(
+//                "Print All Records",
+//                "This will print ALL aid distribution records grouped by disaster and aid type.\n\n" +
+//                        "This may generate multiple pages. Continue?"
+//        );
+//
+//        if (!confirmed) {
+//            return;
+//        }
+//
+//        // Get all aid records
+//        List<AidModel> allAidRecords = aidDAO.getAllAidForTable();
+//
+//        if (allAidRecords.isEmpty()) {
+//            AlertDialogManager.showWarning("No Data", "No aid records found in the system.");
+//            return;
+//        }
+//
+//        // Print all records
+//        boolean success = printService.printAidDistributionReport(allAidRecords);
+//
+//        if (success) {
+//            closeDialog();
+//        }
+//    }
 
-        if (!confirmed) {
-            return;
-        }
-
-        // Get all aid records
-        List<AidModel> allAidRecords = aidDAO.getAllAidForTable();
-
-        if (allAidRecords.isEmpty()) {
-            AlertDialogManager.showWarning("No Data", "No aid records found in the system.");
-            return;
-        }
-
-        // Print all records
-        boolean success = printService.printAidDistributionReport(allAidRecords);
-
-        if (success) {
-            closeDialog();
-        }
-    }
-
-    // ADD THIS METHOD
     private void loadDisasters() {
         DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
 

@@ -74,6 +74,9 @@
                     <TableColumn fx:id="beneficiaryColumn" prefWidth="220" text="Beneficiary Name" />
                     <TableColumn fx:id="disasterColumn" prefWidth="220" text="Disaster Name" />
                     <TableColumn fx:id="dateColumn" prefWidth="160" text="Date" />
+                    <TableColumn fx:id="noteColumn" prefWidth="160" text="Note" />
+                    <TableColumn fx:id="actionColumn" prefWidth="160" text="Actions" />
+
                 </columns>
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

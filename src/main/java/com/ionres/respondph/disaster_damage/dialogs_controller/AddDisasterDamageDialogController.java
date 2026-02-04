@@ -35,6 +35,7 @@ public class AddDisasterDamageDialogController {
     private List<DisasterModel> allDisaster;
     private DisasterDamageService disasterDamageService;
     private DisasterDamageController disasterDamageController;
+    private boolean isSaving = false;
 
     public void setDisasterDamageService(DisasterDamageService disasterDamageService) {
         this.disasterDamageService = disasterDamageService;
@@ -103,14 +104,26 @@ public class AddDisasterDamageDialogController {
                 @Override
                 public String toString(BeneficiaryModel b) {
                     if (b == null) return "";
-                    return b.getBeneficiaryId() + " - " + b.getFirstName();
+                    return b.getBeneficiaryId() + " - " +
+                            b.getFirstName() + " " +
+                            (b.getMiddlename() != null ? b.getMiddlename() : "") + " " +
+                            (b.getLastname() != null ? b.getLastname() : "");
                 }
-
                 @Override
                 public BeneficiaryModel fromString(String text) {
+                    if (text == null || text.trim().isEmpty()) {
+                        return null;
+                    }
+
+                    String searchText = text.trim();
                     return allBeneficiaries.stream()
-                            .filter(b -> (b.getBeneficiaryId() + " - " + b.getFirstName())
-                                    .equalsIgnoreCase(text))
+                            .filter(b -> {
+                                String fullDisplay = b.getBeneficiaryId() + " - " +
+                                        b.getFirstName() + " " +
+                                        (b.getMiddlename() != null ? b.getMiddlename() : "") + " " +
+                                        (b.getLastname() != null ? b.getLastname() : "");
+                                return fullDisplay.equalsIgnoreCase(searchText);
+                            })
                             .findFirst()
                             .orElse(null);
                 }
@@ -120,8 +133,14 @@ public class AddDisasterDamageDialogController {
                 @Override
                 protected void updateItem(BeneficiaryModel item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null ? "" :
-                            item.getBeneficiaryId() + " - " + item.getFirstName());
+                    if (empty || item == null) {
+                        setText("");
+                    } else {
+                        setText(item.getBeneficiaryId() + " - " +
+                                item.getFirstName() + " " +
+                                (item.getMiddlename() != null ? item.getMiddlename() : "") + " " +
+                                (item.getLastname() != null ? item.getLastname() : ""));
+                    }
                 }
             });
 
@@ -129,8 +148,14 @@ public class AddDisasterDamageDialogController {
                 @Override
                 protected void updateItem(BeneficiaryModel item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null ? "" :
-                            item.getBeneficiaryId() + " - " + item.getFirstName());
+                    if (empty || item == null) {
+                        setText("");
+                    } else {
+                        setText(item.getBeneficiaryId() + " - " +
+                                item.getFirstName() + " " +
+                                (item.getMiddlename() != null ? item.getMiddlename() : "") + " " +
+                                (item.getLastname() != null ? item.getLastname() : ""));
+                    }
                 }
             });
 
@@ -145,22 +170,46 @@ public class AddDisasterDamageDialogController {
 
     private void setupBeneficiarySearchFilter() {
         beneficiaryNameFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
-            String search = newText.toLowerCase().trim();
+            String search = (newText == null) ? "" : newText.toLowerCase().trim();
+
+            if(isSaving){
+                return;
+            }
+
+            BeneficiaryModel selected = beneficiaryNameFld.getSelectionModel().getSelectedItem();
+            if (selected != null && newText != null) {
+                String selectedText = selected.getBeneficiaryId() + " - " +
+                        selected.getFirstName() + " " +
+                        (selected.getMiddlename() != null ? selected.getMiddlename() : "") + " " +
+                        (selected.getLastname() != null ? selected.getLastname() : "");
+                if (selectedText.equalsIgnoreCase(newText.trim())) {
+                    return;
+                }
+            }
 
             List<BeneficiaryModel> filtered;
             if (search.isEmpty()) {
                 filtered = allBeneficiaries;
             } else {
                 filtered = allBeneficiaries.stream()
-                        .filter(b -> String.valueOf(b.getBeneficiaryId()).contains(search) ||
-                                b.getFirstName().toLowerCase().contains(search))
+                        .filter(b -> {
+                            String id = String.valueOf(b.getBeneficiaryId());
+                            String firstName = (b.getFirstName() != null) ? b.getFirstName().toLowerCase() : "";
+                            String middleName = (b.getMiddlename() != null) ? b.getMiddlename().toLowerCase() : "";
+                            String lastName = (b.getLastname() != null) ? b.getLastname().toLowerCase() : "";
+
+                            return id.contains(search) ||
+                                    firstName.contains(search) ||
+                                    middleName.contains(search) ||
+                                    lastName.contains(search);
+                        })
                         .sorted(Comparator.comparing(b -> b.getFirstName().toLowerCase()))
                         .collect(Collectors.toList());
             }
 
             beneficiaryNameFld.getItems().setAll(filtered);
 
-            if (!beneficiaryNameFld.isShowing() && !filtered.isEmpty()) {
+            if (!beneficiaryNameFld.isShowing() && !filtered.isEmpty() && !search.isEmpty()) {
                 beneficiaryNameFld.show();
             }
         });
@@ -229,6 +278,10 @@ public class AddDisasterDamageDialogController {
         disasterFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {
             String search = newText.toLowerCase().trim();
 
+            if (isSaving){
+                return;
+            }
+
             List<DisasterModel> filtered;
             if (search.isEmpty()) {
                 filtered = allDisaster;
@@ -251,7 +304,12 @@ public class AddDisasterDamageDialogController {
 
     private void addDisasterDamage() {
         try {
+            isSaving = true;
+            beneficiaryNameFld.hide();
+            disasterFld.hide();
+
             if (!validateInput()) {
+                isSaving = false;
                 return;
             }
 
@@ -312,6 +370,9 @@ public class AddDisasterDamageDialogController {
             AlertDialogManager.showError("Error",
                     "An error occurred while adding disaster damage: " + e.getMessage());
         }
+        finally {
+            isSaving = false;
+        }
     }
 
     private boolean validateInput() {
@@ -355,9 +416,9 @@ public class AddDisasterDamageDialogController {
 
     private void clearFields() {
         beneficiaryNameFld.getSelectionModel().clearSelection();
-        beneficiaryNameFld.getEditor().clear();
+        beneficiaryNameFld.hide();
+        disasterFld.hide();
         disasterFld.getSelectionModel().clearSelection();
-        disasterFld.getEditor().clear();
         damageSeverityFld.getSelectionModel().clearSelection();
         assessmentDatePicker.setValue(null);
         verifiedByFld.clear();

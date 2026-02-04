@@ -96,18 +96,6 @@
     <Separator/>
 
     <HBox spacing="10" alignment="CENTER_RIGHT">
-
-        <Button fx:id="printAllButton"
-                text="Print All Records"
-                styleClass="warning-button">
-            <graphic>
-                <HBox alignment="CENTER" spacing="6">
-                    <FontAwesomeIconView glyphName="FILE_TEXT" size="12"/>
-                    <Label text="Print All"/>
-                </HBox>
-            </graphic>
-        </Button>
-
         <Button fx:id="previewButton"
                 text="Preview"
                 styleClass="secondary-button"
@@ -133,7 +121,6 @@
         </Button>
 
         <Button fx:id="cancelButton"
-                text="Cancel"
                 styleClass="secondary-button">
             <graphic>
                 <HBox alignment="CENTER" spacing="6">

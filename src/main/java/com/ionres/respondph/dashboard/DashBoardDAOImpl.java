@@ -31,7 +31,7 @@ public class DashBoardDAOImpl implements DashBoardDAO {
 
     @Override
     public int getTotalAids() {
-        return getCount("SELECT COUNT(*) FROM admin");
+        return getCount("SELECT COUNT(*) FROM aid_type");
     }
 
     @Override

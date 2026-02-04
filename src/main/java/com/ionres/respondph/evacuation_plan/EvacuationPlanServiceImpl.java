@@ -4,13 +4,8 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.evac_site.EvacSiteDAO;
 import com.ionres.respondph.evac_site.EvacSiteDAOServiceImpl;
 import com.ionres.respondph.evac_site.EvacSiteModel;
-import com.ionres.respondph.util.ValidationUtils;
-
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class EvacuationPlanServiceImpl implements EvacuationPlanService {
     private final EvacuationPlanDAO evacPlanDAO;
@@ -75,7 +70,7 @@ public class EvacuationPlanServiceImpl implements EvacuationPlanService {
         System.out.println("------------------------------------------");
 
         int occupiedSoFar = alreadyOccupied;
-        int totalPersonsAssigned = 0; // Track total persons to decrement from capacity
+        int totalPersonsAssigned = 0;
 
         for (RankedBeneficiaryModel beneficiary : rankedBeneficiaries) {
 
@@ -124,23 +119,76 @@ public class EvacuationPlanServiceImpl implements EvacuationPlanService {
             }
         }
 
-        if (totalPersonsAssigned > 0) {
-            boolean capacityUpdated = evacPlanDAO.decrementEvacSiteCapacity(evacSiteId, totalPersonsAssigned);
-
-            if (capacityUpdated) {
-                System.out.println("✓ Evac site capacity decremented by " + totalPersonsAssigned + " persons.");
-            } else {
-                System.err.println("✗ WARNING: Failed to decrement evac site capacity!");
-            }
-        }
-
         System.out.println("------------------------------------------");
         System.out.println("ALLOCATION COMPLETE");
         System.out.println("Total persons assigned : " + totalPersonsAssigned);
         System.out.println("Total persons occupied : " + occupiedSoFar + " / " + capacity);
         System.out.println("Beneficiaries assigned : " + assigned.size());
+        System.out.println("Note: Database capacity remains unchanged");
         System.out.println("==========================================");
 
         return assigned;
+    }
+    @Override
+    public List<EvacuationPlanModel> getAllEvacuationPlans() {
+        try {
+            return evacPlanDAO.getAll();
+        } catch (Exception e) {
+            System.err.println("Error getting all evacuation plans: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public boolean deleteEvacuationPlan(int planId) {
+        System.out.println("========== DELETING EVAC PLAN ==========");
+        System.out.println("Plan ID: " + planId);
+
+        EvacuationPlanModel plan = evacPlanDAO.getById(planId);
+
+        if (plan == null) {
+            System.err.println("ERROR: Evacuation plan not found for ID: " + planId);
+            return false;
+        }
+
+        int evacSiteId = plan.getEvacSiteId();
+        int disasterId = plan.getDisasterId();
+        int beneficiaryId = plan.getBeneficiaryId();
+
+        int householdSize = evacPlanDAO.getHouseholdSizeForBeneficiary(beneficiaryId, disasterId);
+
+        System.out.println("Beneficiary: " + plan.getBeneficiaryName());
+        System.out.println("Evacuation Site: " + plan.getEvacSiteName());
+        System.out.println("Household Size: " + householdSize + " persons");
+
+        boolean deleted = evacPlanDAO.deleteEvacPlan(planId);
+
+        if (deleted) {
+            System.out.println("✓ Evacuation plan deleted successfully");
+            System.out.println("Note: Database capacity remains unchanged");
+            System.out.println("Available capacity updated automatically through evac_plan records");
+            System.out.println("==========================================");
+            return true;
+        } else {
+            System.err.println("✗ Failed to delete evacuation plan");
+            System.out.println("==========================================");
+            return false;
+        }
+    }
+
+
+    @Override
+    public List<EvacuationPlanModel> searchEvacuationPlans(String searchText) {
+        try {
+            if (searchText == null || searchText.trim().isEmpty()) {
+                return getAllEvacuationPlans();
+            }
+            return evacPlanDAO.search(searchText.trim());
+        } catch (Exception e) {
+            System.err.println("Error searching evacuation plans: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 }

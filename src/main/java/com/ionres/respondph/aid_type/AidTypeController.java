@@ -139,6 +139,7 @@ public class AidTypeController {
                             "Aid Type has been successfully deleted.");
                     loadTable();
                     DashboardRefresher.refreshComboBoxOfDNAndAN();
+                    DashboardRefresher.refresh();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete Aid Type. Please try again.");

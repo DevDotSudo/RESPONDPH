@@ -151,12 +151,11 @@ public class AidDAOImpl implements AidDAO {
     public List<BeneficiaryCluster> getBeneficiariesWithScores(int aidTypeId, int disasterId) {
         List<BeneficiaryCluster> beneficiaries = new ArrayList<>();
 
-        // ✅ FIXED: Filter by disaster_id in aid_and_household_score table directly
         String sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category " +
                 "FROM aid_and_household_score ahs " +
-                "WHERE ahs.aid_type_id = ? " +       // Match this aid type
-                "AND ahs.disaster_id = ? " +         // ✅ Match disaster in SCORES table
-                "AND NOT EXISTS (" +                 // Check if already received aid
+                "WHERE ahs.aid_type_id = ? " +
+                "AND ahs.disaster_id = ? " +
+                "AND NOT EXISTS (" +
                 "    SELECT 1 FROM aid a " +
                 "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
                 "    AND a.aid_type_id = ? " +
@@ -168,7 +167,7 @@ public class AidDAOImpl implements AidDAO {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, aidTypeId);
-            ps.setInt(2, disasterId);  // ✅ Filter scores by disaster
+            ps.setInt(2, disasterId);
             ps.setInt(3, aidTypeId);
             ps.setInt(4, disasterId);
 
@@ -221,16 +220,13 @@ public class AidDAOImpl implements AidDAO {
 
         return beneficiaries;
     }
-    /**
-     * Detailed debugging when no eligible beneficiaries are found
-     */
+
     private void debugNoEligibleBeneficiaries(int aidTypeId, int disasterId) {
         try {
             Connection debugConn = dbConnection.getConnection();
 
             System.out.println("\n========== DEBUGGING: WHY NO ELIGIBLE BENEFICIARIES? ==========");
 
-            // Check 1: Are there scores for this aid type?
             String sql1 = "SELECT COUNT(*) as count, " +
                     "MIN(final_score) as min_score, " +
                     "MAX(final_score) as max_score " +
@@ -250,7 +246,6 @@ public class AidDAOImpl implements AidDAO {
             rs1.close();
             ps1.close();
 
-            // Check 2: Are there disaster damage records?
             String sql2 = "SELECT COUNT(*) as count FROM beneficiary_disaster_damage WHERE disaster_id = ?";
             PreparedStatement ps2 = debugConn.prepareStatement(sql2);
             ps2.setInt(1, disasterId);
@@ -265,7 +260,6 @@ public class AidDAOImpl implements AidDAO {
             rs2.close();
             ps2.close();
 
-            // Check 3: Intersection - beneficiaries in BOTH tables
             String sql3 = "SELECT COUNT(DISTINCT ahs.beneficiary_id) as count " +
                     "FROM aid_and_household_score ahs " +
                     "INNER JOIN beneficiary_disaster_damage bdd ON ahs.beneficiary_id = bdd.beneficiary_id " +
@@ -284,7 +278,6 @@ public class AidDAOImpl implements AidDAO {
             rs3.close();
             ps3.close();
 
-            // Check 4: How many already received this aid?
             String sql4 = "SELECT COUNT(DISTINCT beneficiary_id) as count " +
                     "FROM aid WHERE aid_type_id = ? AND disaster_id = ?";
             PreparedStatement ps4 = debugConn.prepareStatement(sql4);
@@ -297,7 +290,6 @@ public class AidDAOImpl implements AidDAO {
                 if (alreadyReceivedCount > 0) {
                     System.out.println("   ℹ These beneficiaries are excluded from distribution.");
 
-                    // Show WHO already received it
                     String sql5 = "SELECT DISTINCT beneficiary_id FROM aid " +
                             "WHERE aid_type_id = ? AND disaster_id = ? LIMIT 10";
                     PreparedStatement ps5 = debugConn.prepareStatement(sql5);
@@ -325,132 +317,6 @@ public class AidDAOImpl implements AidDAO {
             System.err.println("Error in debug queries: " + e.getMessage());
         }
     }
-
-//    @Override
-//    public List<BeneficiaryCluster> getBeneficiariesWithScores(int aidTypeId, int disasterId) {
-//        List<BeneficiaryCluster> beneficiaries = new ArrayList<>();
-//
-//        String sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category " +
-//                "FROM aid_and_household_score ahs " +
-//                "INNER JOIN beneficiary_disaster_damage bdd ON ahs.beneficiary_id = bdd.beneficiary_id " +
-//                "WHERE ahs.aid_type_id = ? " +
-//                "AND bdd.disaster_id = ? " +
-//                "AND ahs.beneficiary_id NOT IN (" +
-//                "    SELECT beneficiary_id FROM aid WHERE aid_type_id = ? AND disaster_id = ?" +
-//                ") " +
-//                "ORDER BY ahs.final_score DESC";
-//
-//        try {
-//            conn = dbConnection.getConnection();
-//            PreparedStatement ps = conn.prepareStatement(sql);
-//            ps.setInt(1, aidTypeId);
-//            ps.setInt(2, disasterId);
-//            ps.setInt(3, aidTypeId);
-//            ps.setInt(4, disasterId);
-//
-//            System.out.println("=== DEBUG: Executing Query ===");
-//            System.out.println("Query: " + sql);
-//            System.out.println("Parameters: aidTypeId=" + aidTypeId + ", disasterId=" + disasterId);
-//
-//            ResultSet rs = ps.executeQuery();
-//
-//            boolean hasRows = false;
-//            while (rs.next()) {
-//                hasRows = true;
-//                int beneficiaryId = rs.getInt("beneficiary_id");
-//                double finalScore = rs.getDouble("final_score");
-//                String scoreCategory = rs.getString("score_category");
-//
-//                System.out.println("Found beneficiary: ID=" + beneficiaryId +
-//                        ", Score=" + finalScore +
-//                        ", Category=" + scoreCategory);
-//
-//                beneficiaries.add(new BeneficiaryCluster(beneficiaryId, finalScore, scoreCategory));
-//            }
-//
-//            if (!hasRows) {
-//                System.out.println("DEBUG: No rows returned from query!");
-//
-//                debugCheckConditions(aidTypeId, disasterId);
-//            }
-//
-//            rs.close();
-//            ps.close();
-//
-//            System.out.println("Found " + beneficiaries.size() +
-//                    " eligible beneficiaries for aid type #" + aidTypeId +
-//                    " and disaster #" + disasterId);
-//
-//        } catch (SQLException e) {
-//            System.err.println("Error fetching beneficiaries with scores: " + e.getMessage());
-//            e.printStackTrace();
-//        } finally {
-//            closeConnection();
-//        }
-//
-//        return beneficiaries;
-//    }
-//
-//
-//    private void debugCheckConditions(int aidTypeId, int disasterId) {
-//        try {
-//            Connection debugConn = dbConnection.getConnection();
-//
-//            String sql1 = "SELECT COUNT(*) as count FROM aid_and_household_score WHERE aid_type_id = ?";
-//            PreparedStatement ps1 = debugConn.prepareStatement(sql1);
-//            ps1.setInt(1, aidTypeId);
-//            ResultSet rs1 = ps1.executeQuery();
-//            if (rs1.next()) {
-//                System.out.println("DEBUG: Scores for aid type " + aidTypeId + ": " + rs1.getInt("count"));
-//            }
-//            rs1.close();
-//            ps1.close();
-//
-//            String sql2 = "SELECT COUNT(*) as count FROM beneficiary_disaster_damage WHERE disaster_id = ?";
-//            PreparedStatement ps2 = debugConn.prepareStatement(sql2);
-//            ps2.setInt(1, disasterId);
-//            ResultSet rs2 = ps2.executeQuery();
-//            if (rs2.next()) {
-//                System.out.println("DEBUG: Disaster damages for disaster " + disasterId + ": " + rs2.getInt("count"));
-//            }
-//            rs2.close();
-//            ps2.close();
-//
-//            // Check 3: Are there beneficiaries in both tables?
-//            String sql3 = "SELECT ahs.beneficiary_id " +
-//                    "FROM aid_and_household_score ahs " +
-//                    "INNER JOIN beneficiary_disaster_damage bdd ON ahs.beneficiary_id = bdd.beneficiary_id " +
-//                    "WHERE ahs.aid_type_id = ? AND bdd.disaster_id = ?";
-//            PreparedStatement ps3 = debugConn.prepareStatement(sql3);
-//            ps3.setInt(1, aidTypeId);
-//            ps3.setInt(2, disasterId);
-//            ResultSet rs3 = ps3.executeQuery();
-//            int joinCount = 0;
-//            while (rs3.next()) {
-//                joinCount++;
-//                System.out.println("DEBUG: Beneficiary in both tables: " + rs3.getInt("beneficiary_id"));
-//            }
-//            System.out.println("DEBUG: Total beneficiaries matching both conditions: " + joinCount);
-//            rs3.close();
-//            ps3.close();
-//
-//            String sql4 = "SELECT COUNT(*) as count FROM aid WHERE aid_type_id = ? AND disaster_id = ?";
-//            PreparedStatement ps4 = debugConn.prepareStatement(sql4);
-//            ps4.setInt(1, aidTypeId);
-//            ps4.setInt(2, disasterId);
-//            ResultSet rs4 = ps4.executeQuery();
-//            if (rs4.next()) {
-//                System.out.println("DEBUG: Already received aid: " + rs4.getInt("count"));
-//            }
-//            rs4.close();
-//            ps4.close();
-//
-//            debugConn.close();
-//
-//        } catch (SQLException e) {
-//            System.err.println("DEBUG: Error in debug queries: " + e.getMessage());
-//        }
-//    }
 
     @Override
     public boolean hasReceivedAid(int beneficiaryId, int aidTypeId, int disasterId) {

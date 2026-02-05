@@ -168,7 +168,6 @@
                 </VBox>
             </VBox>
 
-            <!-- Distribution Method Section -->
             <VBox spacing="16">
                 <Label text="Distribution Method" styleClass="section-header"/>
                 <Separator/>
@@ -177,34 +176,39 @@
                 <VBox spacing="12">
                     <HBox spacing="12" alignment="CENTER_LEFT">
                         <CheckBox fx:id="useKMeansCheckbox"
-                                  text="Use K-Means Clustering Algorithm"
+                                  text="Use K-Means Clustering Algorithm (3 Clusters)"
                                   selected="true"
                                   styleClass="checkbox-label"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Label styleClass="badge-recommended">RECOMMENDED</Label>
                     </HBox>
 
-                    <Label text="K-means ensures fair distribution across different vulnerability levels by grouping beneficiaries into clusters and prioritizing those with highest needs."
+                    <Label text="K-means ensures fair distribution across 3 vulnerability levels (Low/Medium/High Priority) by grouping beneficiaries based on their scores (0.0 - 1.0) and prioritizing those with highest needs."
                            styleClass="field-description"
                            wrapText="true"/>
                 </VBox>
 
-                <!-- Cluster Settings (visible when K-means is enabled) -->
+                <!-- Cluster Settings (Fixed at 3) -->
                 <VBox spacing="8">
-                    <Label text="Number of Clusters" styleClass="field-label"/>
-                    <HBox spacing="12" styleClass="field-container">
+                    <Label text="Distribution Clusters" styleClass="field-label"/>
+                    <HBox spacing="12" alignment="CENTER_LEFT" styleClass="field-container">
                         <FontAwesomeIconView glyphName="SITEMAP" styleClass="field-icon"/>
-                        <Spinner fx:id="clusterSpinner"
-                                 min="2"
-                                 max="10"
-                                 initialValue="3"
-                                 editable="false"
-                                 styleClass="spinner"
-                                 prefWidth="100"/>
-                        <Label text="clusters" styleClass="spinner-label"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT"
+                              style="-fx-background-color: #ecf0f1; -fx-padding: 8 16; -fx-background-radius: 5; -fx-border-color: #3498db; -fx-border-width: 2; -fx-border-radius: 5;">
+                            <Label text="3 Clusters:"
+                                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <Label text="Low"
+                                   style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-padding: 2 8; -fx-background-radius: 3; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                            <Label text="Medium"
+                                   style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-padding: 2 8; -fx-background-radius: 3; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                            <Label text="High"
+                                   style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 2 8; -fx-background-radius: 3; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        </HBox>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="FIXED"
+                               style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-padding: 4 10; -fx-background-radius: 3; -fx-font-size: 10px; -fx-font-weight: bold;"/>
                     </HBox>
-                    <Label text="Recommended: 3-5 clusters for best results. More clusters = more refined grouping."
+                    <Label text="System uses 3 clusters for optimal distribution: Low Priority (0.00-0.33), Medium Priority (0.34-0.66), High Priority (0.67-1.00)"
                            styleClass="field-hint"
                            wrapText="true"/>
                 </VBox>
@@ -213,17 +217,23 @@
                 <HBox spacing="12" styleClass="info-box">
                     <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="20" styleClass="info-box-icon"/>
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="How K-Means Works:" styleClass="info-box-title"/>
-                        <Label text="• Groups beneficiaries by similarity in vulnerability scores"
+                        <Label text="How 3-Cluster K-Means Works:" styleClass="info-box-title"/>
+                        <Label text="• Groups beneficiaries into 3 clusters based on vulnerability scores (0.0 to 1.0)"
                                styleClass="info-box-text"
                                wrapText="true"/>
-                        <Label text="• Identifies the highest priority cluster (most vulnerable)"
+                        <Label text="• Low Priority (0.00-0.33): Beneficiaries with lower vulnerability"
                                styleClass="info-box-text"
                                wrapText="true"/>
-                        <Label text="• Distributes aid to top beneficiaries from that cluster first"
+                        <Label text="• Medium Priority (0.34-0.66): Beneficiaries with moderate vulnerability"
                                styleClass="info-box-text"
                                wrapText="true"/>
-                        <Label text="• Ensures diverse needs are met, not just highest scores"
+                        <Label text="• High Priority (0.67-1.00): Beneficiaries with highest vulnerability"
+                               styleClass="info-box-text"
+                               wrapText="true"/>
+                        <Label text="• Distributes aid starting from High Priority cluster first"
+                               styleClass="info-box-text"
+                               wrapText="true"/>
+                        <Label text="• Ensures balanced distribution across different need levels"
                                styleClass="info-box-text"
                                wrapText="true"/>
                     </VBox>
@@ -237,7 +247,7 @@
                     <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="20" styleClass="warning-icon"/>
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
                         <Label text="Simple Score-Based Distribution" styleClass="warning-title"/>
-                        <Label text="Aid will be distributed to the top N beneficiaries by score only, without clustering. This may result in less balanced distribution."
+                        <Label text="Aid will be distributed to the top N beneficiaries by score only, without clustering. This may result in less balanced distribution across vulnerability levels."
                                styleClass="warning-text"
                                wrapText="true"/>
                     </VBox>

@@ -3,7 +3,6 @@ package com.ionres.respondph.evacuation_plan.dialog_controller;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.evacuation_plan.EvacuationPlanController;
 import com.ionres.respondph.evacuation_plan.GeoBasedEvacPlanService;
-import com.ionres.respondph.evacuation_plan.RankedBeneficiaryModel;
 import com.ionres.respondph.evacuation_plan.RankedBeneficiaryWithLocation;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
@@ -17,17 +16,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 
 public class AllocateEvacSiteDialogController {
 
     @FXML private VBox root;
     @FXML private ComboBox<DisasterModel> disasterComboBox;
-    @FXML private TextArea resultTextArea;
     @FXML private Button allocateBtn;
     @FXML private Button closeBtn;
 
@@ -56,7 +50,7 @@ public class AllocateEvacSiteDialogController {
     }
 
     private void setupComboBoxes() {
-        // Custom cell factory to display disaster name and date
+
         disasterComboBox.setCellFactory(lv -> new ListCell<DisasterModel>() {
             @Override
             protected void updateItem(DisasterModel item, boolean empty) {
@@ -86,6 +80,7 @@ public class AllocateEvacSiteDialogController {
 
         if (src == allocateBtn) {
             performAllocation();
+            evacPlanController.loadTable();
         } else if (src == closeBtn) {
             closeDialog();
         }
@@ -154,9 +149,5 @@ public class AllocateEvacSiteDialogController {
         }
     }
 
-    public void onShow() {
-        resultTextArea.clear();
-        disasterComboBox.setValue(null);
-        root.requestFocus();
-    }
+
 }

@@ -1,4 +1,3 @@
-
 package com.ionres.respondph.aidType_and_household_score;
 
 import com.ionres.respondph.aidType_and_household_score.AidHouseholdScoreDAO.*;
@@ -204,16 +203,12 @@ public class AidHouseholdScoreCalculate {
     }
 
     private String determineScoreCategory(double finalScore) {
-        if (finalScore >= 0.40) {
-            return "Very High Priority";
-        } else if (finalScore >= 0.30) {
+        if (finalScore >= 0.67) {
             return "High Priority";
-        } else if (finalScore >= 0.20) {
+        } else if (finalScore >= 0.34) {
             return "Medium Priority";
-        } else if (finalScore >= 0.10) {
-            return "Low Priority";
         } else {
-            return "Very Low Priority";
+            return "Low Priority";
         }
     }
 }

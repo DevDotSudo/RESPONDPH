@@ -2,7 +2,6 @@ package com.ionres.respondph.familymembers;
 
 import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.util.Cryptography;
 import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -73,7 +72,6 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
                 FamilyMembersModel fm = new FamilyMembersModel();
 
                 fm.setFamilyId(rs.getInt("familymember_id"));
-                // ✅ FIX: ADD THIS LINE
                 fm.setBeneficiaryId(rs.getInt("beneficiary_id"));
 
                 fm.setFirstName(rs.getString("first_name"));
@@ -201,7 +199,7 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
     public List<BeneficiaryModel> getAllBeneficiaryByFirstname() {
 
         List<BeneficiaryModel> list = new ArrayList<>();
-        String sql = "SELECT beneficiary_id, first_name FROM beneficiary";
+        String sql = "SELECT beneficiary_id, first_name, middle_name, last_name FROM beneficiary";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -210,7 +208,9 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
             while (rs.next()) {
                 list.add(new BeneficiaryModel(
                         rs.getInt("beneficiary_id"),
-                        rs.getString("first_name")
+                        rs.getString("first_name"),
+                        rs.getString("middle_name"),
+                        rs.getString("last_name")
                 ));
             }
 

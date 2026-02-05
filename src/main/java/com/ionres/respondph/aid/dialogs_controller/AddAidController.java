@@ -27,7 +27,7 @@ public class AddAidController {
     @FXML private TextField costFld;
     @FXML private TextField providerFld;
     @FXML private CheckBox useKMeansCheckbox;
-    @FXML private Spinner<Integer> clusterSpinner;
+    // Removed clusterSpinner - now using fixed value of 3
     @FXML private Button previewBtn;
     @FXML private Button saveAidBtn;
     @FXML private Button cancelBtn;
@@ -44,6 +44,8 @@ public class AddAidController {
     private AidService aidService;
     private AidController aidController;
     private Stage dialogStage;
+
+    private static final int FIXED_CLUSTERS = 3;
 
     public void setAidService(AidService aidService) {
         this.aidService = aidService;
@@ -83,27 +85,17 @@ public class AddAidController {
         }
 
         setupEventHandlers();
-        setupClusterSpinner();
         setupDefaultValues();
         setupComboBoxListeners();
         makeDraggable();
     }
 
 
-    private void setupClusterSpinner() {
-        if (clusterSpinner != null) {
-            SpinnerValueFactory<Integer> valueFactory =
-                    new SpinnerValueFactory.IntegerSpinnerValueFactory(2, 10, 3, 1);
-            clusterSpinner.setValueFactory(valueFactory);
-            clusterSpinner.setDisable(false);
-            clusterSpinner.setEditable(false);
-        }
-    }
-
     private void setupDefaultValues() {
         if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setSelected(true);
         }
+        // Cluster count is now fixed at 3 (shown as label in UI)
     }
 
     private void setupComboBoxListeners() {
@@ -161,7 +153,7 @@ public class AddAidController {
             }
 
             List<BeneficiaryCluster> eligible = aidService.previewAidDistribution(
-                    aidTypeId, disasterId, Integer.MAX_VALUE, qtyPerBeneficiary, 3
+                    aidTypeId, disasterId, Integer.MAX_VALUE, qtyPerBeneficiary, FIXED_CLUSTERS
             );
             return eligible.size();
         } catch (Exception e) {
@@ -182,10 +174,11 @@ public class AddAidController {
             previewBtn.setOnAction(this::handlePreview);
         }
 
-        if (useKMeansCheckbox != null && clusterSpinner != null) {
+        if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setOnAction(e -> {
                 boolean useKMeans = useKMeansCheckbox.isSelected();
-                clusterSpinner.setDisable(!useKMeans);
+                // Cluster spinner is ALWAYS disabled since it's fixed at 3
+                // Do NOT re-enable it under any circumstances
 
                 if (simpleDistributionWarning != null) {
                     simpleDistributionWarning.setVisible(!useKMeans);
@@ -211,10 +204,10 @@ public class AddAidController {
             int quantity = Integer.parseInt(quantityFld.getText().trim());
             int quantityPerBeneficiary = Integer.parseInt(quantityPerBeneficiaryFld.getText().trim());
             boolean useKMeans = (useKMeansCheckbox != null) ? useKMeansCheckbox.isSelected() : true;
-            int clusters = useKMeans && (clusterSpinner != null) ? clusterSpinner.getValue() : 3;
 
+            // Always use fixed 3 clusters
             List<BeneficiaryCluster> preview = aidService.previewAidDistribution(
-                    aidTypeId, disasterId, quantity,quantityPerBeneficiary, clusters
+                    aidTypeId, disasterId, quantity, quantityPerBeneficiary, FIXED_CLUSTERS
             );
 
             if (preview.isEmpty()) {
@@ -248,13 +241,15 @@ public class AddAidController {
     private void showPreviewDialog(List<BeneficiaryCluster> preview, boolean usedKMeans, int qtyPerBeneficiary) {
         StringBuilder message = new StringBuilder();
         message.append(String.format("Distribution Method: %s\n",
-                usedKMeans ? "K-Means Clustering" : "Score-Based"));
+                usedKMeans ? "K-Means Clustering (3 Clusters)" : "Score-Based"));
         message.append(String.format("Total Recipients: %d beneficiaries\n", preview.size()));
         message.append(String.format("Quantity per Beneficiary: %d units\n", qtyPerBeneficiary));
         message.append(String.format("Total Units to Distribute: %d units\n\n", preview.size() * qtyPerBeneficiary));
 
         if (usedKMeans) {
-            message.append("=== Distribution by Cluster ===\n\n");
+            message.append("=== Distribution by Cluster (3 Clusters) ===\n\n");
+
+            String[] clusterNames = {"Low Priority", "Medium Priority", "High Priority"};
 
             int currentCluster = -1;
             int count = 1;
@@ -265,7 +260,9 @@ public class AddAidController {
                         message.append("\n");
                     }
                     currentCluster = b.getCluster();
-                    message.append(String.format("--- Cluster %d ---\n", currentCluster));
+                    String clusterName = (currentCluster >= 0 && currentCluster < 3) ?
+                            clusterNames[currentCluster] : "Cluster " + currentCluster;
+                    message.append(String.format("--- %s (Cluster %d) ---\n", clusterName, currentCluster));
                 }
 
                 message.append(String.format(
@@ -295,7 +292,7 @@ public class AddAidController {
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Distribution Preview");
-        alert.setHeaderText("Aid Distribution Plan");
+        alert.setHeaderText("Aid Distribution Plan (3-Cluster K-Means)");
 
         TextArea textArea = new TextArea(message.toString());
         textArea.setEditable(false);
@@ -338,10 +335,9 @@ public class AddAidController {
             int distributedCount;
 
             if (useKMeans) {
-                int clusters = (clusterSpinner != null) ? clusterSpinner.getValue() : 3;
-
+                // Always use fixed 3 clusters
                 distributedCount = aidService.distributeAidWithKMeans(
-                        aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary,costPerUnit, provider, clusters
+                        aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary, costPerUnit, provider, FIXED_CLUSTERS
                 );
             } else {
                 distributedCount = aidService.distributeAidSimple(
@@ -415,7 +411,7 @@ public class AddAidController {
                                 "Cost per unit: ₱%s\n" +
                                 "Total cost: ₱%.2f\n" +
                                 "Provider: %s\n" +
-                                "Method: %s",
+                                "Method: %s (3 Clusters)",
                         nameFld.getText().trim(),
                         aidTypeComboBox.getValue().getAidName(),
                         disasterComboBox.getValue().getDisasterName(),
@@ -449,7 +445,7 @@ public class AddAidController {
                         count,
                         count,
                         totalCost,
-                        usedKMeans ? "K-means Clustering" : "Score-based"
+                        usedKMeans ? "K-means Clustering (3 Clusters)" : "Score-based"
                 )
         );
         successAlert.showAndWait();
@@ -560,10 +556,6 @@ public class AddAidController {
 
         if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setSelected(true);
-        }
-
-        if (clusterSpinner != null) {
-            clusterSpinner.getValueFactory().setValue(3);
         }
 
         updateSelectionSummary();

@@ -13,6 +13,7 @@ import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DialogManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,6 +25,7 @@ import javafx.scene.layout.HBox;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AidController {
     @FXML private AnchorPane aidRootPane;
@@ -113,39 +115,6 @@ public class AidController {
 //        addActionButtons();
     }
 
-//    private void addActionButtons() {
-//        actionsColumn.setCellFactory(param -> new TableCell<>() {
-//            private final Button editButton = new Button("Edit");
-//            private final Button deleteButton = new Button("Delete");
-//
-//            {
-//                editButton.getStyleClass().add("edit-button");
-//                deleteButton.getStyleClass().add("delete-button");
-//
-//                editButton.setOnAction(event -> {
-//                    AidModel aid = getTableView().getItems().get(getIndex());
-//                    handleEditAid(aid);
-//                });
-//
-//                deleteButton.setOnAction(event -> {
-//                    AidModel aid = getTableView().getItems().get(getIndex());
-//                    handleDeleteAid(aid);
-//                });
-//            }
-//
-//            @Override
-//            protected void updateItem(Void item, boolean empty) {
-//                super.updateItem(item, empty);
-//                if (empty) {
-//                    setGraphic(null);
-//                } else {
-//                    HBox buttons = new HBox(5);
-//                    buttons.getChildren().addAll(editButton, deleteButton);
-//                    setGraphic(buttons);
-//                }
-//            }
-//        });
-//    }
 
     public void loadAidData() {
         try {
@@ -182,22 +151,90 @@ public class AidController {
     }
 
     private void handleSearch() {
-        String searchTerm = aidSearchField.getText().trim().toLowerCase();
+        String searchText = aidSearchField.getText();
 
-        if (searchTerm.isEmpty()) {
-            aidTable.setItems(aidData);
+        if (searchText == null || searchText.trim().isEmpty()) {
+            loadAidData();
             return;
         }
 
-        ObservableList<AidModel> filteredData = aidData.filtered(aid ->
-                (aid.getBeneficiaryName() != null && aid.getBeneficiaryName().toLowerCase().contains(searchTerm)) ||
-                        (aid.getDisasterName() != null && aid.getDisasterName().toLowerCase().contains(searchTerm)) ||
-                        (aid.getName() != null && aid.getName().toLowerCase().contains(searchTerm)) ||
-                        (aid.getProvider() != null && aid.getProvider().toLowerCase().contains(searchTerm)) ||
-                        (aid.getNotes() != null && aid.getNotes().toLowerCase().contains(searchTerm))
-        );
+        Task<List<AidModel>> task = new Task<>() {
+            @Override
+            protected List<AidModel> call() throws Exception {
+                return searchAidRecords(searchText);
+            }
 
-        aidTable.setItems(filteredData);
+            @Override
+            protected void succeeded() {
+                aidData = FXCollections.observableArrayList(getValue());
+                aidTable.setItems(aidData);
+                System.out.println("Search found " + aidData.size() + " results for: " + searchText);
+            }
+
+            @Override
+            protected void failed() {
+                Throwable exception = getException();
+                exception.printStackTrace();
+                AlertDialogManager.showError("Error",
+                        "Search failed: " + exception.getMessage());
+            }
+        };
+
+        new Thread(task).start();
+    }
+
+    private List<AidModel> searchAidRecords(String searchText) {
+        List<AidModel> allAidList = aidDAO.getAllAidForTable();
+        String searchTerm = searchText.trim().toLowerCase();
+
+        return allAidList.stream()
+                .filter(aid -> {
+                    if (String.valueOf(aid.getAidId()).contains(searchTerm)) {
+                        return true;
+                    }
+                    if (aid.getBeneficiaryName() != null &&
+                            aid.getBeneficiaryName().toLowerCase().contains(searchTerm)) {
+                        return true;
+                    }
+
+                    if (aid.getDisasterName() != null &&
+                            aid.getDisasterName().toLowerCase().contains(searchTerm)) {
+                        return true;
+                    }
+
+                    if (aid.getName() != null &&
+                            aid.getName().toLowerCase().contains(searchTerm)) {
+                        return true;
+                    }
+                    if (aid.getProvider() != null &&
+                            aid.getProvider().toLowerCase().contains(searchTerm)) {
+                        return true;
+                    }
+
+                    if (aid.getNotes() != null &&
+                            aid.getNotes().toLowerCase().contains(searchTerm)) {
+                        return true;
+                    }
+
+                    if (aid.getDate() != null) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                        String formattedDate = formatter.format(aid.getDate());
+                        if (formattedDate.toLowerCase().contains(searchTerm)) {
+                            return true;
+                        }
+                    }
+
+                    if (String.format("%.0f", aid.getQuantity()).contains(searchTerm)) {
+                        return true;
+                    }
+
+                    if (String.format("%.2f", aid.getCost()).contains(searchTerm)) {
+                        return true;
+                    }
+
+                    return false;
+                })
+                .collect(Collectors.toList());
     }
 
     private void handleAddAid() {
@@ -237,43 +274,6 @@ public class AidController {
             );
         }
     }
-
-//    private void handleEditAid(AidModel aid) {
-//        System.out.println("Edit aid: " + aid.getAidId());
-//        AlertDialogManager.showInfo("Info", "Edit functionality coming soon!");
-//    }
-
-//    private void handleDeleteAid(AidModel aid) {
-//        boolean confirmed = AlertDialogManager.showConfirmation(
-//                "Delete Aid Record",
-//                "Are you sure you want to delete this aid record for " + aid.getBeneficiaryName() + "?"
-//        );
-//
-//        if (confirmed) {
-//            try {
-//                boolean deleted = aidDAO.delete(aid);
-//
-//                if (deleted) {
-//                    AlertDialogManager.showSuccess(
-//                            "Success",
-//                            "Aid record deleted successfully!"
-//                    );
-//                    refreshAidTable();
-//                } else {
-//                    AlertDialogManager.showError(
-//                            "Error",
-//                            "Failed to delete aid record."
-//                    );
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                AlertDialogManager.showError(
-//                        "Error",
-//                        "An error occurred while deleting: " + e.getMessage()
-//                );
-//            }
-//        }
-//    }
 
     public void refreshAidTable() {
         loadAidData();

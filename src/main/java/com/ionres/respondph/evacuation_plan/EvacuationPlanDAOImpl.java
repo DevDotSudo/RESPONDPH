@@ -4,14 +4,13 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
 
+import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
     private final DBConnection dbConnection;
@@ -52,7 +51,6 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                // Decrypt beneficiary names
                 List<String> encrypted = new ArrayList<>();
                 encrypted.add(rs.getString("first_name"));
                 encrypted.add(rs.getString("last_name"));
@@ -179,35 +177,312 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
     }
 
     @Override
-    public boolean decrementEvacSiteCapacity(int evacSiteId, int personCount) {
-        // Update the capacity by subtracting personCount
-        // The WHERE clause ensures we don't go negative (capacity >= personCount)
-        String sql = "UPDATE evac_site SET capacity = capacity - ? WHERE evac_id = ? AND capacity >= ?";
+    public List<EvacuationPlanModel> getAll() {
+        List<EvacuationPlanModel> plans = new ArrayList<>();
+
+        String sql =
+                "SELECT " +
+                        "    ep.evac_event_id, " +
+                        "    ep.beneficiary_id, " +
+                        "    b.first_name, " +
+                        "    b.last_name, " +
+                        "    ep.evac_site_id, " +
+                        "    es.name AS evac_site_name, " +
+                        "    ep.disaster_id, " +
+                        "    d.name AS disaster_name, " +
+                        "    ep.datetime, " +
+                        "    ep.notes, " +
+                        "    COALESCE(ahs.household_members, " +
+                        "        (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ep.beneficiary_id) + 1) AS household_members " +
+                        "FROM evac_plan ep " +
+                        "INNER JOIN beneficiary b ON ep.beneficiary_id = b.beneficiary_id " +
+                        "INNER JOIN evac_site es ON ep.evac_site_id = es.evac_id " +
+                        "INNER JOIN disaster d ON ep.disaster_id = d.disaster_id " +
+                        "LEFT JOIN aid_and_household_score ahs " +
+                        "    ON ep.beneficiary_id = ahs.beneficiary_id " +
+                        "    AND ep.disaster_id = ahs.disaster_id " +
+                        "ORDER BY ep.datetime DESC";
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, personCount);
-            ps.setInt(2, evacSiteId);
-            ps.setInt(3, personCount); // Prevents negative capacity
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                List<String> encrypted = new ArrayList<>();
+                encrypted.add(rs.getString("first_name"));
+                encrypted.add(rs.getString("last_name"));
+                encrypted.add(rs.getString("evac_site_name"));
+                encrypted.add(rs.getString("disaster_name"));
+
+                List<String> decrypted = cs.decrypt(encrypted);
+
+                String beneficiaryName = decrypted.get(0) + " " + decrypted.get(1);
+
+                EvacuationPlanModel model = new EvacuationPlanModel();
+                model.setPlanId(rs.getInt("evac_event_id"));
+                model.setBeneficiaryId(rs.getInt("beneficiary_id"));
+                model.setBeneficiaryName(beneficiaryName);
+                model.setEvacSiteId(rs.getInt("evac_site_id"));
+                model.setEvacSiteName(decrypted.get(2));
+                model.setDisasterId(rs.getInt("disaster_id"));
+                model.setDisasterName(decrypted.get(3));
+                model.setDateCreated(rs.getString("datetime"));
+                model.setNotes(rs.getString("notes"));
+                plans.add(model);
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Error fetching all evacuation plans: " + ex.getMessage());
+        } finally {
+            closeConnection();
+        }
+
+        return plans;
+    }
+
+    @Override
+    public List<EvacuationPlanModel> search(String searchText) {
+        List<EvacuationPlanModel> plans = new ArrayList<>();
+
+        String sql =
+                "SELECT " +
+                        "    ep.evac_event_id, " +
+                        "    ep.beneficiary_id, " +
+                        "    b.first_name, " +
+                        "    b.last_name, " +
+                        "    ep.evac_site_id, " +
+                        "    es.name AS evac_site_name, " +
+                        "    ep.disaster_id, " +
+                        "    d.name AS disaster_name, " +
+                        "    ep.datetime, " +
+                        "    ep.notes, " +
+                        "    COALESCE(ahs.household_members, " +
+                        "        (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ep.beneficiary_id) + 1) AS household_members " +
+                        "FROM evac_plan ep " +
+                        "INNER JOIN beneficiary b ON ep.beneficiary_id = b.beneficiary_id " +
+                        "INNER JOIN evac_site es ON ep.evac_site_id = es.evac_id " +
+                        "INNER JOIN disaster d ON ep.disaster_id = d.disaster_id " +
+                        "LEFT JOIN aid_and_household_score ahs " +
+                        "    ON ep.beneficiary_id = ahs.beneficiary_id " +
+                        "    AND ep.disaster_id = ahs.disaster_id " +
+                        "ORDER BY ep.datetime DESC";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            String lowerSearchText = searchText.toLowerCase();
+
+            while (rs.next()) {
+                List<String> encrypted = new ArrayList<>();
+                encrypted.add(rs.getString("first_name"));
+                encrypted.add(rs.getString("last_name"));
+                encrypted.add(rs.getString("evac_site_name"));
+                encrypted.add(rs.getString("disaster_name"));
+
+                List<String> decrypted = cs.decrypt(encrypted);
+
+                String beneficiaryName = decrypted.get(0) + " " + decrypted.get(1);
+                String evacSiteName = decrypted.get(2);
+                String disasterName = decrypted.get(3);
+                String datetime = rs.getString("datetime");
+
+                if (beneficiaryName.toLowerCase().contains(lowerSearchText) ||
+                        evacSiteName.toLowerCase().contains(lowerSearchText) ||
+                        disasterName.toLowerCase().contains(lowerSearchText) ||
+                        datetime.toLowerCase().contains(lowerSearchText)) {
+
+                    EvacuationPlanModel model = new EvacuationPlanModel();
+                    model.setPlanId(rs.getInt("evac_event_id"));
+                    model.setBeneficiaryId(rs.getInt("beneficiary_id"));
+                    model.setBeneficiaryName(beneficiaryName);
+                    model.setEvacSiteId(rs.getInt("evac_site_id"));
+                    model.setEvacSiteName(evacSiteName);
+                    model.setDisasterId(rs.getInt("disaster_id"));
+                    model.setDisasterName(disasterName);
+                    model.setDateCreated(datetime);
+                    model.setNotes(rs.getString("notes"));
+
+                    plans.add(model);
+                }
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Error searching evacuation plans: " + ex.getMessage());
+        } finally {
+            closeConnection();
+        }
+
+        return plans;
+    }
+
+    @Override
+    public boolean isAlreadyAssignedToDisaster(int beneficiaryId, int disasterId) {
+        String sql = "SELECT evac_event_id FROM evac_plan " +
+                "WHERE beneficiary_id = ? AND disaster_id = ?";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, beneficiaryId);
+            ps.setInt(2, disasterId);
+            ResultSet rs = ps.executeQuery();
+
+            boolean exists = rs.next();
+
+            if (exists) {
+                int evacEventId = rs.getInt("evac_event_id");
+                System.out.println("[DUPLICATE CHECK] Beneficiary #" + beneficiaryId +
+                        " already has assignment (evac_event_id: " + evacEventId +
+                        ") for disaster #" + disasterId);
+            }
+
+            rs.close();
+            ps.close();
+            return exists;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error checking disaster assignment: " + e.getMessage());
+            return false;
+        } finally {
+            closeConnection();
+        }
+    }
+
+    @Override
+    public EvacuationPlanModel getById(int planId) {
+        EvacuationPlanModel model = null;
+
+        String sql =
+                "SELECT " +
+                        "    ep.evac_event_id, " +
+                        "    ep.beneficiary_id, " +
+                        "    b.first_name, " +
+                        "    b.last_name, " +
+                        "    ep.evac_site_id, " +
+                        "    es.name AS evac_site_name, " +
+                        "    ep.disaster_id, " +
+                        "    d.name AS disaster_name, " +
+                        "    ep.datetime, " +
+                        "    ep.notes, " +
+                        "    COALESCE(ahs.household_members, " +
+                        "        (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ep.beneficiary_id) + 1) AS household_members " +
+                        "FROM evac_plan ep " +
+                        "INNER JOIN beneficiary b ON ep.beneficiary_id = b.beneficiary_id " +
+                        "INNER JOIN evac_site es ON ep.evac_site_id = es.evac_id " +
+                        "INNER JOIN disaster d ON ep.disaster_id = d.disaster_id " +
+                        "LEFT JOIN aid_and_household_score ahs " +
+                        "    ON ep.beneficiary_id = ahs.beneficiary_id " +
+                        "    AND ep.disaster_id = ahs.disaster_id " +
+                        "WHERE ep.evac_event_id = ?";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, planId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                List<String> encrypted = new ArrayList<>();
+                encrypted.add(rs.getString("first_name"));
+                encrypted.add(rs.getString("last_name"));
+                encrypted.add(rs.getString("evac_site_name"));
+                encrypted.add(rs.getString("disaster_name"));
+
+                List<String> decrypted = cs.decrypt(encrypted);
+
+                String beneficiaryName = decrypted.get(0) + " " + decrypted.get(1);
+
+                model = new EvacuationPlanModel();
+                model.setPlanId(rs.getInt("evac_event_id"));
+                model.setBeneficiaryId(rs.getInt("beneficiary_id"));
+                model.setBeneficiaryName(beneficiaryName);
+                model.setEvacSiteId(rs.getInt("evac_site_id"));
+                model.setEvacSiteName(decrypted.get(2));
+                model.setDisasterId(rs.getInt("disaster_id"));
+                model.setDisasterName(decrypted.get(3));
+                model.setDateCreated(rs.getString("datetime"));
+                model.setNotes(rs.getString("notes"));
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Error fetching evacuation plan by ID: " + ex.getMessage());
+        } finally {
+            closeConnection();
+        }
+
+        return model;
+    }
+
+    @Override
+    public boolean deleteEvacPlan(int planId) {
+        String sql = "DELETE FROM evac_plan WHERE evac_event_id = ?";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, planId);
 
             int rowsAffected = ps.executeUpdate();
             ps.close();
 
-            if (rowsAffected == 0) {
-                System.err.println("WARNING: Could not decrement capacity for evac_site " + evacSiteId +
-                        ". Site may not have enough remaining capacity (" + personCount + " persons requested).");
-                return false;
-            }
-
-            System.out.println("Successfully decremented capacity of evac_site " + evacSiteId +
-                    " by " + personCount + " persons.");
-            return true;
+            return rowsAffected > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Error decrementing evac_site capacity: " + e.getMessage());
+            System.err.println("Error deleting evac_plan: " + e.getMessage());
             return false;
+        } finally {
+            closeConnection();
+        }
+    }
+
+    @Override
+    public int getHouseholdSizeForBeneficiary(int beneficiaryId, int disasterId) {
+        String sql = "SELECT COALESCE(ahs.household_members, " +
+                "(SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ?) + 1) AS household_members " +
+                "FROM beneficiary b " +
+                "LEFT JOIN aid_and_household_score ahs " +
+                "    ON b.beneficiary_id = ahs.beneficiary_id " +
+                "    AND ahs.disaster_id = ? " +
+                "WHERE b.beneficiary_id = ?";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, beneficiaryId);
+            ps.setInt(2, disasterId);
+            ps.setInt(3, beneficiaryId);
+            ResultSet rs = ps.executeQuery();
+
+            int householdSize = 1;
+            if (rs.next()) {
+                householdSize = rs.getInt("household_members");
+            }
+
+            rs.close();
+            ps.close();
+            return householdSize;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error getting household size: " + e.getMessage());
+            return 1;
         } finally {
             closeConnection();
         }

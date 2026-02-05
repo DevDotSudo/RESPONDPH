@@ -9,6 +9,7 @@ public class EvacuationPlanModel {
     private int disasterId;
     private String disasterName;
     private String dateCreated;
+    private String notes;
 
     public EvacuationPlanModel() {}
 
@@ -49,4 +50,13 @@ public class EvacuationPlanModel {
 
     public String getDateCreated() { return dateCreated; }
     public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }
+
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }

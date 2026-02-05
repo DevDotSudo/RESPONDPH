@@ -31,7 +31,7 @@ public class DashBoardDAOImpl implements DashBoardDAO {
 
     @Override
     public int getTotalAids() {
-        return getCount("SELECT COUNT(*) FROM admin");
+        return getCount("SELECT COUNT(*) FROM aid_type");
     }
 
     @Override
@@ -76,9 +76,9 @@ public class DashBoardDAOImpl implements DashBoardDAO {
                 String radius = rs.getString("radius");
                 String type = rs.getString("type");
                 String name = rs.getString("name");
-                
+
                 // Use DisasterCircleEncrypted instead of EncryptedCircle for consistency
-                list.add(new DisasterCircleEncrypted(lat, lon, radius, disasterId, 
+                list.add(new DisasterCircleEncrypted(lat, lon, radius, disasterId,
                         name != null ? name : "", type != null ? type : ""));
             }
 

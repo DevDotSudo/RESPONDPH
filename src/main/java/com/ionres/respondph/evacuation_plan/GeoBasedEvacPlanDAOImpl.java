@@ -46,6 +46,12 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
                         "FROM aid_and_household_score ahs " +
                         "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
                         "WHERE ahs.disaster_id = ? " +
+                        // EXCLUDE beneficiaries already assigned to ANY site for this disaster
+                        "  AND NOT EXISTS ( " +
+                        "    SELECT 1 FROM evac_plan ep " +
+                        "    WHERE ep.beneficiary_id = ahs.beneficiary_id " +
+                        "      AND ep.disaster_id = ahs.disaster_id " +
+                        "  ) " +
                         "ORDER BY ahs.final_score DESC";
 
         try {
@@ -55,7 +61,6 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                // Decrypt beneficiary names and location
                 List<String> encrypted = new ArrayList<>();
                 encrypted.add(rs.getString("first_name"));
                 encrypted.add(rs.getString("last_name"));
@@ -72,7 +77,6 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
                 model.setScoreCategory(rs.getString("score_category"));
                 model.setHouseholdMembers(rs.getInt("household_members"));
 
-                // Parse latitude and longitude
                 try {
                     model.setLatitude(Double.parseDouble(decrypted.get(2)));
                     model.setLongitude(Double.parseDouble(decrypted.get(3)));
@@ -166,6 +170,7 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
 
         return sites;
     }
+
 
     private void closeConnection() {
         try {

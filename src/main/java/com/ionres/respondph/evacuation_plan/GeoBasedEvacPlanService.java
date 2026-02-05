@@ -45,27 +45,22 @@ public class GeoBasedEvacPlanService {
         System.out.println("Available evacuation sites: " + evacSites.size());
         System.out.println("----------------------------------------------");
 
-        // Step 3: Track remaining capacity for each site
         Map<Integer, Integer> siteCapacities = new HashMap<>();
         for (EvacSiteWithDistance site : evacSites) {
             siteCapacities.put(site.getEvacSiteId(), site.getRemainingCapacity());
         }
 
-        // Step 4: Allocate each beneficiary to nearest available site
         int totalAssigned = 0;
         int totalPersons = 0;
 
         for (RankedBeneficiaryWithLocation beneficiary : beneficiaries) {
 
-            // Skip if already assigned
             if (geoDAO.isAlreadyAssigned(beneficiary.getBeneficiaryId(), -1, disasterId)) {
-                // Check if assigned to any site for this disaster
                 System.out.printf("[SKIP] Beneficiary #%d already assigned.\n",
                         beneficiary.getBeneficiaryId());
                 continue;
             }
 
-            // Find nearest evacuation site with enough capacity
             EvacSiteWithDistance nearestSite = findNearestSiteWithCapacity(
                     beneficiary, evacSites, siteCapacities);
 
@@ -78,7 +73,6 @@ public class GeoBasedEvacPlanService {
                 continue;
             }
 
-            // Assign beneficiary to the nearest site
             String notes = String.format(
                     "Auto-allocated (Geo-Based) | Score: %.2f | Category: %s | Household: %d | Distance: %.2f km",
                     beneficiary.getFinalScore(),
@@ -93,12 +87,10 @@ public class GeoBasedEvacPlanService {
                     notes);
 
             if (inserted) {
-                // Update capacity tracking
                 int currentCapacity = siteCapacities.get(nearestSite.getEvacSiteId());
                 int newCapacity = currentCapacity - beneficiary.getHouseholdMembers();
                 siteCapacities.put(nearestSite.getEvacSiteId(), newCapacity);
 
-                // Update beneficiary object with assignment info
                 beneficiary.setAssignedEvacSiteId(nearestSite.getEvacSiteId());
                 beneficiary.setAssignedEvacSiteName(nearestSite.getEvacSiteName());
                 beneficiary.setDistanceToEvacSite(nearestSite.getDistanceInKm());
@@ -118,9 +110,6 @@ public class GeoBasedEvacPlanService {
                         nearestSite.getDistanceInKm(),
                         newCapacity);
 
-                // Decrement evac site capacity in database
-                geoDAO.decrementEvacSiteCapacity(nearestSite.getEvacSiteId(),
-                        beneficiary.getHouseholdMembers());
 
             } else {
                 System.err.printf("[ERROR] Failed to insert evac_plan for Beneficiary #%d\n",
@@ -128,15 +117,16 @@ public class GeoBasedEvacPlanService {
             }
         }
 
-        // Step 5: Summary
         System.out.println("----------------------------------------------");
         System.out.println("AUTO-ALLOCATION COMPLETE");
         System.out.println("Total beneficiaries assigned: " + totalAssigned);
         System.out.println("Total persons evacuated: " + totalPersons);
+        System.out.println("Note: Database capacity remains unchanged");
         System.out.println("==============================================");
 
         return assignedBeneficiaries;
     }
+
 
 
     private EvacSiteWithDistance findNearestSiteWithCapacity(

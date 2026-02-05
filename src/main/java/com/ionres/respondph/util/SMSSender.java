@@ -11,10 +11,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-/**
- * Low-level GSM modem communication utility.
- * Does NOT handle database operations - that's the Service layer's responsibility.
- */
 public class SMSSender {
 
     private static SMSSender instance;
@@ -22,9 +18,6 @@ public class SMSSender {
 
     private final CopyOnWriteArrayList<Consumer<SendResult>> sendResultListeners = new CopyOnWriteArrayList<>();
 
-    /**
-     * Result of an SMS send operation
-     */
     public static class SendResult {
         private final String phoneNumber;
         private final String fullname;

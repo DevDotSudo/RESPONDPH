@@ -61,6 +61,64 @@
     -fx-background-color: transparent;
 }
 
+/* News Section */
+.news-section {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 10px;
+    -fx-border-color: #334155;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-padding: 25px;
+}
+
+.news-input-container {
+    -fx-background-color: transparent;
+}
+
+.generate-button {
+    -fx-background-color: #0891b2;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 10px 20px;
+    -fx-min-height: 40px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #ffffff;
+}
+
+.generate-button:hover {
+    -fx-background-color: #0e7490;
+}
+
+.generate-button:pressed {
+    -fx-background-color: #155e75;
+}
+
+.generate-button:disabled {
+    -fx-background-color: #475569;
+    -fx-text-fill: #94a3b8;
+    -fx-opacity: 0.6;
+}
+
+.ai-response-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+    -fx-text-fill: #f8fafc;
+    -fx-padding: 5px 0 0 0;
+}
+
+.ai-options-container {
+    -fx-background-color: #0f172a;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-padding: 15px;
+}
+
 /* Message Section */
 .message-section {
     -fx-background-color: #1e293b;
@@ -237,6 +295,26 @@
     -fx-border-color: #475569;
     -fx-background-color: #1e293b;
 }
+
+/* AI News Radio Buttons */
+.radio-button.ai-news-option {
+    -fx-font-weight: 500;
+    -fx-text-fill: #cbd5e1;
+    -fx-padding: 8px 0;
+}
+
+.radio-button.ai-news-option .radio {
+    -fx-background-color: #1e293b;
+}
+
+.radio-button.ai-news-option:selected .radio {
+    -fx-border-color: #0891b2;
+}
+
+.radio-button.ai-news-option:selected .radio .dot {
+    -fx-background-color: #0891b2;
+}
+
 /* Primary Button */
 .primary-button {
     -fx-background-color: #f97316;

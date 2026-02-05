@@ -6,17 +6,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.ToggleGroup?>
-
 <AnchorPane styleClass="send-sms-root"
             stylesheets="@/styles/send_sms/sendsms.css"
             xmlns="http://javafx.com/javafx/17.0.12"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.ionres.respondph.sendsms.SendSMSController">
 
-    <!-- ✅ REQUIRED: ToggleGroup definition -->
     <fx:define>
         <ToggleGroup fx:id="smsMode"/>
+        <ToggleGroup fx:id="newsAiResponse"/>
     </fx:define>
 
     <VBox AnchorPane.bottomAnchor="0.0"
@@ -24,7 +22,6 @@
           AnchorPane.rightAnchor="0.0"
           AnchorPane.topAnchor="0.0">
 
-        <!-- Header Section -->
         <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
             <padding>
                 <Insets bottom="20" left="30" right="30" top="20"/>
@@ -35,9 +32,20 @@
                 <Label styleClass="page-subtitle"
                        text="Send emergency alerts and notifications to beneficiaries"/>
             </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Label fx:id="lblNetworkStatus"
+                       text="Internet Status: Checking..."
+                       styleClass="network-status-label"/>
+                <Button fx:id="btnRefreshNetwork"
+                        text="Refresh"
+                        styleClass="secondary-button"
+                        onAction="#onRefreshNetwork"/>
+            </HBox>
         </HBox>
 
-        <!-- Main Content -->
         <ScrollPane fitToWidth="true"
                     styleClass="content-scroll"
                     VBox.vgrow="ALWAYS">
@@ -47,13 +55,72 @@
                     <Insets top="20"/>
                 </padding>
 
-                <!-- Message Section -->
+                <!-- News Selection Section -->
+                <VBox spacing="15" styleClass="news-section">
+                    <Label styleClass="section-title" text="News Selection"/>
+
+                    <VBox spacing="15" styleClass="news-input-container">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="input-label" text="Topic:"/>
+                            <ComboBox fx:id="cbNewsTopic"
+                                      prefWidth="300"
+                                      promptText="Select a topic..."
+                                      styleClass="recipient-combo">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="National News" />
+                                        <String fx:value="Local News" />
+                                        <String fx:value="Weather News" />
+                                        <String fx:value="Politics News" />
+                                        <String fx:value="Health News" />
+                                        <String fx:value="Crime / Law / Public Safety News" />
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                            <Button fx:id="btnGenerateNews"
+                                    styleClass="generate-button"
+                                    text="Generate News"
+                                    prefWidth="120"
+                                    onAction="#onGenerateNews">
+                                <padding>
+                                    <Insets left="20" right="20"/>
+                                </padding>
+                            </Button>
+                        </HBox>
+
+                        <!-- AI Response Container (initially hidden) -->
+                        <VBox fx:id="aiResponseContainer"
+                              spacing="12"
+                              visible="false"
+                              managed="false">
+                            <Label fx:id="aiResponseLabel"
+                                   styleClass="ai-response-label"
+                                   text="AI Generated News Options:"/>
+
+                            <!-- Radio buttons will be dynamically added below the label -->
+
+                            <HBox fx:id="aiResponseActions" alignment="CENTER_LEFT" spacing="10">
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button fx:id="btnUseSelectedNews"
+                                        styleClass="secondary-button"
+                                        text="Use Selected News"
+                                        visible="false"
+                                        managed="false"
+                                        onAction="#onUseSelectedNews">
+                                    <padding>
+                                        <Insets left="20" right="20"/>
+                                    </padding>
+                                </Button>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
                 <VBox spacing="15" styleClass="message-section">
                     <Label styleClass="section-title" text="Message Content"/>
 
                     <VBox spacing="15" styleClass="message-input-container">
 
-                        <!-- Port Selection -->
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label styleClass="input-label" text="SMS Port:"/>
                             <ComboBox fx:id="cbSelectPorts"
@@ -62,7 +129,6 @@
                                       styleClass="recipient-combo"/>
                         </HBox>
 
-                        <!-- Recipient Group -->
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label styleClass="input-label" text="Recipient Group:"/>
                             <ComboBox fx:id="cbSelectBeneficiary"
@@ -80,7 +146,6 @@
                             </ComboBox>
                         </HBox>
 
-                        <!-- Message Input -->
                         <VBox spacing="8">
                             <Label styleClass="input-label" text="Message:"/>
                             <TextArea fx:id="txtMessage"
@@ -90,7 +155,6 @@
                                       styleClass="message-textarea"/>
                         </VBox>
 
-                        <!-- Send Mode + Char Count -->
                         <HBox alignment="CENTER_LEFT" spacing="15">
 
                             <HBox spacing="10" alignment="CENTER_LEFT">
@@ -113,7 +177,6 @@
                                    text="0/160 characters"/>
                         </HBox>
 
-                        <!-- Action Buttons -->
                         <HBox alignment="CENTER_LEFT"
                               spacing="15"
                               styleClass="action-buttons-container">
@@ -136,7 +199,6 @@
                     </VBox>
                 </VBox>
 
-                <!-- SMS Logs -->
                 <VBox spacing="15" styleClass="message-section">
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Label styleClass="section-title" text="SMS History"/>

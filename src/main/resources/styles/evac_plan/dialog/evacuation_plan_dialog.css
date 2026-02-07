@@ -1,0 +1,176 @@
+/* ===================================
+   Root Container - Dark Theme
+   =================================== */
+.dialog-root {
+    -fx-background-color: #182136;
+    -fx-padding: 25;
+    -fx-border-radius: 5px;
+}
+
+/* VBox root styling - IMPORTANT for fx:id="root" */
+#root {
+    -fx-background-color: #162038;
+    -fx-border-radius: 5px;
+}
+
+/* ===================================
+   Title - Dark Theme
+   =================================== */
+.dialog-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #f8fafc;
+}
+
+/* ===================================
+   Separator - Dark Theme
+   =================================== */
+.separator {
+    -fx-background-color: #334155;
+}
+
+.separator .line {
+    -fx-background-color: #334155;
+    -fx-border-color: #334155;
+}
+
+/* ===================================
+   Form Section - Dark Theme
+   =================================== */
+.form-grid {
+    -fx-hgap: 10;
+    -fx-vgap: 12;
+    -fx-background-color: transparent;
+}
+
+/* Form Labels */
+.form-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #e2e8f0;
+}
+
+/* ===================================
+   ComboBox - Dark Theme
+   =================================== */
+.combo-box {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-pref-height: 40px;
+}
+
+.combo-box:focused {
+    -fx-border-color: #f97316;
+    -fx-border-width: 1px;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f8fafc;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-padding: 10px 16px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f8fafc;
+    -fx-padding: 10px 16px;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #334155;
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #475569;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #94a3b8;
+}
+
+/* ===================================
+   Buttons - Dark Theme
+   =================================== */
+.button-bar {
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-background-color: transparent;
+}
+
+/* Primary Button (Allocate) */
+.primary-button {
+    -fx-background-color: #f97316;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 12px 24px;
+    -fx-min-height: 40px;
+    -fx-pref-width: 120px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #ffffff;
+}
+
+.primary-button:hover {
+    -fx-background-color: #ea580c;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #c2410c;
+}
+
+.primary-button:disabled {
+    -fx-background-color: #475569;
+    -fx-text-fill: #94a3b8;
+    -fx-opacity: 0.6;
+}
+
+/* Secondary Button (Close) */
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 12px 24px;
+    -fx-min-height: 40px;
+    -fx-pref-width: 120px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #94a3b8;
+}
+
+.secondary-button:hover {
+    -fx-border-color: #f97316;
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f97316;
+}
+
+.secondary-button:pressed {
+    -fx-background-color: #0f172a;
+}

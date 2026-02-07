@@ -559,6 +559,178 @@ public class AidDAOImpl implements AidDAO {
         return aid;
     }
 
+    @Override
+    public List<BeneficiaryCluster> getBeneficiariesWithScoresByBarangays(
+            int aidTypeId, int disasterId, List<String> barangays) {
+
+        List<BeneficiaryCluster> beneficiaries = new ArrayList<>();
+
+        if (barangays == null || barangays.isEmpty()) {
+            return beneficiaries;
+        }
+
+        // Fetch ALL beneficiaries, filter by barangay in Java
+        String sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category, b.barangay " +
+                "FROM aid_and_household_score ahs " +
+                "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
+                "WHERE ahs.aid_type_id = ? " +
+                "AND ahs.disaster_id = ? " +
+                "AND NOT EXISTS (" +
+                "    SELECT 1 FROM aid a " +
+                "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
+                "    AND a.aid_type_id = ? " +
+                "    AND a.disaster_id = ? " +
+                ") " +
+                "ORDER BY ahs.final_score DESC";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setInt(1, aidTypeId);
+            ps.setInt(2, disasterId);
+            ps.setInt(3, aidTypeId);
+            ps.setInt(4, disasterId);
+
+            System.out.println("========== FETCHING BARANGAY-FILTERED BENEFICIARIES ==========");
+            System.out.println("Aid Type ID: " + aidTypeId);
+            System.out.println("Disaster ID: " + disasterId);
+            System.out.println("Barangays: " + String.join(", ", barangays));
+            System.out.println("===============================================================");
+
+            ResultSet rs = ps.executeQuery();
+
+            int count = 0;
+            while (rs.next()) {
+                String encryptedBarangay = rs.getString("barangay");
+
+                try {
+                    String decryptedBarangay = cs.decryptWithOneParameter(encryptedBarangay);
+
+                    // Check if this barangay is in our list
+                    if (decryptedBarangay != null && barangays.contains(decryptedBarangay)) {
+                        int beneficiaryId = rs.getInt("beneficiary_id");
+                        double finalScore = rs.getDouble("final_score");
+                        String scoreCategory = rs.getString("score_category");
+
+                        beneficiaries.add(new BeneficiaryCluster(beneficiaryId, finalScore, scoreCategory));
+                        count++;
+
+                        if (count <= 5) {
+                            System.out.println("  " + count + ". Beneficiary #" + beneficiaryId +
+                                    " | Score: " + finalScore + " | Category: " + scoreCategory +
+                                    " | Barangay: " + decryptedBarangay);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error decrypting barangay: " + e.getMessage());
+                }
+            }
+
+            if (count > 5) {
+                System.out.println("  ... and " + (count - 5) + " more beneficiaries");
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("\n✓ Found " + beneficiaries.size() +
+                    " eligible beneficiaries across " + barangays.size() + " barangay(s)");
+            System.out.println("===============================================================\n");
+
+        } catch (Exception e) {
+            System.err.println("Error fetching beneficiaries by barangays: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return beneficiaries;
+    }
+
+    @Override
+    public List<String> getAllBarangays() {
+        List<String> barangays = new ArrayList<>();
+        String sql = "SELECT DISTINCT barangay FROM beneficiary WHERE barangay IS NOT NULL ORDER BY barangay";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String encryptedBarangay = rs.getString("barangay");
+                if (encryptedBarangay != null && !encryptedBarangay.trim().isEmpty()) {
+                    try {
+                        String decryptedBarangay = cs.decryptWithOneParameter(encryptedBarangay);
+                        barangays.add(decryptedBarangay);
+                    } catch (Exception e) {
+                        System.err.println("Error decrypting barangay: " + e.getMessage());
+                    }
+                }
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("Found " + barangays.size() + " unique barangays");
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching all barangays: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return barangays;
+    }
+
+    @Override
+    public List<String> getBarangaysByDisaster(int disasterId) {
+        List<String> barangays = new ArrayList<>();
+
+        String sql = "SELECT DISTINCT b.barangay " +
+                "FROM beneficiary b " +
+                "INNER JOIN beneficiary_disaster_damage bdd ON b.beneficiary_id = bdd.beneficiary_id " +
+                "WHERE bdd.disaster_id = ? " +
+                "AND b.barangay IS NOT NULL " +
+                "ORDER BY b.barangay";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, disasterId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String encryptedBarangay = rs.getString("barangay");
+                if (encryptedBarangay != null && !encryptedBarangay.trim().isEmpty()) {
+                    try {
+                        String decryptedBarangay = cs.decryptWithOneParameter(encryptedBarangay);
+                        barangays.add(decryptedBarangay);
+                    } catch (Exception e) {
+                        System.err.println("Error decrypting barangay: " + e.getMessage());
+                    }
+                }
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("Found " + barangays.size() +
+                    " barangays affected by disaster #" + disasterId);
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching barangays by disaster: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return barangays;
+    }
+
+
 
     private void closeConnection() {
         try {

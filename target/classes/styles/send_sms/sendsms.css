@@ -1,10 +1,8 @@
-/* Root Container */
 .send-sms-root {
     -fx-background-color: #0f172a;
     -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
 }
 
-/* Scroll Pane */
 .content-scroll {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -503,4 +501,163 @@
 
 .logs-table .filler {
     -fx-background-color: #1e293b;
+}
+
+
+.dialog-container {
+    -fx-background-color: #0f172a;
+    -fx-padding: 25;
+}
+
+.dialog-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #f8fafc;
+}
+
+.selection-count-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 16px;
+    -fx-text-fill: #f97316;
+    -fx-font-weight: 700;
+}
+
+.total-count-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 500;
+}
+
+.search-field {
+    -fx-background-color: #0f172a;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-text-fill: #f8fafc;
+    -fx-prompt-text-fill: #64748b;
+    -fx-padding: 12px 16px;
+    -fx-pref-height: 40px;
+}
+
+.search-field:focused {
+    -fx-border-color: #f97316;
+    -fx-border-width: 2px;
+}
+
+/* Beneficiary Table - Matches logs-table */
+.beneficiary-table {
+    -fx-background-color: #0f172a;
+    -fx-background-radius: 8px;
+    -fx-border-color: #334155;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-table-cell-border-color: transparent;
+}
+
+.beneficiary-table .column-header-background {
+    -fx-background-color: #1e293b;
+}
+
+.beneficiary-table .column-header {
+    -fx-background-color: #1e293b;
+    -fx-border-color: transparent transparent #334155 transparent;
+    -fx-border-width: 0 0 2px 0;
+    -fx-padding: 12px 16px;
+}
+
+.beneficiary-table .column-header .label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #cbd5e1;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.beneficiary-table .table-row-cell {
+    -fx-background-color: #0f172a;
+    -fx-border-color: transparent transparent #1e293b transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px 0;
+}
+
+.beneficiary-table .table-row-cell:hover {
+    -fx-background-color: #1e293b;
+}
+
+.beneficiary-table .table-row-cell:selected {
+    -fx-background-color: #334155;
+}
+
+.beneficiary-table .table-cell {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: #e2e8f0;
+    -fx-padding: 8px 16px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.beneficiary-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+}
+
+.beneficiary-table .table-row-cell:empty .table-cell {
+    -fx-border-width: 0;
+}
+
+/* Scrollbar for beneficiary table */
+.beneficiary-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.beneficiary-table .scroll-bar:vertical .track {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 5px;
+}
+
+.beneficiary-table .scroll-bar:vertical .thumb {
+    -fx-background-color: #475569;
+    -fx-background-radius: 5px;
+}
+
+.beneficiary-table .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #64748b;
+}
+
+.beneficiary-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.beneficiary-table .scroll-bar:horizontal .track {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 5px;
+}
+
+.beneficiary-table .scroll-bar:horizontal .thumb {
+    -fx-background-color: #475569;
+    -fx-background-radius: 5px;
+}
+
+.beneficiary-table .placeholder .label {
+    -fx-text-fill: #64748b;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+}
+
+.beneficiary-table .filler {
+    -fx-background-color: #1e293b;
+}
+
+/* Separator for dialog */
+.dialog-container .separator {
+    -fx-background-color: #334155;
+}
+
+.dialog-container .separator .line {
+    -fx-background-color: #334155;
+    -fx-border-color: #334155;
 }

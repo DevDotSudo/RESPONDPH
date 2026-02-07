@@ -20,7 +20,6 @@ public class SmsServiceImpl implements SmsService {
         this.smsApi = new SMSApi();
         this.smsSender = SMSSender.getInstance();
 
-        // Listen to SMS send results and save to database
         this.smsSender.addSendResultListener(this::handleSendResult);
     }
 
@@ -29,13 +28,10 @@ public class SmsServiceImpl implements SmsService {
         this.smsApi = new SMSApi();
         this.smsSender = SMSSender.getInstance();
 
-        // Listen to SMS send results and save to database
         this.smsSender.addSendResultListener(this::handleSendResult);
     }
 
-    /**
-     * Handle send result from SMSSender and save to database
-     */
+
     private void handleSendResult(SMSSender.SendResult result) {
         try {
             SmsModel smsModel = new SmsModel();
@@ -47,6 +43,9 @@ public class SmsServiceImpl implements SmsService {
             smsModel.setMessage(result.getMessage());
             smsModel.setStatus(result.isSuccess() ? "SENT" : "FAILED");
             smsModel.setSendMethod("GSM");
+
+            System.out.println("DEBUG: GSM send result - Success: " + result.isSuccess() +
+                    ", Phone: " + result.getPhoneNumber());
 
             smsDAO.saveSMS(smsModel);
         } catch (Exception e) {
@@ -67,6 +66,9 @@ public class SmsServiceImpl implements SmsService {
             return false;
         }
 
+        System.out.println("DEBUG: Sending SMS via " + method + " to " + phoneNumber);
+        System.out.println("DEBUG: Message: " + message.substring(0, Math.min(50, message.length())) + "...");
+
         SmsModel smsModel = new SmsModel(phoneNumber, fullname, message);
         smsModel.setSendMethod(method);
         smsModel.setStatus("SENDING");
@@ -75,7 +77,11 @@ public class SmsServiceImpl implements SmsService {
 
         try {
             if ("API".equalsIgnoreCase(method)) {
+                System.out.println("DEBUG: Using API method");
+
                 success = smsApi.sendSMS(phoneNumber.trim(), message);
+
+                System.out.println("DEBUG: API response - Success: " + success);
 
                 // For API, we need to manually save to DB since there's no listener
                 smsModel.setStatus(success ? "SENT" : "FAILED");
@@ -83,6 +89,8 @@ public class SmsServiceImpl implements SmsService {
                 smsDAO.saveSMS(smsModel);
 
             } else if ("GSM".equalsIgnoreCase(method)) {
+                System.out.println("DEBUG: Using GSM method");
+
                 if (!smsSender.isConnected()) {
                     System.err.println("GSM modem not connected");
                     return false;
@@ -95,6 +103,9 @@ public class SmsServiceImpl implements SmsService {
 
                 int sent = smsSender.sendBulkSMS(numbers, names, ids, message, 0, 3);
                 success = sent > 0;
+
+                System.out.println("DEBUG: GSM send result - Sent: " + sent + " messages");
+
             } else {
                 System.err.println("Unknown send method: " + method);
                 return false;
@@ -122,18 +133,32 @@ public class SmsServiceImpl implements SmsService {
             return 0;
         }
 
+        System.out.println("DEBUG: Starting bulk SMS send to " + beneficiaries.size() +
+                " beneficiaries via " + method);
+
         int successCount = 0;
 
         if ("API".equalsIgnoreCase(method)) {
             // API method - send one by one with rate limiting
             for (BeneficiaryModel beneficiary : beneficiaries) {
                 String phone = beneficiary.getMobileNumber();
-                if (phone == null || phone.trim().isEmpty()) continue;
+                if (phone == null || phone.trim().isEmpty()) {
+                    System.out.println("DEBUG: Skipping beneficiary " + beneficiary.getId() +
+                            " - no phone number");
+                    continue;
+                }
 
                 String fullname = buildFullName(beneficiary);
+                System.out.println("DEBUG: Sending to " + fullname + " (" + phone + ")");
+
                 boolean sent = sendSingleSMS(phone.trim(), fullname, message, method);
 
-                if (sent) successCount++;
+                if (sent) {
+                    successCount++;
+                    System.out.println("DEBUG: Successfully sent to " + fullname);
+                } else {
+                    System.err.println("DEBUG: Failed to send to " + fullname);
+                }
 
                 // Rate limiting for API
                 try {
@@ -164,8 +189,13 @@ public class SmsServiceImpl implements SmsService {
                 ids.add(beneficiary.getId());
             }
 
+            System.out.println("DEBUG: Sending bulk GSM to " + numbers.size() + " recipients");
             successCount = smsSender.sendBulkSMS(numbers, names, ids, message, 1000, 3);
+            System.out.println("DEBUG: GSM bulk send complete - " + successCount + " sent");
         }
+
+        System.out.println("DEBUG: Bulk send complete - " + successCount + "/" +
+                beneficiaries.size() + " sent successfully");
 
         return successCount;
     }
@@ -182,6 +212,8 @@ public class SmsServiceImpl implements SmsService {
             System.err.println("Cannot resend: phone number is empty");
             return false;
         }
+
+        System.out.println("DEBUG: Resending SMS to " + phone + " via " + method);
 
         boolean success = sendSingleSMS(
                 phone.trim(),

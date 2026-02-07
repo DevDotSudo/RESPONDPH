@@ -3,6 +3,7 @@ package com.ionres.respondph.aid;
 import com.ionres.respondph.aid.KMeansAidDistribution.BeneficiaryCluster;
 import com.ionres.respondph.database.DBConnection;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -225,6 +226,152 @@ public class AidServiceImpl implements AidService {
         }
 
         System.out.println("==============================================\n");
+
+        return selected;
+    }
+
+
+
+    @Override
+    public int distributeAidWithKMeansByBarangay(
+            String aidName, int aidTypeId, int disasterId,
+            int availableQuantity, int quantityPerBeneficiary, double costPerUnit,
+            String provider, int numberOfClusters, String barangay) {
+
+        // Delegate to multi-barangay method
+        List<String> barangays = new ArrayList<>();
+        barangays.add(barangay);
+
+        return distributeAidWithKMeansByBarangays(
+                aidName, aidTypeId, disasterId, availableQuantity,
+                quantityPerBeneficiary, costPerUnit, provider,
+                numberOfClusters, barangays
+        );
+    }
+
+    @Override
+    public int distributeAidWithKMeansByBarangays(
+            String aidName, int aidTypeId, int disasterId,
+            int availableQuantity, int quantityPerBeneficiary, double costPerUnit,
+            String provider, int numberOfClusters, List<String> barangays) {
+
+        System.out.println("\n========== STARTING MULTI-BARANGAY K-MEANS DISTRIBUTION ==========");
+        System.out.println("Aid Type: " + aidName);
+        System.out.println("Barangays: " + String.join(", ", barangays));
+        System.out.println("Available Quantity: " + availableQuantity + " units");
+        System.out.println("Quantity per Beneficiary: " + quantityPerBeneficiary + " units");
+        System.out.println("Number of Clusters: " + numberOfClusters);
+        System.out.println("==================================================================\n");
+
+        // Fetch beneficiaries from multiple barangays
+        List<BeneficiaryCluster> eligibleBeneficiaries =
+                aidDAO.getBeneficiariesWithScoresByBarangays(aidTypeId, disasterId, barangays);
+
+        if (eligibleBeneficiaries.isEmpty()) {
+            System.out.println("⚠ No eligible beneficiaries found in selected barangays");
+            return 0;
+        }
+
+        System.out.println("Found " + eligibleBeneficiaries.size() +
+                " eligible beneficiaries across " + barangays.size() + " barangays\n");
+
+        int maxBeneficiaries = availableQuantity / quantityPerBeneficiary;
+        System.out.println("Maximum beneficiaries that can be served: " + maxBeneficiaries);
+
+        List<BeneficiaryCluster> prioritizedBeneficiaries =
+                kMeans.getPrioritizedBeneficiaries(eligibleBeneficiaries, maxBeneficiaries, numberOfClusters);
+
+        System.out.println("\nPrioritized " + prioritizedBeneficiaries.size() +
+                " beneficiaries for distribution\n");
+
+        int distributedCount = 0;
+        LocalDate today = LocalDate.now();
+
+        System.out.println("--- Starting Distribution ---");
+
+        for (BeneficiaryCluster beneficiary : prioritizedBeneficiaries) {
+            AidModel aid = new AidModel();
+            aid.setBeneficiaryId(beneficiary.getBeneficiaryId());
+            aid.setDisasterId(disasterId);
+            aid.setName(aidName);
+            aid.setDate(today);
+            aid.setQuantity(quantityPerBeneficiary);
+            aid.setCost(costPerUnit * quantityPerBeneficiary);
+            aid.setProvider(provider);
+            aid.setAidTypeId(aidTypeId);
+
+            String notes = String.format(
+                    "K-means Distribution (Multi-Barangay) | Priority: %s | Score: %.3f | Cluster: %d",
+                    beneficiary.getScoreCategory(),
+                    beneficiary.getFinalScore(),
+                    beneficiary.getCluster()
+            );
+            aid.setNotes(notes);
+
+            if (aidDAO.saving(aid)) {
+                distributedCount++;
+                System.out.printf("  ✓ Beneficiary #%d | Score: %.3f | %s | Cluster: %d\n",
+                        beneficiary.getBeneficiaryId(),
+                        beneficiary.getFinalScore(),
+                        beneficiary.getScoreCategory(),
+                        beneficiary.getCluster());
+            } else {
+                System.err.printf("  ✗ Failed: Beneficiary #%d\n", beneficiary.getBeneficiaryId());
+            }
+        }
+
+        System.out.println("\n========== DISTRIBUTION COMPLETE ==========");
+        System.out.println("Barangays: " + String.join(", ", barangays));
+        System.out.println("Successfully distributed: " + distributedCount + " beneficiaries");
+        System.out.println("Total units: " + (distributedCount * quantityPerBeneficiary));
+        System.out.println("Total cost: ₱" + String.format("%.2f", distributedCount * quantityPerBeneficiary * costPerUnit));
+        System.out.println("===========================================\n");
+
+        return distributedCount;
+    }
+
+    @Override
+    public List<BeneficiaryCluster> previewAidDistributionByBarangay(
+            int aidTypeId, int disasterId, int availableQuantity,
+            int quantityPerBeneficiary, int numberOfClusters, String barangay) {
+
+        // Delegate to multi-barangay method
+        List<String> barangays = new ArrayList<>();
+        barangays.add(barangay);
+
+        return previewAidDistributionByBarangays(
+                aidTypeId, disasterId, availableQuantity,
+                quantityPerBeneficiary, numberOfClusters, barangays
+        );
+    }
+
+    @Override
+    public List<BeneficiaryCluster> previewAidDistributionByBarangays(
+            int aidTypeId, int disasterId, int availableQuantity,
+            int quantityPerBeneficiary, int numberOfClusters, List<String> barangays) {
+
+        System.out.println("\n========== PREVIEW MULTI-BARANGAY DISTRIBUTION ==========");
+        System.out.println("Barangays: " + String.join(", ", barangays));
+        System.out.println("Aid Type ID: " + aidTypeId);
+        System.out.println("Disaster ID: " + disasterId);
+        System.out.println("=========================================================\n");
+
+        List<BeneficiaryCluster> beneficiaries =
+                aidDAO.getBeneficiariesWithScoresByBarangays(aidTypeId, disasterId, barangays);
+
+        if (beneficiaries.isEmpty()) {
+            System.out.println("⚠ No eligible beneficiaries found");
+            return beneficiaries;
+        }
+
+        int maxBeneficiaries = availableQuantity / quantityPerBeneficiary;
+
+        List<BeneficiaryCluster> selected =
+                kMeans.getPrioritizedBeneficiaries(beneficiaries, maxBeneficiaries, numberOfClusters);
+
+        System.out.println("\n--- Preview Results ---");
+        System.out.println("Would distribute to " + selected.size() + " beneficiaries");
+        System.out.println("=======================\n");
 
         return selected;
     }

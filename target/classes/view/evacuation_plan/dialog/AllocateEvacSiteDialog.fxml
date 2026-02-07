@@ -4,40 +4,59 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" spacing="15" style="-fx-background-color: #f5f5f5; -fx-padding: 20;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evacuation_plan.dialog_controller.AllocateEvacSiteDialogController">
+<VBox fx:id="root"
+      spacing="20"
+      styleClass="dialog-root"
+      stylesheets="@/styles/evac_plan/dialog/evacuation_plan_dialog.css"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ionres.respondph.evacuation_plan.dialog_controller.AllocateEvacSiteDialogController">
 
     <!-- Title -->
-    <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Allocate Evacuation Site" />
+    <Label text="Allocate Evacuation Site" styleClass="dialog-title"/>
 
-    <Separator prefWidth="200.0" />
+    <Separator prefWidth="200.0" styleClass="separator"/>
 
     <!-- Form Section -->
-    <GridPane hgap="10" vgap="12">
+    <GridPane styleClass="form-grid">
         <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="120" />
-            <ColumnConstraints hgrow="ALWAYS" minWidth="300" prefWidth="380" />
+            <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="120"/>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="300" prefWidth="380"/>
         </columnConstraints>
 
+        <rowConstraints>
+            <RowConstraints/>
+        </rowConstraints>
+
         <!-- Disaster Selection -->
-        <Label style="-fx-font-weight: bold;" text="Disaster:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <ComboBox fx:id="disasterComboBox" maxWidth="Infinity" prefHeight="32.0" promptText="Select disaster..." GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
+        <Label text="Disaster:"
+               styleClass="form-label"
+               GridPane.columnIndex="0"
+               GridPane.rowIndex="0"/>
+
+        <ComboBox fx:id="disasterComboBox"
+                  maxWidth="Infinity"
+                  promptText="Select disaster..."
+                  styleClass="combo-box"
+                  GridPane.columnIndex="1"
+                  GridPane.rowIndex="0"/>
     </GridPane>
 
     <!-- Button Bar -->
-    <HBox alignment="CENTER_RIGHT" spacing="10">
+    <HBox styleClass="button-bar">
         <padding>
-            <Insets top="10" />
+            <Insets top="10"/>
         </padding>
 
-        <Button fx:id="allocateBtn" defaultButton="true" prefWidth="100" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px; -fx-cursor: hand;" text="Allocate">
-        </Button>
+        <Button fx:id="allocateBtn"
+                text="Allocate"
+                defaultButton="true"
+                styleClass="primary-button"/>
 
-        <Button fx:id="closeBtn" cancelButton="true" prefWidth="100" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 12px; -fx-cursor: hand;" text="Close">
-        </Button>
+        <Button fx:id="closeBtn"
+                text="Close"
+                cancelButton="true"
+                styleClass="secondary-button"/>
     </HBox>
 
 </VBox>

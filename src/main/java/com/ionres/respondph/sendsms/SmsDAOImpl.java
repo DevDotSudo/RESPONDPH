@@ -23,7 +23,11 @@ public class SmsDAOImpl implements SmsDAO {
             ps.setString(6, sms.getStatus());
             ps.setString(7, sms.getSendMethod());
 
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+
+            System.out.println("DEBUG: SMS log saved - Status: " + sms.getStatus() +
+                    ", Method: " + sms.getSendMethod() +
+                    ", Rows affected: " + rowsAffected);
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -112,7 +116,11 @@ public class SmsDAOImpl implements SmsDAO {
 
             ps.setString(1, status);
             ps.setInt(2, messageID);
-            ps.executeUpdate();
+            int rowsUpdated = ps.executeUpdate();
+
+            System.out.println("DEBUG: Updated SMS status - ID: " + messageID +
+                    ", New status: " + status +
+                    ", Rows updated: " + rowsUpdated);
 
         } catch (SQLException e) {
             System.err.println("Error updating SMS status: " + e.getMessage());

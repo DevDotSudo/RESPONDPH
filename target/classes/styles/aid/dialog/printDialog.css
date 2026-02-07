@@ -1,0 +1,241 @@
+/* ===================================
+   Root Container - Dark Theme
+   =================================== */
+.dialog-container {
+    -fx-background-color: #0f172a;
+    -fx-padding: 30;
+}
+
+/* ===================================
+   Header Section - Dark Theme
+   =================================== */
+.dialog-icon {
+    -fx-fill: #f97316;
+}
+
+.dialog-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #f8fafc;
+}
+
+.dialog-subtitle {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: #94a3b8;
+    -fx-font-weight: 400;
+}
+
+/* ===================================
+   Separator - Dark Theme
+   =================================== */
+.separator {
+    -fx-background-color: #334155;
+}
+
+.separator .line {
+    -fx-background-color: #334155;
+    -fx-border-color: #334155;
+}
+
+/* ===================================
+   Form Labels - Dark Theme
+   =================================== */
+.form-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #e2e8f0;
+}
+
+/* ===================================
+   ComboBox - Dark Theme (FIXED)
+   =================================== */
+.custom-combo-box {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-pref-height: 40px;
+}
+
+/* Remove orange focus border */
+.custom-combo-box:focused {
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-background-color: #1e293b;
+}
+
+.custom-combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f8fafc;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-padding: 10px 16px;
+}
+
+/* Fix prompt text color */
+.custom-combo-box > .list-cell {
+    -fx-prompt-text-fill: #64748b;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f8fafc;
+    -fx-padding: 10px 16px;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #334155;
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #475569;
+    -fx-text-fill: #ffffff;
+}
+
+.custom-combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.custom-combo-box .arrow {
+    -fx-background-color: #94a3b8;
+}
+
+/* ===================================
+   Info Panel - Dark Theme (ORANGE TEXT)
+   =================================== */
+.info-panel {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8px;
+    -fx-border-color: #f97316;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-padding: 15;
+}
+
+.info-icon {
+    -fx-fill: #f97316;
+}
+
+.info-text {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #f97316;
+}
+
+.info-subtext {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+    -fx-text-fill: #f97316;
+}
+
+/* ===================================
+   Buttons - Dark Theme
+   =================================== */
+
+/* Primary Button (Print) */
+.primary-button {
+    -fx-background-color: #f97316;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 12px 24px;
+    -fx-min-height: 40px;
+    -fx-pref-width: 120px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.primary-button .label {
+    -fx-text-fill: #ffffff;
+}
+
+.primary-button .glyph-icon {
+    -fx-fill: #ffffff;
+}
+
+.primary-button:hover {
+    -fx-background-color: #ea580c;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #c2410c;
+}
+
+.primary-button:disabled {
+    -fx-background-color: #475569;
+    -fx-opacity: 0.6;
+}
+
+.primary-button:disabled .label {
+    -fx-text-fill: #94a3b8;
+}
+
+.primary-button:disabled .glyph-icon {
+    -fx-fill: #94a3b8;
+}
+
+/* Secondary Button (Preview & Cancel) */
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 12px 24px;
+    -fx-min-height: 40px;
+    -fx-pref-width: 120px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.secondary-button .label {
+    -fx-text-fill: #94a3b8;
+}
+
+.secondary-button .glyph-icon {
+    -fx-fill: #94a3b8;
+}
+
+.secondary-button:hover {
+    -fx-border-color: #f97316;
+    -fx-background-color: #1e293b;
+}
+
+.secondary-button:hover .label {
+    -fx-text-fill: #f97316;
+}
+
+.secondary-button:hover .glyph-icon {
+    -fx-fill: #f97316;
+}
+
+.secondary-button:pressed {
+    -fx-background-color: #0f172a;
+}
+
+.secondary-button:disabled {
+    -fx-opacity: 0.5;
+}
+
+/* FontAwesome Icons */
+.glyph-icon {
+    -fx-fill: currentColor;
+}

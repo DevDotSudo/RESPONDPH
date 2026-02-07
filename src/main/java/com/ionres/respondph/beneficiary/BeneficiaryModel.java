@@ -1,15 +1,13 @@
 package com.ionres.respondph.beneficiary;
 
-/**
- * Full BeneficiaryModel for data operations.
- * Contains all beneficiary fields and properties.
- */
+
 public class BeneficiaryModel {
     private int id;
     private String firstname;
     private String middlename;
     private String lastname;
     private String birthDate;
+    private String barangay;
     private double ageScore;
     private String gender;
     private String maritalStatus;
@@ -41,7 +39,7 @@ public class BeneficiaryModel {
     }
 
     public BeneficiaryModel(String firstname, String middlename, String lastname, 
-                           String birthDate, double ageScore, String gender, 
+                           String birthDate, String barangay, double ageScore, String gender,
                            String maritalStatus, String soloParentStatus, 
                            String latitude, String longitude, String mobileNumber, 
                            String disabilityType, String healthCondition, 
@@ -54,6 +52,7 @@ public class BeneficiaryModel {
         this.middlename = middlename;
         this.lastname = lastname;
         this.birthDate = birthDate;
+        this.barangay = barangay;
         this.ageScore = ageScore;
         this.gender = gender;
         this.maritalStatus = maritalStatus;
@@ -118,6 +117,11 @@ public class BeneficiaryModel {
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
+
+    public String getBarangay(){return barangay; }
+
+    public void setBarangay(String barangay){this.barangay = barangay;}
+
     public double getAgeScore(){
         return ageScore;
     }

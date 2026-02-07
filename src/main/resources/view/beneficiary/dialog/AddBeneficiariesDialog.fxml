@@ -103,6 +103,37 @@
                 </HBox>
 
                 <HBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Barangay *" />
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container" HBox.hgrow="ALWAYS">
+                            <FontAwesomeIconView glyphName="HEART" size="16" styleClass="input-icon" />
+                            <ComboBox fx:id="barangaySelection" promptText="Select Barangay" styleClass="combo-box" HBox.hgrow="ALWAYS">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Alacaygan"/>
+                                        <String fx:value="Bariga"/>
+                                        <String fx:value="Belen"/>
+                                        <String fx:value="Bobon"/>
+                                        <String fx:value="Bularan"/>
+                                        <String fx:value="Carmelo"/>
+                                        <String fx:value="De La Paz"/>
+                                        <String fx:value="Dugwakan"/>
+                                        <String fx:value="Fuentes"/>
+                                        <String fx:value="Juanico"/>
+                                        <String fx:value="Libertad"/>
+                                        <String fx:value="Magdalo"/>
+                                        <String fx:value="Managopaya"/>
+                                        <String fx:value="Merced"/>
+                                        <String fx:value="Poblacion"/>
+                                        <String fx:value="San Salvador"/>
+                                        <String fx:value="Talokgangan"/>
+                                        <String fx:value="Zona Sur"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                        </HBox>
+                    </VBox>
                     <!-- Marital Status -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Marital Status *" />

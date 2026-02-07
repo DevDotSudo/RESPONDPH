@@ -69,6 +69,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             String encryptedMiddlename = CRYPTO.encryptWithOneParameter(bm.getMiddlename());
             String encryptedLastname = CRYPTO.encryptWithOneParameter(bm.getLastname());
             String encryptedBirthDate = CRYPTO.encryptWithOneParameter(bm.getBirthDate());
+            String encryptedBarangay = CRYPTO.encryptWithOneParameter(bm.getBarangay());
             String encryptedGender = CRYPTO.encryptWithOneParameter(bm.getGender());
             String encryptedMaritalStatus = CRYPTO.encryptWithOneParameter(bm.getMaritalStatus());
             String encryptedSoloParentStatus = CRYPTO.encryptWithOneParameter(bm.getSoloParentStatus());
@@ -94,6 +95,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                             encryptedMiddlename,
                             encryptedLastname,
                             encryptedBirthDate,
+                            encryptedBarangay,
                             bm.getAgeScore(), // Pass age score (not encrypted)
                             encryptedGender,
                             encryptedMaritalStatus,
@@ -161,6 +163,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             String encryptedMiddlename = CRYPTO.encryptWithOneParameter(bm.getMiddlename());
             String encryptedLastname = CRYPTO.encryptWithOneParameter(bm.getLastname());
             String encryptedBirthDate = CRYPTO.encryptWithOneParameter(bm.getBirthDate());
+            String encryptedBarangay = CRYPTO.encryptWithOneParameter(bm.getBarangay());
             String encryptedGender = CRYPTO.encryptWithOneParameter(bm.getGender());
             String encryptedMaritalStatus = CRYPTO.encryptWithOneParameter(bm.getMaritalStatus());
             String encryptedSoloParentStatus = CRYPTO.encryptWithOneParameter(bm.getSoloParentStatus());
@@ -185,6 +188,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                     encryptedMiddlename,
                     encryptedLastname,
                     encryptedBirthDate,
+                    encryptedBarangay,
                     bm.getAgeScore(), // Pass age score (not encrypted)
                     encryptedGender,
                     encryptedMaritalStatus,
@@ -235,6 +239,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                     encrypted.getMiddlename(),
                     encrypted.getLastname(),
                     encrypted.getBirthDate(),
+                    encrypted.getBarangay(),
                     encrypted.getGender(),
                     encrypted.getMaritalStatus(),
                     encrypted.getSoloParentStatus(),
@@ -261,25 +266,26 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             d.setMiddlename(decrypted.get(1));
             d.setLastname(decrypted.get(2));
             d.setBirthDate(decrypted.get(3));
+            d.setBarangay(decrypted.get(4));
             d.setAgeScore(encrypted.getAgeScore()); // Age score is not encrypted
-            d.setGender(decrypted.get(4));
-            d.setMaritalStatus(decrypted.get(5));
-            d.setSoloParentStatus(decrypted.get(6));
-            d.setLatitude(decrypted.get(7));
-            d.setLongitude(decrypted.get(8));
-            d.setMobileNumber(decrypted.get(9));
-            d.setDisabilityType(decrypted.get(10));
-            d.setHealthCondition(decrypted.get(11));
-            d.setCleanWaterAccess(decrypted.get(12));
-            d.setSanitationFacility(decrypted.get(13));
-            d.setHouseType(decrypted.get(14));
-            d.setOwnerShipStatus(decrypted.get(15));
-            d.setEmploymentStatus(decrypted.get(16));
-            d.setMonthlyIncome(decrypted.get(17));
-            d.setEducationalLevel(decrypted.get(18));
-            d.setDigitalAccess(decrypted.get(19));
-            d.setAddedBy(decrypted.get(20));
-            d.setRegDate(decrypted.get(21));
+            d.setGender(decrypted.get(5));
+            d.setMaritalStatus(decrypted.get(6));
+            d.setSoloParentStatus(decrypted.get(7));
+            d.setLatitude(decrypted.get(8));
+            d.setLongitude(decrypted.get(9));
+            d.setMobileNumber(decrypted.get(10));
+            d.setDisabilityType(decrypted.get(11));
+            d.setHealthCondition(decrypted.get(12));
+            d.setCleanWaterAccess(decrypted.get(13));
+            d.setSanitationFacility(decrypted.get(14));
+            d.setHouseType(decrypted.get(15));
+            d.setOwnerShipStatus(decrypted.get(16));
+            d.setEmploymentStatus(decrypted.get(17));
+            d.setMonthlyIncome(decrypted.get(18));
+            d.setEducationalLevel(decrypted.get(19));
+            d.setDigitalAccess(decrypted.get(20));
+            d.setAddedBy(decrypted.get(21));
+            d.setRegDate(decrypted.get(22));
 
             return d;
 

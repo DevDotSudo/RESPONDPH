@@ -133,7 +133,8 @@
                             <Label styleClass="input-label" text="Recipient Group:"/>
                             <ComboBox fx:id="cbSelectBeneficiary"
                                       prefWidth="300"
-                                      styleClass="recipient-combo">
+                                      styleClass="recipient-combo"
+                                      onAction="#onRecipientGroupChanged">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="All Beneficiaries"/>
@@ -144,6 +145,32 @@
                                     </FXCollections>
                                 </items>
                             </ComboBox>
+                        </HBox>
+
+                        <!-- Barangay Selection (Initially Hidden) -->
+                        <HBox fx:id="barangaySelectionBox"
+                              alignment="CENTER_LEFT"
+                              spacing="10"
+                              visible="false"
+                              managed="false">
+                            <Label styleClass="input-label" text="Select Barangay:"/>
+                            <ComboBox fx:id="cbSelectBarangay"
+                                      prefWidth="300"
+                                      promptText="Choose a barangay..."
+                                      styleClass="recipient-combo"/>
+                        </HBox>
+
+
+                        <HBox fx:id="disasterSelectionBox"
+                              alignment="CENTER_LEFT"
+                              spacing="10"
+                              visible="false"
+                              managed="false">
+                            <Label styleClass="input-label" text="Select Disaster:"/>
+                            <ComboBox fx:id="cbSelectDisaster"
+                                      prefWidth="300"
+                                      promptText="Choose a Disaster..."
+                                      styleClass="recipient-combo"/>
                         </HBox>
 
                         <VBox spacing="8">

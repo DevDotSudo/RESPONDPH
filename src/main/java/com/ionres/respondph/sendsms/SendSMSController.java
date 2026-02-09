@@ -2,10 +2,8 @@ package com.ionres.respondph.sendsms;
 
 import com.ionres.respondph.common.services.NewsGeneratorService;
 import com.ionres.respondph.sendsms.dialog_controller.BeneficiarySelectionDialogController;
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.SMSSender;
-import com.ionres.respondph.util.InternetConnectionChecker;
+import com.ionres.respondph.util.*;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -99,22 +97,36 @@ public class SendSMSController implements Initializable {
         setupNewsControls();
         checkNetworkStatus();
 
+        DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
+
         if (charCount != null) charCount.setText("0/160 characters");
 
         updateConnectionStatus();
 
         System.out.println("SendSMSController initialized successfully");
+
     }
+
+
 
     @FXML
     private void onRecipientGroupChanged() {
+        System.out.println("DEBUG: onRecipientGroupChanged() called, isUpdatingComboBox=" + isUpdatingComboBox + ", isOpeningDialog=" + isOpeningDialog);
 
         if (isUpdatingComboBox || isOpeningDialog) {
+            System.out.println("DEBUG: Skipping onRecipientGroupChanged - flags are set");
             return;
         }
 
-
         String selectedGroup = cbSelectBeneficiary.getValue();
+
+        if (selectedGroup == null) {
+            System.out.println("DEBUG: selectedGroup is null, returning");
+            return;
+        }
+
+        System.out.println("DEBUG: Processing selectedGroup: " + selectedGroup);
+
 
         if ("By Barangay".equals(selectedGroup)) {
             disasterSelectionBox.setVisible(false);
@@ -159,7 +171,7 @@ public class SendSMSController implements Initializable {
         updateSendButtonState();
     }
 
-    private void loadDisasters() {
+    public void loadDisasters() {
         try {
             System.out.println("DEBUG: Loading disaster list...");
             List<DisasterModel> disasters = disasterDAO.getAllDisasters();
@@ -174,7 +186,7 @@ public class SendSMSController implements Initializable {
 
 
 
-    private void loadBarangayList() {
+    public void loadBarangayList() {
         new Thread(() -> {
             try {
                 System.out.println("DEBUG: Loading barangay list...");
@@ -213,8 +225,25 @@ public class SendSMSController implements Initializable {
         try {
             isOpeningDialog = true;
 
+            List<BeneficiaryModel> allBeneficiaries = beneficiaryDAO.getAllBeneficiaries();
+
+            if (allBeneficiaries == null || allBeneficiaries.isEmpty()) {
+                AlertDialogManager.showWarning(
+                        "No Beneficiaries Available",
+                        "There are no beneficiaries in the system to select from.\n" +
+                                "Please add beneficiaries first."
+                );
+                // Reset the combo box selection
+                Platform.runLater(() -> {
+                    isUpdatingComboBox = true;
+                    cbSelectBeneficiary.getSelectionModel().clearSelection();
+                    isUpdatingComboBox = false;
+                });
+                return;
+            }
+
             Stage dialogStage = createAndConfigureDialog();
-            BeneficiarySelectionDialogController controller = loadDialogContent(dialogStage);
+            BeneficiarySelectionDialogController controller = loadDialogContent(dialogStage, allBeneficiaries);
 
             dialogStage.showAndWait();
 
@@ -235,14 +264,19 @@ public class SendSMSController implements Initializable {
         return stage;
     }
 
-    private BeneficiarySelectionDialogController loadDialogContent(Stage dialogStage) throws Exception {
+    private BeneficiarySelectionDialogController loadDialogContent(
+            Stage dialogStage,
+            List<BeneficiaryModel> beneficiaries) throws Exception {
+
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/view/send_sms/dialog/beneficiary_selection_dialog.fxml")
         );
         Parent root = loader.load();
 
         BeneficiarySelectionDialogController controller = loader.getController();
-        controller.setBeneficiaries(beneficiaryDAO.getAllBeneficiaries());
+        controller.setBeneficiaries(beneficiaries);
+
+        controller.setupCloseHandler(dialogStage);
 
         if (!selectedBeneficiariesList.isEmpty()) {
             controller.setPreselectedBeneficiaries(selectedBeneficiariesList);
@@ -257,22 +291,60 @@ public class SendSMSController implements Initializable {
     private void handleDialogResult(BeneficiarySelectionDialogController controller) {
         if (controller.isOkClicked()) {
             updateSelectedBeneficiaries(controller.getSelectedBeneficiaries());
-        } else if (selectedBeneficiariesList.isEmpty()) {
-            clearBeneficiarySelection();
+        } else {
+            handleDialogCancelled();
         }
     }
 
     private void updateSelectedBeneficiaries(List<BeneficiaryModel> beneficiaries) {
-        selectedBeneficiariesList = beneficiaries;
-        String displayText = String.format("Selected Beneficiaries (%d selected)", beneficiaries.size());
-
         isUpdatingComboBox = true;
-        cbSelectBeneficiary.getItems().set(2, displayText);
+
+        try {
+            selectedBeneficiariesList = beneficiaries;
+            String displayText = String.format("Selected Beneficiaries (%d selected)",
+                    beneficiaries.size());
+
+            ObservableList<String> items = cbSelectBeneficiary.getItems();
+
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).startsWith("Selected Beneficiaries")) {
+                    items.set(i, displayText);
+                    cbSelectBeneficiary.getSelectionModel().select(i);
+                    break;
+                }
+            }
+        } finally {
+            Platform.runLater(() -> isUpdatingComboBox = false);
+        }
     }
 
-    private void clearBeneficiarySelection() {
+
+    private void handleDialogCancelled() {
         isUpdatingComboBox = true;
-        cbSelectBeneficiary.getSelectionModel().clearSelection();
+
+        try {
+            if (selectedBeneficiariesList.isEmpty()) {
+                Platform.runLater(() -> {
+                    cbSelectBeneficiary.getSelectionModel().selectFirst();
+                });
+            } else {
+                String displayText = String.format("Selected Beneficiaries (%d selected)",
+                        selectedBeneficiariesList.size());
+
+                ObservableList<String> items = cbSelectBeneficiary.getItems();
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).startsWith("Selected Beneficiaries")) {
+                        items.set(i, displayText);
+                        cbSelectBeneficiary.getSelectionModel().select(i);
+                        break;
+                    }
+                }
+            }
+        } finally {
+            Platform.runLater(() -> {
+                isUpdatingComboBox = false;
+            });
+        }
     }
 
     private void preventEnterKeyInDialog(Stage dialogStage) {
@@ -946,23 +1018,19 @@ public class SendSMSController implements Initializable {
                 return List.of();
         }
     }
-    /**
-     * Send SMS to all recipients
-     */
+
     private void sendSMSToRecipients(List<BeneficiaryModel> recipients, String message, String method) {
         // Disable send button
         btnSendSMS.setDisable(true);
 
         System.out.println("DEBUG: Starting send process for " + recipients.size() + " recipients");
 
-        // Show progress
         Alert progress = new Alert(Alert.AlertType.INFORMATION);
         progress.setTitle("Sending SMS");
         progress.setHeaderText("Sending messages...");
         progress.setContentText("Please wait... This may take a few moments.");
         progress.show();
 
-        // Send in background
         new Thread(() -> {
             int sent = smsService.sendBulkSMS(recipients, message, method);
 

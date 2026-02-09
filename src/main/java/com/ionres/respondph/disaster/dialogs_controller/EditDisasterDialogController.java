@@ -128,7 +128,7 @@ public class EditDisasterDialogController {
                         "Disaster information has been successfully updated.");
                 disasterController.loadTable();
                 DashboardRefresher.refresh();
-                closeDialog();
+                DashboardRefresher.refreshComboBoxOfDNAndAN();
             } else {
                 AlertDialogManager.showError("Update Failed",
                         "Failed to update disaster. Please try again.");

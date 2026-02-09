@@ -100,6 +100,8 @@ public class AddDisasterDialogController {
                 disasterController.loadTable();
                 clearFields();
                 DashboardRefresher.refresh();
+                DashboardRefresher.refreshDisasterInSend();
+                DashboardRefresher.refreshComboBoxOfDNAndAN();
             } else {
                 AlertDialogManager.showError("Error", "Failed to add disaster. Please try again.");
             }

@@ -287,6 +287,7 @@ public class AddBeneficiariesDialogController {
                 }
                 clearFields();
                 DashboardRefresher.refresh();
+                DashboardRefresher.refreshBeneInSend();
 
             } else {
                 javax.swing.JOptionPane.showMessageDialog(

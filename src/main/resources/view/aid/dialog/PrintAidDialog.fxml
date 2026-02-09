@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox minHeight="-Infinity" prefHeight="500.0" prefWidth="500" spacing="20" styleClass="dialog-container" stylesheets="@/styles/aid/dialog/printDialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController">
+<VBox minHeight="-Infinity" prefHeight="700.0" prefWidth="500" spacing="20" styleClass="dialog-container" stylesheets="@/styles/aid/dialog/printDialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController">
 
     <padding>
         <Insets bottom="30" left="30" right="30" top="30" />
@@ -14,14 +14,14 @@
 
     <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="12">
-        <FontAwesomeIconView glyphName="PRINT" size="28" styleClass="dialog-icon" text="" />
+        <FontAwesomeIconView glyphName="PRINT" size="28" styleClass="dialog-icon" text="" />
         <VBox>
             <Label styleClass="dialog-title" text="Print Aid Distribution Report">
                 <font>
                     <Font name="System Bold" size="18" />
                 </font>
             </Label>
-            <Label styleClass="dialog-subtitle" text="Select disaster and aid type to print beneficiary list">
+            <Label styleClass="dialog-subtitle" text="Select disaster, aid type, and optionally filter by barangay">
                 <font>
                     <Font size="12" />
                 </font>
@@ -36,7 +36,7 @@
 
         <!-- Disaster Selection -->
         <VBox spacing="8">
-            <Label styleClass="form-label" text="Select Disaster:">
+            <Label styleClass="form-label" text="Select Disaster: *">
                 <font>
                     <Font name="System Bold" size="12" />
                 </font>
@@ -46,7 +46,7 @@
 
         <!-- Aid Type Selection -->
         <VBox spacing="8">
-            <Label styleClass="form-label" text="Select Aid Type:">
+            <Label styleClass="form-label" text="Select Aid Type: *">
                 <font>
                     <Font name="System Bold" size="12" />
                 </font>
@@ -54,8 +54,28 @@
             <ComboBox fx:id="aidTypeComboBox" maxWidth="Infinity" promptText="Choose aid type" styleClass="custom-combo-box" />
         </VBox>
 
+        <!-- Barangay Filter Section -->
+        <VBox spacing="10" style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-background-radius: 5; -fx-border-color: #dee2e6; -fx-border-radius: 5;">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <FontAwesomeIconView glyphName="MAP_MARKER" size="16" style="-fx-fill: #3498db;" />
+                <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Barangay Filter (Optional)" />
+            </HBox>
+
+            <CheckBox fx:id="useBarangayFilterCheckBox" text="Filter by specific barangay">
+                <font>
+                    <Font size="11" />
+                </font>
+            </CheckBox>
+
+            <VBox spacing="6">
+                <Label style="-fx-font-size: 11px; -fx-text-fill: #6c757d;" text="Barangay:" />
+                <ComboBox fx:id="barangayComboBox" maxWidth="Infinity" promptText="Select Barangay" styleClass="custom-combo-box" />
+                <Label style="-fx-font-size: 10px; -fx-text-fill: #6c757d; -fx-font-style: italic;" text="Leave unchecked to print all barangays" wrapText="true" />
+            </VBox>
+        </VBox>
+
         <!-- Info Panel -->
-        <HBox alignment="CENTER_LEFT" spacing="10"  styleClass="info-panel">
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="info-panel">
             <FontAwesomeIconView glyphName="INFO_CIRCLE" size="20" styleClass="info-icon" />
             <VBox spacing="5">
                 <Label fx:id="beneficiaryCountLabel" styleClass="info-text" text="Beneficiaries: 0">
@@ -63,9 +83,14 @@
                         <Font name="System Bold" size="13" />
                     </font>
                 </Label>
-                <Label  styleClass="info-subtext" text="This will print on bond paper (Letter size)">
+                <Label styleClass="info-subtext" text="Sorted by K-Means priority score (high to low)">
                     <font>
                         <Font size="11" />
+                    </font>
+                </Label>
+                <Label styleClass="info-subtext" text="Will print on bond paper (Letter size)">
+                    <font>
+                        <Font size="10" />
                     </font>
                 </Label>
             </VBox>

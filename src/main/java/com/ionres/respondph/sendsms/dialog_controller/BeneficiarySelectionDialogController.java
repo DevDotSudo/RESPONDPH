@@ -206,6 +206,17 @@ public class BeneficiarySelectionDialogController {
         lblTotalCount.setText("Total: " + allItems.size() + " | Showing: " + filteredItems.size());
     }
 
+    public void setupCloseHandler(Stage stage) {
+        stage.setOnCloseRequest(event -> {
+            // Treat window close (X button) as Cancel
+            if (!isClosing) {
+                System.out.println("DEBUG: Window close requested, treating as Cancel");
+                event.consume(); // Prevent default close
+                onCancel(); // Use the cancel logic
+            }
+        });
+    }
+
     private void closeDialog() {
         System.out.println("DEBUG: closeDialog() called");
         try {
@@ -231,7 +242,6 @@ public class BeneficiarySelectionDialogController {
         return selectedBeneficiaries != null ? selectedBeneficiaries : new ArrayList<>();
     }
 
-    // Inner class for table items
     public static class BeneficiarySelectionItem {
         private final BeneficiaryModel beneficiary;
         private final BooleanProperty selected;
@@ -244,7 +254,6 @@ public class BeneficiarySelectionDialogController {
             this.beneficiary = beneficiary;
             this.selected = new SimpleBooleanProperty(false);
 
-            // Build full name
             String fn = beneficiary.getFirstname() != null ? beneficiary.getFirstname() : "";
             String mn = beneficiary.getMiddlename() != null ? beneficiary.getMiddlename() : "";
             String ln = beneficiary.getLastname() != null ? beneficiary.getLastname() : "";

@@ -4,6 +4,7 @@ import com.ionres.respondph.admin.AdminController;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.admin.AdminService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DialogManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -18,7 +19,6 @@ public class AddAdminDialogController {
     @FXML private VBox root;
     @FXML private TextField usernameField, firstNameField, middleNameField, lastNameField;
     @FXML private PasswordField passwordField, confirmPasswordField;
-    @FXML private Label errorLabel;
     @FXML private Button closeButton, saveButton;
     private Stage dialogStage;
     private AdminService adminService;
@@ -29,7 +29,6 @@ public class AddAdminDialogController {
     @FXML
     public void initialize() {
         makeDraggable();
-        clearError();
         EventHandler<ActionEvent> handler = this::handleActions;
         saveButton.setOnAction(handler);
         closeButton.setOnAction(handler);
@@ -65,7 +64,6 @@ public class AddAdminDialogController {
     public void onShow() {
         adminAdded = false;
         clearFields();
-        clearError();
     }
 
     public boolean isAdminAdded() {
@@ -99,7 +97,6 @@ public class AddAdminDialogController {
         } catch (Exception e) {
             AlertDialogManager.showError("Create Admin Failed",
                     "Failed to create admin: " + e.getMessage());
-            showError(e.getMessage());
         }
     }
 
@@ -113,35 +110,30 @@ public class AddAdminDialogController {
         if (usernameField.getText().trim().length() < 4) {
             AlertDialogManager.showWarning("Validation Error",
                     "Username must be at least 4 characters.");
-            showError("Username must be at least 4 characters.");
             return false;
         }
 
         if (firstNameField.getText().trim().isEmpty()) {
             AlertDialogManager.showWarning("Validation Error",
                     "First name is required.");
-            showError("First name is required.");
             return false;
         }
 
         if (lastNameField.getText().trim().isEmpty()) {
             AlertDialogManager.showWarning("Validation Error",
                     "Last name is required.");
-            showError("Last name is required.");
             return false;
         }
 
         if (passwordField.getText().length() < 6) {
             AlertDialogManager.showWarning("Validation Error",
                     "Password must be at least 6 characters.");
-            showError("Password must be at least 6 characters.");
             return false;
         }
 
         if (!passwordField.getText().equals(confirmPasswordField.getText())) {
             AlertDialogManager.showWarning("Validation Error",
                     "Passwords do not match.");
-            showError("Passwords do not match.");
             return false;
         }
 
@@ -156,17 +148,6 @@ public class AddAdminDialogController {
         lastNameField.clear();
         passwordField.clear();
         confirmPasswordField.clear();
-    }
-
-    private void showError(String msg) {
-        errorLabel.setText(msg);
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
-    }
-
-    private void clearError() {
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
     }
 
     private void makeDraggable() {

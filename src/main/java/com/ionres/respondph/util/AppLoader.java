@@ -4,6 +4,7 @@ import com.ionres.respondph.admin.AdminServiceImpl;
 import com.ionres.respondph.admin.login.LoginServiceImpl;
 import com.ionres.respondph.aid_type.AidTypeServiceImpl;
 import com.ionres.respondph.beneficiary.BeneficiaryServiceImpl;
+import com.ionres.respondph.common.services.EvacSiteMappingServiceImpl;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterServiceImpl;
 import com.ionres.respondph.disaster_damage.DisasterDamageServiceImpl;
@@ -17,19 +18,12 @@ import java.util.logging.Logger;
 public class AppLoader {
     private static final Logger LOGGER = Logger.getLogger(AppLoader.class.getName());
 
-    /**
-     * Initialize utilities and managers that need early initialization.
-     * This ensures they are ready before services are loaded.
-     */
     public static void initializeUtilities() {
         try {
-            // ConfigLoader is already static initialized, but we can verify it's loaded
-            ConfigLoader.get("secretKey"); // This will throw if not loaded
+            ConfigLoader.get("secretKey");
             
-            // Initialize CryptographyManager early (it's lazy, but we want it ready)
             CryptographyManager.getInstance();
             
-            // Initialize SessionManager early (it's lazy, but we want it ready)
             SessionManager.getInstance();
             
             LOGGER.info("Utilities initialized successfully");
@@ -56,25 +50,15 @@ public class AppLoader {
         AppContext.dashBoardService = new DashBoardServiceImpl(AppContext.db);
         AppContext.vulnerabilityIndicatorService = new VulnerabilityIndicatorServiceImpl(AppContext.db);
         AppContext.disasterMappingService = new DisasterMappingServiceImpl(AppContext.db);
+        AppContext.evacSiteMappingService = new EvacSiteMappingServiceImpl(AppContext.db);
+
         LOGGER.info("All services loaded successfully");
     }
 
-
-    /**
-     * Preloads all FXML scenes and dialogs for faster UI response.
-     * This is called during splash screen initialization.
-     * 
-     * @throws Exception if any FXML file fails to load
-     */
     public static void prepareUI() throws Exception {
         LOGGER.info("Preloading UI components...");
-        
-        // Preload main scenes
         preloadScenes();
-        
-        // Preload dialogs
         preloadDialogs();
-        
         LOGGER.info("UI components preloaded successfully");
     }
 
@@ -132,5 +116,8 @@ public class AppLoader {
         // Evac Site
         DialogManager.preload("addEvacSite", "/view/evac_site/dialog/AddEvacSiteDialog.fxml");
         DialogManager.preload("editEvacSite", "/view/evac_site/dialog/EditEvacSiteDialog.fxml");
+
+        DialogManager.preload("evacuationSiteMapping", "/view/disaster_mapping/dialog/EvacuationSiteMappingDialog.fxml");
+        DialogManager.preload("selection", "/view/send_sms/dialog/BeneficiarySelectionDialog.fxml");
     }
 }

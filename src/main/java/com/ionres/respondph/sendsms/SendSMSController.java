@@ -1,38 +1,45 @@
 package com.ionres.respondph.sendsms;
 
-import com.ionres.respondph.common.services.NewsGeneratorService;
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.SMSSender;
-import com.ionres.respondph.util.InternetConnectionChecker;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.beneficiary.BeneficiaryServiceImpl;
+import com.ionres.respondph.common.services.NewsGeneratorService;
+import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
+import com.ionres.respondph.util.*;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class SendSMSController implements Initializable {
-
     @FXML private ComboBox<String> cbSelectBeneficiary;
     @FXML private ComboBox<String> cbSelectPorts;
+    @FXML private ComboBox<String> cbSelectBarangay;
+    @FXML private HBox barangaySelectionBox;
+
     @FXML private TextArea txtMessage;
     @FXML private Label charCount;
+
     @FXML private Button btnSendSMS;
+
     @FXML private TableView<SmsModel> adminTable;
     @FXML private TableColumn<SmsModel, String> dateSentColumn;
     @FXML private TableColumn<SmsModel, String> fullNameColumn;
@@ -40,10 +47,15 @@ public class SendSMSController implements Initializable {
     @FXML private TableColumn<SmsModel, String> statusColumn;
     @FXML private TableColumn<SmsModel, String> phoneColumn;
     @FXML private TableColumn<SmsModel, Void> actionsColumn;
+
     @FXML private RadioButton rbGsm;
     @FXML private RadioButton rbApi;
-    @FXML private Label connectionStatusLabel; // Optional: Add this to your FXML if you want to show connection status
-    @FXML private Button btnRefreshPorts; // Optional: Add refresh button
+
+    @FXML private Label connectionStatusLabel;
+    @FXML private Button btnRefreshPorts;
+
+    @FXML private HBox disasterSelectionBox;
+    @FXML private ComboBox<DisasterModel> cbSelectDisaster;
 
     @FXML private ComboBox<String> cbNewsTopic;
     @FXML private Button btnGenerateNews;
@@ -52,48 +64,266 @@ public class SendSMSController implements Initializable {
     @FXML private HBox aiResponseActions;
     @FXML private Button btnUseSelectedNews;
     @FXML private ToggleGroup newsAiResponse;
+
     @FXML private Label lblNetworkStatus;
     @FXML private Button btnRefreshNetwork;
 
+    private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
+
     private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
     private SmsService smsService;
-    private SMSSender smsSender; // Add this field
+    private SMSSender smsSender;
     private NewsGeneratorService newsGeneratorService;
     private NewsGeneratorService.NewsResult lastNewsResult;
+    private BeneficiaryDAO beneficiaryDAO;
+    private DisasterDAO disasterDAO;
+
+    private boolean isOpeningDialog = false;
+    private boolean isUpdatingComboBox = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         smsService = new SmsServiceImpl();
-        smsSender = SMSSender.getInstance(); // Get the SMSSender instance
+        smsSender = SMSSender.getInstance();
         newsGeneratorService = new NewsGeneratorService();
-
+        beneficiaryDAO = new BeneficiaryDAOImpl();
+        disasterDAO = new DisasterDAOImpl();
         setupRadioButtons();
         setupControls();
         loadSMSLogs();
         populateAvailablePorts();
         setupNewsControls();
         checkNetworkStatus();
+        DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
 
         if (charCount != null) charCount.setText("0/160 characters");
 
         updateConnectionStatus();
+
+        System.out.println("SendSMSController initialized successfully");
     }
+
+    @FXML
+    private void onRecipientGroupChanged() {
+        System.out.println("DEBUG: onRecipientGroupChanged() called, isUpdatingComboBox=" + isUpdatingComboBox + ", isOpeningDialog=" + isOpeningDialog);
+
+        if (isUpdatingComboBox || isOpeningDialog) {
+            System.out.println("DEBUG: Skipping onRecipientGroupChanged - flags are set");
+            return;
+        }
+
+        String selectedGroup = cbSelectBeneficiary.getValue();
+
+        if (selectedGroup == null) {
+            System.out.println("DEBUG: selectedGroup is null, returning");
+            return;
+        }
+
+        System.out.println("DEBUG: Processing selectedGroup: " + selectedGroup);
+
+        if ("By Barangay".equals(selectedGroup)) {
+            disasterSelectionBox.setVisible(false);
+            disasterSelectionBox.setManaged(false);
+
+            barangaySelectionBox.setVisible(true);
+            barangaySelectionBox.setManaged(true);
+
+            if (cbSelectBarangay.getItems().isEmpty()) {
+                loadBarangayList();
+            }
+        }
+        else if ("By Disaster Area".equals(selectedGroup)) {
+            barangaySelectionBox.setVisible(false);
+            barangaySelectionBox.setManaged(false);
+
+            disasterSelectionBox.setVisible(true);
+            disasterSelectionBox.setManaged(true);
+
+            if (cbSelectDisaster.getItems().isEmpty()) {
+                loadDisasters();
+            }
+        }
+        else if (selectedGroup.startsWith("Selected Beneficiaries")) {
+            barangaySelectionBox.setVisible(false);
+            barangaySelectionBox.setManaged(false);
+
+            disasterSelectionBox.setVisible(false);
+            disasterSelectionBox.setManaged(false);
+
+            openBeneficiarySelectionDialog();
+        }
+        else {
+            barangaySelectionBox.setVisible(false);
+            barangaySelectionBox.setManaged(false);
+            cbSelectBarangay.setValue(null);
+
+            disasterSelectionBox.setVisible(false);
+            disasterSelectionBox.setManaged(false);
+            if (cbSelectDisaster != null) cbSelectDisaster.setValue(null);
+        }
+
+        updateSendButtonState();
+    }
+
+    public void loadDisasters() {
+        try {
+            System.out.println("DEBUG: Loading disaster list...");
+            List<DisasterModel> disasters = disasterDAO.getAllDisasters();
+            cbSelectDisaster.getItems().clear();
+            cbSelectDisaster.getItems().addAll(disasters);
+            System.out.println("DEBUG: Loaded " + disasters.size() + " disasters");
+        } catch (Exception e) {
+            System.err.println("Error loading disasters: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void loadBarangayList() {
+        new Thread(() -> {
+            try {
+                System.out.println("DEBUG: Loading barangay list...");
+                List<String> barangays = beneficiaryDAO.getAllBarangays();
+
+                Platform.runLater(() -> {
+                    ObservableList<String> barangayList = FXCollections.observableArrayList(barangays);
+                    cbSelectBarangay.setItems(barangayList);
+
+                    if (barangays.isEmpty()) {
+                        AlertDialogManager.showError("No Barangays Found",
+                                "No barangays were found. Make sure beneficiaries have valid coordinates."
+                        );
+                    } else {
+                        System.out.println("DEBUG: Loaded " + barangays.size() + " barangays");
+                    }
+                });
+
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    AlertDialogManager.showError("Error Loading Barangays",
+                            "Failed to load barangay list: " + e.getMessage()
+                    );
+                });
+                e.printStackTrace();
+            }
+        }, "Load-Barangays-Thread").start();
+    }
+
+    private void openBeneficiarySelectionDialog() {
+        if (isOpeningDialog) return;
+
+        try {
+            isOpeningDialog = true;
+
+            List<BeneficiaryModel> allBeneficiaries = beneficiaryDAO.getAllBeneficiaries();
+
+            if (allBeneficiaries == null || allBeneficiaries.isEmpty()) {
+                AlertDialogManager.showWarning(
+                        "No Beneficiaries Available",
+                        "There are no beneficiaries in the system to select from.\nPlease add beneficiaries first."
+                );
+                return;
+            }
+
+            BeneficiarySelectionDialogController controller =
+                    DialogManager.getController("selection", BeneficiarySelectionDialogController.class);
+
+            // ✅ reset button/flags + clear search but KEEP checkbox selections
+            controller.resetState();
+
+            // ✅ IMPORTANT: do not call setBeneficiaries every time (it clears selections)
+            if (!controller.isLoaded()) {
+                controller.setBeneficiaries(allBeneficiaries);
+            }
+
+            // ✅ keep checks synced with last selected list (safe)
+            if (!selectedBeneficiariesList.isEmpty()) {
+                controller.setPreselectedBeneficiaries(selectedBeneficiariesList);
+            }
+
+            DialogManager.show("selection");
+
+            if (controller.isOkClicked()) {
+                updateSelectedBeneficiaries(controller.getSelectedBeneficiaries());
+            } else {
+                handleDialogCancelled();
+            }
+
+            updateSendButtonState();
+
+        } catch (Exception e) {
+            System.err.println("Error opening beneficiary selection dialog: " + e.getMessage());
+            e.printStackTrace();
+            AlertDialogManager.showError("Error", "Failed to open beneficiary selection dialog.");
+            isUpdatingComboBox = false;
+
+        } finally {
+            isOpeningDialog = false;
+            Platform.runLater(() -> isUpdatingComboBox = false);
+        }
+    }
+
+    private void updateSelectedBeneficiaries(List<BeneficiaryModel> beneficiaries) {
+        isUpdatingComboBox = true;
+
+        try {
+            selectedBeneficiariesList = beneficiaries;
+
+            String displayText = String.format("Selected Beneficiaries (%d selected)", beneficiaries.size());
+            ObservableList<String> items = cbSelectBeneficiary.getItems();
+
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).startsWith("Selected Beneficiaries")) {
+                    items.set(i, displayText);
+                    cbSelectBeneficiary.getSelectionModel().select(i);
+                    break;
+                }
+            }
+        } finally {
+            Platform.runLater(() -> {
+                isUpdatingComboBox = false;
+                updateSendButtonState();
+            });
+        }
+    }
+
+
+    private void handleDialogCancelled() {
+        isUpdatingComboBox = true;
+
+        try {
+            if (selectedBeneficiariesList.isEmpty()) {
+                Platform.runLater(() -> cbSelectBeneficiary.getSelectionModel().selectFirst());
+            } else {
+                String displayText = String.format("Selected Beneficiaries (%d selected)", selectedBeneficiariesList.size());
+                ObservableList<String> items = cbSelectBeneficiary.getItems();
+
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).startsWith("Selected Beneficiaries")) {
+                        items.set(i, displayText);
+                        cbSelectBeneficiary.getSelectionModel().select(i);
+                        break;
+                    }
+                }
+            }
+        } finally {
+            Platform.runLater(() -> {
+                isUpdatingComboBox = false;
+                updateSendButtonState();
+            });
+        }
+    }
+
 
     private void setupRadioButtons() {
         ToggleGroup group = new ToggleGroup();
         rbGsm.setToggleGroup(group);
         rbApi.setToggleGroup(group);
 
-        // Default to GSM
-        rbGsm.setSelected(true);
+        rbApi.setSelected(true);
 
         rbApi.selectedProperty().addListener((o, oldV, api) -> {
-            if (cbSelectPorts != null) {
-                cbSelectPorts.setDisable(api);
-            }
-            if (btnRefreshPorts != null) {
-                btnRefreshPorts.setDisable(api);
-            }
+            if (cbSelectPorts != null) cbSelectPorts.setDisable(api);
+            if (btnRefreshPorts != null) btnRefreshPorts.setDisable(api);
             updateSendButtonState();
             updateConnectionStatus();
         });
@@ -101,11 +331,11 @@ public class SendSMSController implements Initializable {
         rbGsm.selectedProperty().addListener((o, oldV, gsm) -> {
             if (!gsm) return;
 
-            // When GSM is selected, auto-connect if a port is selected
             if (cbSelectPorts != null && cbSelectPorts.getSelectionModel().getSelectedItem() != null) {
                 String selectedPort = cbSelectPorts.getSelectionModel().getSelectedItem();
                 connectToSelectedPort(selectedPort);
             }
+            updateSendButtonState();
         });
     }
 
@@ -114,7 +344,7 @@ public class SendSMSController implements Initializable {
 
         Platform.runLater(() -> {
             try {
-                // Use SMSSender utility to get available ports
+                System.out.println("DEBUG: Scanning for serial ports...");
                 List<String> availablePorts = smsSender.getAvailablePorts();
 
                 if (availablePorts.isEmpty()) {
@@ -126,12 +356,12 @@ public class SendSMSController implements Initializable {
                         connectionStatusLabel.setText("Disconnected - No ports found");
                         connectionStatusLabel.setStyle("-fx-text-fill: red;");
                     }
+                    System.out.println("DEBUG: No serial ports found");
                 } else {
                     ObservableList<String> portOptions = FXCollections.observableArrayList(availablePorts);
                     cbSelectPorts.setItems(portOptions);
                     cbSelectPorts.setDisable(false);
 
-                    // Try to select the currently connected port if any
                     String connectedPort = smsSender.getConnectedPort();
                     if (connectedPort != null && portOptions.contains(connectedPort)) {
                         cbSelectPorts.getSelectionModel().select(connectedPort);
@@ -147,15 +377,14 @@ public class SendSMSController implements Initializable {
                         }
                     }
 
-                    // Add listener for port selection changes
-                    cbSelectPorts.getSelectionModel().selectedItemProperty().addListener(
-                            (obs, oldPort, newPort) -> {
-                                if (newPort != null && !newPort.equals(oldPort) && rbGsm.isSelected()) {
-                                    connectToSelectedPort(newPort);
-                                }
-                                updateSendButtonState();
-                            }
-                    );
+                    System.out.println("DEBUG: Found " + availablePorts.size() + " serial ports");
+
+                    cbSelectPorts.getSelectionModel().selectedItemProperty().addListener((obs, oldPort, newPort) -> {
+                        if (newPort != null && !newPort.equals(oldPort) && rbGsm.isSelected()) {
+                            connectToSelectedPort(newPort);
+                        }
+                        updateSendButtonState();
+                    });
                 }
             } catch (Exception e) {
                 System.err.println("Error detecting serial ports: " + e.getMessage());
@@ -173,10 +402,9 @@ public class SendSMSController implements Initializable {
     }
 
     private void connectToSelectedPort(String portName) {
-        if (portName == null || portName.isEmpty() ||
-                portName.contains("No ports") || portName.contains("Error")) {
-            return;
-        }
+        if (portName == null || portName.isEmpty() || portName.contains("No ports") || portName.contains("Error")) return;
+
+        System.out.println("DEBUG: Attempting to connect to port: " + portName);
 
         new Thread(() -> {
             boolean connected = smsSender.connectToPort(portName, 5000);
@@ -188,8 +416,7 @@ public class SendSMSController implements Initializable {
                         connectionStatusLabel.setText("Connected to " + portName);
                         connectionStatusLabel.setStyle("-fx-text-fill: green;");
                     }
-                    AlertDialogManager.showSuccess("Connection Successful",
-                            "Connected to GSM modem on port: " + portName);
+                    AlertDialogManager.showSuccess("Connection Successful", "Connected to GSM modem on port: " + portName);
                 } else {
                     System.err.println("Failed to connect to port: " + portName);
                     if (connectionStatusLabel != null) {
@@ -197,8 +424,7 @@ public class SendSMSController implements Initializable {
                         connectionStatusLabel.setStyle("-fx-text-fill: red;");
                     }
                     AlertDialogManager.showError("Connection Failed",
-                            "Failed to connect to GSM modem on port: " + portName +
-                                    "\nPlease check if the modem is properly connected.");
+                            "Failed to connect to GSM modem on port: " + portName + "\nPlease check if the modem is properly connected.");
                 }
                 updateSendButtonState();
             });
@@ -225,14 +451,14 @@ public class SendSMSController implements Initializable {
 
     private void loadSMSLogs() {
         try {
+            System.out.println("DEBUG: Loading SMS logs...");
             List<SmsModel> saved = smsService.getAllSMSLogs();
             if (saved != null) {
                 logRows.clear();
                 logRows.addAll(saved);
+                System.out.println("DEBUG: Loaded " + saved.size() + " SMS logs");
             }
-            if (adminTable != null) {
-                adminTable.setItems(logRows);
-            }
+            if (adminTable != null) adminTable.setItems(logRows);
         } catch (Exception e) {
             System.err.println("Failed to load SMS logs: " + e.getMessage());
             e.printStackTrace();
@@ -331,12 +557,19 @@ public class SendSMSController implements Initializable {
                         row.setStatus(success ? "SENT" : "FAILED");
                         adminTable.refresh();
                         resendBtn.setDisable(success);
+
+                        if (success) {
+                            AlertDialogManager.showSuccess("Resend Successful", "SMS has been resent successfully.");
+                        } else {
+                            AlertDialogManager.showError("Resend Failed", "Failed to resend SMS. Check console for details.");
+                        }
                     }));
 
                     task.setOnFailed(e -> Platform.runLater(() -> {
                         row.setStatus("FAILED");
                         adminTable.refresh();
                         resendBtn.setDisable(false);
+                        AlertDialogManager.showError("Resend Error", "An error occurred while resending.");
                     }));
 
                     new Thread(task, "Resend-SMS-Task").start();
@@ -353,15 +586,14 @@ public class SendSMSController implements Initializable {
         if (txtMessage != null) {
             txtMessage.textProperty().addListener((obs, oldText, newText) -> {
                 int len = newText == null ? 0 : newText.length();
-                if (charCount != null) {
-                    charCount.setText(len + "/160 characters");
-                }
+                if (charCount != null) charCount.setText(len + "/160 characters");
             });
         }
 
         if (btnRefreshPorts != null) {
             btnRefreshPorts.setOnAction(e -> populateAvailablePorts());
         }
+
         if (btnRefreshNetwork != null) {
             btnRefreshNetwork.setOnAction(e -> onRefreshNetwork());
         }
@@ -395,11 +627,7 @@ public class SendSMSController implements Initializable {
             }
         };
 
-        task.setOnSucceeded(e -> Platform.runLater(() -> {
-            boolean online = Boolean.TRUE.equals(task.getValue());
-            updateNetworkLabel(online);
-        }));
-
+        task.setOnSucceeded(e -> Platform.runLater(() -> updateNetworkLabel(Boolean.TRUE.equals(task.getValue()))));
         task.setOnFailed(e -> Platform.runLater(() -> updateNetworkLabel(false)));
 
         Thread t = new Thread(task, "network-check");
@@ -411,9 +639,6 @@ public class SendSMSController implements Initializable {
         if (lblNetworkStatus == null) return;
         lblNetworkStatus.setText(online ? "Online" : "Offline - Internet required for AI APIs");
         lblNetworkStatus.setStyle(online ? "-fx-text-fill: #22c55e;" : "-fx-text-fill: #ef4444;");
-        if (!online) {
-            AlertDialogManager.showWarning("No Internet", "Internet connection is required to use AI news APIs.");
-        }
     }
 
     @FXML
@@ -437,9 +662,7 @@ public class SendSMSController implements Initializable {
             dialog.setHeaderText("Enter a custom news topic");
             dialog.setContentText("Topic:");
             Optional<String> result = dialog.showAndWait();
-            if (result.isEmpty() || result.get().trim().isEmpty()) {
-                return;
-            }
+            if (result.isEmpty() || result.get().trim().isEmpty()) return;
             topic = result.get().trim();
         }
 
@@ -491,10 +714,10 @@ public class SendSMSController implements Initializable {
             rb.setToggleGroup(newsAiResponse);
             rb.setWrapText(true);
             rb.setMaxWidth(Double.MAX_VALUE);
+
             insertOptionNode(rb);
-            if (index == 1) {
-                rb.setSelected(true);
-            }
+
+            if (index == 1) rb.setSelected(true);
             index++;
         }
 
@@ -517,9 +740,7 @@ public class SendSMSController implements Initializable {
     }
 
     private void setAiBusy(boolean busy, String placeholder) {
-        if (btnGenerateNews != null) {
-            btnGenerateNews.setDisable(busy);
-        }
+        if (btnGenerateNews != null) btnGenerateNews.setDisable(busy);
         if (busy) {
             clearAiOptions();
             showAiContainer(false);
@@ -529,22 +750,18 @@ public class SendSMSController implements Initializable {
     private void clearAiOptions() {
         if (aiResponseContainer == null) return;
         int fromIndex = aiResponseLabel == null ? 0 : aiResponseContainer.getChildren().indexOf(aiResponseLabel) + 1;
-        int toIndex = aiResponseActions == null ? aiResponseContainer.getChildren().size() :
-                aiResponseContainer.getChildren().indexOf(aiResponseActions);
+        int toIndex = aiResponseActions == null ? aiResponseContainer.getChildren().size()
+                : aiResponseContainer.getChildren().indexOf(aiResponseActions);
 
-        if (fromIndex < 0 || toIndex < 0 || fromIndex >= toIndex) {
-            return;
-        }
+        if (fromIndex < 0 || toIndex < 0 || fromIndex >= toIndex) return;
         aiResponseContainer.getChildren().remove(fromIndex, toIndex);
     }
 
     private void insertOptionNode(javafx.scene.Node node) {
         if (aiResponseContainer == null) return;
-        int insertIndex = aiResponseActions == null ? aiResponseContainer.getChildren().size() :
-                aiResponseContainer.getChildren().indexOf(aiResponseActions);
-        if (insertIndex < 0) {
-            insertIndex = aiResponseContainer.getChildren().size();
-        }
+        int insertIndex = aiResponseActions == null ? aiResponseContainer.getChildren().size()
+                : aiResponseContainer.getChildren().indexOf(aiResponseActions);
+        if (insertIndex < 0) insertIndex = aiResponseContainer.getChildren().size();
         aiResponseContainer.getChildren().add(insertIndex, node);
     }
 
@@ -570,7 +787,7 @@ public class SendSMSController implements Initializable {
             ));
             cbSelectBeneficiary.getSelectionModel().selectFirst();
             cbSelectBeneficiary.getSelectionModel().selectedItemProperty()
-                    .addListener((obs, oldVal, newVal) -> updateSendButtonState());
+                    .addListener((obs, oldVal, newVal) -> onRecipientGroupChanged());
         }
     }
 
@@ -580,8 +797,7 @@ public class SendSMSController implements Initializable {
         if (rbApi != null && rbApi.isSelected()) {
             canSend = true;
         } else if (rbGsm != null && rbGsm.isSelected()) {
-            String selectedPort = cbSelectPorts == null ? null :
-                    cbSelectPorts.getSelectionModel().getSelectedItem();
+            String selectedPort = cbSelectPorts == null ? null : cbSelectPorts.getSelectionModel().getSelectedItem();
 
             boolean validPort = selectedPort != null &&
                     !selectedPort.contains("No ports") &&
@@ -592,109 +808,161 @@ public class SendSMSController implements Initializable {
             canSend = validPort && isConnected;
         }
 
-        String sel = cbSelectBeneficiary == null ? null :
-                cbSelectBeneficiary.getSelectionModel().getSelectedItem();
+        String sel = cbSelectBeneficiary == null ? null : cbSelectBeneficiary.getSelectionModel().getSelectedItem();
         if ("All Beneficiaries".equals(sel)) {
             try {
                 if (AppContext.beneficiaryService == null && AppContext.db != null) {
                     AppContext.beneficiaryService = new BeneficiaryServiceImpl(AppContext.db);
                 }
-                List<BeneficiaryModel> all = AppContext.beneficiaryService == null ?
-                        List.of() : AppContext.beneficiaryService.getAllBeneficiary();
+                List<BeneficiaryModel> all = AppContext.beneficiaryService == null
+                        ? List.of()
+                        : AppContext.beneficiaryService.getAllBeneficiary();
                 canSend = canSend && all != null && !all.isEmpty();
             } catch (Exception e) {
                 canSend = false;
             }
         }
+
+        if (btnSendSMS != null) btnSendSMS.setDisable(!canSend);
+
+        System.out.println("DEBUG: Send button state - Enabled: " + canSend);
     }
 
     @FXML
     private void onSendSMS() {
-        String message = txtMessage == null ? null : txtMessage.getText();
+        String message = txtMessage.getText();
         if (message == null || message.trim().isEmpty()) {
-            AlertDialogManager.showWarning("Empty Message", "Please enter a message to send.");
+            AlertDialogManager.showError("Empty Message", "Please enter a message to send.");
             return;
         }
 
-        String recipientGroup = cbSelectBeneficiary == null ? null :
-                cbSelectBeneficiary.getSelectionModel().getSelectedItem();
-        String method = rbApi.isSelected() ? "API" : "GSM";
-        String selectedPort = null;
-
-        if ("API".equals(method) && !InternetConnectionChecker.isOnline()) {
-            AlertDialogManager.showError("Offline", "No internet connection. SMS API sending requires internet.");
+        String recipientGroup = cbSelectBeneficiary.getValue();
+        if (recipientGroup == null) {
+            AlertDialogManager.showError("No Recipients", "Please select a recipient group.");
             return;
         }
 
-        if ("GSM".equals(method)) {
-            selectedPort = cbSelectPorts == null ? null :
-                    cbSelectPorts.getSelectionModel().getSelectedItem();
-            if (selectedPort == null || selectedPort.contains("No ports") ||
-                    selectedPort.contains("Error")) {
-                AlertDialogManager.showError("No Port Selected",
-                        "Please select a valid GSM port.");
-                return;
-            }
+        String sendMethod = rbGsm.isSelected() ? "GSM" : "API";
 
-            if (!smsSender.isConnected()) {
-                AlertDialogManager.showError("GSM Modem Not Connected",
-                        "Please connect to a GSM modem before sending messages.");
-                return;
-            }
+        System.out.println("DEBUG: Preparing to send SMS");
+        System.out.println("DEBUG: Recipient group: " + recipientGroup);
+        System.out.println("DEBUG: Send method: " + sendMethod);
+
+        List<BeneficiaryModel> recipients = getRecipients(recipientGroup);
+
+        if (recipients.isEmpty()) {
+            AlertDialogManager.showError("No Recipients Found",
+                    "No beneficiaries found for the selected criteria.\n" +
+                            "Please check that beneficiaries have valid phone numbers."
+            );
+            return;
         }
 
-        if ("All Beneficiaries".equals(recipientGroup)) {
-            sendToAllBeneficiaries(message, method, selectedPort);
-        } else {
-            AlertDialogManager.showError("Not Implemented", "This recipient group is not yet implemented.");
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Send");
+        confirm.setHeaderText("Send SMS to " + recipients.size() + " recipient(s)?");
+        confirm.setContentText("Method: " + sendMethod + "\nMessage: " +
+                message.substring(0, Math.min(50, message.length())) + "...");
+
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                sendSMSToRecipients(recipients, message, sendMethod);
+            }
+        });
+    }
+
+    private List<BeneficiaryModel> getRecipients(String recipientGroup) {
+        System.out.println("DEBUG: Getting recipients for group: " + recipientGroup);
+
+        String baseGroup = recipientGroup;
+        if (recipientGroup.contains("(") && recipientGroup.contains("selected)")) {
+            baseGroup = recipientGroup.substring(0, recipientGroup.indexOf("(")).trim();
+        }
+
+        switch (baseGroup) {
+            case "All Beneficiaries": {
+                List<BeneficiaryModel> all = beneficiaryDAO.getAllBeneficiaries();
+                System.out.println("DEBUG: Found " + all.size() + " beneficiaries");
+                return all;
+            }
+
+            case "By Barangay": {
+                String selectedBarangay = cbSelectBarangay.getValue();
+                if (selectedBarangay == null) {
+                    Platform.runLater(() ->
+                            AlertDialogManager.showError("No Barangay Selected", "Please select a barangay.")
+                    );
+                    return List.of();
+                }
+                List<BeneficiaryModel> byBarangay = beneficiaryDAO.getBeneficiariesByBarangay(selectedBarangay);
+                System.out.println("DEBUG: Found " + byBarangay.size() + " beneficiaries in " + selectedBarangay);
+                return byBarangay;
+            }
+
+            case "Selected Beneficiaries": {
+                if (selectedBeneficiariesList.isEmpty()) {
+                    Platform.runLater(() ->
+                            AlertDialogManager.showError("No Beneficiaries Selected", "Please select beneficiaries first.")
+                    );
+                    return List.of();
+                }
+                System.out.println("DEBUG: Using " + selectedBeneficiariesList.size() + " pre-selected beneficiaries");
+                return new ArrayList<>(selectedBeneficiariesList);
+            }
+
+            case "By Disaster Area": {
+                DisasterModel selectedDisaster = cbSelectDisaster.getValue();
+                if (selectedDisaster == null) {
+                    Platform.runLater(() ->
+                            AlertDialogManager.showError("No Disaster Selected", "Please select a disaster.")
+                    );
+                    return List.of();
+                }
+                System.out.println("DEBUG: Selected disaster: " + selectedDisaster.getName() +
+                        " (ID: " + selectedDisaster.getDisasterId() + ")");
+                List<BeneficiaryModel> byDisaster =
+                        beneficiaryDAO.getBeneficiariesByDisaster(selectedDisaster.getDisasterId());
+                System.out.println("DEBUG: Found " + byDisaster.size() + " beneficiaries affected by " + selectedDisaster.getName());
+                return byDisaster;
+            }
+
+            case "Custom List":
+                Platform.runLater(() ->
+                        AlertDialogManager.showError("Not Implemented", "This feature will be implemented soon.")
+                );
+                return List.of();
+
+            default:
+                return List.of();
         }
     }
 
-    private void sendToAllBeneficiaries(String message, String method, String port) {
-        if (AppContext.beneficiaryService == null) {
-            if (AppContext.db != null) {
-                AppContext.beneficiaryService = new BeneficiaryServiceImpl(AppContext.db);
-            }
-        }
+    private void sendSMSToRecipients(List<BeneficiaryModel> recipients, String message, String method) {
+        btnSendSMS.setDisable(true);
 
-        List<BeneficiaryModel> beneficiaries = AppContext.beneficiaryService == null ?
-                List.of() : AppContext.beneficiaryService.getAllBeneficiary();
+        System.out.println("DEBUG: Starting send process for " + recipients.size() + " recipients");
 
-        int recipientCount = beneficiaries == null ? 0 : beneficiaries.size();
+        Alert progress = new Alert(Alert.AlertType.INFORMATION);
+        progress.setTitle("Sending SMS");
+        progress.setHeaderText("Sending messages...");
+        progress.setContentText("Please wait... This may take a few moments.");
+        progress.show();
 
-        boolean confirm = AlertDialogManager.showConfirmation("Confirm Bulk Send", "Send SMS to All Beneficiaries");
+        new Thread(() -> {
+            int sent = smsService.sendBulkSMS(recipients, message, method);
 
-        if (confirm) {
-            javafx.concurrent.Task<Integer> task = new javafx.concurrent.Task<>() {
-                @Override
-                protected Integer call() {
-                    updateMessage("Sending to all beneficiaries via " + method + "...");
-                    return smsService.sendBulkSMS(beneficiaries, message, method);
-                }
-            };
+            Platform.runLater(() -> {
+                progress.close();
+                btnSendSMS.setDisable(false);
 
-            task.setOnSucceeded(e -> Platform.runLater(() -> {
-                int successCount = task.getValue();
-                AlertDialogManager.showSuccess("Send Complete",
-                        String.format("Successfully sent %d out of %d messages.",
-                                successCount, recipientCount));
+                AlertDialogManager.showSuccess("SMS Send Complete",
+                        "Successfully sent " + sent + " out of " + recipients.size() + " messages.\n" +
+                                "Check the SMS History table below for details."
+                );
+
                 loadSMSLogs();
-            }));
-
-            task.setOnFailed(e -> {
-                Platform.runLater(() -> {
-                    AlertDialogManager.showError("Send Failed",
-                            "An error occurred while sending messages.");
-                    if (e.getSource().getException() != null) {
-                        e.getSource().getException().printStackTrace();
-                    }
-                });
             });
-
-            Thread t = new Thread(task, "SMSSender-UI-Task");
-            t.setDaemon(true);
-            t.start();
-        }
+        }, "SMS-Send-Thread").start();
     }
 
     @FXML

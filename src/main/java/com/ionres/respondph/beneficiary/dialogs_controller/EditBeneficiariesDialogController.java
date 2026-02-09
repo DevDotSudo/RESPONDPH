@@ -33,6 +33,8 @@ public class EditBeneficiariesDialogController {
     @FXML
     private DatePicker birthDatePicker;
     @FXML
+    private ComboBox<String> barangaySelection;
+    @FXML
     private ComboBox<String> genderSelection;
     @FXML
     private TextField mobileNumberFld;
@@ -168,6 +170,7 @@ public class EditBeneficiariesDialogController {
             String birthDate = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
+            String barangay = barangaySelection.getValue();
             double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender = genderSelection.getValue();
             String mobileNumber = mobileNumberFld.getText().trim();
@@ -211,6 +214,10 @@ public class EditBeneficiariesDialogController {
             }
             if (mobileNumber.isEmpty()) {
                 AlertDialogManager.showWarning("Warning","Mobile number is required");
+                return;
+            }
+            if (barangay == null) {
+                AlertDialogManager.showWarning("Warning","Barangay is required");
                 return;
             }
             if (maritalStatus == null) {
@@ -271,7 +278,7 @@ public class EditBeneficiariesDialogController {
             }
 
             BeneficiaryModel updatedBm = new BeneficiaryModel(
-                    firstname, middlename, lastname, birthDate,ageScore, gender,
+                    firstname, middlename, lastname, birthDate, barangay, ageScore, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
@@ -333,6 +340,7 @@ public class EditBeneficiariesDialogController {
         latitudeFld.setText("");
         longitudeFld.setText("");
         birthDatePicker.setValue(null);
+        barangaySelection.getSelectionModel().clearSelection();
         genderSelection.getSelectionModel().clearSelection();
         maritalStatusSelection.getSelectionModel().clearSelection();
         soloParentStatusSelection.getSelectionModel().clearSelection();

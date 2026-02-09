@@ -1,41 +1,53 @@
-/* ===== ROOT STYLES ===== */
 .dashboard-root {
-    -fx-background-color: #0f172a;
-    -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    -fx-background-color: #0b1220;
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-/* ===== SIDEBAR STYLES ===== */
+.content-shell {
+    -fx-background-color: #0b1220;
+}
+
 .sidebar {
-    -fx-background-color: #1e293b;
-    -fx-pref-width: 280px;
-    -fx-spacing: 0;
+    -fx-background-color: #0f172a;
+    -fx-pref-width: 292px;
+    -fx-padding: 10px 10px 12px 10px;
+    -fx-spacing: 10px;
+    -fx-border-color: rgba(148, 163, 184, 0.14);
+    -fx-border-width: 0 1px 0 0;
 }
 
 .logo-section {
-    -fx-background-color: transparent;
-    -fx-border-color: #334155;
-    -fx-border-width: 0 0 2px 0;
-    -fx-padding: 20px;
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-background-radius: 16px;
+    -fx-padding: 16px 14px;
+    -fx-spacing: 6px;
+    -fx-border-color: rgba(148, 163, 184, 0.14);
+    -fx-border-radius: 16px;
 }
 
 .logo-container {
-    -fx-background-color: white;
+    -fx-background-color: rgba(255,255,255,0.95);
     -fx-background-image: url(/images/respondph_logo_.png);
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-background-size: contain;
-    -fx-background-radius: 16;
-    -fx-padding: 20px 0;
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(0,0,0,0.25),
-            20,
-            0.2,
-            0,
-            6
-    );
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 18, 0.2, 0, 6);
 }
 
+.brand-title {
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+
+.brand-subtitle {
+    -fx-text-fill: rgba(226, 232, 240, 0.70);
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+}
+
+/* ===== SCROLLPANE ===== */
 .nav-scroll-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -47,235 +59,183 @@
 
 .nav-scroll-pane .scroll-bar:vertical {
     -fx-background-color: transparent;
-    -fx-pref-width: 8px;
-}
-
-.nav-scroll-pane .scroll-bar:vertical .track {
-    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
 }
 
 .nav-scroll-pane .scroll-bar:vertical .thumb {
-    -fx-background-color: #334155;
-    -fx-background-radius: 4px;
+    -fx-background-color: rgba(148, 163, 184, 0.25);
+    -fx-background-radius: 5px;
 }
 
 .nav-scroll-pane .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #475569;
+    -fx-background-color: rgba(148, 163, 184, 0.40);
 }
 
+/* ===== MENU WRAPPER ===== */
 .nav-menu {
     -fx-spacing: 6px;
-    -fx-padding: 16px 8px;
-    -fx-background-color: transparent;
+    -fx-padding: 6px;
 }
 
-/* ===== MAIN NAVIGATION BUTTONS ===== */
+/* helps all rows align perfectly */
+.nav-row {
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* ===== BUTTONS ===== */
+.nav-button,
+.nav-button-child,
+.tree-section-header,
+.logout-button {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-focus-traversable: false;
+}
+
 .nav-button {
     -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
+    -fx-background-radius: 5px;
     -fx-text-fill: #cbd5e1;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 14px 20px;
+    -fx-padding: 12px 14px;
     -fx-cursor: hand;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-    -fx-min-height: 48px;
-    -fx-effect: null;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-min-height: 44px;
 }
 
 .nav-button:hover {
-    -fx-background-color: #334155;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: rgba(148, 163, 184, 0.10);
 }
 
 .nav-button:pressed {
-    -fx-background-color: #475569;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: rgba(148, 163, 184, 0.16);
 }
 
+/* Active state (apply this class in controller) */
 .nav-button-active {
-    -fx-background-color: #f97316;
+    -fx-background-color: rgba(249, 115, 22, 0.18);
+    -fx-border-color: rgba(249, 115, 22, 0.55);
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+}
+
+.nav-button-active .nav-text {
     -fx-text-fill: #ffffff;
-    -fx-font-weight: 600;
-    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 8, 0, 0, 2);
-}
-
-.nav-button-active:hover {
-    -fx-background-color: #ea580c;
-    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.4), 10, 0, 0, 3);
-}
-
-.nav-button .nav-icon {
-    -fx-fill: #94a3b8;
-    -fx-icon-size: 18px;
-}
-
-.nav-button:hover .nav-icon {
-    -fx-fill: #ffffff;
 }
 
 .nav-button-active .nav-icon {
     -fx-fill: #ffffff;
 }
 
-/* ===== TREE NAVIGATION STYLES ===== */
+/* ===== TREE HEADERS ===== */
 .tree-section {
-    -fx-spacing: 0;
-    -fx-padding: 0;
-    -fx-background-color: transparent;
+    -fx-spacing: 4px;
 }
 
 .tree-section-header {
     -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-text-fill: #94a3b8;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 12px 16px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px 12px;
     -fx-cursor: hand;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-text-transform: uppercase;
-    -fx-letter-spacing: 0.5px;
-    -fx-min-height: 44px;
-    -fx-effect: null;
 }
 
 .tree-section-header:hover {
-    -fx-background-color: #334155;
-    -fx-text-fill: #e2e8f0;
-}
-
-.tree-section-header:pressed {
-    -fx-background-color: #475569;
+    -fx-background-color: rgba(148, 163, 184, 0.08);
 }
 
 .tree-section-title {
-    -fx-font-family: "Segoe UI", "Inter", system-ui;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-text-fill: inherit;
-    -fx-letter-spacing: 0.5px;
+    -fx-text-fill: rgba(226, 232, 240, 0.75);
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-letter-spacing: 0.6px;
+}
+
+/* ===== TREE CONTENT ===== */
+.tree-section-content {
+    -fx-spacing: 4px;
+    -fx-padding: 2px 0 6px 18px;
+}
+
+/* child button */
+.nav-button-child {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px 12px;
+    -fx-cursor: hand;
+    -fx-min-height: 40px;
+}
+
+.nav-button-child:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.10);
+}
+
+.nav-button-child-active {
+    -fx-background-color: rgba(249, 115, 22, 0.18);
+    -fx-border-color: rgba(249, 115, 22, 0.55);
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+}
+
+.nav-text {
+    -fx-text-fill: rgba(226, 232, 240, 0.86);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.nav-icon {
+    -fx-fill: rgba(148, 163, 184, 0.85);
+    -glyph-size: 18px;
+}
+
+.nav-icon-sm {
+    -fx-fill: rgba(148, 163, 184, 0.85);
+    -glyph-size: 16px;
 }
 
 .tree-chevron {
-    -fx-fill: #64748b;
-    -fx-icon-size: 10px;
-    -fx-transition: all 0.25s ease;
+    -fx-fill: rgba(148, 163, 184, 0.75);
+    -glyph-size: 12px;
 }
 
+.nav-button:hover .nav-icon,
+.nav-button-child:hover .nav-icon-sm,
 .tree-section-header:hover .tree-chevron {
     -fx-fill: #e2e8f0;
 }
 
-.tree-section-content {
-    -fx-spacing: 1px;
-    -fx-padding: 4px 0 8px 24px;
-    -fx-background-color: transparent;
-}
-
-/* ===== CHILD NAVIGATION BUTTONS (Tree Items) ===== */
-.nav-button-child {
-    -fx-background-color: transparent;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-text-fill: #94a3b8;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 10px 16px 10px 32px;
-    -fx-cursor: hand;
-    -fx-font-size: 13px;
-    -fx-font-weight: 500;
-    -fx-min-height: 40px;
-    -fx-effect: null;
-}
-
-.nav-button-child:hover {
-    -fx-background-color: #334155;
-    -fx-text-fill: #ffffff;
-}
-
-.nav-button-child:pressed {
-    -fx-background-color: #475569;
-}
-
-.nav-button-child-active {
-    -fx-background-color: #f97316;
-    -fx-text-fill: #ffffff;
-    -fx-font-weight: 600;
-    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 8, 0, 0, 2);
-}
-
-.nav-button-child-active:hover {
-    -fx-background-color: #ea580c;
-    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.4), 10, 0, 0, 3);
-}
-
-.nav-button-child .nav-icon {
-    -fx-fill: #64748b;
-    -fx-icon-size: 15px;
-}
-
-.nav-button-child:hover .nav-icon {
-    -fx-fill: #ffffff;
-}
-
-.nav-button-child-active .nav-icon {
-    -fx-fill: #ffffff;
-}
-
-.nav-text {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 13px;
-    -fx-text-fill: inherit;
-}
-
 .logout-section {
-    -fx-padding: 16px;
-    -fx-border-color: #334155;
+    -fx-padding: 8px 6px 0 6px;
+    -fx-border-color: rgba(148, 163, 184, 0.14);
     -fx-border-width: 1px 0 0 0;
-    -fx-background-color: transparent;
 }
 
 .logout-button {
     -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-border-color: #dc2626;
+    -fx-background-radius: 5px;
+    -fx-border-color: rgba(220, 38, 38, 0.55);
+    -fx-border-radius: 5px;
     -fx-border-width: 1px;
-    -fx-text-fill: #dc2626;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 14px 20px;
+    -fx-padding: 12px 14px;
     -fx-cursor: hand;
-    -fx-min-height: 48px;
 }
 
 .logout-button:hover {
-    -fx-background-color: #dc2626;
-    -fx-text-fill: #ffffff;
-}
-
-.logout-button:pressed {
-    -fx-background-color: #b91c1c;
+    -fx-background-color: rgba(220, 38, 38, 0.14);
 }
 
 .logout-icon {
-    -fx-fill: #dc2626;
-    -fx-icon-size: 16px;
-}
-
-.logout-button:hover .logout-icon {
-    -fx-fill: #ffffff;
+    -fx-fill: #ef4444;
+    -glyph-size: 16px;
 }
 
 .logout-text {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-    -fx-text-fill: inherit;
+    -fx-text-fill: #ef4444;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
 }
 
 .content-area {
-    -fx-background-color: #0f172a;
-    -fx-padding: 15px;
+    -fx-background-color: #0b1220;
+    -fx-padding: 16px;
 }

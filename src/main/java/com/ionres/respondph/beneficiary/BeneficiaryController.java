@@ -184,6 +184,7 @@ public class BeneficiaryController {
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Beneficiary has been successfully deleted.");
                     DashboardRefresher.refresh();
+                    DashboardRefresher.refreshBeneInSend();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete beneficiary. Please try again.");

@@ -143,6 +143,4 @@ public class DisasterServiceImpl implements  DisasterService{
         }
         return filteredDisaster;
     }
-
-
 }

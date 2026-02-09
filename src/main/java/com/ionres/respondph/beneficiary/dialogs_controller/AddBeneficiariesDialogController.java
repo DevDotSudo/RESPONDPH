@@ -32,6 +32,9 @@ public class AddBeneficiariesDialogController {
     @FXML
     private DatePicker birthDatePicker;
     @FXML
+    private ComboBox<String> barangaySelection;
+
+    @FXML
     private ComboBox<String> genderSelection;
     @FXML
     private TextField mobileNumberFld;
@@ -134,6 +137,7 @@ public class AddBeneficiariesDialogController {
             String birthDate = birthDatePicker.getValue() != null
                     ? birthDatePicker.getValue().toString()
                     : "";
+            String barangay = barangaySelection.getValue();
             double ageScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(birthDate);
             String gender = genderSelection.getValue();
             String mobileNumber = mobileNumberFld.getText().trim();
@@ -166,6 +170,10 @@ public class AddBeneficiariesDialogController {
             }
             if (birthDate.isEmpty()) {
                 AlertDialogManager.showWarning("Warning", "Birth date is required");
+                return;
+            }
+            if (barangay.isEmpty()) {
+                AlertDialogManager.showWarning("Warning", "Barangay is required");
                 return;
             }
             if (gender == null) {
@@ -242,7 +250,7 @@ public class AddBeneficiariesDialogController {
 
 
             BeneficiaryModel bm = new BeneficiaryModel(
-                    firstname, middlename, lastname, birthDate, ageScore, gender,
+                    firstname, middlename, lastname, birthDate, barangay, ageScore, gender,
                     maritalStatus, soloParentStatus, latitude, longitude,
                     mobileNumber, disabilityType, healthCondition, cleanWaterAccess,
                     sanitationFacility, houseType, ownershipStatus, employmentStatus,
@@ -279,7 +287,7 @@ public class AddBeneficiariesDialogController {
                 }
                 clearFields();
                 DashboardRefresher.refresh();
-
+                DashboardRefresher.refreshBeneInSend();
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,
@@ -308,6 +316,7 @@ public class AddBeneficiariesDialogController {
         latitudeFld.setText("");
         longitudeFld.setText("");
         birthDatePicker.setValue(null);
+        barangaySelection.getSelectionModel().clearSelection();
         genderSelection.getSelectionModel().clearSelection();
         maritalStatusSelection.getSelectionModel().clearSelection();
         soloParentStatusSelection.getSelectionModel().clearSelection();

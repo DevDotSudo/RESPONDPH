@@ -4,6 +4,7 @@ import com.ionres.respondph.admin.AdminService;
 import com.ionres.respondph.admin.login.LoginService;
 import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.beneficiary.BeneficiaryService;
+import com.ionres.respondph.common.interfaces.EvacSiteMappingService;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
@@ -29,6 +30,7 @@ public final class AppContext {
     public static DashBoardService dashBoardService;
     public static VulnerabilityIndicatorService vulnerabilityIndicatorService;
     public static DisasterMappingService disasterMappingService;
+    public static EvacSiteMappingService evacSiteMappingService;
 
     private AppContext() {
         throw new AssertionError("AppContext should not be instantiated");

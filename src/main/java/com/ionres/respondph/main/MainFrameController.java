@@ -18,6 +18,7 @@ public class MainFrameController {
 
     @FXML private VBox contentArea;
 
+    // Section headers (some may be absent depending on FXML)
     @FXML private Button managementSectionBtn;
     @FXML private Button disasterSectionBtn;
     @FXML private Button aidsSectionBtn;
@@ -33,51 +34,70 @@ public class MainFrameController {
     @FXML private FontAwesomeIconView aidsSectionIcon;
     @FXML private FontAwesomeIconView evacSectionIcon;
 
+    // Nav buttons
     @FXML private Button dashboardBtn;
     @FXML private Button manageAdminBtn;
     @FXML private Button manageBeneficiariesBtn;
     @FXML private Button familyMembersBtn;
+
     @FXML private Button disasterBtn;
     @FXML private Button disasterMappingBtn;
     @FXML private Button disasterDamageBtn;
+
     @FXML private Button vulnerabilityBtn;
+
     @FXML private Button evacBtn;
     @FXML private Button evacPlanBtn;
+
     @FXML private Button aidTypeBtn;
     @FXML private Button aidBtn;
+
     @FXML private Button sendSmsBtn;
     @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
 
     private Button activeBtn;
 
+    private static final Duration CHEVRON_DURATION = Duration.millis(180);
+    private static final double CHEVRON_COLLAPSED = 0;
+    private static final double CHEVRON_EXPANDED = 90;
+
     @FXML
     public void initialize() {
+
+        // Only wires sections that exist in your FXML (prevents NPE)
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn, disasterSectionContent, disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn, aidsSectionContent, aidsSectionIcon);
         setupSectionToggle(evacSectionBtn, evacSectionContent, evacSectionIcon);
-        collapseAllSections();
-        
+
+        collapseAllSections(); // collapses only those that exist
+
+        // Default page
         loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
 
         EventHandler<ActionEvent> handlers = this::handleActions;
-        dashboardBtn.setOnAction(handlers);
-        manageAdminBtn.setOnAction(handlers);
-        manageBeneficiariesBtn.setOnAction(handlers);
-        disasterBtn.setOnAction(handlers);
-        disasterMappingBtn.setOnAction(handlers);
-        disasterDamageBtn.setOnAction(handlers);
-        aidBtn.setOnAction(handlers);
-        aidTypeBtn.setOnAction(handlers);
-        evacBtn.setOnAction(handlers);
-        evacPlanBtn.setOnAction(handlers);
-        vulnerabilityBtn.setOnAction(handlers);
-        familyMembersBtn.setOnAction(handlers);
-        sendSmsBtn.setOnAction(handlers);
-        settingsBtn.setOnAction(handlers);
-        logoutBtn.setOnAction(handlers);
+
+        if (dashboardBtn != null) dashboardBtn.setOnAction(handlers);
+        if (manageAdminBtn != null) manageAdminBtn.setOnAction(handlers);
+        if (manageBeneficiariesBtn != null) manageBeneficiariesBtn.setOnAction(handlers);
+        if (familyMembersBtn != null) familyMembersBtn.setOnAction(handlers);
+
+        if (disasterBtn != null) disasterBtn.setOnAction(handlers);
+        if (disasterMappingBtn != null) disasterMappingBtn.setOnAction(handlers);
+        if (disasterDamageBtn != null) disasterDamageBtn.setOnAction(handlers);
+
+        if (aidBtn != null) aidBtn.setOnAction(handlers);
+        if (aidTypeBtn != null) aidTypeBtn.setOnAction(handlers);
+
+        if (evacBtn != null) evacBtn.setOnAction(handlers);
+        if (evacPlanBtn != null) evacPlanBtn.setOnAction(handlers);
+
+        if (vulnerabilityBtn != null) vulnerabilityBtn.setOnAction(handlers);
+        if (sendSmsBtn != null) sendSmsBtn.setOnAction(handlers);
+        if (settingsBtn != null) settingsBtn.setOnAction(handlers);
+        if (logoutBtn != null) logoutBtn.setOnAction(handlers);
     }
 
     private void collapseAllSections() {
@@ -88,73 +108,97 @@ public class MainFrameController {
     }
 
     private void collapseSection(VBox sectionContent, FontAwesomeIconView chevronIcon) {
+        if (sectionContent == null || chevronIcon == null) return;
         sectionContent.setVisible(false);
         sectionContent.setManaged(false);
-        chevronIcon.setRotate(0);
+        chevronIcon.setRotate(CHEVRON_COLLAPSED);
     }
 
     private void setupSectionToggle(Button sectionBtn, VBox sectionContent, FontAwesomeIconView chevronIcon) {
-        sectionBtn.setOnAction(e -> toggleSection(sectionContent, chevronIcon));
+        // This is the actual fix for your NullPointerException
+        if (sectionBtn == null || sectionContent == null || chevronIcon == null) return;
+        sectionBtn.setOnAction(e -> toggleSectionExclusive(sectionContent, chevronIcon));
     }
 
-    private void toggleSection(VBox sectionContent, FontAwesomeIconView chevronIcon) {
-        boolean isVisible = sectionContent.isVisible();
+    private void toggleSectionExclusive(VBox sectionContent, FontAwesomeIconView chevronIcon) {
+        boolean willOpen = !sectionContent.isVisible();
 
-        sectionContent.setVisible(!isVisible);
-        sectionContent.setManaged(!isVisible);
+        // Collapse only those that exist
+        collapseAllSections();
 
-        RotateTransition rotate = new RotateTransition(Duration.millis(200), chevronIcon);
-        rotate.setToAngle(isVisible ? 0 : 90);
+        if (willOpen) {
+            sectionContent.setVisible(true);
+            sectionContent.setManaged(true);
+            animateChevron(chevronIcon, CHEVRON_EXPANDED);
+        } else {
+            sectionContent.setVisible(false);
+            sectionContent.setManaged(false);
+            animateChevron(chevronIcon, CHEVRON_COLLAPSED);
+        }
+    }
+
+    private void ensureSectionOpen(VBox sectionContent, FontAwesomeIconView chevronIcon) {
+        if (sectionContent == null || chevronIcon == null) return;
+        if (!sectionContent.isVisible()) {
+            collapseAllSections();
+            sectionContent.setVisible(true);
+            sectionContent.setManaged(true);
+            animateChevron(chevronIcon, CHEVRON_EXPANDED);
+        }
+    }
+
+    private void animateChevron(FontAwesomeIconView icon, double toAngle) {
+        if (icon == null) return;
+        RotateTransition rotate = new RotateTransition(CHEVRON_DURATION, icon);
+        rotate.setToAngle(toAngle);
         rotate.play();
     }
 
     private void handleActions(ActionEvent event) {
         Object src = event.getSource();
 
-        if(src == dashboardBtn) {
+        if (src == dashboardBtn) {
             handleDashboard();
-        }
-        else if(src == manageAdminBtn) {
+        } else if (src == manageAdminBtn) {
+            ensureSectionOpen(managementSectionContent, managementSectionIcon);
             handleManageAdmins();
-        }
-        else if(src == manageBeneficiariesBtn) {
+        } else if (src == manageBeneficiariesBtn) {
+            ensureSectionOpen(managementSectionContent, managementSectionIcon);
             handleManageBeneficiaries();
-        }
-        else if(src == aidBtn) {
-            handleAid();
-        }
-        else if (src == aidTypeBtn) {
-            handleAidType();
-        }
-        else if (src == evacBtn) {
-            handleEvacSite();
-        }
-        else if (src == evacPlanBtn) {
-            handleEvacPlan();
-        }
-        else if(src == vulnerabilityBtn) {
-            handleVulnerabilityIndicator();
-        }
-        else if(src == familyMembersBtn) {
+        } else if (src == familyMembersBtn) {
+            ensureSectionOpen(managementSectionContent, managementSectionIcon);
             handleFamilyMembers();
-        }
-        else if(src == disasterBtn) {
+        } else if (src == disasterBtn) {
+            ensureSectionOpen(disasterSectionContent, disasterSectionIcon);
             handleDisaster();
-        }
-        else if(src == disasterMappingBtn) {
+        } else if (src == disasterMappingBtn) {
+            ensureSectionOpen(disasterSectionContent, disasterSectionIcon);
             handleDisasterMapping();
-        }
-        else if(src == disasterDamageBtn) {
+        } else if (src == disasterDamageBtn) {
+            ensureSectionOpen(disasterSectionContent, disasterSectionIcon);
             handleDisasterDamage();
-        }
-        else if(src == sendSmsBtn) {
+        } else if (src == vulnerabilityBtn) {
+            handleVulnerabilityIndicator();
+        } else if (src == sendSmsBtn) {
             handleSendSms();
-        }
-        else if(src == settingsBtn) {
+        } else if (src == settingsBtn) {
             handleSettings();
-        }
-        else if(src == logoutBtn) {
+        } else if (src == logoutBtn) {
             handleLogout();
+        }
+        // Aids/Evac child buttons will work once you add them in FXML
+        else if (src == aidBtn) {
+            ensureSectionOpen(aidsSectionContent, aidsSectionIcon);
+            handleAid();
+        } else if (src == aidTypeBtn) {
+            ensureSectionOpen(aidsSectionContent, aidsSectionIcon);
+            handleAidType();
+        } else if (src == evacBtn) {
+            ensureSectionOpen(evacSectionContent, evacSectionIcon);
+            handleEvacSite();
+        } else if (src == evacPlanBtn) {
+            ensureSectionOpen(evacSectionContent, evacSectionIcon);
+            handleEvacPlan();
         }
     }
 
@@ -171,6 +215,26 @@ public class MainFrameController {
     private void handleManageBeneficiaries() {
         loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
         activeButton(manageBeneficiariesBtn);
+    }
+
+    private void handleFamilyMembers() {
+        loadPage("/view/family/FamilyMembers.fxml");
+        activeButton(familyMembersBtn);
+    }
+
+    private void handleDisaster() {
+        loadPage("/view/disaster/Disaster.fxml");
+        activeButton(disasterBtn);
+    }
+
+    private void handleDisasterMapping() {
+        loadPage("/view/disaster_mapping/DisasterMapping.fxml");
+        activeButton(disasterMappingBtn);
+    }
+
+    private void handleDisasterDamage() {
+        loadPage("/view/disaster_damage/DisasterDamage.fxml");
+        activeButton(disasterDamageBtn);
     }
 
     private void handleAid() {
@@ -199,26 +263,6 @@ public class MainFrameController {
         activeButton(vulnerabilityBtn);
     }
 
-    private void handleFamilyMembers() {
-        loadPage("/view/family/FamilyMembers.fxml");
-        activeButton(familyMembersBtn);
-    }
-
-    private void handleDisaster() {
-        loadPage("/view/disaster/Disaster.fxml");
-        activeButton(disasterBtn);
-    }
-
-    private void handleDisasterMapping() {
-        loadPage("/view/disaster_mapping/DisasterMapping.fxml");
-        activeButton(disasterMappingBtn);
-    }
-
-    private void handleDisasterDamage() {
-        loadPage("/view/disaster_damage/DisasterDamage.fxml");
-        activeButton(disasterDamageBtn);
-    }
-
     private void handleSendSms() {
         loadPage("/view/send_sms/SendSMS.fxml");
         activeButton(sendSmsBtn);
@@ -230,21 +274,14 @@ public class MainFrameController {
     }
 
     private void handleLogout() {
-        boolean confirm = AlertDialogManager.showConfirmation(
-                "Logout",
-                "Do you want to logout?"
-        );
-
+        boolean confirm = AlertDialogManager.showConfirmation("Logout", "Do you want to logout?");
         if (confirm) {
             AppPreferences prefs = new AppPreferences();
             prefs.clearRememberMe();
             SessionManager.getInstance().clearSession();
             Stage stage = (Stage) logoutBtn.getScene().getWindow();
             stage.close();
-            SceneManager.showStage(
-                    "/view/auth/Login.fxml",
-                    "RESPONDPH - Login"
-            );
+            SceneManager.showStage("/view/auth/Login.fxml", "RESPONDPH - Login");
         }
     }
 
@@ -252,6 +289,7 @@ public class MainFrameController {
         SceneManager.SceneEntry<?> entry = SceneManager.load(fxml);
         Parent root = entry.getRoot();
 
+        // Java 11 compatible instanceof
         if (root instanceof Region) {
             Region region = (Region) root;
             region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -262,16 +300,23 @@ public class MainFrameController {
     }
 
     private void activeButton(Button btnId) {
+        if (btnId == null) return;
+
         if (activeBtn != null) {
             activeBtn.getStyleClass().remove("nav-button-active");
             activeBtn.getStyleClass().remove("nav-button-child-active");
         }
+
         activeBtn = btnId;
 
         if (btnId.getStyleClass().contains("nav-button-child")) {
-            activeBtn.getStyleClass().add("nav-button-child-active");
+            if (!activeBtn.getStyleClass().contains("nav-button-child-active")) {
+                activeBtn.getStyleClass().add("nav-button-child-active");
+            }
         } else {
-            activeBtn.getStyleClass().add("nav-button-active");
+            if (!activeBtn.getStyleClass().contains("nav-button-active")) {
+                activeBtn.getStyleClass().add("nav-button-active");
+            }
         }
     }
 }

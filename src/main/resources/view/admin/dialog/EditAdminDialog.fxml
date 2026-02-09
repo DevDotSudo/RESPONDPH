@@ -5,75 +5,141 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="550.0" prefWidth="800.0" spacing="0" styleClass="dialog-container" stylesheets="@/styles/admin/dialog/editadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController">
+<VBox fx:id="root" prefHeight="550.0" prefWidth="800.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/admin/dialog/editadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.EditAdminDialogController">
 
-    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
-        <FontAwesomeIconView glyphName="EDIT" size="24" styleClass="header-icon" />
-        <Label styleClass="dialog-title" text="Edit Administrator" />
+    <!-- ==================== HEADER SECTION ==================== -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
+        <padding>
+            <Insets bottom="18" left="24" right="24" top="18" />
+        </padding>
+
+        <FontAwesomeIconView glyphName="EDIT" size="22" styleClass="header-icon" />
+
+        <VBox spacing="2">
+            <Label styleClass="dialog-title" text="Edit Administrator" />
+            <Label styleClass="dialog-subtitle" text="Update administrator details. Fields marked with * are required." />
+        </VBox>
+
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="closeButton" styleClass="close-button">
+
+        <Button fx:id="closeButton" styleClass="dialog-close">
             <graphic>
-                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="close-icon" />
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon" />
+                </HBox>
             </graphic>
         </Button>
     </HBox>
 
-    <ScrollPane fitToWidth="true" styleClass="form-scroll-pane" VBox.vgrow="ALWAYS">
-        <VBox spacing="24" styleClass="form-container">
+    <!-- ==================== ERROR CONTAINER ==================== -->
+    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
+        <padding>
+            <Insets bottom="12" left="24" right="24" top="10" />
+        </padding>
+        <Label fx:id="errorLabel" styleClass="error-text" />
+    </VBox>
+
+    <!-- ==================== MAIN FORM CONTAINER ==================== -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
+        <VBox spacing="24" styleClass="dialog-body">
             <padding>
-                <Insets bottom="32" left="32" right="32" top="32" />
+                <Insets bottom="24" left="24" right="24" top="20" />
             </padding>
 
-            <VBox spacing="8">
-                <Label styleClass="field-label" text="Username *" />
-                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
-                    <FontAwesomeIconView glyphName="USER" size="16" styleClass="input-icon" />
-                    <TextField fx:id="usernameField" promptText="Enter username" styleClass="input-field" HBox.hgrow="ALWAYS" />
+            <!-- ==================== SECTION 1: ACCOUNT INFORMATION ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <!-- Section Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="USER_SECRET" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Account Information" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Step 1 of 2" />
                 </HBox>
+
+                <!-- Username Field -->
+                <VBox spacing="8">
+                    <Label styleClass="field-label" text="Username *" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
+                        <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
+                        <TextField fx:id="usernameField" promptText="Enter username" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+
+                <!-- Info Box -->
+                <VBox spacing="6" styleClass="info-box">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="info-icon" />
+                        <Label styleClass="info-title" text="Username Information" />
+                    </HBox>
+                    <Label styleClass="info-text" text="• Username must be unique across all administrators" />
+                </VBox>
             </VBox>
 
-            <HBox spacing="24">
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label styleClass="field-label" text="First Name *" />
-                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
-                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
-                        <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="input-field" HBox.hgrow="ALWAYS" />
-                    </HBox>
-                </VBox>
+            <Separator />
 
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label styleClass="field-label" text="Middle Name" />
-                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
-                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
-                        <TextField fx:id="middleNameField" promptText="Enter middle name" styleClass="input-field" HBox.hgrow="ALWAYS" />
-                    </HBox>
-                </VBox>
+            <!-- ==================== SECTION 2: PERSONAL INFORMATION ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <!-- Section Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="ID_CARD" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Personal Information" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Step 2 of 2" />
+                </HBox>
 
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label styleClass="field-label" text="Last Name *" />
-                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="input-container">
-                        <FontAwesomeIconView glyphName="ADDRESS_CARD" size="16" styleClass="input-icon" />
-                        <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="input-field" HBox.hgrow="ALWAYS" />
-                    </HBox>
-                </VBox>
-            </HBox>
+                <!-- Name Fields Row -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="40" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="30" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="30" />
+                    </columnConstraints>
+
+                    <!-- First Name -->
+                    <VBox spacing="8" GridPane.columnIndex="0">
+                        <Label styleClass="field-label" text="First Name *" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
+                            <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Middle Name -->
+                    <VBox spacing="8" GridPane.columnIndex="1">
+                        <Label styleClass="field-label" text="Middle Name" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
+                            <TextField fx:id="middleNameField" promptText="Middle name" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Last Name -->
+                    <VBox spacing="8" GridPane.columnIndex="2">
+                        <Label styleClass="field-label" text="Last Name *" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
+                            <TextField fx:id="lastNameField" promptText="Last name" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+            </VBox>
 
         </VBox>
     </ScrollPane>
 
-    <VBox alignment="CENTER" styleClass="error-container">
-        <Label fx:id="errorLabel" managed="false" styleClass="error-label" visible="false" />
-    </VBox>
-
-    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="button-container">
+    <HBox alignment="CENTER_RIGHT" spacing="14" styleClass="dialog-footer">
         <padding>
-            <Insets bottom="32" left="32" right="32" top="24" />
+            <Insets bottom="20" left="24" right="24" top="20" />
         </padding>
-        <Button fx:id="updateBtn" styleClass="primary-button">
+
+        <Button fx:id="updateBtn" styleClass="btn-primary">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
-                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="button-icon" />
-                    <Label styleClass="button-label" text="Update Admin" />
+                    <FontAwesomeIconView glyphName="CHECK" size="16" styleClass="btn-icon" />
+                    <Label styleClass="btn-text" text="Update Admin" />
                 </HBox>
             </graphic>
         </Button>

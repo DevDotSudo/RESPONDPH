@@ -332,8 +332,9 @@ public class DisasterMappingController {
 
     private void drawBoundary() {
         GraphicsContext gc = mapping.getGc();
-        gc.setStroke(Color.RED);
-        gc.setLineWidth(2);
+
+        gc.setStroke(Color.rgb(120, 0, 0, 0.35));
+        gc.setLineWidth(6); // thicker shadow
         gc.beginPath();
 
         boolean first = true;
@@ -348,8 +349,25 @@ public class DisasterMappingController {
         }
         gc.closePath();
         gc.stroke();
-    }
 
+
+        gc.setStroke(Color.rgb(255, 50, 50, 0.9));
+        gc.setLineWidth(2.5); // normal line thickness
+        gc.beginPath();
+
+        first = true;
+        for (double[] c : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
+            if (first) {
+                gc.moveTo(p.x, p.y);
+                first = false;
+            } else {
+                gc.lineTo(p.x, p.y);
+            }
+        }
+        gc.closePath();
+        gc.stroke();
+    }
     private double textWidth(String s, GraphicsContext gc) {
         Text t = new Text(s);
         t.setFont(gc.getFont());

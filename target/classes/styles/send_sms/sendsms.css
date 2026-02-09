@@ -1,506 +1,339 @@
-/* Root Container */
+/* ==============================
+   BASE / ROOT (same as ManageAdmin)
+================================ */
 .send-sms-root {
-    -fx-background-color: #0f172a;
-    -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    -fx-background-color: #0b1220;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-/* Scroll Pane */
-.content-scroll {
+/* ==============================
+   HEADER (same vibe as ManageAdmin header-section)
+================================ */
+.header-section {
     -fx-background-color: transparent;
+    -fx-padding: 0 0 10px 0;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.page-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+}
+
+.page-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.network-status-label {
+    -fx-text-fill: rgba(226,232,240,0.90);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+/* ==============================
+   SCROLLPANE (remove white background)
+================================ */
+.content-scroll {
     -fx-background: transparent;
+    -fx-background-color: transparent;
 }
 
 .content-scroll .viewport {
     -fx-background-color: transparent;
 }
 
-.content-scroll .scroll-bar:vertical {
+.content-scroll .scroll-bar:vertical,
+.content-scroll .scroll-bar:horizontal {
     -fx-background-color: transparent;
 }
 
-.content-scroll .scroll-bar:vertical .track {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 5px;
+.content-scroll .scroll-bar .track {
+    -fx-background-color: rgba(255,255,255,0.04);
 }
 
-.content-scroll .scroll-bar:vertical .thumb {
-    -fx-background-color: #475569;
-    -fx-background-radius: 5px;
+.content-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(148, 163, 184, 0.25);
+    -fx-background-radius: 8px;
 }
 
-.content-scroll .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #64748b;
+.content-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.40);
 }
 
-/* Header Section */
-.header-section {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 10px;
-    -fx-border-color: #334155;
-    -fx-border-width: 0 0 4px 0;
-    -fx-pref-width: 100%;
-    -fx-border-radius: 10px;
-}
-
-.page-title {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 800;
-    -fx-font-size: 28px;
-    -fx-text-fill: #f8fafc;
-}
-
-.page-subtitle {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-text-fill: #94a3b8;
-    -fx-font-weight: 400;
-}
-
-/* Content Container */
+/* Container spacing */
 .content-container {
     -fx-background-color: transparent;
 }
 
-/* News Section */
-.news-section {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 10px;
-    -fx-border-color: #334155;
+/* ==============================
+   SECTION CARDS (news-section / message-section)
+   Styled like ManageAdmin tables/cards
+================================ */
+.news-section,
+.message-section {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.14);
     -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-padding: 25px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 16px;
 }
 
-.news-input-container {
-    -fx-background-color: transparent;
+/* Section title */
+.section-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: 900;
 }
 
+/* Small label */
+.input-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+/* ==============================
+   BUTTONS (same as ManageAdmin)
+================================ */
+.primary-button,
+.secondary-button,
 .generate-button {
-    -fx-background-color: #0891b2;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 12px 20px;
+    -fx-min-height: 44px;
+
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
     -fx-cursor: hand;
-    -fx-padding: 10px 20px;
-    -fx-min-height: 40px;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
+}
+
+/* Orange primary */
+.primary-button,
+.generate-button {
+    -fx-background-color: rgba(249,115,22,0.95);
+    -fx-border-color: rgba(249,115,22,0.55);
+    -fx-border-width: 1px;
     -fx-text-fill: #ffffff;
 }
-
+.primary-button:hover,
 .generate-button:hover {
-    -fx-background-color: #0e7490;
+    -fx-background-color: rgba(249,115,22,1.0);
 }
 
-.generate-button:pressed {
-    -fx-background-color: #155e75;
-}
-
-.generate-button:disabled {
-    -fx-background-color: #475569;
-    -fx-text-fill: #94a3b8;
-    -fx-opacity: 0.6;
-}
-
-.ai-response-label {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 600;
-    -fx-font-size: 14px;
-    -fx-text-fill: #f8fafc;
-    -fx-padding: 5px 0 0 0;
-}
-
-.ai-options-container {
-    -fx-background-color: #0f172a;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
+/* Flat secondary */
+.secondary-button {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-padding: 15px;
+    -fx-text-fill: #ffffff;
+}
+.secondary-button:hover {
+    -fx-border-color: rgba(249,115,22,0.60);
 }
 
-/* Message Section */
-.message-section {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 10px;
-    -fx-border-color: #334155;
-    -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-padding: 25px;
-}
-
-.section-title {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 700;
-    -fx-font-size: 18px;
-    -fx-text-fill: #f8fafc;
-    -fx-padding: 0 0 5px 0;
-}
-
-.logs-count {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 13px;
-    -fx-text-fill: #64748b;
-    -fx-font-weight: 500;
-}
-
-.message-input-container {
-    -fx-background-color: transparent;
-}
-
-/* Input Labels */
-.input-label {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 600;
-    -fx-font-size: 14px;
-    -fx-text-fill: #e2e8f0;
-    -fx-min-width: 120px;
-}
-
-/* TextArea */
-.message-textarea {
-    -fx-background-color: #0f172a;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
-    -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-text-fill: #f8fafc;
-    -fx-prompt-text-fill: #64748b;
-    -fx-padding: 12px 16px;
-}
-
-.message-textarea .content {
-    -fx-background-color: transparent;
-}
-
-.message-textarea .scroll-pane {
-    -fx-background-color: transparent;
-}
-
-.message-textarea .scroll-pane .viewport {
-    -fx-background-color: transparent;
-}
-
-.message-textarea .scroll-pane .content {
-    -fx-background-color: transparent;
-}
-
-.message-textarea:focused {
-    -fx-border-color: #f97316;
-    -fx-border-width: 2px;
-}
-
-/* Character Count */
-.char-count {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 12px;
-    -fx-text-fill: #94a3b8;
-    -fx-font-weight: 400;
-}
-
-/* ComboBox Styling */
+/* ==============================
+   COMBOBOX (recipient-combo)
+================================ */
 .recipient-combo {
-    -fx-background-color: #0f172a;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.16);
     -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-text-fill: #f8fafc;
-    -fx-prompt-text-fill: #64748b;
-}
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
 
-.recipient-combo:focused {
-    -fx-border-color: #f97316;
-    -fx-border-width: 2px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-prompt-text-fill: rgba(148,163,184,0.75);
 }
 
 .recipient-combo .list-cell {
-    -fx-background-color: #1e293b;
-    -fx-text-fill: #f8fafc;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-padding: 10px 16px;
-}
-
-.recipient-combo .list-cell:hover {
-    -fx-background-color: #334155;
-}
-
-.recipient-combo .list-cell:selected {
-    -fx-background-color: transparent;
     -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    -fx-font-weight: 700;
 }
-
-.recipient-combo .list-view {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
-    -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-}
-
 .recipient-combo .arrow-button {
     -fx-background-color: transparent;
 }
-
-.recipient-combo .arrow {
-    -fx-background-color: #94a3b8;
+.recipient-combo:focused {
+    -fx-border-color: rgba(249,115,22,0.65);
 }
 
-/* Radio Buttons */
+/* Dropdown list styling */
+.combo-box-popup .list-view {
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-border-width: 1px;
+}
+.combo-box-popup .list-view .list-cell {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-background-color: transparent;
+}
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(148,163,184,0.10);
+}
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.18);
+}
+
+/* ==============================
+   TEXTAREA (message-textarea)
+================================ */
+.message-textarea {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.16);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-prompt-text-fill: rgba(148,163,184,0.75);
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+
+    -fx-padding: 10px 12px;
+}
+.message-textarea .content {
+    -fx-background-color: transparent;
+}
+.message-textarea:focused {
+    -fx-border-color: rgba(249,115,22,0.65);
+}
+
+/* ==============================
+   RADIO BUTTONS
+================================ */
 .radio-button {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #e2e8f0;
-    -fx-cursor: hand;
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
 }
-
 .radio-button .radio {
-    -fx-background-color: #0f172a;
-    -fx-border-color: #475569;
-    -fx-border-width: 2px;
-    -fx-border-radius: 50%;
-    -fx-padding: 4px;
+    -fx-mark-color: rgba(249,115,22,0.95);
 }
 
-.radio-button:selected .radio {
-    -fx-border-color: #f97316;
-    -fx-background-color: #0f172a;
+/* Character count */
+.char-count {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
 }
 
-.radio-button:selected .radio .dot {
-    -fx-background-color: #f97316;
-    -fx-background-radius: 50%;
+/* ==============================
+   AI RESPONSE AREA
+================================ */
+.ai-response-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
 }
 
-.radio-button:hover .radio {
-    -fx-border-color: #f97316;
+/* optional: make radio options look nicer when you add them dynamically */
+.radio-button:hover {
+    -fx-background-color: rgba(148,163,184,0.08);
+    -fx-background-radius: 5px;
 }
 
-.radio-button:focused .radio {
-    -fx-border-color: #f97316;
-}
-
-/* Disabled Radio */
-.radio-button:disabled {
-    -fx-text-fill: #64748b;
-}
-
-.radio-button:disabled .radio {
-    -fx-border-color: #475569;
-    -fx-background-color: #1e293b;
-}
-
-/* AI News Radio Buttons */
-.radio-button.ai-news-option {
-    -fx-font-weight: 500;
-    -fx-text-fill: #cbd5e1;
-    -fx-padding: 8px 0;
-}
-
-.radio-button.ai-news-option .radio {
-    -fx-background-color: #1e293b;
-}
-
-.radio-button.ai-news-option:selected .radio {
-    -fx-border-color: #0891b2;
-}
-
-.radio-button.ai-news-option:selected .radio .dot {
-    -fx-background-color: #0891b2;
-}
-
-/* Primary Button */
-.primary-button {
-    -fx-background-color: #f97316;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-cursor: hand;
-    -fx-padding: 12px 24px;
-    -fx-min-height: 40px;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #ffffff;
-}
-
-.primary-button:hover {
-    -fx-background-color: #ea580c;
-}
-
-.primary-button:pressed {
-    -fx-background-color: #c2410c;
-}
-
-.primary-button:disabled {
-    -fx-background-color: #475569;
-    -fx-text-fill: #94a3b8;
-    -fx-opacity: 0.6;
-}
-
-/* Secondary Button */
-.secondary-button {
-    -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
-    -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-cursor: hand;
-    -fx-padding: 12px 24px;
-    -fx-min-height: 40px;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #94a3b8;
-}
-
-.secondary-button:hover {
-    -fx-border-color: #f97316;
-    -fx-background-color: #1e293b;
-    -fx-text-fill: #f97316;
-}
-
-.secondary-button:pressed {
-    -fx-background-color: #0f172a;
-}
-
-/* Action Buttons Container */
-.action-buttons-container {
-    -fx-background-color: transparent;
-    -fx-padding: 15px 0 0 0;
-    -fx-alignment: TOP_LEFT;
-}
-
-/* Table View Styling */
+/* ==============================
+   TABLE (logs-table) -> same as ManageAdmin admin-table
+================================ */
 .logs-table {
-    -fx-background-color: #0f172a;
-    -fx-background-radius: 8px;
-    -fx-border-color: #334155;
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.14);
+
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
     -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-table-cell-border-color: transparent;
+
+    -fx-control-inner-background: rgba(255,255,255,0.03);
+    -fx-control-inner-background-alt: rgba(255,255,255,0.02);
+}
+
+/* Kill white inner sheet */
+.logs-table .virtual-flow,
+.logs-table .virtual-flow .clipped-container,
+.logs-table .virtual-flow .sheet {
+    -fx-background-color: transparent;
 }
 
 .logs-table .column-header-background {
-    -fx-background-color: #1e293b;
-}
-
-.logs-table .column-header {
-    -fx-background-color: #1e293b;
-    -fx-border-color: transparent transparent #334155 transparent;
-    -fx-border-width: 0 0 2px 0;
-    -fx-padding: 12px 16px;
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 5px 5px 0 0;
 }
 
 .logs-table .column-header .label {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 13px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #cbd5e1;
-    -fx-alignment: CENTER_LEFT;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
+}
+
+.logs-table .column-header,
+.logs-table .filler {
+    -fx-background-color: transparent;
+    -fx-size: 42px;
+    -fx-border-color: rgba(148, 163, 184, 0.10);
+    -fx-border-width: 0 1px 0 0;
 }
 
 .logs-table .table-row-cell {
-    -fx-background-color: #0f172a;
-    -fx-border-color: transparent transparent #1e293b transparent;
-    -fx-border-width: 0 0 1px 0;
-    -fx-padding: 8px 0;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.logs-table .table-row-cell:even {
+    -fx-background-color: rgba(255,255,255,0.01);
 }
 
 .logs-table .table-row-cell:hover {
-    -fx-background-color: #1e293b;
+    -fx-background-color: rgba(148,163,184,0.08);
 }
 
 .logs-table .table-row-cell:selected {
-    -fx-background-color: #334155;
+    -fx-background-color: rgba(249,115,22,0.14);
+    -fx-border-color: rgba(249,115,22,0.75);
+    -fx-border-width: 0 0 0 3px;
 }
 
 .logs-table .table-cell {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 13px;
-    -fx-text-fill: #e2e8f0;
-    -fx-padding: 8px 16px;
-    -fx-alignment: CENTER_LEFT;
-}
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
 
-.logs-table .table-row-cell:empty {
+    -fx-padding: 14px;
+    -fx-alignment: CENTER;
+
     -fx-background-color: transparent;
 }
 
-.logs-table .table-row-cell:empty .table-cell {
-    -fx-border-width: 0;
+/* Corner (top-left) */
+.logs-table .corner {
+    -fx-background-color: rgba(255,255,255,0.04);
 }
 
-/* Scrollbar for table */
-.logs-table .scroll-bar:vertical {
-    -fx-background-color: transparent;
-}
-
-.logs-table .scroll-bar:vertical .track {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 5px;
-}
-
-.logs-table .scroll-bar:vertical .thumb {
-    -fx-background-color: #475569;
-    -fx-background-radius: 5px;
-}
-
-.logs-table .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #64748b;
-}
-
+/* Table scrollbars */
+.logs-table .scroll-bar:vertical,
 .logs-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
 }
-
-.logs-table .scroll-bar:horizontal .track {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 5px;
+.logs-table .scroll-bar .track {
+    -fx-background-color: rgba(255,255,255,0.04);
+}
+.logs-table .scroll-bar .thumb {
+    -fx-background-color: rgba(148, 163, 184, 0.25);
+    -fx-background-radius: 8px;
+}
+.logs-table .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.40);
 }
 
-.logs-table .scroll-bar:horizontal .thumb {
-    -fx-background-color: #475569;
-    -fx-background-radius: 5px;
-}
-
-.logs-table .button {
-    -fx-background-color: #334155;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-font-family: "Segoe UI";
+/* Logs small text */
+.logs-count {
+    -fx-text-fill: rgba(148,163,184,0.85);
     -fx-font-size: 12px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #f8fafc;
-    -fx-padding: 6px 16px;
-    -fx-cursor: hand;
-}
-
-.logs-table .button:hover {
-    -fx-background-color: #f97316;
-}
-
-.logs-table .button:pressed {
-    -fx-background-color: #ea580c;
-}
-
-.logs-table .button:disabled {
-    -fx-background-color: #1e293b;
-    -fx-text-fill: #64748b;
-    -fx-opacity: 0.5;
-}
-
-.logs-table .placeholder .label {
-    -fx-text-fill: #64748b;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-}
-
-.logs-table .filler {
-    -fx-background-color: #1e293b;
+    -fx-font-weight: 700;
 }

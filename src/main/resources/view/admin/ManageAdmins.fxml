@@ -8,11 +8,7 @@
 <AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/admin/manageadmins.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.AdminController">
 
     <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-
         <VBox styleClass="header-section" VBox.vgrow="NEVER">
-            <padding>
-                <Insets bottom="24" left="24" right="24" top="24" />
-            </padding>
 
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="USERS" size="24" styleClass="page-icon" />
@@ -20,9 +16,6 @@
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
-                <VBox.margin>
-                    <Insets top="20" />
-                </VBox.margin>
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                     <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />

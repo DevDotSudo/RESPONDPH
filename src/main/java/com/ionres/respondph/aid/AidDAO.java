@@ -38,4 +38,20 @@ public interface AidDAO {
     List<AidModel> getAllAidForTable();
 
 
+
+
+
+
+    List<BeneficiaryCluster> getBeneficiariesWithScoresByBarangays(
+            int aidTypeId,
+            int disasterId,
+            List<String> barangays
+    );
+
+    List<String> getAllBarangays();
+
+
+    List<String> getBarangaysByDisaster(int disasterId);
+
+
 }

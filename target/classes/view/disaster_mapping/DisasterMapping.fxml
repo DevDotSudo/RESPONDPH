@@ -1,38 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane styleClass="mapping-root" stylesheets="@/styles/disaster_mapping/disaster_mapping.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.DisasterMappingController">
+<AnchorPane fx:id="rootPane"
+            styleClass="root-pane"
+            stylesheets="@/styles/disaster_mapping/disaster_mapping.css"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ionres.respondph.disaster_mapping.DisasterMappingController">
 
-    <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
 
-        <HBox alignment="CENTER_LEFT" styleClass="mapping-header">
-            <Label styleClass="page-title" text="Disaster Mapping" />
-        </HBox>
+        <!-- HEADER (same structure as Manage Admins) -->
+        <VBox styleClass="header-section" VBox.vgrow="NEVER">
 
-        <HBox alignment="CENTER_LEFT" spacing="16.0" VBox.vgrow="NEVER">
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <FontAwesomeIconView glyphName="MAP" size="24" styleClass="page-icon" />
+                <Label styleClass="page-title" text="Disaster Mapping" />
+            </HBox>
 
-            <VBox spacing="6" styleClass="control-group">
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <FontAwesomeIconView glyphName="FILTER" styleClass="control-icon" />
-                    <Label styleClass="control-label" text="Select Disaster Type" />
+            <!-- TOOLBAR (filters in same row style) -->
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
+
+                <!-- Disaster Type -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                    <FontAwesomeIconView glyphName="FILTER" size="14" styleClass="search-icon" />
+                    <ComboBox fx:id="disasterTypeComboBox"
+                              prefWidth="220"
+                              promptText="Filter by type..."
+                              styleClass="search-field" />
                 </HBox>
-                <ComboBox fx:id="disasterTypeComboBox" prefWidth="220" promptText="Filter by type..." styleClass="disaster-combo" />
-            </VBox>
-            <VBox spacing="6" styleClass="control-group">
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <FontAwesomeIconView glyphName="MAP_MARKER" styleClass="control-icon" />
-                    <Label styleClass="control-label" text="Select Disaster Name" />
-                </HBox>
-                <ComboBox fx:id="disasterComboBox" prefWidth="320" promptText="Choose a disaster..." styleClass="disaster-combo" />
-            </VBox>
-        </HBox>
 
-        <!-- Map Container -->
-        <StackPane VBox.vgrow="ALWAYS">
-            <Pane fx:id="mapContainer" styleClass="map-container" />
-        </StackPane>
+                <!-- Disaster Name -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                    <FontAwesomeIconView glyphName="MAP_MARKER" size="14" styleClass="search-icon" />
+                    <ComboBox fx:id="disasterComboBox"
+                              prefWidth="320"
+                              promptText="Choose a disaster..."
+                              styleClass="search-field" />
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+            </HBox>
+
+        </VBox>
+
+        <!-- MAP AREA -->
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <StackPane VBox.vgrow="ALWAYS">
+                <Pane fx:id="mapContainer" styleClass="map-container" />
+            </StackPane>
+        </VBox>
+
     </VBox>
 </AnchorPane>

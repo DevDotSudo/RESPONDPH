@@ -5,14 +5,20 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="root" styleClass="root-pane" stylesheets="@/styles/disaster_damage/disaster_damage.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.DisasterDamageController">
+<AnchorPane fx:id="root"
+            styleClass="root-pane"
+            stylesheets="@/styles/disaster_damage/disaster_damage.css"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ionres.respondph.disaster_damage.DisasterDamageController">
 
-    <VBox spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
 
-        <VBox spacing="0" styleClass="header-section">
-            <padding>
-                <Insets bottom="24" left="24" right="24" top="24" />
-            </padding>
+        <!-- HEADER (same structure as Manage Admins) -->
+        <VBox styleClass="header-section" VBox.vgrow="NEVER">
 
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="FIRE" size="24" styleClass="page-icon" />
@@ -20,16 +26,18 @@
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
-                <VBox.margin>
-                    <Insets top="20" />
-                </VBox.margin>
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                     <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />
-                    <TextField fx:id="searchField" promptText="Search disaster" styleClass="search-field" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="searchField"
+                               promptText="Search disaster"
+                               styleClass="search-field"
+                               HBox.hgrow="ALWAYS" />
                 </HBox>
 
-                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="primary-button">
+                <Button fx:id="searchBtn"
+                        mnemonicParsing="false"
+                        styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
@@ -58,12 +66,14 @@
                     </graphic>
                 </Button>
             </HBox>
+
+            <VBox.margin>
+                <Insets />
+            </VBox.margin>
         </VBox>
 
+        <!-- TABLE AREA (same container approach as Manage Admins) -->
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
-            <padding>
-                <Insets bottom="24" left="24" right="24" top="18" />
-            </padding>
 
             <TableView fx:id="disastersDamageTbl" styleClass="damage-table" VBox.vgrow="ALWAYS">
                 <columns>
@@ -76,10 +86,12 @@
                     <TableColumn fx:id="registeredDateColumn" prefWidth="1" text="Registered Date" />
                     <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
                 </columns>
+
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                 </columnResizePolicy>
             </TableView>
+
         </VBox>
 
     </VBox>

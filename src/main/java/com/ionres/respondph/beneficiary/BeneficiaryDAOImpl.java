@@ -21,11 +21,11 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
 
     @Override
     public boolean saving(BeneficiaryModel bm) {
-        String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, age_score, gender, " +
+        String sql = "INSERT INTO beneficiary (first_name, middle_name, last_name, birthdate, barangay, age_score, gender, " +
                 "marital_status, solo_parent_status, latitude, longitude, mobile_number, disability_type, " +
                 "health_condition, clean_water_access, sanitation_facility, house_type, ownership_status, " +
                 "employment_status, monthly_income, education_level, digital_access, added_by, reg_date) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -33,25 +33,26 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             ps.setString(2, bm.getMiddlename());
             ps.setString(3, bm.getLastname());
             ps.setString(4, bm.getBirthDate());
-            ps.setDouble(5, bm.getAgeScore());
-            ps.setString(6, bm.getGender());
-            ps.setString(7, bm.getMaritalStatus());
-            ps.setString(8, bm.getSoloParentStatus());
-            ps.setString(9, bm.getLatitude());
-            ps.setString(10, bm.getLongitude());
-            ps.setString(11, bm.getMobileNumber());
-            ps.setString(12, bm.getDisabilityType());
-            ps.setString(13, bm.getHealthCondition());
-            ps.setString(14, bm.getCleanWaterAccess());
-            ps.setString(15, bm.getSanitationFacility());
-            ps.setString(16, bm.getHouseType());
-            ps.setString(17, bm.getOwnerShipStatus());
-            ps.setString(18, bm.getEmploymentStatus());
-            ps.setString(19, bm.getMonthlyIncome());
-            ps.setString(20, bm.getEducationalLevel());
-            ps.setString(21, bm.getDigitalAccess());
-            ps.setString(22, bm.getAddedBy());
-            ps.setString(23, bm.getRegDate());
+            ps.setString(5, bm.getBarangay());
+            ps.setDouble(6, bm.getAgeScore());
+            ps.setString(7, bm.getGender());
+            ps.setString(8, bm.getMaritalStatus());
+            ps.setString(9, bm.getSoloParentStatus());
+            ps.setString(10, bm.getLatitude());
+            ps.setString(11, bm.getLongitude());
+            ps.setString(12, bm.getMobileNumber());
+            ps.setString(13, bm.getDisabilityType());
+            ps.setString(14, bm.getHealthCondition());
+            ps.setString(15, bm.getCleanWaterAccess());
+            ps.setString(16, bm.getSanitationFacility());
+            ps.setString(17, bm.getHouseType());
+            ps.setString(18, bm.getOwnerShipStatus());
+            ps.setString(19, bm.getEmploymentStatus());
+            ps.setString(20, bm.getMonthlyIncome());
+            ps.setString(21, bm.getEducationalLevel());
+            ps.setString(22, bm.getDigitalAccess());
+            ps.setString(23, bm.getAddedBy());
+            ps.setString(24, bm.getRegDate());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -116,7 +117,7 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
     @Override
     public boolean update(BeneficiaryModel bm) {
         String sql = "UPDATE beneficiary SET " +
-                "first_name = ?, middle_name = ?, last_name = ?, birthdate = ?, age_score = ?, gender = ?, " +
+                "first_name = ?, middle_name = ?, last_name = ?, birthdate = ?, barangay = ?, age_score = ?, gender = ?, " +
                 "marital_status = ?, solo_parent_status = ?, latitude = ?, longitude = ?, " +
                 "mobile_number = ?, disability_type = ?, health_condition = ?, clean_water_access = ?, " +
                 "sanitation_facility = ?, house_type = ?, ownership_status = ?, employment_status = ?, " +
@@ -129,26 +130,27 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
             ps.setString(2, bm.getMiddlename());
             ps.setString(3, bm.getLastname());
             ps.setString(4, bm.getBirthDate());
-            ps.setDouble(5, bm.getAgeScore());
-            ps.setString(6, bm.getGender());
-            ps.setString(7, bm.getMaritalStatus());
-            ps.setString(8, bm.getSoloParentStatus());
-            ps.setString(9, bm.getLatitude());
-            ps.setString(10, bm.getLongitude());
-            ps.setString(11, bm.getMobileNumber());
-            ps.setString(12, bm.getDisabilityType());
-            ps.setString(13, bm.getHealthCondition());
-            ps.setString(14, bm.getCleanWaterAccess());
-            ps.setString(15, bm.getSanitationFacility());
-            ps.setString(16, bm.getHouseType());
-            ps.setString(17, bm.getOwnerShipStatus());
-            ps.setString(18, bm.getEmploymentStatus());
-            ps.setString(19, bm.getMonthlyIncome());
-            ps.setString(20, bm.getEducationalLevel());
-            ps.setString(21, bm.getDigitalAccess());
-            ps.setString(22, bm.getAddedBy());
-            ps.setString(23, bm.getRegDate());
-            ps.setInt(24, bm.getId());
+            ps.setString(5, bm.getBarangay());
+            ps.setDouble(6, bm.getAgeScore());
+            ps.setString(7, bm.getGender());
+            ps.setString(8, bm.getMaritalStatus());
+            ps.setString(9, bm.getSoloParentStatus());
+            ps.setString(10, bm.getLatitude());
+            ps.setString(11, bm.getLongitude());
+            ps.setString(12, bm.getMobileNumber());
+            ps.setString(13, bm.getDisabilityType());
+            ps.setString(14, bm.getHealthCondition());
+            ps.setString(15, bm.getCleanWaterAccess());
+            ps.setString(16, bm.getSanitationFacility());
+            ps.setString(17, bm.getHouseType());
+            ps.setString(18, bm.getOwnerShipStatus());
+            ps.setString(19, bm.getEmploymentStatus());
+            ps.setString(20, bm.getMonthlyIncome());
+            ps.setString(21, bm.getEducationalLevel());
+            ps.setString(22, bm.getDigitalAccess());
+            ps.setString(23, bm.getAddedBy());
+            ps.setString(24, bm.getRegDate());
+            ps.setInt(25, bm.getId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -175,6 +177,7 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO {
                     bm.setMiddlename(rs.getString("middle_name"));
                     bm.setLastname(rs.getString("last_name"));
                     bm.setBirthDate(rs.getString("birthdate"));
+                    bm.setBarangay(rs.getString("barangay"));
                     bm.setAgeScore(rs.getDouble("age_score"));
                     bm.setGender(rs.getString("gender"));
                     bm.setMaritalStatus(rs.getString("marital_status"));

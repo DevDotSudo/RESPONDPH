@@ -1,0 +1,98 @@
+/* Main Container */
+.map-dialog-container {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 25, 0, 0, 8);
+}
+
+/* Header Section */
+.map-dialog-header {
+    -fx-background-color: #334155;
+    -fx-background-radius: 16px 16px 0 0;
+    -fx-padding: 20px 32px;
+    -fx-border-color: #475569;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.map-header-icon {
+    -fx-fill: #10b981;
+}
+
+.map-dialog-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: 700;
+    -fx-font-size: 24px;
+    -fx-text-fill: #f8fafc;
+}
+
+.map-close-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 8px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+}
+
+.map-close-button:hover {
+    -fx-background-color: #475569;
+}
+
+.map-close-icon {
+    -fx-fill: #94a3b8;
+}
+
+.map-close-button:hover .map-close-icon {
+    -fx-fill: #ef4444;
+}
+
+/* Disaster Info Bar */
+.disaster-info-bar {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #475569;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.disaster-info-icon {
+    -fx-fill: #f59e0b;
+}
+
+.disaster-info-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #f8fafc;
+}
+
+/* Map Container */
+.map-container {
+    -fx-background-color: #0f172a;
+    -fx-border-color: #475569;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+/* Error Container */
+.map-error-container {
+    -fx-padding: 0 32px 0 32px;
+    -fx-background-color: transparent;
+}
+
+.map-error-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-text-fill: #ef4444;
+    -fx-padding: 14px 24px;
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+    -fx-background-radius: 10px;
+    -fx-border-color: #ef4444;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+    -fx-wrap-text: true;
+}

@@ -1,273 +1,238 @@
-/* evacuation_plan.css */
+/* =========================================
+   Evacuation Plan Theme (same as Manage Admins)
+   File: /styles/evac_plan/evacuation_plan.css
+   ========================================= */
 
-/* ===== ROOT PANE ===== */
-.evac-root-pane {
-    -fx-background-color: #0f172a;
-    -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+.root-pane {
+    -fx-background-color: #0b1220;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-/* ===== HEADER SECTION ===== */
-.evac-header-section {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 10px;
-    -fx-border-color: #334155;
-    -fx-border-width: 0 0 4px 0;
-    -fx-pref-width: 100%;
-    -fx-border-radius: 10px;
-}
-
-.evac-page-icon {
-    -fx-fill: #3b82f6; /* Blue color for evacuation theme */
-}
-
-.evac-page-title {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 800;
-    -fx-font-size: 24px;
-    -fx-text-fill: #f8fafc;
-}
-
-/* ===== TOOLBAR ===== */
-.evac-toolbar {
+.header-section {
     -fx-background-color: transparent;
     -fx-padding: 0;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 0 0 1px 0;
 }
 
-.evac-search-box {
-    -fx-background-color: #334155;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
-    -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-padding: 10px 16px;
-    -fx-min-width: 300px;
+.page-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
 }
 
-.evac-search-box:focused {
-    -fx-border-color: #3b82f6; /* Blue focus for evacuation theme */
-}
-
-.evac-search-icon {
-    -fx-fill: #94a3b8;
-}
-
-.evac-search-field {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-text-fill: #f8fafc;
-    -fx-prompt-text-fill: #94a3b8;
-}
-
-/* ===== BUTTONS ===== */
-.evac-primary-button {
-    -fx-background-color: #3b82f6; /* Blue for evacuation theme */
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-cursor: hand;
-    -fx-padding: 10px 20px;
-    -fx-min-height: 40px;
-}
-
-.evac-primary-button:hover {
-    -fx-background-color: #2563eb; /* Darker blue on hover */
-}
-
-.evac-primary-button:pressed {
-    -fx-background-color: #1d4ed8; /* Even darker blue when pressed */
-}
-
-.evac-secondary-button {
-    -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-border-color: #475569;
-    -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-cursor: hand;
-    -fx-padding: 10px 20px;
-    -fx-min-height: 40px;
-}
-
-.evac-secondary-button:hover {
-    -fx-border-color: #3b82f6; /* Blue border on hover */
-    -fx-background-color: #334155;
-}
-
-.evac-secondary-button:pressed {
-    -fx-background-color: #1e293b;
-}
-
-.evac-button-icon {
+.page-icon {
     -fx-fill: #ffffff;
 }
 
-.evac-refresh-icon {
-    -fx-fill: #94a3b8;
+.toolbar {
+    -fx-padding: 14px 0 14px 0; /* normal spacing */
 }
 
-.evac-secondary-button:hover .evac-refresh-icon {
-    -fx-fill: #3b82f6; /* Blue refresh icon on hover */
-}
+.search-box {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.16);
 
-.evac-button-label {
-    -fx-text-fill: #ffffff;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-}
-
-.evac-secondary-button .evac-button-label {
-    -fx-text-fill: #94a3b8;
-}
-
-.evac-secondary-button:hover .evac-button-label {
-    -fx-text-fill: #3b82f6; /* Blue text on hover */
-}
-
-/* ===== TABLE CONTAINER ===== */
-.evac-table-container {
-    -fx-background-color: transparent;
-    -fx-padding: 18 0 0 0;
-}
-
-/* ===== EVACUATION PLAN TABLE ===== */
-.evac-plan-table {
-    -fx-background-color: #1e293b;
-    -fx-background-radius: 10px;
-    -fx-border-color: #334155;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
     -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-table-cell-border-color: transparent;
-    -fx-padding: 0;
+
+    -fx-padding: 12px 16px;
+    -fx-min-width: 340px;
 }
 
+.search-icon {
+    -fx-fill: #ffffff;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+
+    -fx-text-fill: #ffffff;
+    -fx-prompt-text-fill: rgba(148,163,184,0.75);
+
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+}
+
+.primary-button,
+.secondary-button {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 12px 20px;
+    -fx-min-height: 44px;
+
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+}
+
+/* Orange Primary */
+.primary-button {
+    -fx-background-color: rgba(249,115,22,0.95);
+    -fx-border-color: rgba(249,115,22,0.55);
+    -fx-border-width: 1px;
+}
+
+.primary-button:hover {
+    -fx-background-color: rgba(249,115,22,1.0);
+}
+
+/* Flat Secondary */
+.secondary-button {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+}
+
+.secondary-button:hover {
+    -fx-border-color: rgba(249,115,22,0.60);
+}
+
+.button-icon,
+.refresh-icon {
+    -fx-fill: #ffffff;
+}
+
+.button-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.table-container {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+/* =========================
+   TABLE (Evacuation Plan)
+   ========================= */
+
+.evac-plan-table {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.14);
+
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+
+    -fx-control-inner-background: rgba(255,255,255,0.03);
+    -fx-control-inner-background-alt: rgba(255,255,255,0.02);
+}
+
+/* Remove default white empty area inside the table */
 .evac-plan-table .virtual-flow {
-    -fx-pref-height: 100%;
+    -fx-background-color: transparent;
+}
+.evac-plan-table .virtual-flow .clipped-container {
+    -fx-background-color: transparent;
+}
+.evac-plan-table .virtual-flow .sheet {
+    -fx-background-color: transparent;
 }
 
 .evac-plan-table .column-header-background {
-    -fx-background-color: #334155;
-    -fx-background-radius: 8px 8px 0 0;
-}
-
-.evac-plan-table .column-header {
-    -fx-background-color: transparent;
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #f8fafc;
-    -fx-alignment: CENTER;
-    -fx-padding: 16px 12px;
-    -fx-border-color: #475569;
-    -fx-border-width: 0 1px 0 0;
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 5px 5px 0 0;
 }
 
 .evac-plan-table .column-header .label {
-    -fx-text-fill: #f8fafc;
-    -fx-font-weight: 700;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
 }
 
+/* Header cells */
+.evac-plan-table .column-header,
 .evac-plan-table .filler {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
-
-/* Table Cells */
-.evac-plan-table .table-cell {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #e2e8f0;
-    -fx-padding: 14px 12px;
-    -fx-alignment: CENTER;
-    -fx-border-color: #475569;
+    -fx-size: 42px;
+    -fx-border-color: rgba(148, 163, 184, 0.10);
     -fx-border-width: 0 1px 0 0;
-    -fx-background-color: transparent;
 }
 
-/* Table Rows */
+/* Rows */
 .evac-plan-table .table-row-cell {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
 .evac-plan-table .table-row-cell:odd {
-    -fx-background-color: #1e293b;
+    -fx-background-color: rgba(255,255,255,0.00);
 }
-
 .evac-plan-table .table-row-cell:even {
-    -fx-background-color: #1e293b;
+    -fx-background-color: rgba(255,255,255,0.01);
 }
 
 .evac-plan-table .table-row-cell:hover {
-    -fx-background-color: #334155;
-    -fx-cursor: hand;
+    -fx-background-color: rgba(148,163,184,0.08);
 }
 
 .evac-plan-table .table-row-cell:selected {
-    -fx-background-color: #334155;
-    -fx-border-color: #3b82f6; /* Blue selection border */
+    -fx-background-color: rgba(249,115,22,0.14);
+    -fx-border-color: rgba(249,115,22,0.75);
     -fx-border-width: 0 0 0 3px;
 }
 
-/* Scrollbars */
-.evac-plan-table .scroll-bar:vertical .track {
-    -fx-background-color: #334155;
-    -fx-background-radius: 0;
-}
+.evac-plan-table .table-cell {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
 
-.evac-plan-table .scroll-bar:vertical .thumb {
-    -fx-background-color: #475569;
-    -fx-background-radius: 0;
-}
-
-.evac-plan-table .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #64748b;
-}
-
-.evac-plan-table .scroll-bar:horizontal .track {
-    -fx-background-color: #334155;
-    -fx-background-radius: 0;
-}
-
-.evac-plan-table .scroll-bar:horizontal .thumb {
-    -fx-background-color: #475569;
-    -fx-background-radius: 0;
-}
-
-.evac-plan-table .scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: #64748b;
-}
-
-/* Empty Table State */
-.evac-plan-table:empty .table-cell {
+    -fx-padding: 14px;
     -fx-alignment: CENTER;
+
+    -fx-background-color: transparent;
 }
 
-.evac-plan-table .placeholder .label {
-    -fx-text-fill: #94a3b8;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
+/* Top-left corner (was white) */
+.evac-plan-table .corner {
+    -fx-background-color: rgba(255,255,255,0.04);
 }
 
-/* Emergency status styling (optional - for future use) */
-.emergency-status {
-    -fx-font-weight: 900;
+.evac-plan-table .scroll-bar:vertical,
+.evac-plan-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
 }
 
-.status-active {
-    -fx-text-fill: #10b981; /* Green for active */
+.evac-plan-table .scroll-bar .track {
+    -fx-background-color: rgba(255,255,255,0.04);
 }
 
-.status-pending {
-    -fx-text-fill: #f59e0b; /* Yellow for pending */
+.evac-plan-table .scroll-bar .thumb {
+    -fx-background-color: rgba(148, 163, 184, 0.25);
+    -fx-background-radius: 8px;
 }
 
-.status-completed {
-    -fx-text-fill: #3b82f6; /* Blue for completed */
+.evac-plan-table .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.40);
 }
 
-.status-cancelled {
-    -fx-text-fill: #ef4444; /* Red for cancelled */
+/* Optional action buttons (if you use them in the Actions column) */
+.edit-button,
+.delete-button {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 8px 14px;
+
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+}
+
+.edit-button {
+    -fx-background-color: rgba(249,115,22,0.22);
+    -fx-border-color: rgba(249,115,22,0.40);
+}
+
+.delete-button {
+    -fx-background-color: rgba(239,68,68,0.22);
+    -fx-border-color: rgba(239,68,68,0.40);
+}
+
+.edit-icon,
+.delete-icon {
+    -fx-fill: #ffffff;
 }

@@ -7,26 +7,23 @@
 
 <AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/beneficiary/managebeneficiaries.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.BeneficiaryController">
 
-    <VBox spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <VBox spacing="0" styleClass="header-section">
-            <padding>
-                <Insets bottom="24" left="24" right="24" top="24" />
-            </padding>
+        <VBox styleClass="header-section">
 
+            <!-- Title row -->
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="USER_MD" size="24" styleClass="page-icon" />
                 <Label styleClass="page-title" text="Manage Beneficiaries" />
             </HBox>
 
+            <!-- Toolbar row -->
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
-                <VBox.margin>
-                    <Insets top="20" />
-                </VBox.margin>
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                     <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />
-                    <TextField fx:id="searchField" promptText="Search by name, contact, address..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="searchField" promptText="Search by name, contact, address..."
+                               styleClass="search-field" HBox.hgrow="ALWAYS" />
                 </HBox>
 
                 <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="primary-button">
@@ -61,9 +58,6 @@
         </VBox>
 
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
-            <padding>
-                <Insets bottom="24" left="24" right="24" top="18" />
-            </padding>
 
             <TableView fx:id="beneficiaryTable" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">
                 <columns>

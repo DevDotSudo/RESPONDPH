@@ -1,10 +1,9 @@
 package com.ionres.respondph.aid.dialogs_controller;
 
-import com.ionres.respondph.aid.AidController;
-import com.ionres.respondph.aid.AidService;
-import com.ionres.respondph.aid.AidServiceImpl;
+import com.ionres.respondph.aid.*;
 import com.ionres.respondph.aid.KMeansAidDistribution.BeneficiaryCluster;
 import com.ionres.respondph.aid_type.AidTypeModelComboBox;
+import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import javafx.collections.FXCollections;
@@ -15,8 +14,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 
 public class AddAidController {
 
@@ -27,7 +27,6 @@ public class AddAidController {
     @FXML private TextField costFld;
     @FXML private TextField providerFld;
     @FXML private CheckBox useKMeansCheckbox;
-    // Removed clusterSpinner - now using fixed value of 3
     @FXML private Button previewBtn;
     @FXML private Button saveAidBtn;
     @FXML private Button cancelBtn;
@@ -35,15 +34,21 @@ public class AddAidController {
     @FXML private Label infoLabel;
     @FXML private HBox simpleDistributionWarning;
     @FXML private HBox selectionSummaryBox;
-
     @FXML private Label selectionSummaryLabel;
-
     @FXML private ComboBox<AidTypeModelComboBox> aidTypeComboBox;
     @FXML private ComboBox<DisasterModelComboBox> disasterComboBox;
+    @FXML private CheckBox useBarangayFilterCheckbox;
+    @FXML private ComboBox<String> barangayComboBox;
+    @FXML private RadioButton singleBarangayRadio;
+    @FXML private RadioButton allBarangaysRadio;
+    @FXML private VBox barangaySelectionContainer;
+    @FXML private VBox singleBarangayContainer;
 
     private AidService aidService;
+    private AidDAO aidDAO;
     private AidController aidController;
     private Stage dialogStage;
+    private ToggleGroup barangayModeGroup;
 
     private static final int FIXED_CLUSTERS = 3;
 
@@ -54,7 +59,6 @@ public class AddAidController {
     public void setAidController(AidController aidController) {
         this.aidController = aidController;
     }
-
 
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
@@ -76,6 +80,7 @@ public class AddAidController {
             disasterComboBox.setValue(disaster);
         }
         updateSelectionSummary();
+        loadBarangays();
     }
 
     @FXML
@@ -84,23 +89,79 @@ public class AddAidController {
             aidService = new AidServiceImpl();
         }
 
+        aidDAO = new AidDAOImpl(DBConnection.getInstance());
+
+        setupBarangayMode();
         setupEventHandlers();
         setupDefaultValues();
         setupComboBoxListeners();
         makeDraggable();
     }
 
+    private void setupBarangayMode() {
+        barangayModeGroup = new ToggleGroup();
+        singleBarangayRadio.setToggleGroup(barangayModeGroup);
+        allBarangaysRadio.setToggleGroup(barangayModeGroup);
+
+        allBarangaysRadio.setSelected(true);
+
+        barangayModeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == singleBarangayRadio) {
+                singleBarangayContainer.setVisible(true);
+                singleBarangayContainer.setManaged(true);
+            } else {
+                singleBarangayContainer.setVisible(false);
+                singleBarangayContainer.setManaged(false);
+            }
+            updateSelectionSummary();
+        });
+
+        useBarangayFilterCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            barangaySelectionContainer.setVisible(newVal);
+            barangaySelectionContainer.setManaged(newVal);
+            updateSelectionSummary();
+        });
+
+        barangaySelectionContainer.setVisible(false);
+        barangaySelectionContainer.setManaged(false);
+    }
 
     private void setupDefaultValues() {
         if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setSelected(true);
         }
-        // Cluster count is now fixed at 3 (shown as label in UI)
+        if (useBarangayFilterCheckbox != null) {
+            useBarangayFilterCheckbox.setSelected(false);
+        }
     }
 
     private void setupComboBoxListeners() {
         aidTypeComboBox.setOnAction(e -> updateSelectionSummary());
-        disasterComboBox.setOnAction(e -> updateSelectionSummary());
+        disasterComboBox.setOnAction(e -> {
+            updateSelectionSummary();
+            loadBarangays();
+        });
+        barangayComboBox.setOnAction(e -> updateSelectionSummary());
+    }
+
+    private void loadBarangays() {
+        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+
+        List<String> barangays;
+        if (selectedDisaster != null) {
+            barangays = aidDAO.getBarangaysByDisaster(selectedDisaster.getDisasterId());
+        } else {
+            barangays = aidDAO.getAllBarangays();
+        }
+
+        barangays = barangays.stream()
+                .sorted()
+                .collect(Collectors.toList());
+
+        barangayComboBox.setItems(FXCollections.observableArrayList(barangays));
+        if (!barangays.isEmpty()) {
+            barangayComboBox.getSelectionModel().selectFirst();
+        }
     }
 
     private void updateSelectionSummary() {
@@ -116,18 +177,21 @@ public class AddAidController {
                     selectedDisaster.getDisasterId()
             );
 
+            String barangayInfo = getBarangayInfoText();
+
             selectionSummaryLabel.setText(String.format(
-                    "Aid Type: %s | Disaster: %s | Eligible Beneficiaries: %d",
+                    "Aid Type: %s | Disaster: %s%s | Eligible Beneficiaries: %d",
                     selectedAidType.getAidName(),
                     selectedDisaster.getDisasterName(),
+                    barangayInfo,
                     eligibleCount
             ));
 
             infoLabel.setText(String.format(
-                    "Distributing %s for %s disaster (ID: %d)",
+                    "Distributing %s for %s disaster%s",
                     selectedAidType.getAidName(),
                     selectedDisaster.getDisasterName(),
-                    selectedDisaster.getDisasterId()
+                    barangayInfo
             ));
         } else {
             selectionSummaryBox.setVisible(false);
@@ -136,6 +200,19 @@ public class AddAidController {
         }
     }
 
+    private String getBarangayInfoText() {
+        if (!useBarangayFilterCheckbox.isSelected()) {
+            return "";
+        }
+
+        if (allBarangaysRadio.isSelected()) {
+            return " | All Barangays";
+        } else if (singleBarangayRadio.isSelected()) {
+            String barangay = barangayComboBox.getValue();
+            return barangay != null ? " | Barangay: " + barangay : "";
+        }
+        return "";
+    }
 
     private int getEligibleBeneficiaryCount(int aidTypeId, int disasterId) {
         try {
@@ -152,9 +229,23 @@ public class AddAidController {
                 qtyPerBeneficiary = 1;
             }
 
-            List<BeneficiaryCluster> eligible = aidService.previewAidDistribution(
-                    aidTypeId, disasterId, Integer.MAX_VALUE, qtyPerBeneficiary, FIXED_CLUSTERS
-            );
+            List<BeneficiaryCluster> eligible;
+
+            if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
+                eligible = aidService.previewAidDistribution(
+                        aidTypeId, disasterId, Integer.MAX_VALUE, qtyPerBeneficiary, FIXED_CLUSTERS
+                );
+            } else {
+                String barangay = barangayComboBox.getValue();
+                if (barangay != null) {
+                    eligible = aidService.previewAidDistributionByBarangay(
+                            aidTypeId, disasterId, Integer.MAX_VALUE, qtyPerBeneficiary, FIXED_CLUSTERS, barangay
+                    );
+                } else {
+                    eligible = new ArrayList<>();
+                }
+            }
+
             return eligible.size();
         } catch (Exception e) {
             System.err.println("Error getting eligible count: " + e.getMessage());
@@ -177,9 +268,6 @@ public class AddAidController {
         if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setOnAction(e -> {
                 boolean useKMeans = useKMeansCheckbox.isSelected();
-                // Cluster spinner is ALWAYS disabled since it's fixed at 3
-                // Do NOT re-enable it under any circumstances
-
                 if (simpleDistributionWarning != null) {
                     simpleDistributionWarning.setVisible(!useKMeans);
                     simpleDistributionWarning.setManaged(!useKMeans);
@@ -203,21 +291,30 @@ public class AddAidController {
             int disasterId = disasterComboBox.getValue().getDisasterId();
             int quantity = Integer.parseInt(quantityFld.getText().trim());
             int quantityPerBeneficiary = Integer.parseInt(quantityPerBeneficiaryFld.getText().trim());
-            boolean useKMeans = (useKMeansCheckbox != null) ? useKMeansCheckbox.isSelected() : true;
+            boolean useKMeans = useKMeansCheckbox != null && useKMeansCheckbox.isSelected();
 
-            // Always use fixed 3 clusters
-            List<BeneficiaryCluster> preview = aidService.previewAidDistribution(
-                    aidTypeId, disasterId, quantity, quantityPerBeneficiary, FIXED_CLUSTERS
-            );
+            List<BeneficiaryCluster> preview;
+
+            if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
+                preview = aidService.previewAidDistribution(
+                        aidTypeId, disasterId, quantity, quantityPerBeneficiary, FIXED_CLUSTERS
+                );
+            } else {
+                String barangay = barangayComboBox.getValue();
+                if (barangay == null) {
+                    AlertDialogManager.showWarning("Selection Required",
+                            "Please select a barangay.");
+                    return;
+                }
+                preview = aidService.previewAidDistributionByBarangay(
+                        aidTypeId, disasterId, quantity, quantityPerBeneficiary, FIXED_CLUSTERS, barangay
+                );
+            }
 
             if (preview.isEmpty()) {
                 AlertDialogManager.showWarning(
                         "No Eligible Beneficiaries",
-                        "No beneficiaries are currently eligible for this aid distribution.\n\n" +
-                                "Possible reasons:\n" +
-                                "• No beneficiaries have been scored for this aid type\n" +
-                                "• All beneficiaries have already received this aid\n" +
-                                "• No beneficiaries are affected by this disaster"
+                        "No beneficiaries are currently eligible for this aid distribution."
                 );
                 return;
             }
@@ -225,21 +322,20 @@ public class AddAidController {
             showPreviewDialog(preview, useKMeans, quantityPerBeneficiary);
 
         } catch (NumberFormatException e) {
-            AlertDialogManager.showError(
-                    "Invalid Input",
-                    "Please enter a valid quantity."
-            );
+            AlertDialogManager.showError("Invalid Input", "Please enter valid quantities.");
         } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError(
-                    "Preview Error",
-                    "Failed to generate distribution preview:\n" + e.getMessage()
-            );
+            AlertDialogManager.showError("Preview Error",
+                    "Failed to generate distribution preview:\n" + e.getMessage());
         }
     }
 
     private void showPreviewDialog(List<BeneficiaryCluster> preview, boolean usedKMeans, int qtyPerBeneficiary) {
         StringBuilder message = new StringBuilder();
+
+        String distributionScope = getDistributionScopeText();
+
+        message.append(String.format("Distribution Scope: %s\n", distributionScope));
         message.append(String.format("Distribution Method: %s\n",
                 usedKMeans ? "K-Means Clustering (3 Clusters)" : "Score-Based"));
         message.append(String.format("Total Recipients: %d beneficiaries\n", preview.size()));
@@ -292,7 +388,7 @@ public class AddAidController {
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Distribution Preview");
-        alert.setHeaderText("Aid Distribution Plan (3-Cluster K-Means)");
+        alert.setHeaderText("Aid Distribution Plan");
 
         TextArea textArea = new TextArea(message.toString());
         textArea.setEditable(false);
@@ -305,6 +401,16 @@ public class AddAidController {
         alert.getDialogPane().setContent(textArea);
         alert.getDialogPane().setPrefWidth(600);
         alert.showAndWait();
+    }
+
+    private String getDistributionScopeText() {
+        if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
+            return "All Barangays";
+        } else if (singleBarangayRadio.isSelected()) {
+            String barangay = barangayComboBox.getValue();
+            return barangay != null ? "Barangay: " + barangay : "";
+        }
+        return "";
     }
 
     @FXML
@@ -330,16 +436,27 @@ public class AddAidController {
             double costPerUnit = Double.parseDouble(costFld.getText().trim());
             String provider = providerFld.getText().trim();
 
-            boolean useKMeans = (useKMeansCheckbox != null) ? useKMeansCheckbox.isSelected() : true;
+            boolean useKMeans = useKMeansCheckbox != null && useKMeansCheckbox.isSelected();
 
             int distributedCount;
 
             if (useKMeans) {
-                // Always use fixed 3 clusters
-                distributedCount = aidService.distributeAidWithKMeans(
-                        aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary, costPerUnit, provider, FIXED_CLUSTERS
-                );
+                if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
+                    // Standard K-means distribution
+                    distributedCount = aidService.distributeAidWithKMeans(
+                            aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary,
+                            costPerUnit, provider, FIXED_CLUSTERS
+                    );
+                } else {
+                    // Single barangay K-means
+                    String barangay = barangayComboBox.getValue();
+                    distributedCount = aidService.distributeAidWithKMeansByBarangay(
+                            aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary,
+                            costPerUnit, provider, FIXED_CLUSTERS, barangay
+                    );
+                }
             } else {
+                // Simple distribution (no barangay filtering for simple mode)
                 distributedCount = aidService.distributeAidSimple(
                         aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary, costPerUnit, provider
                 );
@@ -358,36 +475,37 @@ public class AddAidController {
             }
 
         } catch (NumberFormatException e) {
-            AlertDialogManager.showError(
-                    "Invalid Input",
-                    "Please check that quantity and cost are valid numbers."
-            );
+            AlertDialogManager.showError("Invalid Input",
+                    "Please check that quantity and cost are valid numbers.");
         } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError(
-                    "Distribution Error",
-                    "An error occurred during aid distribution:\n" + e.getMessage()
-            );
+            AlertDialogManager.showError("Distribution Error",
+                    "An error occurred during aid distribution:\n" + e.getMessage());
         }
     }
 
     private boolean validateSelection() {
         if (aidTypeComboBox.getValue() == null) {
-            AlertDialogManager.showWarning(
-                    "Selection Required",
-                    "Please select an Aid Type before distributing aid."
-            );
+            AlertDialogManager.showWarning("Selection Required",
+                    "Please select an Aid Type before distributing aid.");
             aidTypeComboBox.requestFocus();
             return false;
         }
 
         if (disasterComboBox.getValue() == null) {
-            AlertDialogManager.showWarning(
-                    "Selection Required",
-                    "Please select a Disaster Event before distributing aid."
-            );
+            AlertDialogManager.showWarning("Selection Required",
+                    "Please select a Disaster Event before distributing aid.");
             disasterComboBox.requestFocus();
             return false;
+        }
+
+        // Validate barangay selection if filter is enabled
+        if (useBarangayFilterCheckbox.isSelected()) {
+            if (singleBarangayRadio.isSelected() && barangayComboBox.getValue() == null) {
+                AlertDialogManager.showWarning("Selection Required",
+                        "Please select a barangay.");
+                return false;
+            }
         }
 
         return true;
@@ -401,12 +519,15 @@ public class AddAidController {
         double totalCost = Integer.parseInt(quantityFld.getText().trim()) *
                 Double.parseDouble(costFld.getText().trim());
 
+        String scopeText = getDistributionScopeText();
+
         confirmAlert.setContentText(
                 String.format(
                         "Are you sure you want to distribute this aid?\n\n" +
                                 "Aid: %s\n" +
                                 "Aid Type: %s\n" +
                                 "Disaster: %s\n" +
+                                "Scope: %s\n" +
                                 "Quantity: %s units\n" +
                                 "Cost per unit: ₱%s\n" +
                                 "Total cost: ₱%.2f\n" +
@@ -415,6 +536,7 @@ public class AddAidController {
                         nameFld.getText().trim(),
                         aidTypeComboBox.getValue().getAidName(),
                         disasterComboBox.getValue().getDisasterName(),
+                        scopeText,
                         quantityFld.getText().trim(),
                         costFld.getText().trim(),
                         totalCost,
@@ -433,15 +555,20 @@ public class AddAidController {
         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
         successAlert.setTitle("Distribution Successful");
         successAlert.setHeaderText("✓ Aid Distribution Complete");
+
+        String scopeText = getDistributionScopeText();
+
         successAlert.setContentText(
                 String.format(
                         "Successfully distributed aid!\n\n" +
                                 "Aid Type: %s\n" +
+                                "Scope: %s\n" +
                                 "Beneficiaries Served: %d\n" +
                                 "Total Quantity: %d units\n" +
                                 "Total Cost: ₱%.2f\n" +
                                 "Distribution Method: %s",
                         aidName,
+                        scopeText,
                         count,
                         count,
                         totalCost,
@@ -458,10 +585,10 @@ public class AddAidController {
                         "Please check:\n" +
                         "• Beneficiaries have been scored for this aid type\n" +
                         "• Beneficiaries haven't already received this aid\n" +
-                        "• Beneficiaries are affected by this disaster"
+                        "• Beneficiaries are affected by this disaster\n" +
+                        "• Selected barangay has eligible beneficiaries"
         );
     }
-
 
     @FXML
     private void handleClose(ActionEvent event) {
@@ -484,30 +611,14 @@ public class AddAidController {
         try {
             int quantity = Integer.parseInt(quantityFld.getText().trim());
             if (quantity <= 0) {
-                AlertDialogManager.showWarning(
-                        "Validation Error",
-                        "Quantity must be greater than zero."
-                );
+                AlertDialogManager.showWarning("Validation Error",
+                        "Quantity must be greater than zero.");
                 quantityFld.requestFocus();
                 return false;
             }
-            if (quantity > 1000) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Large Quantity");
-                alert.setHeaderText("Confirm Large Distribution");
-                alert.setContentText(
-                        String.format("You are about to distribute %d units of aid. " +
-                                "This is a large quantity. Are you sure?", quantity)
-                );
-                if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
-                    return false;
-                }
-            }
         } catch (NumberFormatException e) {
-            AlertDialogManager.showWarning(
-                    "Validation Error",
-                    "Please enter a valid quantity (whole number)."
-            );
+            AlertDialogManager.showWarning("Validation Error",
+                    "Please enter a valid quantity (whole number).");
             quantityFld.requestFocus();
             return false;
         }
@@ -521,18 +632,13 @@ public class AddAidController {
         try {
             double cost = Double.parseDouble(costFld.getText().trim());
             if (cost < 0) {
-                AlertDialogManager.showWarning(
-                        "Validation Error",
-                        "Cost cannot be negative."
-                );
+                AlertDialogManager.showWarning("Validation Error", "Cost cannot be negative.");
                 costFld.requestFocus();
                 return false;
             }
         } catch (NumberFormatException e) {
-            AlertDialogManager.showWarning(
-                    "Validation Error",
-                    "Please enter a valid cost (number)."
-            );
+            AlertDialogManager.showWarning("Validation Error",
+                    "Please enter a valid cost (number).");
             costFld.requestFocus();
             return false;
         }
@@ -549,14 +655,22 @@ public class AddAidController {
     private void clearFields() {
         nameFld.clear();
         quantityFld.clear();
+        quantityPerBeneficiaryFld.clear();
         costFld.clear();
         providerFld.clear();
         aidTypeComboBox.setValue(null);
         disasterComboBox.setValue(null);
+        barangayComboBox.setValue(null);
 
         if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setSelected(true);
         }
+
+        if (useBarangayFilterCheckbox != null) {
+            useBarangayFilterCheckbox.setSelected(false);
+        }
+
+        allBarangaysRadio.setSelected(true);
 
         updateSelectionSummary();
     }

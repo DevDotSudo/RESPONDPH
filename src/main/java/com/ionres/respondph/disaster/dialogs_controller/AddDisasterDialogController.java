@@ -26,15 +26,18 @@ public class AddDisasterDialogController {
     @FXML public TextField latitudeFld;
     @FXML public TextField longitudeFld;
     @FXML private TextField radiusFld;
-    @FXML private TextField notesFld;
+    @FXML private TextArea notesFld;
     @FXML Button getLocationBtn;
     private Stage dialogStage;
     private DisasterService disasterService;
     private DisasterController disasterController;
+    private double yOffset;
+    private double xOffset;
 
     @FXML
     private void initialize() {
         setupKeyHandlers();
+        makeDraggable();
         EventHandler<ActionEvent> handler = this::handleActions;
         saveBtn.setOnAction(handler);
         exitBtn.setOnAction(handler);
@@ -100,6 +103,8 @@ public class AddDisasterDialogController {
                 disasterController.loadTable();
                 clearFields();
                 DashboardRefresher.refresh();
+                DashboardRefresher.refreshDisasterInSend();
+                DashboardRefresher.refreshComboBoxOfDNAndAN();
             } else {
                 AlertDialogManager.showError("Error", "Failed to add disaster. Please try again.");
             }
@@ -191,5 +196,18 @@ public class AddDisasterDialogController {
     public void onShow() {
         clearFields();
         root.requestFocus();
+    }
+
+    private void makeDraggable() {
+        root.setOnMousePressed(e -> {
+            yOffset = e.getSceneY();
+            xOffset = e.getSceneX();
+        });
+        root.setOnMouseDragged(e -> {
+            if(dialogStage != null) {
+                dialogStage.setY(e.getScreenY() - yOffset);
+                dialogStage.setX(e.getScreenX() - xOffset);
+            }
+        });
     }
 }

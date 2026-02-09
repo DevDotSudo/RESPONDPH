@@ -482,7 +482,6 @@ public class Mapping {
             if (img != null && !img.isError()) {
                 return new TileResult(img, currentZ);
             }
-            // Move to parent tile
             currentZ--;
             currentX /= 2;
             currentY /= 2;
@@ -490,6 +489,3 @@ public class Mapping {
         return null;
     }
 }
-
-
-

@@ -278,18 +278,6 @@ public class SMSSender {
         return dongle.sendMessage(phoneNumber, message);
     }
 
-    /**
-     * Send SMS to multiple recipients with retry logic
-     * Notifies listeners for each send result
-     *
-     * @param recipients List of phone numbers
-     * @param fullnames List of recipient names (can be null)
-     * @param beneficiaryIds List of beneficiary IDs (can be null)
-     * @param message Message to send
-     * @param delayMsBetween Delay between sends in milliseconds
-     * @param maxRetriesPerRecipient Maximum retry attempts per recipient
-     * @return Number of successful sends
-     */
     public int sendBulkSMS(List<String> recipients, List<String> fullnames,
                            List<Integer> beneficiaryIds, String message,
                            int delayMsBetween, int maxRetriesPerRecipient) {
@@ -319,7 +307,6 @@ public class SMSSender {
             String errorMessage = null;
             int attempts = 0;
 
-            // Retry logic
             while (attempts < maxRetriesPerRecipient && !sent) {
                 attempts++;
                 try {
@@ -347,11 +334,9 @@ public class SMSSender {
                 successCount++;
             }
 
-            // Notify listeners about the result
             SendResult result = new SendResult(phone, fullname, message, sent, beneficiaryId, errorMessage);
             notifyListeners(result);
 
-            // Delay between sends
             if (i < recipients.size() - 1) {
                 try {
                     Thread.sleep(Math.max(0, delayMsBetween));
@@ -365,9 +350,6 @@ public class SMSSender {
         return successCount;
     }
 
-    /**
-     * Get number of consecutive failed attempts
-     */
     public synchronized int getConsecutiveFails() {
         return dongle != null ? dongle.getConsecutiveFails() : 0;
     }

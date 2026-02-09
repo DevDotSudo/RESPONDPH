@@ -28,6 +28,7 @@ public class DisasterController {
 
     @FXML private AnchorPane root;
     @FXML private TextField searchField;
+
     @FXML private Button searchBtn, addBtn, refreshBtn;
     @FXML private TableView<DisasterModel> disastersTbl;
     @FXML private TableColumn<DisasterModel, String> disaster_id;
@@ -129,6 +130,7 @@ public class DisasterController {
                             "Disaster has been successfully deleted.");
                     DashboardRefresher.refresh();
                     DashboardRefresher.refreshComboBoxOfDNAndAN();
+                    DashboardRefresher.refreshDisasterInSend();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete disaster. Please try again.");

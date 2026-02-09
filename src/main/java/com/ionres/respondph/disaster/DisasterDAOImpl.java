@@ -103,7 +103,6 @@ public class DisasterDAOImpl implements DisasterDAO{
 
             ps.setInt(1, dm.getDisasterId());
 
-
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 

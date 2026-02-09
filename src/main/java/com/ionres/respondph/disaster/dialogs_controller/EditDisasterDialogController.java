@@ -28,7 +28,7 @@ public class EditDisasterDialogController {
     @FXML private TextField latitudeFld;
     @FXML private TextField longitudeFld;
     @FXML private TextField radiusFld;
-    @FXML private TextField notesFld;
+    @FXML private TextArea notesFld;
     @FXML private Button getLocationBtn;
     private DisasterService disasterService;
     private DisasterController disasterController;

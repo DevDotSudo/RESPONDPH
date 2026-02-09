@@ -1,72 +1,138 @@
-.mapping-root {
-    -fx-font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+.root-pane {
+    -fx-background-color: #0b1220;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-.mapping-header {
-    -fx-padding: 8 0 8 0;
+.header-section {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 0 0 1px 0;
 }
 
 .page-title {
-    -fx-font-family: "Segoe UI Semibold", "Inter", sans-serif;
-    -fx-font-weight: 700;
-    -fx-font-size: 32px;
     -fx-text-fill: #ffffff;
-    -fx-letter-spacing: -0.5px;
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
 }
 
-/* Control Panel Styles */
-.control-group {
-    -fx-padding: 0;
+.page-icon {
+    -fx-fill: #ffffff;
 }
 
-.control-label {
-    -fx-text-fill: #a0aec0;
-    -fx-font-size: 12px;
-    -fx-font-weight: 500;
-    -fx-letter-spacing: 0.2px;
+.toolbar {
+    -fx-padding: 14px 0 14px 0;
 }
 
-.control-icon {
-    -fx-fill: #a0aec0;
-    -fx-icon-size: 14px;
-}
+/* Reuse "search-box" style as a filter box */
+.search-box {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.16);
 
-.disaster-combo {
-    -fx-background-color: #2d3748;
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 13px;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-border-color: #4a5568;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
     -fx-border-width: 1px;
-    -fx-padding: 8 12;
+
+    -fx-padding: 10px 14px;
+    -fx-min-height: 44px;
+}
+
+.search-icon {
+    -fx-fill: #ffffff;
+}
+
+/* We reuse search-field class for ComboBox too */
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+
+    -fx-text-fill: #ffffff;
+    -fx-prompt-text-fill: rgba(148,163,184,0.75);
+
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+}
+
+/* ComboBox internals */
+.combo-box.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.combo-box.search-field .list-cell {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+}
+
+.combo-box.search-field .arrow-button {
+    -fx-background-color: transparent;
+}
+.combo-box.search-field .arrow {
+    -fx-background-color: #ffffff;
+}
+
+/* Dropdown list */
+.combo-box-popup .list-view {
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.20);
+}
+.combo-box-popup .list-cell {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+}
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: rgba(148,163,184,0.10);
+}
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.18);
+}
+
+/* Buttons same as admin */
+.primary-button,
+.secondary-button {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 12px 20px;
+    -fx-min-height: 44px;
+
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
     -fx-cursor: hand;
 }
 
-.disaster-combo:hover {
-    -fx-border-color: #64748b;
+.secondary-button {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+}
+.secondary-button:hover {
+    -fx-border-color: rgba(249,115,22,0.60);
 }
 
-.disaster-combo:focused {
-    -fx-border-color: #3b82f6;
-    -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 4, 0, 0, 0);
+.refresh-icon {
+    -fx-fill: #ffffff;
 }
 
-.disaster-combo .list-cell {
-    -fx-background-color: #2d3748;
+.button-label {
     -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
 }
 
-.disaster-combo .list-cell:hover {
-    -fx-background-color: #4a5568;
+/* Content container */
+.table-container {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
 }
 
-/* Map Container */
+/* Map container area */
 .map-container {
-    -fx-background-color: #2d3748;
-    -fx-background-radius: 12px;
-    -fx-border-color: transparent;
-    -fx-border-radius: 12px;
-    -fx-border-width: 0px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 8, 0, 0, 2);
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.14);
+
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
 }

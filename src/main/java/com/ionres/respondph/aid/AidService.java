@@ -18,4 +18,49 @@ public interface AidService {
                                                     int availableQuantity, int quantityPerBeneficiary, int numberOfClusters);
 
 
+    int distributeAidWithKMeansByBarangay(
+            String aidName,
+            int aidTypeId,
+            int disasterId,
+            int availableQuantity,
+            int quantityPerBeneficiary,
+            double costPerUnit,
+            String provider,
+            int numberOfClusters,
+            String barangay
+    );
+
+
+    int distributeAidWithKMeansByBarangays(
+            String aidName,
+            int aidTypeId,
+            int disasterId,
+            int availableQuantity,
+            int quantityPerBeneficiary,
+            double costPerUnit,
+            String provider,
+            int numberOfClusters,
+            List<String> barangays
+    );
+
+
+    List<BeneficiaryCluster> previewAidDistributionByBarangay(
+            int aidTypeId,
+            int disasterId,
+            int availableQuantity,
+            int quantityPerBeneficiary,
+            int numberOfClusters,
+            String barangay
+    );
+
+    List<BeneficiaryCluster> previewAidDistributionByBarangays(
+            int aidTypeId,
+            int disasterId,
+            int availableQuantity,
+            int quantityPerBeneficiary,
+            int numberOfClusters,
+            List<String> barangays
+    );
+
+
 }

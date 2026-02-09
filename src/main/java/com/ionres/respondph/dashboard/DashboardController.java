@@ -10,6 +10,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import java.util.ArrayList;
@@ -18,13 +19,16 @@ import java.util.List;
 public class DashboardController {
     private final DashBoardService dashBoardService = AppContext.dashBoardService;
     private final Mapping mapping = new Mapping();
-    private final List<MapCircle> circles = new ArrayList<>();
     private final List<BeneficiaryMarker> beneficiaries = new ArrayList<>();
-
     @FXML private Pane mapContainer;
     @FXML private Label totalBeneficiaryLabel;
     @FXML private Label totalDisastersLabel;
     @FXML private Label totalAidsLabel;
+    private Image personMarker;
+    private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
+    private static final double MARKER_WIDTH = 32;
+    private static final double MARKER_HEIGHT = 32;
+    private static final double MARKER_OFFSET_Y = MARKER_HEIGHT; // Offset to place the point at the bottom
 
     private final double[][] boundary = {
             {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
@@ -41,10 +45,21 @@ public class DashboardController {
 
     public void initialize() {
         Platform.runLater(() -> {
+            // Load the marker image
+            try {
+                personMarker = new Image(getClass().getResourceAsStream("/images/person_marker.png"));
+                if (personMarker.isError()) {
+                    System.err.println("Failed to load marker image: " + personMarker.getException().getMessage());
+                    personMarker = null;
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading marker image: " + e.getMessage());
+                personMarker = null;
+            }
+
             mapping.init(mapContainer);
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
-                drawCircles();
                 drawBeneficiaries();
             });
             DashboardRefresher.register(this);
@@ -59,15 +74,39 @@ public class DashboardController {
         mapping.redraw();
     }
 
+    private boolean isPointInPolygon(double x, double y, double[][] polygon) {
+        boolean inside = false;
+        for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            double xi = polygon[i][1]; // lon
+            double yi = polygon[i][0]; // lat
+            double xj = polygon[j][1]; // lon
+            double yj = polygon[j][0]; // lat
+
+            boolean intersect = ((yi > y) != (yj > y))
+                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+
     private void drawBeneficiaries() {
         if (!mapping.isInitialized() || beneficiaries.isEmpty()) {
             return;
         }
 
+        // ────────────────────────────────────────────────
+        // Only draw markers when zoomed in enough
+        if (mapping.getZoom() < MIN_ZOOM_FOR_MARKERS) {
+            return;
+        }
+        // ────────────────────────────────────────────────
+
         GraphicsContext gc = mapping.getGc();
-        double canvasWidth = mapping.getCanvas().getWidth();
+        double canvasWidth  = mapping.getCanvas().getWidth();
         double canvasHeight = mapping.getCanvas().getHeight();
-        
+
         double padding = 50;
         double minX = -padding;
         double maxX = canvasWidth + padding;
@@ -79,81 +118,33 @@ public class DashboardController {
                 continue;
             }
 
+            // Optional: still filter by polygon (most apps keep this)
+            if (!isPointInPolygon(b.lon, b.lat, boundary)) {
+                continue;
+            }
+
             try {
                 Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
-                
+
                 if (p.x < 0 || p.y < 0) {
                     continue;
                 }
 
                 if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) {
-                    gc.setFill(Color.RED);
-                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
+                    if (personMarker != null) {
+                        double markerX = p.x - (MARKER_WIDTH / 2);
+                        double markerY = p.y - MARKER_OFFSET_Y;
 
-                    gc.setStroke(Color.DARKRED);
-                    gc.setLineWidth(1.5);
-                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
-                }
-            } catch (Exception e) {
-                continue;
-            }
-        }
-    }
-
-    private void drawCircles() {
-        if (!mapping.isInitialized() || circles.isEmpty()) {
-            return;
-        }
-
-        GraphicsContext gc = mapping.getGc();
-        double canvasWidth = mapping.getCanvas().getWidth();
-        double canvasHeight = mapping.getCanvas().getHeight();
-        
-        double padding = 2000;
-        double minX = -padding;
-        double maxX = canvasWidth + padding;
-        double minY = -padding;
-        double maxY = canvasHeight + padding;
-
-        for (MapCircle c : circles) {
-            try {
-                if (!Mapping.isValidCoordinate(c.lat, c.lon) ||
-                    Double.isNaN(c.meters) || c.meters <= 0) {
-                    continue;
-                }
-
-                Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
-                
-                if (center.x < 0 || center.y < 0) {
-                    continue;
-                }
-
-                double px = c.meters / mapping.metersPerPixel(c.lat);
-                
-                if (center.x < minX || center.x > maxX ||
-                    center.y < minY || center.y > maxY) {
-                    if (center.x + px < minX || center.x - px > maxX ||
-                        center.y + px < minY || center.y - px > maxY) {
-                        continue;
+                        gc.drawImage(personMarker, markerX, markerY, MARKER_WIDTH, MARKER_HEIGHT);
+                    } else {
+                        // fallback
+                        gc.setFill(Color.RED);
+                        gc.fillOval(p.x - 5, p.y - 5, 10, 10);
+                        gc.setStroke(Color.DARKRED);
+                        gc.setLineWidth(1.5);
+                        gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
                     }
                 }
-
-                gc.setFill(Color.rgb(255, 0, 0, 0.25));
-                gc.fillOval(
-                        center.x - px,
-                        center.y - px,
-                        px * 2,
-                        px * 2
-                );
-
-                gc.setStroke(Color.RED);
-                gc.setLineWidth(2);
-                gc.strokeOval(
-                        center.x - px,
-                        center.y - px,
-                        px * 2,
-                        px * 2
-                );
             } catch (Exception e) {
                 continue;
             }
@@ -162,11 +153,31 @@ public class DashboardController {
 
     private void drawBoundary() {
         GraphicsContext gc = mapping.getGc();
-        gc.setStroke(Color.RED);
-        gc.setLineWidth(2);
+
+        // ===== Shadow Layer (dark red glow) =====
+        gc.setStroke(Color.rgb(120, 0, 0, 0.35));
+        gc.setLineWidth(6); // thicker shadow
         gc.beginPath();
 
         boolean first = true;
+        for (double[] c : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
+            if (first) {
+                gc.moveTo(p.x, p.y);
+                first = false;
+            } else {
+                gc.lineTo(p.x, p.y);
+            }
+        }
+        gc.closePath();
+        gc.stroke();
+
+
+        gc.setStroke(Color.rgb(255, 50, 50, 0.9));
+        gc.setLineWidth(2.5); // normal line thickness
+        gc.beginPath();
+
+        first = true;
         for (double[] c : boundary) {
             Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
             if (first) {
@@ -184,16 +195,5 @@ public class DashboardController {
         totalBeneficiaryLabel.setText(String.valueOf(dashBoardService.fetchTotalBeneficiary()));
         totalDisastersLabel.setText(String.valueOf(dashBoardService.fetchTotalDisasters()));
         totalAidsLabel.setText(String.valueOf(dashBoardService.fetchTotalAids()));
-    }
-
-    private static class MapCircle {
-        double lat;
-        double lon;
-        double meters;
-        MapCircle(double lat,double lon,double meters){
-            this.lat=lat;
-            this.lon=lon;
-            this.meters=meters;
-        }
     }
 }

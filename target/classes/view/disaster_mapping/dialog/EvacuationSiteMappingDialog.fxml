@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="evacMappingRoot" alignment="CENTER" prefHeight="900.0" prefWidth="1200.0" styleClass="map-dialog-container" stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController">
+
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="map-dialog-header">
+        <FontAwesomeIconView glyphName="HOME" size="24" styleClass="map-header-icon" />
+        <Label styleClass="map-dialog-title" text="Evacuation Site Mapping" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="closeButton" styleClass="map-close-button">
+            <graphic>
+                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="map-close-icon" />
+            </graphic>
+        </Button>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="disaster-info-bar">
+        <padding>
+            <Insets bottom="16" left="32" right="32" top="16" />
+        </padding>
+        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="18" styleClass="disaster-info-icon" />
+        <Label fx:id="disasterInfoLabel" styleClass="disaster-info-label" text="No disaster selected" />
+    </HBox>
+
+    <Pane fx:id="mappingContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
+
+    <VBox alignment="CENTER" styleClass="map-error-container">
+        <Label fx:id="errorLabel" managed="false" styleClass="map-error-label" visible="false" />
+    </VBox>
+
+</VBox>

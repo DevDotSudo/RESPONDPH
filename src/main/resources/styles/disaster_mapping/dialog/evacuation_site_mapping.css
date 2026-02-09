@@ -1,98 +1,179 @@
-/* Main Container */
-.map-dialog-container {
-    -fx-background-color: #1e293b;
-    -fx-border-color: #475569;
+.dialog-root {
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 1px;
-    -fx-border-radius: 16px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 25, 0, 0, 8);
-}
-
-/* Header Section */
-.map-dialog-header {
-    -fx-background-color: #334155;
-    -fx-background-radius: 16px 16px 0 0;
-    -fx-padding: 20px 32px;
-    -fx-border-color: #475569;
-    -fx-border-width: 0 0 1px 0;
-}
-
-.map-header-icon {
-    -fx-fill: #10b981;
-}
-
-.map-dialog-title {
-    -fx-font-family: "Segoe UI";
-    -fx-font-weight: 700;
-    -fx-font-size: 24px;
-    -fx-text-fill: #f8fafc;
-}
-
-.map-close-button {
-    -fx-background-color: transparent;
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 20, 0.0, 0, 4);
+}
+
+/* ---------- HEADER ---------- */
+.dialog-header {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-radius: 8px 8px 0 0;
+}
+
+.header-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.40), 8, 0.0, 0, 0);
+}
+
+.dialog-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 21px;
+    -fx-font-weight: 900;
+}
+
+.dialog-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+/* ---------- CHIP ---------- */
+.chip {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 12px;
+    -fx-font-weight: 900;
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-border-color: rgba(249,115,22,0.35);
+    -fx-border-width: 1px;
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-padding: 6px 14px;
+}
+
+/* ---------- CLOSE BUTTON ---------- */
+.dialog-close {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 12px;
     -fx-cursor: hand;
-    -fx-padding: 8px;
-    -fx-min-width: 40px;
-    -fx-min-height: 40px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+.dialog-close:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+}
+.dialog-close:pressed { -fx-background-color: rgba(239,68,68,0.18); }
+.close-icon { -fx-fill: rgba(248,250,252,0.95); }
+
+/* ---------- BODY ---------- */
+.dialog-body { -fx-background-color: transparent; }
+
+/* ---------- INFO CARD ---------- */
+.info-card {
+    -fx-background-color: rgba(59,130,246,0.08);
+    -fx-border-color: rgba(59,130,246,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 14px 16px;
 }
 
-.map-close-button:hover {
-    -fx-background-color: #475569;
+.info-card-icon { -fx-fill: rgba(96,165,250,0.95); }
+
+.info-card-title {
+    -fx-text-fill: rgba(147,197,253,0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
 }
 
-.map-close-icon {
-    -fx-fill: #94a3b8;
+.info-card-text {
+    -fx-text-fill: rgba(226,232,240,0.92);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
 }
 
-.map-close-button:hover .map-close-icon {
-    -fx-fill: #ef4444;
+/* right pill */
+.pill {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 12px;
+    -fx-font-weight: 900;
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-border-color: rgba(249,115,22,0.35);
+    -fx-border-width: 1px;
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-padding: 6px 14px;
 }
 
-/* Disaster Info Bar */
-.disaster-info-bar {
-    -fx-background-color: #1e293b;
-    -fx-border-color: #475569;
+/* ---------- SECTION CARD ---------- */
+.form-section {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
+}
+
+.section-header {
+    -fx-padding: 0 0 12px 0;
+    -fx-border-color: rgba(148,163,184,0.08);
     -fx-border-width: 0 0 1px 0;
 }
 
-.disaster-info-icon {
-    -fx-fill: #f59e0b;
+.section-icon { -fx-fill: rgba(249,115,22,0.90); }
+
+.section-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 16.5px;
+    -fx-font-weight: 900;
 }
 
-.disaster-info-label {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 15px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #f8fafc;
+.section-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.75);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(249,115,22,0.10);
+    -fx-background-radius: 12px;
+    -fx-padding: 4px 12px;
 }
 
-/* Map Container */
-.map-container {
-    -fx-background-color: #0f172a;
-    -fx-border-color: #475569;
+/* ---------- MAP SURFACE ---------- */
+.map-surface {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.14);
     -fx-border-width: 1px;
-    -fx-border-radius: 12px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
 }
 
-/* Error Container */
-.map-error-container {
-    -fx-padding: 0 32px 0 32px;
-    -fx-background-color: transparent;
+.map-surface:hover {
+    -fx-border-color: rgba(249,115,22,0.35);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.18), 10, 0.0, 0, 0);
 }
 
-.map-error-label {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 14px;
-    -fx-text-fill: #ef4444;
-    -fx-padding: 14px 24px;
-    -fx-background-color: rgba(239, 68, 68, 0.1);
-    -fx-background-radius: 10px;
-    -fx-border-color: #ef4444;
+/* ---------- ERROR BOX ---------- */
+.error-box {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.25);
     -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-text-alignment: center;
-    -fx-alignment: center;
-    -fx-max-width: Infinity;
-    -fx-wrap-text: true;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 12px 14px;
+}
+
+.error-icon { -fx-fill: rgba(248,113,113,0.98); }
+
+.error-text {
+    -fx-text-fill: rgba(248,113,113,0.98);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+/* Remove default focus rings */
+.button:focused, .text-field:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
 }

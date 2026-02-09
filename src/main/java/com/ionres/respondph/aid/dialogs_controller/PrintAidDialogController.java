@@ -27,14 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * PrintAidDialogController with Barangay Filtering and K-Means Score Sorting
- *
- * Features:
- * - Filter beneficiaries by barangay
- * - Sort by K-means priority scores (highest first)
- * - Show disaster, aid type, and barangay information
- */
+
 public class PrintAidDialogController {
 
     @FXML private ComboBox<DisasterModelComboBox> disasterComboBox;

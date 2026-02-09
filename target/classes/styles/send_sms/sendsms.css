@@ -1,339 +1,386 @@
-/* ==============================
-   BASE / ROOT (same as ManageAdmin)
-================================ */
 .send-sms-root {
     -fx-background-color: #0b1220;
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-/* ==============================
-   HEADER (same vibe as ManageAdmin header-section)
-================================ */
+/* ---------- HEADER ---------- */
 .header-section {
     -fx-background-color: transparent;
-    -fx-padding: 0 0 10px 0;
     -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 0 0 1px 0;
 }
 
 .page-title {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-size: 24px;
     -fx-font-weight: 900;
 }
 
 .page-subtitle {
-    -fx-text-fill: rgba(148,163,184,0.80);
-    -fx-font-size: 13px;
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 14px;
     -fx-font-weight: 600;
 }
 
+/* Network status */
 .network-status-label {
-    -fx-text-fill: rgba(226,232,240,0.90);
+    -fx-text-fill: rgba(226,232,240,0.92);
     -fx-font-size: 13px;
     -fx-font-weight: 700;
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-padding: 6px 12px;
 }
 
-/* ==============================
-   SCROLLPANE (remove white background)
-================================ */
+/* ---------- SCROLL ---------- */
 .content-scroll {
+    -fx-background-color: transparent;
     -fx-background: transparent;
-    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
+.content-scroll .viewport { -fx-background-color: transparent; }
+.content-scroll .corner { -fx-background-color: transparent; }
 
-.content-scroll .viewport {
-    -fx-background-color: transparent;
-}
-
+/* Scrollbars (same style as your dialogs) */
 .content-scroll .scroll-bar:vertical,
 .content-scroll .scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-padding: 2px;
 }
-
 .content-scroll .scroll-bar .track {
-    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-background-color: rgba(148,163,184,0.08);
+    -fx-background-radius: 6px;
 }
-
 .content-scroll .scroll-bar .thumb {
-    -fx-background-color: rgba(148, 163, 184, 0.25);
-    -fx-background-radius: 8px;
+    -fx-background-color: rgba(249,115,22,0.30);
+    -fx-background-radius: 6px;
+}
+.content-scroll .scroll-bar .thumb:hover { -fx-background-color: rgba(249,115,22,0.50); }
+.content-scroll .scroll-bar .thumb:pressed { -fx-background-color: rgba(249,115,22,0.70); }
+.content-scroll .increment-button,
+.content-scroll .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 
-.content-scroll .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148, 163, 184, 0.40);
-}
-
-/* Container spacing */
 .content-container {
     -fx-background-color: transparent;
 }
 
-/* ==============================
-   SECTION CARDS (news-section / message-section)
-   Styled like ManageAdmin tables/cards
-================================ */
+/* ---------- SECTION CARDS ---------- */
 .news-section,
 .message-section {
-    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-background-color: rgba(255,255,255,0.025);
     -fx-border-color: rgba(148,163,184,0.14);
     -fx-border-width: 1px;
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-padding: 16px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 20px 20px 18px 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
 }
 
-/* Section title */
 .section-title {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 16px;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 16.5px;
     -fx-font-weight: 900;
 }
 
-/* Small label */
+/* Inner containers */
+.news-input-container,
+.message-input-container {
+    -fx-background-color: transparent;
+}
+
+/* ---------- LABELS ---------- */
 .input-label {
     -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13px;
+    -fx-font-size: 13.5px;
     -fx-font-weight: 800;
 }
 
-/* ==============================
-   BUTTONS (same as ManageAdmin)
-================================ */
+/* ---------- BUTTONS ---------- */
 .primary-button,
 .secondary-button,
 .generate-button {
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
     -fx-padding: 12px 20px;
     -fx-min-height: 44px;
-
-    -fx-font-size: 15px;
-    -fx-font-weight: 800;
+    -fx-pref-height: 44px;
+    -fx-max-height: 44px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
     -fx-cursor: hand;
 }
 
-/* Orange primary */
-.primary-button,
-.generate-button {
-    -fx-background-color: rgba(249,115,22,0.95);
-    -fx-border-color: rgba(249,115,22,0.55);
+/* Primary */
+.primary-button {
+    -fx-background-color: rgba(249,115,22,0.92);
+    -fx-text-fill: rgba(255,255,255,0.98);
+    -fx-border-color: rgba(249,115,22,0.30);
     -fx-border-width: 1px;
-    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 10, 0.0, 0, 3);
 }
-.primary-button:hover,
-.generate-button:hover {
-    -fx-background-color: rgba(249,115,22,1.0);
+.primary-button:hover {
+    -fx-background-color: rgba(249,115,22,1.00);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.45), 14, 0.0, 0, 4);
+}
+.primary-button:pressed {
+    -fx-background-color: rgba(234,88,12,1.00);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
 
-/* Flat secondary */
+/* Secondary */
 .secondary-button {
     -fx-background-color: rgba(255,255,255,0.04);
     -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 1px;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: rgba(226,232,240,0.95);
 }
 .secondary-button:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
     -fx-border-color: rgba(249,115,22,0.60);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+.secondary-button:pressed {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
 
-/* ==============================
-   COMBOBOX (recipient-combo)
-================================ */
-.recipient-combo {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.16);
+/* Generate button = primary-ish */
+.generate-button {
+    -fx-background-color: rgba(249,115,22,0.92);
+    -fx-text-fill: rgba(255,255,255,0.98);
+    -fx-border-color: rgba(249,115,22,0.30);
     -fx-border-width: 1px;
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.25), 10, 0.0, 0, 3);
+}
+.generate-button:hover { -fx-background-color: rgba(249,115,22,1.00); }
+.generate-button:pressed { -fx-background-color: rgba(234,88,12,1.00); }
 
+/* ---------- COMBO BOX (MATCH disaster_mapping.css) ---------- */
+.recipient-combo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+}
+
+.recipient-combo > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-size: 14px;
     -fx-font-weight: 700;
-    -fx-prompt-text-fill: rgba(148,163,184,0.75);
+    -fx-padding: 0;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+    -fx-alignment: CENTER_LEFT;
 }
 
-.recipient-combo .list-cell {
-    -fx-text-fill: #ffffff;
-    -fx-background-color: transparent;
-    -fx-font-weight: 700;
+.recipient-combo .list-cell:empty {
+    -fx-text-fill: rgba(148,163,184,0.60);
 }
+.recipient-combo > .list-cell:empty .text {
+    -fx-fill: rgba(148,163,184,0.60);
+}
+
 .recipient-combo .arrow-button {
     -fx-background-color: transparent;
-}
-.recipient-combo:focused {
-    -fx-border-color: rgba(249,115,22,0.65);
+    -fx-padding: 0 10px 0 12px;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
 }
 
-/* Dropdown list styling */
+.recipient-combo .arrow {
+    -fx-background-color: rgba(226,232,240,0.65);
+}
+
+.recipient-combo:hover .arrow {
+    -fx-background-color: rgba(249,115,22,0.75);
+}
+
+/* popup dropdown */
 .combo-box-popup .list-view {
-    -fx-background-color: #0b1220;
-    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-background-color: #0f172a;
+    -fx-border-color: rgba(148,163,184,0.25);
     -fx-border-width: 1px;
-}
-.combo-box-popup .list-view .list-cell {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-background-color: transparent;
-}
-.combo-box-popup .list-view .list-cell:hover {
-    -fx-background-color: rgba(148,163,184,0.10);
-}
-.combo-box-popup .list-view .list-cell:selected {
-    -fx-background-color: rgba(249,115,22,0.18);
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 16, 0.0, 0, 4);
 }
 
-/* ==============================
-   TEXTAREA (message-textarea)
-================================ */
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 700;
+    -fx-padding: 11px 12px;
+    -fx-background-radius: 5px;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-text-fill: rgba(248,250,252,0.98);
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.22);
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-weight: 800;
+}
+
+/* ---------- MAKE COMBO VISUALLY LOOK LIKE INPUT (wrapper style) ---------- */
+/* Use this when combo is placed directly in the layout without a container */
+.recipient-combo.combo-box-base {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 0 12px;
+    -fx-min-height: 44px;
+    -fx-pref-height: 44px;
+}
+.recipient-combo.combo-box-base:hover {
+    -fx-border-color: rgba(249,115,22,0.40);
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+
+/* ---------- TEXT AREA ---------- */
 .message-textarea {
     -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.16);
+    -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 1px;
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-prompt-text-fill: rgba(148,163,184,0.75);
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px;
+    -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-size: 14px;
     -fx-font-weight: 700;
-
-    -fx-padding: 10px 12px;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60);
+}
+.message-textarea:hover {
+    -fx-border-color: rgba(249,115,22,0.40);
+    -fx-background-color: rgba(255,255,255,0.05);
 }
 .message-textarea .content {
     -fx-background-color: transparent;
 }
-.message-textarea:focused {
-    -fx-border-color: rgba(249,115,22,0.65);
+.text-area.message-textarea {
+    -fx-highlight-fill: rgba(249,115,22,0.30);
+    -fx-highlight-text-fill: white;
+    -fx-caret-color: rgba(249,115,22,0.95);
 }
 
-/* ==============================
-   RADIO BUTTONS
-================================ */
+/* ---------- RADIO BUTTONS ---------- */
 .radio-button {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13px;
-    -fx-font-weight: 700;
+    -fx-text-fill: rgba(226,232,240,0.92);
+    -fx-font-weight: 800;
 }
 .radio-button .radio {
-    -fx-mark-color: rgba(249,115,22,0.95);
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-padding: 4px;
+}
+.radio-button:selected .dot {
+    -fx-background-color: rgba(249,115,22,0.95);
 }
 
-/* Character count */
+/* ---------- CHAR COUNT ---------- */
 .char-count {
     -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12px;
+    -fx-font-size: 12.5px;
     -fx-font-weight: 800;
 }
 
-/* ==============================
-   AI RESPONSE AREA
-================================ */
+/* ---------- AI RESPONSE ---------- */
 .ai-response-label {
     -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13px;
-    -fx-font-weight: 800;
-}
-
-/* optional: make radio options look nicer when you add them dynamically */
-.radio-button:hover {
-    -fx-background-color: rgba(148,163,184,0.08);
-    -fx-background-radius: 5px;
-}
-
-/* ==============================
-   TABLE (logs-table) -> same as ManageAdmin admin-table
-================================ */
-.logs-table {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148,163,184,0.14);
-
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-border-width: 1px;
-
-    -fx-control-inner-background: rgba(255,255,255,0.03);
-    -fx-control-inner-background-alt: rgba(255,255,255,0.02);
-}
-
-/* Kill white inner sheet */
-.logs-table .virtual-flow,
-.logs-table .virtual-flow .clipped-container,
-.logs-table .virtual-flow .sheet {
-    -fx-background-color: transparent;
-}
-
-.logs-table .column-header-background {
-    -fx-background-color: rgba(255,255,255,0.05);
-    -fx-background-radius: 5px 5px 0 0;
-}
-
-.logs-table .column-header .label {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 15px;
+    -fx-font-size: 13.5px;
     -fx-font-weight: 900;
 }
 
+/* style dynamically added radio options */
+.ai-option {
+    -fx-text-fill: rgba(226,232,240,0.92);
+    -fx-font-weight: 800;
+}
+
+/* ---------- TABLE ---------- */
+.logs-table {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 0;
+}
+
+/* header */
+.logs-table .column-header-background {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-background-radius: 7px 7px 0 0;
+}
 .logs-table .column-header,
 .logs-table .filler {
     -fx-background-color: transparent;
-    -fx-size: 42px;
-    -fx-border-color: rgba(148, 163, 184, 0.10);
-    -fx-border-width: 0 1px 0 0;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+}
+.logs-table .column-header .label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-weight: 900;
+    -fx-font-size: 12.5px;
 }
 
+/* rows */
 .logs-table .table-row-cell {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 0 1px 0;
 }
-
-.logs-table .table-row-cell:even {
-    -fx-background-color: rgba(255,255,255,0.01);
+.logs-table .table-row-cell:filled:hover {
+    -fx-background-color: rgba(249,115,22,0.08);
 }
-
-.logs-table .table-row-cell:hover {
-    -fx-background-color: rgba(148,163,184,0.08);
-}
-
-.logs-table .table-row-cell:selected {
+.logs-table .table-row-cell:filled:selected {
     -fx-background-color: rgba(249,115,22,0.14);
-    -fx-border-color: rgba(249,115,22,0.75);
-    -fx-border-width: 0 0 0 3px;
 }
 
+/* text */
 .logs-table .table-cell {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 14px;
+    -fx-text-fill: rgba(226,232,240,0.92);
     -fx-font-weight: 700;
-
-    -fx-padding: 14px;
-    -fx-alignment: CENTER;
-
-    -fx-background-color: transparent;
+    -fx-padding: 12px 12px;
 }
 
-/* Corner (top-left) */
-.logs-table .corner {
-    -fx-background-color: rgba(255,255,255,0.04);
-}
-
-/* Table scrollbars */
-.logs-table .scroll-bar:vertical,
-.logs-table .scroll-bar:horizontal {
-    -fx-background-color: transparent;
-}
-.logs-table .scroll-bar .track {
-    -fx-background-color: rgba(255,255,255,0.04);
-}
-.logs-table .scroll-bar .thumb {
-    -fx-background-color: rgba(148, 163, 184, 0.25);
-    -fx-background-radius: 8px;
-}
-.logs-table .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148, 163, 184, 0.40);
-}
-
-/* Logs small text */
+/* ---------- SMALL LABELS ---------- */
 .logs-count {
     -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 800;
+}
+
+/* ---------- FOCUS RESET ---------- */
+.button:focused,
+.combo-box:focused,
+.text-field:focused,
+.text-area:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
 }

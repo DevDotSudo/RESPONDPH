@@ -3,9 +3,9 @@
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
 
+/* ---------- HEADER SECTION ---------- */
 .header-section {
     -fx-background-color: transparent;
-    -fx-padding: 0;
     -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 0 0 1px 0;
 }
@@ -20,119 +20,134 @@
     -fx-fill: #ffffff;
 }
 
+/* ---------- TOOLBAR ---------- */
 .toolbar {
-    -fx-padding: 14px 0 14px 0;
+    -fx-padding: 14px 0;
 }
 
-/* Reuse "search-box" style as a filter box */
+/* Search/Filter Box Container */
 .search-box {
     -fx-background-color: rgba(255,255,255,0.04);
     -fx-border-color: rgba(148,163,184,0.16);
-
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
     -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 11px 14px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
 
-    -fx-padding: 10px 14px;
-    -fx-min-height: 44px;
+.search-box:hover {
+    -fx-border-color: rgba(249,115,22,0.40);
+    -fx-background-color: rgba(255,255,255,0.05);
 }
 
 .search-icon {
-    -fx-fill: #ffffff;
+    -fx-fill: rgba(226,232,240,0.70);
 }
 
-/* We reuse search-field class for ComboBox too */
+/* ---------- COMBO BOX STYLING (Matching addbeneficiariesdialog) ---------- */
 .search-field {
     -fx-background-color: transparent;
-    -fx-border-width: 0;
-
-    -fx-text-fill: #ffffff;
-    -fx-prompt-text-fill: rgba(148,163,184,0.75);
-
-    -fx-font-size: 15px;
-    -fx-font-weight: 600;
-}
-
-/* ComboBox internals */
-.combo-box.search-field {
-    -fx-background-color: transparent;
     -fx-border-color: transparent;
-}
-
-.combo-box.search-field .list-cell {
-    -fx-text-fill: #ffffff;
-    -fx-background-color: transparent;
-    -fx-font-size: 15px;
-    -fx-font-weight: 600;
-}
-
-.combo-box.search-field .arrow-button {
-    -fx-background-color: transparent;
-}
-.combo-box.search-field .arrow {
-    -fx-background-color: #ffffff;
-}
-
-/* Dropdown list */
-.combo-box-popup .list-view {
-    -fx-background-color: #0b1220;
-    -fx-border-color: rgba(148,163,184,0.20);
-}
-.combo-box-popup .list-cell {
-    -fx-text-fill: #ffffff;
-    -fx-background-color: transparent;
-}
-.combo-box-popup .list-cell:hover {
-    -fx-background-color: rgba(148,163,184,0.10);
-}
-.combo-box-popup .list-cell:selected {
-    -fx-background-color: rgba(249,115,22,0.18);
-}
-
-/* Buttons same as admin */
-.primary-button,
-.secondary-button {
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-padding: 12px 20px;
-    -fx-min-height: 44px;
-
-    -fx-font-size: 15px;
-    -fx-font-weight: 800;
-    -fx-cursor: hand;
-}
-
-.secondary-button {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-}
-.secondary-button:hover {
-    -fx-border-color: rgba(249,115,22,0.60);
-}
-
-.refresh-icon {
-    -fx-fill: #ffffff;
-}
-
-.button-label {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 15px;
-    -fx-font-weight: 800;
-}
-
-/* Content container */
-.table-container {
     -fx-padding: 0;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+}
+
+.search-field > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-padding: 0;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.search-field .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10px 0 12px;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+}
+
+.search-field .arrow {
+    -fx-background-color: rgba(226,232,240,0.65);
+}
+
+.search-field:hover .arrow {
+    -fx-background-color: rgba(249,115,22,0.75);
+}
+
+/* Combo box dropdown popup (Matching addbeneficiariesdialog exactly) */
+.combo-box-popup .list-view {
+    -fx-background-color: #0f172a;
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 16, 0.0, 0, 4);
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 700;
+    -fx-padding: 11px 12px;
+    -fx-background-radius: 5px;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-text-fill: rgba(248,250,252,0.98);
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.22);
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-weight: 800;
+}
+
+/* ---------- TABLE CONTAINER (MAP AREA) ---------- */
+.table-container {
     -fx-background-color: transparent;
 }
 
-/* Map container area */
+/* ---------- MAP CONTAINER ---------- */
 .map-container {
     -fx-background-color: rgba(255,255,255,0.03);
     -fx-border-color: rgba(148,163,184,0.14);
-
+    -fx-border-width: 1px;
     -fx-background-radius: 5px;
     -fx-border-radius: 5px;
-    -fx-border-width: 1px;
+    -fx-min-height: 600px;
+}
+
+/* ---------- FOCUS STATES ---------- */
+.search-field:filled:focused,
+.search-field:filled:selected {
+    -fx-background-color: rgba(249,115,22,0.08);
+    -fx-border-color: rgba(249,115,22,0.75);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.25), 8, 0.0, 0, 0);
+}
+
+/* Remove default focus indicators */
+.combo-box:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}
+
+/* ---------- REGION (SPACER) ---------- */
+.toolbar > .region {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: infinity;
 }

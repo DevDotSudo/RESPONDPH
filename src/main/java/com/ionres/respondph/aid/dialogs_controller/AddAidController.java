@@ -31,7 +31,6 @@ public class AddAidController {
     @FXML private Button saveAidBtn;
     @FXML private Button cancelBtn;
     @FXML private Button closeBtn;
-    @FXML private Label infoLabel;
     @FXML private HBox simpleDistributionWarning;
     @FXML private HBox selectionSummaryBox;
     @FXML private Label selectionSummaryLabel;
@@ -187,16 +186,9 @@ public class AddAidController {
                     eligibleCount
             ));
 
-            infoLabel.setText(String.format(
-                    "Distributing %s for %s disaster%s",
-                    selectedAidType.getAidName(),
-                    selectedDisaster.getDisasterName(),
-                    barangayInfo
-            ));
         } else {
             selectionSummaryBox.setVisible(false);
             selectionSummaryBox.setManaged(false);
-            infoLabel.setText("Select aid type and disaster to begin distribution");
         }
     }
 

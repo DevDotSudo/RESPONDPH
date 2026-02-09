@@ -1,95 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/17.0.12"
-      xmlns:fx="http://javafx.com/fxml/1"
-      stylesheets="@/styles/send_sms/sendsms.css"
-      fx:controller="com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController"
-      spacing="15"
-      prefWidth="700"
-      prefHeight="600"
-      styleClass="dialog-container">
+<VBox fx:id="root" prefHeight="700" prefWidth="900" spacing="0" styleClass="dialog-root" stylesheets="@/styles/send_sms/dialog/beneficiaryselectiondialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController">
 
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+    <!-- ==================== HEADER ==================== -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
+        <padding>
+            <Insets bottom="18" left="20" right="20" top="18" />
+        </padding>
 
-    <HBox alignment="CENTER_LEFT" spacing="15">
-        <Label text="Select Beneficiaries" styleClass="dialog-title"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="lblSelectedCount"
-               text="Selected: 0"
-               styleClass="selection-count-label"/>
+        <FontAwesomeIconView glyphName="USERS" size="22" styleClass="header-icon" />
+
+        <VBox spacing="2">
+            <Label styleClass="dialog-title" text="Select Beneficiaries" />
+            <Label styleClass="dialog-subtitle" text="Search and choose recipients. Use checkboxes or Select All." />
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <!-- optional close button (keeps controller intact) -->
+        <Button fx:id="btnCancel" onAction="#onCancel" prefHeight="42" prefWidth="44" styleClass="dialog-close" text="✕" />
     </HBox>
 
-    <Separator/>
+    <!-- ==================== BODY ==================== -->
+    <VBox spacing="16" styleClass="dialog-body">
+        <padding>
+            <Insets bottom="18" left="20" right="20" top="18" />
+        </padding>
 
-    <!-- Search Box -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Search:" styleClass="input-label"/>
-        <TextField fx:id="txtSearch"
-                   promptText="Search by name, barangay, or phone..."
-                   HBox.hgrow="ALWAYS"
-                   styleClass="search-field"/>
-        <Button text="Clear Search"
-                onAction="#onClearSearch"
-                styleClass="secondary-button"/>
+        <!-- Search + actions card -->
+        <VBox spacing="14" styleClass="form-section">
+
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                <FontAwesomeIconView glyphName="SEARCH" size="18" styleClass="section-icon" />
+                <Label styleClass="section-title" text="Filter &amp; Selection" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblTotalCount" styleClass="section-subtitle" text="Total: 0" />
+            </HBox>
+
+            <!-- Search row -->
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label styleClass="field-label" text="Search" />
+
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input" HBox.hgrow="ALWAYS">
+                    <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="field-icon" />
+                    <TextField fx:id="txtSearch" promptText="Search by name, barangay, or phone..." styleClass="field-input" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <Button onAction="#onClearSearch" styleClass="btn-secondary" text="Clear" />
+            </HBox>
+        </VBox>
+
+        <Separator />
+
+         <!-- Selection actions -->
+         <HBox alignment="CENTER_LEFT" spacing="10">
+             <Button onAction="#onSelectAll" styleClass="btn-secondary" text="Select All" />
+
+             <Button onAction="#onDeselectAll" styleClass="btn-secondary" text="Deselect All" />
+
+             <Region HBox.hgrow="ALWAYS" />
+
+             <Label styleClass="field-helper-text" text="Tip: You can still scroll while selecting." />
+         </HBox>
+
+        <!-- Table card -->
+        <VBox spacing="12" styleClass="form-section" VBox.vgrow="ALWAYS">
+
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                <FontAwesomeIconView glyphName="LIST" size="18" styleClass="section-icon" />
+                <Label styleClass="section-title" text="Beneficiaries" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label styleClass="section-subtitle" text="Tick to include" />
+      
+                 <Label fx:id="lblSelectedCount" styleClass="selection-count-label" text="Selected: 0" />
+            </HBox>
+
+            <TableView fx:id="tblBeneficiaries" styleClass="beneficiary-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colCheckbox" prefWidth="54" sortable="false"/>
+                    <TableColumn fx:id="colName" prefWidth="260" text="Full Name" />
+                    <TableColumn fx:id="colBarangay" prefWidth="170" text="Barangay" />
+                    <TableColumn fx:id="colPhone" prefWidth="170" text="Mobile Number" />
+                    <TableColumn fx:id="colAddress" prefWidth="180" text="Coordinates" />
+                </columns>
+
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <!-- ==================== FOOTER ==================== -->
+    <HBox alignment="CENTER_RIGHT" spacing="14" styleClass="dialog-footer">
+        <padding>
+            <Insets bottom="16" left="20" right="20" top="16" />
+        </padding>
+
+        <Button onAction="#onCancel" prefWidth="120" styleClass="btn-secondary" text="Cancel" />
+
+        <Button fx:id="btnOk" onAction="#onOk" prefWidth="160" styleClass="btn-primary" text="Use Selected" />
     </HBox>
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Select All"
-                onAction="#onSelectAll"
-                styleClass="secondary-button"/>
-        <Button text="Deselect All"
-                onAction="#onDeselectAll"
-                styleClass="secondary-button"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="lblTotalCount"
-               text="Total: 0"
-               styleClass="total-count-label"/>
-    </HBox>
-
-    <!-- Table -->
-    <TableView fx:id="tblBeneficiaries"
-               VBox.vgrow="ALWAYS"
-               styleClass="beneficiary-table">
-        <columns>
-            <TableColumn fx:id="colCheckbox"
-                         text=""
-                         prefWidth="50"
-                         sortable="false"/>
-            <TableColumn fx:id="colName"
-                         text="Full Name"
-                         prefWidth="200"/>
-            <TableColumn fx:id="colBarangay"
-                         text="Barangay"
-                         prefWidth="150"/>
-            <TableColumn fx:id="colPhone"
-                         text="Mobile Number"
-                         prefWidth="150"/>
-            <TableColumn fx:id="colAddress"
-                         text="Coordinates"
-                         prefWidth="150"/>
-        </columns>
-        <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-        </columnResizePolicy>
-    </TableView>
-
-    <!-- Action Buttons -->
-    <HBox spacing="15" alignment="CENTER_RIGHT">
-        <Button fx:id="btnCancel"
-                text="Cancel"
-                onAction="#onCancel"
-                styleClass="secondary-button"
-                prefWidth="100"/>
-        <Button fx:id="btnOk"
-                text="OK"
-                onAction="#onOk"
-                styleClass="primary-button"
-                prefWidth="100"/>
-    </HBox>
 </VBox>

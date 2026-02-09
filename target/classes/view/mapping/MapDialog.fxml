@@ -5,35 +5,82 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="mappingDialogRoot" prefHeight="900.0" prefWidth="1200.0" styleClass="map-dialog-container" stylesheets="@/styles/mapping/mappingdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.common.controller.MappingDialogController">
-    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="map-dialog-header">
-        <FontAwesomeIconView glyphName="MAP_MARKER" size="24" styleClass="map-header-icon" />
-        <Label fx:id="mapDialogTitle" styleClass="map-dialog-title" text="Select Location" />
-        <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="mapCloseButton" styleClass="map-close-button">
+<VBox fx:id="mappingDialogRoot"
+      prefHeight="900.0" prefWidth="1200.0"
+      spacing="0"
+      styleClass="dialog-root"
+      stylesheets="@/styles/mapping/mapdialog.css"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ionres.respondph.common.controller.MappingDialogController">
+
+    <!-- ==================== HEADER ==================== -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
+        <padding>
+            <Insets top="18" right="24" bottom="18" left="24"/>
+        </padding>
+
+        <FontAwesomeIconView glyphName="MAP_MARKER" size="22" styleClass="header-icon"/>
+
+        <VBox spacing="2">
+            <Label fx:id="mapDialogTitle" text="Select Location" styleClass="dialog-title"/>
+            <Label text="Click on the map to choose a point. Use zoom and drag to adjust."
+                   styleClass="dialog-subtitle"/>
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="mapCloseButton" styleClass="dialog-close">
             <graphic>
-                <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="map-close-icon" />
+                <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon"/>
             </graphic>
         </Button>
     </HBox>
 
-    <Pane fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
+    <!-- ==================== ERROR (optional) ==================== -->
+    <HBox styleClass="error-box" managed="false" visible="false" fx:id="mapErrorBox">
+        <padding>
+            <Insets top="12" right="24" bottom="12" left="24"/>
+        </padding>
+        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="16" styleClass="error-icon"/>
+        <Label fx:id="mapErrorLabel" text="Error" styleClass="error-text" wrapText="true"/>
+    </HBox>
 
-    <VBox alignment="CENTER" styleClass="map-error-container">
-        <Label fx:id="mapErrorLabel" managed="false" styleClass="map-error-label" visible="false" />
+    <!-- ==================== BODY ==================== -->
+    <VBox spacing="16" styleClass="dialog-body" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets top="18" right="24" bottom="18" left="24"/>
+        </padding>
+
+        <!-- Map card -->
+        <VBox spacing="12" styleClass="form-section" VBox.vgrow="ALWAYS">
+
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                <FontAwesomeIconView glyphName="MAP" size="18" styleClass="section-icon"/>
+                <Label text="Map" styleClass="section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Click to select" styleClass="section-subtitle"/>
+            </HBox>
+
+            <!-- Map Surface -->
+            <Pane fx:id="mapContainer" styleClass="map-surface" VBox.vgrow="ALWAYS"/>
+        </VBox>
     </VBox>
 
-    <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="map-button-container">
+    <!-- ==================== FOOTER ==================== -->
+    <HBox alignment="CENTER_RIGHT" spacing="14" styleClass="dialog-footer">
         <padding>
-            <Insets bottom="24" left="32" right="32" top="16" />
+            <Insets top="18" right="24" bottom="18" left="24"/>
         </padding>
-        <Button fx:id="mapOkButton" styleClass="map-primary-button">
+
+        <Button fx:id="mapOkButton" styleClass="btn-primary">
             <graphic>
-                <HBox alignment="CENTER" spacing="8">
-                    <FontAwesomeIconView glyphName="CHECK" size="16" styleClass="map-button-icon" />
-                    <Label styleClass="map-button-label" text="OK" />
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="CHECK" size="16" styleClass="btn-icon"/>
+                    <Label text="OK" styleClass="btn-text"/>
                 </HBox>
             </graphic>
         </Button>
     </HBox>
+
 </VBox>

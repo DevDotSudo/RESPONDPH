@@ -29,7 +29,7 @@ public class AddDisasterDamageDialogController {
     @FXML private ComboBox<String> damageSeverityFld;
     @FXML private TextField verifiedByFld;
     @FXML private DatePicker assessmentDatePicker;
-    @FXML private TextField notesFld;
+    @FXML private TextArea notesFld;
     @FXML private Button saveBtn, exitBtn;
     private List<BeneficiaryModel> allBeneficiaries;
     private List<DisasterModel> allDisaster;

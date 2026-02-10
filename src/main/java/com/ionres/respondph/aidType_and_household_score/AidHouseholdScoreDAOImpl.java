@@ -14,7 +14,6 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
 
     @Override
     public HouseholdScoreData getHouseholdScoresWithDisaster(int beneficiaryId, int disasterId) {
-        // ✅ MODIFIED: Added disaster_id to WHERE clause
         String sql = "SELECT * FROM household_score WHERE beneficiary_id = ? AND disaster_id = ?";
 
         try {

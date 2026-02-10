@@ -1,6 +1,3 @@
-
-
-
 package com.ionres.respondph.aidType_and_household_score;
 
 public interface AidHouseholdScoreDAO {
@@ -20,7 +17,6 @@ public interface AidHouseholdScoreDAO {
                                   HouseholdScoreData household, double finalScore,
                                   String scoreCategory, HouseholdMemberCounts memberCounts);
 
-    // Inner classes for data transfer
     class HouseholdScoreData {
         public Double ageScore;
         public double genderScore;

@@ -39,7 +39,7 @@ public class Mapping {
     private final Map<String, Image> tileCache = new HashMap<>();
 
     private static String getTileDirectory() {
-        return "C:/Users/Davie/Documents/BanateTiles/tiles";
+        return "C:/Users/RESPONDPH/IdeaProjects/tiles/tiles";
     }
 
     public Mapping() {

@@ -24,6 +24,7 @@ public class EvacuationPlanController {
     @FXML private Button searchBtn;
     @FXML private Button allocateBtn;
     @FXML private Button refreshBtn;
+    @FXML private Button sendSMSBtn;
 
     @FXML private TableView<EvacuationPlanModel> planTable;
     @FXML private TableColumn<EvacuationPlanModel, Integer> idColumn;
@@ -150,6 +151,18 @@ public class EvacuationPlanController {
         searchBtn.setOnAction(e -> handleSearch());
         allocateBtn.setOnAction(e -> handleAllocate());
         refreshBtn.setOnAction(e-> loadTable());
+        sendSMSBtn.setOnAction(e -> handleSendSMS());
+    }
+
+    private void handleSendSMS() {
+        try {
+
+            DialogManager.show("sendEvacMessage");
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Dialog Error",
+                    "Unable to open send message dialog: " + e.getMessage());
+        }
     }
 
     private void handleSearch() {

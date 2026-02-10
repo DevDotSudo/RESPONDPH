@@ -23,7 +23,6 @@ public class AidHouseholdScoreCalculate {
                 return false;
             }
 
-            // Step 2: Get aid type weights from database
             AidTypeWeights aidWeights = dao.getAidTypeWeights(aidTypeId);
             if (aidWeights == null) {
                 System.err.println("No aid type weights found for aid type ID: " + aidTypeId);

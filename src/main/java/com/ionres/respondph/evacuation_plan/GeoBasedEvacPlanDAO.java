@@ -7,4 +7,5 @@ public interface GeoBasedEvacPlanDAO extends EvacuationPlanDAO {
     List<RankedBeneficiaryWithLocation> getRankedBeneficiariesWithLocation(int disasterId);
 
     List<EvacSiteWithDistance> getEvacSitesWithCapacity(int disasterId);
+    List<RankedBeneficiaryWithLocation> getRankedBeneficiariesWithLocation(int disasterId, boolean includeAssigned);
 }

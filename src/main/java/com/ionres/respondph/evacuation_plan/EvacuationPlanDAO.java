@@ -1,6 +1,9 @@
 package com.ionres.respondph.evacuation_plan;
 
 
+
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
+
 import java.util.List;
 
 public interface EvacuationPlanDAO {
@@ -14,5 +17,7 @@ public interface EvacuationPlanDAO {
     boolean deleteEvacPlan(int planId);
     EvacuationPlanModel getById(int planId);
     int getHouseholdSizeForBeneficiary(int beneficiaryId, int disasterId);
+    List<BeneficiaryModel> getBeneficiariesByEvacSiteAndDisaster(int evacSiteId, int disasterId);
+    Integer getAssignedEvacSiteId(int beneficiaryId, int disasterId);
 
 }

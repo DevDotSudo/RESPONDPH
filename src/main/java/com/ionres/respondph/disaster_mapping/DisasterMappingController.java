@@ -121,6 +121,7 @@ public class DisasterMappingController {
         disasterComboBox.setOnAction(event -> {
             DisasterModel selectedDisaster = disasterComboBox.getValue();
             if (selectedDisaster != null) {
+                AppContext.currentDisasterId = selectedDisaster.getDisasterId();
                 filterByDisaster(selectedDisaster);
             }
         });

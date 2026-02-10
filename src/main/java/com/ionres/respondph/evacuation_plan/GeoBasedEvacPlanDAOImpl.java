@@ -172,6 +172,89 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
     }
 
 
+    @Override
+    public List<RankedBeneficiaryWithLocation> getRankedBeneficiariesWithLocation(int disasterId, boolean includeAssigned) {
+        List<RankedBeneficiaryWithLocation> ranked = new ArrayList<>();
+
+        String sql =
+                "SELECT " +
+                        "    ahs.beneficiary_id, " +
+                        "    b.first_name, " +
+                        "    b.last_name, " +
+                        "    b.latitude, " +
+                        "    b.longitude, " +
+                        "    ahs.final_score, " +
+                        "    ahs.score_category, " +
+                        "    CASE " +
+                        "        WHEN ahs.household_members IS NOT NULL AND ahs.household_members > 0 " +
+                        "            THEN ahs.household_members " +
+                        "        ELSE (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ahs.beneficiary_id) + 1 " +
+                        "    END AS household_members " +
+                        "FROM aid_and_household_score ahs " +
+                        "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
+                        "WHERE ahs.disaster_id = ? ";
+
+        // Only exclude already assigned if includeAssigned is false
+        if (!includeAssigned) {
+            sql += "  AND NOT EXISTS ( " +
+                    "    SELECT 1 FROM evac_plan ep " +
+                    "    WHERE ep.beneficiary_id = ahs.beneficiary_id " +
+                    "      AND ep.disaster_id = ahs.disaster_id " +
+                    "  ) ";
+        }
+
+        sql += "ORDER BY ahs.final_score DESC";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, disasterId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                List<String> encrypted = new ArrayList<>();
+                encrypted.add(rs.getString("first_name"));
+                encrypted.add(rs.getString("last_name"));
+                encrypted.add(rs.getString("latitude"));
+                encrypted.add(rs.getString("longitude"));
+
+                List<String> decrypted = cs.decrypt(encrypted);
+
+                RankedBeneficiaryWithLocation model = new RankedBeneficiaryWithLocation();
+                model.setBeneficiaryId(rs.getInt("beneficiary_id"));
+                model.setFirstName(decrypted.get(0));
+                model.setLastName(decrypted.get(1));
+                model.setFinalScore(rs.getDouble("final_score"));
+                model.setScoreCategory(rs.getString("score_category"));
+                model.setHouseholdMembers(rs.getInt("household_members"));
+
+                try {
+                    model.setLatitude(Double.parseDouble(decrypted.get(2)));
+                    model.setLongitude(Double.parseDouble(decrypted.get(3)));
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid coordinates for beneficiary " +
+                            model.getBeneficiaryId() + ": " + e.getMessage());
+                    model.setLatitude(0.0);
+                    model.setLongitude(0.0);
+                }
+
+                ranked.add(model);
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Error fetching ranked beneficiaries with location: " + ex.getMessage());
+        } finally {
+            closeConnection();
+        }
+
+        return ranked;
+    }
+
+
     private void closeConnection() {
         try {
             if (conn != null && !conn.isClosed()) {

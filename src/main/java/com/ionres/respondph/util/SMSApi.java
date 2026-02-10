@@ -8,11 +8,22 @@ import java.util.List;
 import java.time.Duration;
 
 public class SMSApi {
+
     private final String API_KEY;
     private final String API_URL;
+
     public SMSApi() {
-        this.API_KEY = ConfigLoader.get("skysms.api.key");
+
         this.API_URL = ConfigLoader.get("skysms.api.url");
+
+        this.API_KEY = System.getenv("SMS_API_KEY");
+
+        if (this.API_KEY == null || this.API_KEY.isBlank()) {
+            throw new RuntimeException(
+                    "Missing Environment Variable: SKYSMS_API_KEY\n" +
+                            "Please set it before running the application."
+            );
+        }
     }
 
     private final HttpClient client = HttpClient.newBuilder()

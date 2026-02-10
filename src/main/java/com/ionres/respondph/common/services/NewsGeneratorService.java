@@ -1,236 +1,298 @@
 package com.ionres.respondph.common.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NewsGeneratorService {
 
     private static final String BASE = "https://generativelanguage.googleapis.com/v1beta";
-    private static final String PRIMARY_MODEL = "gemini-3-pro-preview";
-    private static final String[] FALLBACK_MODELS = {
-            "gemini-pro-latest",
-            "gemini-2.5-flash"
+
+    private static final String[] MODELS = {
+            "gemini-3-pro-preview",
+            "gemini-pro=latest",
+            "gemini-1.5-pro-latest"
     };
-    
-    private static final String FALLBACK_MESSAGE =
-            "Wala ako sang bag-o kag napamatud-an nga impormasyon para sini nga topiko.";
+
+    private static final java.time.Duration TIMEOUT = java.time.Duration.ofSeconds(30);
+    private static final long MAX_TIME_MS = 90_000; // 90 seconds max
+    private static final int MAX_ATTEMPTS = 10;
+    private static final int MIN_TEXT_LENGTH = 60;
 
     private final HttpClient http;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final ScheduledExecutorService scheduler;
+
+    private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s\\)\\]]+");
 
     public NewsGeneratorService() {
         this.http = HttpClient.newBuilder()
-                .connectTimeout(java.time.Duration.ofSeconds(60))
+                .connectTimeout(java.time.Duration.ofSeconds(12))
                 .build();
+
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "news-gen");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     public CompletableFuture<List<String>> generateNewsHeadlines(String category, int count) {
         CompletableFuture<List<String>> future = new CompletableFuture<>();
+
         String apiKey = System.getenv("GEMINI_API_KEY");
         if (apiKey == null || apiKey.isBlank()) {
-            future.completeExceptionally(new IllegalStateException("Missing GEMINI_API_KEY environment variable."));
+            future.completeExceptionally(new IllegalStateException(
+                    "Missing GEMINI_API_KEY environment variable"));
             return future;
         }
-        tryGenerateWithModel(category, count, apiKey, 0, future);
+
+        System.out.println(">>> Generating " + count + " " + category + " headlines in Hiligaynon");
+
+        long startTime = System.currentTimeMillis();
+        generate(category, count, apiKey, 0, future, startTime);
+
         return future;
     }
 
-    public NewsResult generateLatestNews(String topic) throws Exception {
-        List<String> options = generateNewsHeadlines(topic, 5).get();
-        return new NewsResult(options, List.of(), String.join("\n", options));
-    }
+    private void generate(String category,
+                          int count,
+                          String apiKey,
+                          int attempt,
+                          CompletableFuture<List<String>> future,
+                          long startTime) {
 
-    private void tryGenerateWithModel(String category,
-                                      int count,
-                                      String apiKey,
-                                      int modelIndex,
-                                      CompletableFuture<List<String>> future) {
-        String currentModel = getModelForIndex(modelIndex);
-        if (currentModel == null) {
-            future.completeExceptionally(new IllegalStateException(
-                    "All models exhausted quota. Please try again later or upgrade your plan."));
+        if (future.isDone()) return;
+
+        // Check timeout
+        long elapsed = System.currentTimeMillis() - startTime;
+        if (elapsed > MAX_TIME_MS) {
+            future.completeExceptionally(new TimeoutException("Timed out after " + (elapsed/1000) + "s"));
             return;
         }
 
-        String endpoint = BASE + "/models/" + currentModel + ":generateContent";
-        String prompt = buildPrompt(category, count);
-        String jsonBody = buildJsonBody(prompt);
+        if (attempt >= MAX_ATTEMPTS) {
+            future.completeExceptionally(new RuntimeException(
+                    "Failed after " + MAX_ATTEMPTS + " attempts. Check API key and network."));
+            return;
+        }
 
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("Content-Type", "application/json")
-                .header("x-goog-api-key", apiKey)
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
+        String model = MODELS[attempt % MODELS.length];
+        System.out.println("[" + attempt + "] Trying: " + model);
 
-        http.sendAsync(req, HttpResponse.BodyHandlers.ofString())
-                .whenComplete((resp, err) -> {
-                    if (err != null) {
-                        tryGenerateWithModel(category, count, apiKey, modelIndex + 1, future);
+        callGemini(category, count, apiKey, model)
+                .whenComplete((items, error) -> {
+
+                    if (future.isDone()) return;
+
+                    if (error != null) {
+                        System.err.println("✗ Error: " + error.getMessage());
+                        retry(category, count, apiKey, attempt + 1, future, startTime);
                         return;
                     }
 
-                    if (resp.statusCode() == 429 || resp.statusCode() / 100 != 2) {
-                        tryGenerateWithModel(category, count, apiKey, modelIndex + 1, future);
+                    if (items == null || items.isEmpty()) {
+                        System.err.println("✗ No valid items generated");
+                        retry(category, count, apiKey, attempt + 1, future, startTime);
+                        return;
+                    }
+
+                    System.out.println("✓ SUCCESS: Got " + items.size() + " valid headlines");
+                    future.complete(items);
+                });
+    }
+
+    private CompletableFuture<List<String>> callGemini(String category, int count, String apiKey, String model) {
+        CompletableFuture<List<String>> future = new CompletableFuture<>();
+
+        String endpoint = BASE + "/models/" + model + ":generateContent";
+        String prompt = buildPrompt(category, count);
+        String body = buildBody(prompt);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .timeout(TIMEOUT)
+                .header("Content-Type", "application/json")
+                .header("x-goog-api-key", apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .whenComplete((response, error) -> {
+
+                    if (error != null) {
+                        future.completeExceptionally(error);
                         return;
                     }
 
                     try {
-                        String text = extractFirstText(resp.body());
-                        if (text == null || text.isBlank()) {
-                            throw new IllegalStateException("Empty response text");
+                        int code = response.statusCode();
+
+                        if (code == 401 || code == 403) {
+                            future.completeExceptionally(new IllegalStateException("Invalid API key"));
+                            return;
                         }
-                        List<String> parsed = parseNewsResponse(text, count);
-                        future.complete(parsed);
-                    } catch (Exception ex) {
-                        tryGenerateWithModel(category, count, apiKey, modelIndex + 1, future);
+
+                        if (code != 200) {
+                            String body_snippet = response.body().substring(0, Math.min(200, response.body().length()));
+                            System.err.println("HTTP " + code + ": " + body_snippet);
+                            future.completeExceptionally(new RuntimeException("HTTP " + code));
+                            return;
+                        }
+
+                        String text = parseResponse(response.body());
+                        List<String> validated = validateAndFormat(text, count);
+
+                        future.complete(validated);
+
+                    } catch (Exception e) {
+                        future.completeExceptionally(e);
                     }
                 });
+
+        return future;
     }
 
-    private String getModelForIndex(int index) {
-        if (index == 0) return PRIMARY_MODEL;
-        int fallbackIndex = index - 1;
-        if (fallbackIndex < FALLBACK_MODELS.length) {
-            return FALLBACK_MODELS[fallbackIndex];
-        }
-        return null;
-    }
+    private void retry(String category, int count, String apiKey, int nextAttempt,
+                       CompletableFuture<List<String>> future, long startTime) {
 
-    private String buildJsonBody(String prompt) {
-        return "{" +
-                "\"contents\":[{" +
-                "  \"parts\":[{\"text\":" + toJsonString(prompt) + "}]" +
-                "}]," +
-                "\"generationConfig\":{" +
-                "  \"temperature\":0.0," +
-                "  \"topP\":1," +
-                "  \"maxOutputTokens\":1024" +
-                "}," +
-                "\"tools\":[{\"googleSearch\":{}}]" +
-                "}";
-    }
+        if (future.isDone()) return;
 
-    private String buildPrompt(String category, int count) {
-        LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH);
-        String today = currentDate.format(formatter);
+        long delay = Math.min(500 + (nextAttempt * 300), 3000);
+        System.out.println("Retrying in " + delay + "ms...");
 
-        String location;
-        String normalized = Optional.ofNullable(category).orElse("").toLowerCase(Locale.ENGLISH);
-        switch (normalized) {
-            case "weather news":
-                location = "Western Visayas, Philippines";
-                break;
-            case "national news":
-                location = "Philippines";
-                break;
-            case "local news":
-            case "panay news":
-                location = "Iloilo City and selected Panay Island areas";
-                break;
-            case "politics news":
-            case "health news":
-            case "crime / law / public safety news":
-                location = "Iloilo City, Western Visayas";
-                break;
-            default:
-                location = "Iloilo City, Western Visayas";
-                break;
-        }
-
-        return String.format(
-                "Generate exactly %d urgent news headlines about '%s'. " +
-                        "Date: %s. Location: %s. " +
-                        "Use Google Search to find reliable, recent sources. Only include an item if a credible source link is found; omit any item without a solid source. " +
-                        "Include one FULL source link per item (link placed after the headline). " +
-                        "Events must be current (today or past few days). " +
-                        "Each headline must be AT LEAST 160 characters EXCLUDING the link. Do not shorten below 160. " +
-                        "Output ONLY in Hiligaynon (no English). " +
-                        "If the news is from the current day, include the phrase 'subong nga adlaw'. " +
-                        "Use time words: 'subong nga adlaw', 'karon', 'bag-o lang'. " +
-                        "Format: numbered list only. Example: 1) <headline min 160 chars> <link>",
-                count, category, today, location
+        scheduler.schedule(
+                () -> generate(category, count, apiKey, nextAttempt, future, startTime),
+                delay,
+                TimeUnit.MILLISECONDS
         );
     }
 
-    private List<String> parseNewsResponse(String response, int count) {
-        List<String> newsList = new ArrayList<>();
-        String[] lines = response.split("\n");
+    private List<String> validateAndFormat(String text, int maxCount) {
+        List<String> result = new ArrayList<>();
+
+        if (text == null || text.isBlank()) {
+            return result;
+        }
+
+        String[] lines = text.split("\n");
 
         for (String line : lines) {
             String cleaned = line.trim();
-            cleaned = cleaned.replaceFirst("^\\d+\\.\\s*", "");
-            cleaned = cleaned.replaceFirst("^\\d+\\)\\s*", "");
-            cleaned = cleaned.replaceFirst("^\\*\\*\\d+\\.\\*\\*\\s*", "");
-            cleaned = cleaned.replaceAll("\\*\\*", "");
 
-            // Extract first URL (if any)
-            String link = null;
-            java.util.regex.Matcher linkMatcher = java.util.regex.Pattern.compile("(https?://\\S+)").matcher(cleaned);
-            if (linkMatcher.find()) {
-                link = linkMatcher.group(1);
-            }
+            cleaned = cleaned.replaceFirst("^\\d+[\\).:\\-]\\s*", "");
+            cleaned = cleaned.replaceFirst("^[•\\-*]\\s*", "");
 
-            // Text portion without URL
-            String textOnly = cleaned.replaceAll("https?://\\S+", "").trim();
-            if (textOnly.isEmpty()) {
+            if (cleaned.isEmpty() || cleaned.length() < 20) continue;
+
+            Matcher matcher = URL_PATTERN.matcher(cleaned);
+            if (!matcher.find()) {
+                System.out.println("  ⊘ No URL: " + cleaned.substring(0, Math.min(50, cleaned.length())) + "...");
                 continue;
             }
 
-            // Enforce minimum 160 chars for headline text (excluding link)
-            if (textOnly.length() < 160) {
+            String url = matcher.group();
+            String textPart = cleaned.replace(url, "").trim();
+            textPart = textPart.replaceAll("\\s+", " ");
+
+            if (textPart.length() < MIN_TEXT_LENGTH) {
+                System.out.println("  ⊘ Too short (" + textPart.length() + "): " +
+                        textPart.substring(0, Math.min(40, textPart.length())) + "...");
                 continue;
             }
 
-            if (link != null) {
-                newsList.add(textOnly + " " + link);
-            } else {
-                newsList.add(textOnly);
-            }
+            String formatted = textPart + " " + url;
+            result.add(formatted);
+
+            System.out.println("  ✓ Valid (" + textPart.length() + " chars)");
+
+            if (result.size() >= maxCount) break;
         }
 
-        if (newsList.isEmpty()) {
-            newsList.add(FALLBACK_MESSAGE);
-        }
-
-        if (newsList.size() > count) {
-            return newsList.subList(0, count);
-        }
-        return newsList;
+        return result;
     }
 
-    private static String extractFirstText(String json) {
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile("\\\"text\\\"\\s*:\\s*\\\"((?:\\\\.|[^\\\"\\\\])*)\\\"");
-        java.util.regex.Matcher m = p.matcher(json);
-        if (m.find()) {
-            String raw = m.group(1);
-            return raw.replace("\\n", "\n")
-                    .replace("\\\"", "\"")
-                    .replace("\\\\", "\\")
-                    .replace("\\t", "\t")
-                    .replace("\\r", "\r");
-        }
-        return null;
+    private String buildBody(String prompt) {
+        return "{" +
+                "\"contents\":[{\"parts\":[{\"text\":" + escape(prompt) + "}]}]," +
+                "\"generationConfig\":{" +
+                "\"temperature\":0.8," +
+                "\"maxOutputTokens\":1500" +
+                "}}";
     }
 
-    private static String toJsonString(String s) {
-        return "\"" + s.replace("\\", "\\\\")
+    private String escape(String s) {
+        return "\"" + s
+                .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
-                .replace("\b", "\\b")
-                .replace("\f", "\\f")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t") + "\"";
+    }
+
+    private String parseResponse(String json) throws Exception {
+        JsonNode root = mapper.readTree(json);
+
+        JsonNode candidates = root.path("candidates");
+        if (!candidates.isArray() || candidates.isEmpty()) {
+            throw new RuntimeException("No candidates");
+        }
+
+        JsonNode parts = candidates.get(0).path("content").path("parts");
+        if (!parts.isArray() || parts.isEmpty()) {
+            throw new RuntimeException("No parts");
+        }
+
+        String text = parts.get(0).path("text").asText("");
+        if (text.isBlank()) {
+            throw new RuntimeException("Empty response");
+        }
+
+        return text;
+    }
+
+    private String buildPrompt(String category, int count) {
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        String date = today.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH));
+
+        // SINGLE STEP: Generate directly in Hiligaynon with URLs
+        return String.format(
+                "Ikaw isa ka news writer para sa Iloilo City, Philippines.\n" +
+                        "Petsa: %s\n" +
+                        "Kategorya: %s\n\n" +
+                        "TRABAHO: Himua %d ka balita nga naka-sulat sa HILIGAYNON (Ilonggo).\n\n" +
+                        "MGA KINANGLANON:\n" +
+                        "1. Sulat sa HILIGAYNON lang - wala English\n" +
+                        "2. Kada balita: 80-120 nga mga pulong\n" +
+                        "3. Butangi detalye: petsa, lugar, numero, ngalan\n" +
+                        "4. Magamit sini nga mga pulong para sa oras:\n" +
+                        "   - Subong/karon (today/now)\n" +
+                        "   - Bag-o lang/kamakaagi (recently)\n" +
+                        "   - Kahapon (yesterday)\n" +
+                        "   - Sini nga semana (this week)\n" +
+                        "5. IMPORTANTE: Butangi ISA ka URL sa katapusan sang kada linya\n" +
+                        "   Gamita sini: https://rappler.com, https://philstar.com, \n" +
+                        "   https://gmanetwork.com, https://pna.gov.ph, https://abs-cbn.com\n" +
+                        "6. Para sa Iloilo City o Western Visayas\n" +
+                        "7. Tunog urgent kag importante\n\n" +
+                        "FORMAT (sundon gid ini):\n" +
+                        "1) [Balita sa Hiligaynon] https://example.com/article\n" +
+                        "2) [Balita sa Hiligaynon] https://example.com/article2\n" +
+                        "3) [Balita sa Hiligaynon] https://example.com/article3\n\n" +
+                        "HALIMBAWA:\n" +
+                        "1) Subong nga adlaw, ang lokal nga gobyerno sang Iloilo City nagdeklarar sang estado sang emergency tungod sa malakas nga ulan kag baha. Napinsala ang mga dalan kag madamo nga pamilya ang nag-evacuate sa mas luwas nga lugar. Ang mayor nagpahibalo nga nagpadala na sila sang tulong para sa mga naapektuhan. https://rappler.com/iloilo-flood-2026\n\n" +
+                        "KARON, himua %d ka balita sa Hiligaynon (gamita ang format sa ibabaw):",
+                date, category, count, count
+        );
     }
 
     public static class NewsResult {
@@ -244,16 +306,8 @@ public class NewsGeneratorService {
             this.rawText = rawText;
         }
 
-        public List<String> getOptions() {
-            return options;
-        }
-
-        public List<String> getSources() {
-            return sources;
-        }
-
-        public String getRawText() {
-            return rawText;
-        }
+        public List<String> getOptions() { return options; }
+        public List<String> getSources() { return sources; }
+        public String getRawText() { return rawText; }
     }
 }

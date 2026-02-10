@@ -66,7 +66,11 @@
                             </Button>
                         </HBox>
 
-                        <!-- AI Response Container (initially hidden) -->
+                        <VBox fx:id="aiLoadingBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                            <ProgressIndicator fx:id="piAi" prefHeight="55" prefWidth="55" />
+                            <Label text="Generating news..." />
+                        </VBox>
+
                         <VBox fx:id="aiResponseContainer" managed="false" spacing="12" visible="false">
                             <Label fx:id="aiResponseLabel" styleClass="ai-response-label" text="AI Generated News Options:" />
 
@@ -80,6 +84,7 @@
                                     </padding>
                                 </Button>
                             </HBox>
+
                         </VBox>
                     </VBox>
                 </VBox>
@@ -91,7 +96,10 @@
 
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label styleClass="input-label" text="SMS Port:" />
-                            <ComboBox fx:id="cbSelectPorts" prefWidth="300" promptText="Select a port..." styleClass="recipient-combo" />
+                            <ComboBox fx:id="cbSelectPorts" prefWidth="250" promptText="Select a port..." styleClass="recipient-combo" />
+                            <Button fx:id="btnRefreshPorts" onAction="#onRefreshPorts" styleClass="secondary-button" text="Refresh Ports" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="connectionStatusLabel" styleClass="connection-status" text="Disconnected" />
                         </HBox>
 
                         <HBox alignment="CENTER_LEFT" spacing="10">
@@ -109,28 +117,14 @@
                             </ComboBox>
                         </HBox>
 
-                        <HBox fx:id="barangaySelectionBox"
-                              alignment="CENTER_LEFT"
-                              spacing="10"
-                              visible="false"
-                              managed="false">
-                            <Label styleClass="input-label" text="Select Barangay:"/>
-                            <ComboBox fx:id="cbSelectBarangay"
-                                      prefWidth="300"
-                                      promptText="Choose a barangay..."
-                                      styleClass="recipient-combo"/>
+                        <HBox fx:id="barangaySelectionBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                            <Label styleClass="input-label" text="Select Barangay:" />
+                            <ComboBox fx:id="cbSelectBarangay" prefWidth="300" promptText="Choose a barangay..." styleClass="recipient-combo" />
                         </HBox>
 
-                        <HBox fx:id="disasterSelectionBox"
-                              alignment="CENTER_LEFT"
-                              spacing="10"
-                              visible="false"
-                              managed="false">
-                            <Label styleClass="input-label" text="Select Disaster:"/>
-                            <ComboBox fx:id="cbSelectDisaster"
-                                      prefWidth="300"
-                                      promptText="Choose a Disaster..."
-                                      styleClass="recipient-combo"/>
+                        <HBox fx:id="disasterSelectionBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                            <Label styleClass="input-label" text="Select Disaster:" />
+                            <ComboBox fx:id="cbSelectDisaster" prefWidth="300" promptText="Choose a Disaster..." styleClass="recipient-combo" />
                         </HBox>
 
                         <VBox spacing="8">
@@ -139,29 +133,26 @@
                         </VBox>
 
                         <HBox alignment="CENTER_LEFT" spacing="15">
-
                             <HBox alignment="CENTER_LEFT" spacing="10">
                                 <Label styleClass="input-label" text="Send via:" />
-
-                                <RadioButton fx:id="rbGsm" selected="true" text="GSM Module">
-                                </RadioButton>
-
-                                <RadioButton fx:id="rbApi" text="API" toggleGroup="$smsMode" />
+                                <RadioButton fx:id="rbGsm" text="GSM Module" toggleGroup="$smsMode" />
+                                <RadioButton fx:id="rbApi" selected="true" text="API" toggleGroup="$smsMode" />
                             </HBox>
 
                             <Region HBox.hgrow="ALWAYS" />
-
                             <Label fx:id="charCount" styleClass="char-count" text="0/160 characters" />
                         </HBox>
 
                         <HBox alignment="CENTER_LEFT" spacing="15" styleClass="action-buttons-container">
-
                             <Button fx:id="btnSendSMS" styleClass="primary-button" text="Send SMS">
                                 <padding>
                                     <Insets left="30" right="30" />
                                 </padding>
                             </Button>
-
+                            <HBox fx:id="smsLoadingBox" alignment="CENTER_LEFT" managed="false" spacing="8" visible="false">
+                                <ProgressIndicator fx:id="piSms" prefHeight="18" prefWidth="18" />
+                                <Label text="Sending..." />
+                            </HBox>
                             <Button styleClass="secondary-button" text="Clear">
                                 <padding>
                                     <Insets left="25" right="25" />

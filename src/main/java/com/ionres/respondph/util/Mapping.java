@@ -8,8 +8,11 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,21 +33,37 @@ public class Mapping {
     private Image markerImage;
     private double zoom;
     private static final double MIN_ZOOM = 13;
-    private static final double MAX_ZOOM = 23.0;
+    private static final double MAX_ZOOM = 20.0;
     private static final int TILE_SIZE = 256;
     private static final double BOUND_NORTH = 11.116584029742963;
     private static final double BOUND_SOUTH = 10.984159872049194;
     private static final double BOUND_WEST  = 122.6584666442871;
     private static final double BOUND_EAST  = 122.93484146118163;
     private final Map<String, Image> tileCache = new HashMap<>();
+    private final Properties props = new Properties();
 
-    private static String getTileDirectory() {
-        return "C:/Users/Davie/Documents/BanateTiles/tiles";
+    private String getTileDirectory() {
+
+        try (InputStream input =
+                     Mapping.class.getClassLoader()
+                             .getResourceAsStream("config/Outlet.properties")) {
+
+            if (input == null) {
+                throw new RuntimeException("Outlet.properties not found in /config folder!");
+            }
+
+            props.load(input);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load Outlet.properties", e);
+        }
+
+        return props.getProperty("map.tile.directory");
     }
 
     public Mapping() {
         this.initialized = false;
-        this.zoom = MIN_ZOOM;  // Initialize zoom to minimum
+        this.zoom = MIN_ZOOM;
         loadMarkerImage();
     }
 

@@ -5,39 +5,25 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="root"
-            styleClass="root-pane"
-            stylesheets="@/styles/evac_site/evacsite.css"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.ionres.respondph.evac_site.EvacSiteController">
+<AnchorPane fx:id="root" styleClass="root-pane" stylesheets="@/styles/evac_site/evacsite.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evac_site.EvacSiteController">
 
-    <VBox AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0"
-          AnchorPane.rightAnchor="0.0"
-          AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <!-- HEADER (same structure as Manage Admins) -->
         <VBox styleClass="header-section" VBox.vgrow="NEVER">
 
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="HOME" size="24" styleClass="page-icon" />
-                <Label styleClass="page-title" text="Manage Evacuation Centers" />
+                <Label styleClass="page-title" text="Manage Evacuation Site" />
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                     <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />
-                    <TextField fx:id="searchField"
-                               promptText="Search evacuation center"
-                               styleClass="search-field"
-                               HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="searchField" promptText="Search evacuation site" styleClass="search-field" HBox.hgrow="ALWAYS" />
                 </HBox>
 
-                <Button fx:id="searchBtn"
-                        mnemonicParsing="false"
-                        styleClass="primary-button">
+                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
@@ -52,7 +38,7 @@
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon" />
-                            <Label styleClass="button-label" text="Add Center" />
+                            <Label styleClass="button-label" text="Add Site" />
                         </HBox>
                     </graphic>
                 </Button>
@@ -72,7 +58,6 @@
             </VBox.margin>
         </VBox>
 
-        <!-- TABLE AREA (same container approach as Manage Admins) -->
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
 
             <TableView fx:id="evacSitesTbl" styleClass="evacuation-table" VBox.vgrow="ALWAYS">

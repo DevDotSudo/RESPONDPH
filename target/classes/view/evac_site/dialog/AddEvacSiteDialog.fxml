@@ -15,8 +15,8 @@
 
         <FontAwesomeIconView glyphName="HOME" size="22" styleClass="evacuation-header-icon" />
         <VBox spacing="2">
-            <Label styleClass="evacuation-dialog-title" text="Add Evacuation Center" />
-            <Label styleClass="evacuation-dialog-subtitle" text="Provide center details and location. Fields marked * are required." />
+            <Label styleClass="evacuation-dialog-title" text="Add Evacuation Site" />
+            <Label styleClass="evacuation-dialog-subtitle" text="Provide evacuation site details and location. Fields marked * are required." />
         </VBox>
 
         <Region HBox.hgrow="ALWAYS" />
@@ -48,7 +48,7 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-section-header">
                     <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="evacuation-section-icon" />
-                    <Label styleClass="evacuation-section-title" text="Center Information" />
+                    <Label styleClass="evacuation-section-title" text="Evacuation Site Information" />
                 </HBox>
 
                 <GridPane hgap="16" vgap="14">
@@ -59,7 +59,7 @@
 
                     <!-- Center Name -->
                     <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                        <Label styleClass="evacuation-field-label" text="Center Name *" />
+                        <Label styleClass="evacuation-field-label" text="Site Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-input-container">
                             <FontAwesomeIconView glyphName="HOME" size="14" styleClass="evacuation-field-icon" />
                             <TextField fx:id="centerNameFld" promptText="Enter center name" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />

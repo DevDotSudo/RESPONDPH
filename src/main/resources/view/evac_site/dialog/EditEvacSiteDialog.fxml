@@ -5,33 +5,25 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root"
-      prefHeight="760.0" prefWidth="1100.0"
-      spacing="0"
-      styleClass="evacuation-dialog-container"
-      stylesheets="@/styles/evac_site/dialog/editevacsitedialog.css"
-      xmlns="http://javafx.com/javafx/17.0.12"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ionres.respondph.evac_site.dialogs_controller.EditEvacSiteController">
+<VBox fx:id="root" prefHeight="760.0" prefWidth="1100.0" spacing="0" styleClass="evacuation-dialog-container" stylesheets="@/styles/evac_site/dialog/editevacsitedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evac_site.dialogs_controller.EditEvacSiteController">
 
     <!-- ==================== HEADER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="evacuation-dialog-header">
         <padding>
-            <Insets top="18" right="24" bottom="18" left="24"/>
+            <Insets bottom="18" left="24" right="24" top="18" />
         </padding>
 
-        <FontAwesomeIconView glyphName="EDIT" size="22" styleClass="evacuation-header-icon"/>
+        <FontAwesomeIconView glyphName="EDIT" size="22" styleClass="evacuation-header-icon" />
         <VBox spacing="2">
-            <Label styleClass="evacuation-dialog-title" text="Edit Evacuation Center"/>
-            <Label styleClass="evacuation-dialog-subtitle"
-                   text="Update center details and location. Fields marked * are required."/>
+            <Label styleClass="evacuation-dialog-title" text="Edit Evacuation Site" />
+            <Label styleClass="evacuation-dialog-subtitle" text="Update evacuation center details and location. Fields marked * are required." />
         </VBox>
 
-        <Region HBox.hgrow="ALWAYS"/>
+        <Region HBox.hgrow="ALWAYS" />
 
         <Button fx:id="exitBtn" styleClass="evacuation-close-button">
             <graphic>
-                <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="evacuation-close-icon"/>
+                <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="evacuation-close-icon" />
             </graphic>
         </Button>
     </HBox>
@@ -39,73 +31,70 @@
     <!-- Error message area -->
     <VBox styleClass="evacuation-error-container">
         <padding>
-            <Insets top="10" right="24" bottom="0" left="24"/>
+            <Insets bottom="0" left="24" right="24" top="10" />
         </padding>
-        <Label fx:id="errorLabel" managed="false" visible="false" styleClass="evacuation-error-label"/>
+        <Label fx:id="errorLabel" managed="false" styleClass="evacuation-error-label" visible="false" />
     </VBox>
 
     <!-- ==================== BODY ==================== -->
     <ScrollPane fitToWidth="true" styleClass="evacuation-form-scroll-pane" VBox.vgrow="ALWAYS">
         <VBox spacing="24" styleClass="evacuation-forms-container">
             <padding>
-                <Insets top="20" right="24" bottom="24" left="24"/>
+                <Insets bottom="24" left="24" right="24" top="20" />
             </padding>
 
             <!-- ==================== SECTION: CENTER INFORMATION ==================== -->
             <VBox spacing="18" styleClass="evacuation-form-section">
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-section-header">
-                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="evacuation-section-icon"/>
-                    <Label styleClass="evacuation-section-title" text="Center Information"/>
+                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="evacuation-section-icon" />
+                    <Label styleClass="evacuation-section-title" text="Site Information" />
                 </HBox>
 
                 <GridPane hgap="16" vgap="14">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
                     </columnConstraints>
 
                     <!-- Center Name -->
                     <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                        <Label styleClass="evacuation-field-label" text="Center Name *"/>
+                        <Label styleClass="evacuation-field-label" text="Site Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-input-container">
-                            <FontAwesomeIconView glyphName="HOME" size="14" styleClass="evacuation-field-icon"/>
-                            <TextField fx:id="centerNameFld"
-                                       promptText="Enter center name"
-                                       styleClass="evacuation-input-field"
-                                       HBox.hgrow="ALWAYS"/>
+                            <FontAwesomeIconView glyphName="HOME" size="14" styleClass="evacuation-field-icon" />
+                            <TextField fx:id="centerNameFld" promptText="Enter center name" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
                     <!-- Capacity -->
                     <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                        <Label styleClass="evacuation-field-label" text="Capacity *"/>
+                        <Label styleClass="evacuation-field-label" text="Capacity *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-input-container">
-                            <FontAwesomeIconView glyphName="USERS" size="14" styleClass="evacuation-field-icon"/>
-                            <TextField fx:id="capacityFld"
-                                       promptText="Enter maximum capacity"
-                                       styleClass="evacuation-input-field"
-                                       HBox.hgrow="ALWAYS"/>
+                            <FontAwesomeIconView glyphName="USERS" size="14" styleClass="evacuation-field-icon" />
+                            <TextField fx:id="capacityFld" promptText="Enter maximum capacity" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
             </VBox>
 
-            <Separator/>
+            <Separator />
 
             <!-- ==================== SECTION: LOCATION INFORMATION ==================== -->
             <VBox spacing="18" styleClass="evacuation-form-section">
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-section-header">
-                    <FontAwesomeIconView glyphName="MAP_MARKER" size="18" styleClass="evacuation-section-icon"/>
-                    <Label styleClass="evacuation-section-title" text="Location Information"/>
-                    <Region HBox.hgrow="ALWAYS"/>
+                    <FontAwesomeIconView glyphName="MAP_MARKER" size="18" styleClass="evacuation-section-icon" />
+                    <Label styleClass="evacuation-section-title" text="Location Information" />
+                    <Region HBox.hgrow="ALWAYS" />
 
                     <Button fx:id="getLocationBtn" styleClass="evacuation-location-button">
                         <graphic>
                             <HBox alignment="CENTER" spacing="8">
-                                <FontAwesomeIconView glyphName="LOCATION_ARROW" size="14" styleClass="evacuation-button-icon"/>
-                                <Label styleClass="evacuation-button-label" text="Get Location"/>
+                                <FontAwesomeIconView glyphName="LOCATION_ARROW" size="14" styleClass="evacuation-button-icon" />
+                                <Label styleClass="evacuation-button-label" text="Get Location" />
                             </HBox>
                         </graphic>
                     </Button>
@@ -113,54 +102,47 @@
 
                 <GridPane hgap="16" vgap="14">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
                     </columnConstraints>
 
                     <!-- Latitude -->
                     <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                        <Label styleClass="evacuation-field-label" text="Latitude *"/>
+                        <Label styleClass="evacuation-field-label" text="Latitude *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-input-container">
-                            <FontAwesomeIconView glyphName="MAP_PIN" size="14" styleClass="evacuation-field-icon"/>
-                            <TextField fx:id="latitudeFld"
-                                       promptText="Enter latitude"
-                                       styleClass="evacuation-input-field"
-                                       HBox.hgrow="ALWAYS"/>
+                            <FontAwesomeIconView glyphName="MAP_PIN" size="14" styleClass="evacuation-field-icon" />
+                            <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
                     <!-- Longitude -->
                     <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                        <Label styleClass="evacuation-field-label" text="Longitude *"/>
+                        <Label styleClass="evacuation-field-label" text="Longitude *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-input-container">
-                            <FontAwesomeIconView glyphName="MAP_PIN" size="14" styleClass="evacuation-field-icon"/>
-                            <TextField fx:id="longitudeFld"
-                                       promptText="Enter longitude"
-                                       styleClass="evacuation-input-field"
-                                       HBox.hgrow="ALWAYS"/>
+                            <FontAwesomeIconView glyphName="MAP_PIN" size="14" styleClass="evacuation-field-icon" />
+                            <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="evacuation-input-field" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
             </VBox>
 
-            <Separator/>
+            <Separator />
 
             <!-- ==================== SECTION: NOTES ==================== -->
             <VBox spacing="18" styleClass="evacuation-form-section">
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="evacuation-section-header">
-                    <FontAwesomeIconView glyphName="STICKY_NOTE" size="18" styleClass="evacuation-section-icon"/>
-                    <Label styleClass="evacuation-section-title" text="Additional Notes"/>
+                    <FontAwesomeIconView glyphName="STICKY_NOTE" size="18" styleClass="evacuation-section-icon" />
+                    <Label styleClass="evacuation-section-title" text="Additional Notes" />
                 </HBox>
 
                 <VBox spacing="8">
-                    <Label styleClass="evacuation-field-label" text="Notes"/>
+                    <Label styleClass="evacuation-field-label" text="Notes" />
                     <VBox styleClass="evacuation-textarea-container">
-                        <TextArea fx:id="notesFld"
-                                  prefRowCount="4"
-                                  wrapText="true"
-                                  promptText="Enter notes about this evacuation center..."
-                                  styleClass="evacuation-text-area"/>
+                        <TextArea fx:id="notesFld" prefRowCount="4" promptText="Enter notes about this evacuation center..." styleClass="evacuation-text-area" wrapText="true" />
                     </VBox>
                 </VBox>
             </VBox>
@@ -171,14 +153,14 @@
     <!-- ==================== FOOTER ==================== -->
     <HBox alignment="CENTER_RIGHT" spacing="14" styleClass="evacuation-button-container">
         <padding>
-            <Insets top="20" right="24" bottom="20" left="24"/>
+            <Insets bottom="20" left="24" right="24" top="20" />
         </padding>
 
         <Button fx:id="editBtn" styleClass="evacuation-save-button">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
-                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="evacuation-button-icon"/>
-                    <Label styleClass="evacuation-button-label" text="Update Center"/>
+                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="evacuation-button-icon" />
+                    <Label styleClass="evacuation-button-label" text="Update Center" />
                 </HBox>
             </graphic>
         </Button>

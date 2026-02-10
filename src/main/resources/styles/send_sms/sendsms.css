@@ -155,7 +155,13 @@
     -fx-scale-y: 0.98;
 }
 
-/* Generate button = primary-ish */
+.connection-status {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 10px;
+    -fx-background-radius: 4px;
+}
+
 .generate-button {
     -fx-background-color: rgba(249,115,22,0.92);
     -fx-text-fill: rgba(255,255,255,0.98);

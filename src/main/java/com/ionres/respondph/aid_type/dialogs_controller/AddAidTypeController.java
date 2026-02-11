@@ -115,7 +115,6 @@ public class AddAidTypeController {
 
     private void addAidType() {
         try {
-            if (!validateInput()) return;
             if (!validateWeightSum()) return;
 
             double ageWeight = Double.parseDouble(ageWeightFld.getText().trim());
@@ -324,117 +323,6 @@ public class AddAidTypeController {
         return pairs;
     }
 
-    private boolean validateInput() {
-        if (aidNameFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Aid type name is required.");
-            aidNameFld.requestFocus();
-            return false;
-        }
-
-        if (ageWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Age weight is required.");
-            ageWeightFld.requestFocus();
-            return false;
-        }
-
-        if (genderWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Gender weight is required.");
-            genderWeightFld.requestFocus();
-            return false;
-        }
-
-        if (maritalStatusWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Marital status weight is required.");
-            maritalStatusWeightFld.requestFocus();
-            return false;
-        }
-
-        if (soloParentWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Solo parent weight is required.");
-            soloParentWeightFld.requestFocus();
-            return false;
-        }
-
-        if (disabilityWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Disability weight is required.");
-            disabilityWeightFld.requestFocus();
-            return false;
-        }
-
-        if (healthConditionWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Health condition weight is required.");
-            healthConditionWeightFld.requestFocus();
-            return false;
-        }
-
-        if (waterAccessWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Access to clean water weight is required.");
-            waterAccessWeightFld.requestFocus();
-            return false;
-        }
-
-        if (sanitationWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Sanitation facility weight is required.");
-            sanitationWeightFld.requestFocus();
-            return false;
-        }
-
-        if (houseTypeWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "House construction type weight is required.");
-            houseTypeWeightFld.requestFocus();
-            return false;
-        }
-
-        if (ownershipWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Ownership weight is required.");
-            ownershipWeightFld.requestFocus();
-            return false;
-        }
-
-        if (damageSeverityWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Damage severity weight is required.");
-            damageSeverityWeightFld.requestFocus();
-            return false;
-        }
-
-        if (employmentWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Employment status weight is required.");
-            employmentWeightFld.requestFocus();
-            return false;
-        }
-
-        if (monthlyIncomeWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Monthly income weight is required.");
-            monthlyIncomeWeightFld.requestFocus();
-            return false;
-        }
-
-        if (educationWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Educational level weight is required.");
-            educationWeightFld.requestFocus();
-            return false;
-        }
-
-        if (digitalAccessWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Digital access weight is required.");
-            digitalAccessWeightFld.requestFocus();
-            return false;
-        }
-
-        if (dependencyRatioWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Dependency ratio weight is required.");
-            dependencyRatioWeightFld.requestFocus();
-            return false;
-        }
-
-        if (notesFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Notes are required.");
-            notesFld.requestFocus();
-            return false;
-        }
-
-        return true;
-    }
     private boolean validateWeightSum() {
         try {
             double ageWeight = Double.parseDouble(ageWeightFld.getText().trim());

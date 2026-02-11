@@ -81,6 +81,8 @@ public class EditBeneficiariesDialogController {
     private BeneficiaryModel currentBeneficiary;
     private Stage dialogStage;
 
+
+
     public void setBeneficiaryService(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;
     }
@@ -146,6 +148,8 @@ public class EditBeneficiariesDialogController {
                 System.out.println("Error parsing date: " + e.getMessage());
             }
         }
+
+        barangaySelection.setValue(bm.getBarangay());
 
         genderSelection.setValue(bm.getGender());
         maritalStatusSelection.setValue(bm.getMaritalStatus());
@@ -298,6 +302,9 @@ public class EditBeneficiariesDialogController {
                     AlertDialogManager.showSuccess("Success",
                             "Beneficiary updated successfully!\n" +
                                     "Household scores and aid scores have been recalculated.");
+                    DashboardRefresher.refresh();
+                    DashboardRefresher.refreshBeneInSend();
+                    DashboardRefresher.refreshMapInDisasterMapping();
                 } else {
                     AlertDialogManager.showWarning("Partial Success",
                             "Beneficiary updated, but some scores failed to recalculate.");

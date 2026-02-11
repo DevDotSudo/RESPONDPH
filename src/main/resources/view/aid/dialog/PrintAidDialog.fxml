@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox minHeight="-Infinity" prefHeight="700.0" prefWidth="500" spacing="20" styleClass="dialog-container" stylesheets="@/styles/aid/dialog/printDialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController">
+<VBox minHeight="-Infinity" prefHeight="750.0" prefWidth="500" spacing="20" styleClass="dialog-container" stylesheets="@/styles/aid/dialog/printDialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController">
 
     <padding>
         <Insets bottom="30" left="30" right="30" top="30" />
@@ -21,7 +21,7 @@
                     <Font name="System Bold" size="18" />
                 </font>
             </Label>
-            <Label styleClass="dialog-subtitle" text="Select disaster, aid type, and optionally filter by barangay">
+            <Label styleClass="dialog-subtitle" text="Select aid type, disaster (or general aid), and optionally filter by barangay">
                 <font>
                     <Font size="12" />
                 </font>
@@ -34,9 +34,20 @@
     <!-- Form -->
     <VBox spacing="15" VBox.vgrow="ALWAYS">
 
+        <!-- Aid Name Selection -->
+        <VBox spacing="8">
+            <Label styleClass="form-label" text="Select Aid Name: *">
+                <font>
+                    <Font name="System Bold" size="12" />
+                </font>
+            </Label>
+            <ComboBox fx:id="aidNameComboBox" maxWidth="Infinity"
+                      promptText="Choose aid name" styleClass="custom-combo-box" />
+        </VBox>
+
         <!-- Disaster Selection -->
         <VBox spacing="8">
-            <Label styleClass="form-label" text="Select Disaster: *">
+            <Label styleClass="form-label" text="Select Disaster:">
                 <font>
                     <Font name="System Bold" size="12" />
                 </font>
@@ -44,15 +55,22 @@
             <ComboBox fx:id="disasterComboBox" maxWidth="Infinity" promptText="Choose a disaster" styleClass="custom-combo-box" />
         </VBox>
 
-        <!-- Aid Type Selection -->
-        <VBox spacing="8">
-            <Label styleClass="form-label" text="Select Aid Type: *">
+        <!-- ========== GENERAL AID OPTION - NEW SECTION ========== -->
+        <VBox spacing="10" style="-fx-background-color: #fff3cd; -fx-padding: 12; -fx-background-radius: 5; -fx-border-color: #ffc107; -fx-border-radius: 5;">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" style="-fx-fill: #856404;" />
+                <Label style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #856404;" text="Distribution Mode" />
+            </HBox>
+
+            <CheckBox fx:id="generalAidCheckBox" text="✓ General Aid Distribution (No Specific Disaster)">
                 <font>
-                    <Font name="System Bold" size="12" />
+                    <Font size="11" />
                 </font>
-            </Label>
-            <ComboBox fx:id="aidTypeComboBox" maxWidth="Infinity" promptText="Choose aid type" styleClass="custom-combo-box" />
+            </CheckBox>
+
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #856404; -fx-font-style: italic;" text="Check this to print general aid distribution not tied to a specific disaster event." wrapText="true" />
         </VBox>
+        <!-- ========== END OF GENERAL AID OPTION ========== -->
 
         <!-- Barangay Filter Section -->
         <VBox spacing="10" style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-background-radius: 5; -fx-border-color: #dee2e6; -fx-border-radius: 5;">

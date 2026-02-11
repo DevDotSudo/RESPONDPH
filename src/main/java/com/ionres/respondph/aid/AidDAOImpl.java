@@ -33,7 +33,14 @@ public class AidDAOImpl implements AidDAO {
             String encryptedProvider = cs.encryptWithOneParameter(aid.getProvider());
 
             ps.setInt(1, aid.getBeneficiaryId());
-            ps.setInt(2, aid.getDisasterId());
+
+            // Handle null disaster_id for general aid distribution
+            if (aid.getDisasterId() > 0) {
+                ps.setInt(2, aid.getDisasterId());
+            } else {
+                ps.setNull(2, Types.INTEGER);
+            }
+
             ps.setString(3, encryptedName);
             ps.setDate(4, Date.valueOf(aid.getDate()));
             ps.setDouble(5, aid.getQuantity());
@@ -46,7 +53,8 @@ public class AidDAOImpl implements AidDAO {
             ps.close();
 
             if (rowsAffected > 0) {
-                System.out.println("Aid saved for beneficiary #" + aid.getBeneficiaryId());
+                String disasterInfo = aid.getDisasterId() > 0 ? " for disaster #" + aid.getDisasterId() : " (General Distribution)";
+                System.out.println("Aid saved for beneficiary #" + aid.getBeneficiaryId() + disasterInfo);
             }
 
             return rowsAffected > 0;
@@ -151,32 +159,63 @@ public class AidDAOImpl implements AidDAO {
     public List<BeneficiaryCluster> getBeneficiariesWithScores(int aidTypeId, int disasterId) {
         List<BeneficiaryCluster> beneficiaries = new ArrayList<>();
 
-        String sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category " +
-                "FROM aid_and_household_score ahs " +
-                "WHERE ahs.aid_type_id = ? " +
-                "AND ahs.disaster_id = ? " +
-                "AND NOT EXISTS (" +
-                "    SELECT 1 FROM aid a " +
-                "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
-                "    AND a.aid_type_id = ? " +
-                "    AND a.disaster_id = ? " +
-                ") " +
-                "ORDER BY ahs.final_score DESC";
+        String sql;
+        if (disasterId > 0) {
+            // With disaster filtering
+            sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category " +
+                    "FROM aid_and_household_score ahs " +
+                    "WHERE ahs.aid_type_id = ? " +
+                    "AND ahs.disaster_id = ? " +
+                    "AND NOT EXISTS (" +
+                    "    SELECT 1 FROM aid a " +
+                    "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
+                    "    AND a.aid_type_id = ? " +
+                    "    AND (a.disaster_id = ? OR (? = 0 AND a.disaster_id IS NULL))" +
+                    ") " +
+                    "ORDER BY ahs.final_score DESC";
+        } else {
+            // Without disaster (general aid distribution)
+            sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category " +
+                    "FROM aid_and_household_score ahs " +
+                    "WHERE ahs.aid_type_id = ? " +
+                    "AND ahs.disaster_id IS NULL " +
+                    "AND NOT EXISTS (" +
+                    "    SELECT 1 FROM aid a " +
+                    "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
+                    "    AND a.aid_type_id = ? " +
+                    "    AND a.disaster_id IS NULL" +
+                    ") " +
+                    "ORDER BY ahs.final_score DESC";
+        }
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, aidTypeId);
-            ps.setInt(2, disasterId);
-            ps.setInt(3, aidTypeId);
-            ps.setInt(4, disasterId);
+
+            if (disasterId > 0) {
+                ps.setInt(1, aidTypeId);
+                ps.setInt(2, disasterId);
+                ps.setInt(3, aidTypeId);
+                ps.setInt(4, disasterId);
+                ps.setInt(5, disasterId);
+            } else {
+                ps.setInt(1, aidTypeId);
+                ps.setInt(2, aidTypeId);
+            }
 
             System.out.println("========== FETCHING ELIGIBLE BENEFICIARIES ==========");
             System.out.println("Aid Type ID: " + aidTypeId);
-            System.out.println("Disaster ID: " + disasterId);
-            System.out.println("Query: Beneficiaries who:");
-            System.out.println("  ✓ Have DISASTER-SPECIFIC scores (ahs.disaster_id = " + disasterId + ")");
-            System.out.println("  ✗ Have NOT already received this aid for this disaster");
+            if (disasterId > 0) {
+                System.out.println("Disaster ID: " + disasterId);
+                System.out.println("Query: Beneficiaries who:");
+                System.out.println("  ✓ Have DISASTER-SPECIFIC scores (ahs.disaster_id = " + disasterId + ")");
+                System.out.println("  ✗ Have NOT already received this aid for this disaster");
+            } else {
+                System.out.println("Disaster: NONE (General Aid Distribution)");
+                System.out.println("Query: Beneficiaries who:");
+                System.out.println("  ✓ Have GENERAL scores (ahs.disaster_id IS NULL)");
+                System.out.println("  ✗ Have NOT already received this general aid");
+            }
             System.out.println("=====================================================");
 
             ResultSet rs = ps.executeQuery();
@@ -227,16 +266,26 @@ public class AidDAOImpl implements AidDAO {
 
             System.out.println("\n========== DEBUGGING: WHY NO ELIGIBLE BENEFICIARIES? ==========");
 
-            String sql1 = "SELECT COUNT(*) as count, " +
-                    "MIN(final_score) as min_score, " +
-                    "MAX(final_score) as max_score " +
-                    "FROM aid_and_household_score WHERE aid_type_id = ?";
+            // Check 1: Scores for this aid type
+            String sql1 = disasterId > 0
+                    ? "SELECT COUNT(*) as count, MIN(final_score) as min_score, MAX(final_score) as max_score " +
+                    "FROM aid_and_household_score WHERE aid_type_id = ? AND disaster_id = ?"
+                    : "SELECT COUNT(*) as count, MIN(final_score) as min_score, MAX(final_score) as max_score " +
+                    "FROM aid_and_household_score WHERE aid_type_id = ? AND disaster_id IS NULL";
+
             PreparedStatement ps1 = debugConn.prepareStatement(sql1);
             ps1.setInt(1, aidTypeId);
+            if (disasterId > 0) {
+                ps1.setInt(2, disasterId);
+            }
+
             ResultSet rs1 = ps1.executeQuery();
             if (rs1.next()) {
                 int scoreCount = rs1.getInt("count");
-                System.out.println("\n1. Beneficiaries with scores for Aid Type #" + aidTypeId + ": " + scoreCount);
+                String contextMsg = disasterId > 0
+                        ? "for Aid Type #" + aidTypeId + " and Disaster #" + disasterId
+                        : "for Aid Type #" + aidTypeId + " (General)";
+                System.out.println("\n1. Beneficiaries with scores " + contextMsg + ": " + scoreCount);
                 if (scoreCount > 0) {
                     System.out.println("   Score range: " + rs1.getDouble("min_score") + " to " + rs1.getDouble("max_score"));
                 } else {
@@ -246,68 +295,30 @@ public class AidDAOImpl implements AidDAO {
             rs1.close();
             ps1.close();
 
-            String sql2 = "SELECT COUNT(*) as count FROM beneficiary_disaster_damage WHERE disaster_id = ?";
+            // Check 2: Already received aid
+            String sql2 = disasterId > 0
+                    ? "SELECT COUNT(DISTINCT beneficiary_id) as count FROM aid WHERE aid_type_id = ? AND disaster_id = ?"
+                    : "SELECT COUNT(DISTINCT beneficiary_id) as count FROM aid WHERE aid_type_id = ? AND disaster_id IS NULL";
+
             PreparedStatement ps2 = debugConn.prepareStatement(sql2);
-            ps2.setInt(1, disasterId);
+            ps2.setInt(1, aidTypeId);
+            if (disasterId > 0) {
+                ps2.setInt(2, disasterId);
+            }
+
             ResultSet rs2 = ps2.executeQuery();
             if (rs2.next()) {
-                int damageCount = rs2.getInt("count");
-                System.out.println("\n2. Beneficiaries affected by Disaster #" + disasterId + ": " + damageCount);
-                if (damageCount == 0) {
-                    System.out.println("   ⚠ NO DISASTER DAMAGE RECORDS! Need to record disaster damage first.");
+                int alreadyReceivedCount = rs2.getInt("count");
+                String contextMsg = disasterId > 0
+                        ? "this aid for this disaster"
+                        : "this general aid";
+                System.out.println("\n2. Beneficiaries who ALREADY RECEIVED " + contextMsg + ": " + alreadyReceivedCount);
+                if (alreadyReceivedCount > 0) {
+                    System.out.println("   ℹ These beneficiaries are excluded from distribution.");
                 }
             }
             rs2.close();
             ps2.close();
-
-            String sql3 = "SELECT COUNT(DISTINCT ahs.beneficiary_id) as count " +
-                    "FROM aid_and_household_score ahs " +
-                    "INNER JOIN beneficiary_disaster_damage bdd ON ahs.beneficiary_id = bdd.beneficiary_id " +
-                    "WHERE ahs.aid_type_id = ? AND bdd.disaster_id = ?";
-            PreparedStatement ps3 = debugConn.prepareStatement(sql3);
-            ps3.setInt(1, aidTypeId);
-            ps3.setInt(2, disasterId);
-            ResultSet rs3 = ps3.executeQuery();
-            if (rs3.next()) {
-                int intersectionCount = rs3.getInt("count");
-                System.out.println("\n3. Beneficiaries matching BOTH conditions: " + intersectionCount);
-                if (intersectionCount == 0) {
-                    System.out.println("   ⚠ No overlap! Check if scored beneficiaries are affected by this disaster.");
-                }
-            }
-            rs3.close();
-            ps3.close();
-
-            String sql4 = "SELECT COUNT(DISTINCT beneficiary_id) as count " +
-                    "FROM aid WHERE aid_type_id = ? AND disaster_id = ?";
-            PreparedStatement ps4 = debugConn.prepareStatement(sql4);
-            ps4.setInt(1, aidTypeId);
-            ps4.setInt(2, disasterId);
-            ResultSet rs4 = ps4.executeQuery();
-            if (rs4.next()) {
-                int alreadyReceivedCount = rs4.getInt("count");
-                System.out.println("\n4. Beneficiaries who ALREADY RECEIVED this aid: " + alreadyReceivedCount);
-                if (alreadyReceivedCount > 0) {
-                    System.out.println("   ℹ These beneficiaries are excluded from distribution.");
-
-                    String sql5 = "SELECT DISTINCT beneficiary_id FROM aid " +
-                            "WHERE aid_type_id = ? AND disaster_id = ? LIMIT 10";
-                    PreparedStatement ps5 = debugConn.prepareStatement(sql5);
-                    ps5.setInt(1, aidTypeId);
-                    ps5.setInt(2, disasterId);
-                    ResultSet rs5 = ps5.executeQuery();
-                    System.out.println("   Sample beneficiaries who already received this aid:");
-                    int sampleCount = 0;
-                    while (rs5.next() && sampleCount < 10) {
-                        System.out.println("     - Beneficiary #" + rs5.getInt("beneficiary_id"));
-                        sampleCount++;
-                    }
-                    rs5.close();
-                    ps5.close();
-                }
-            }
-            rs4.close();
-            ps4.close();
 
             System.out.println("\n================================================================\n");
 
@@ -320,14 +331,21 @@ public class AidDAOImpl implements AidDAO {
 
     @Override
     public boolean hasReceivedAid(int beneficiaryId, int aidTypeId, int disasterId) {
-        String sql = "SELECT COUNT(*) FROM aid WHERE beneficiary_id = ? AND aid_type_id = ? AND disaster_id = ?";
+        String sql;
+        if (disasterId > 0) {
+            sql = "SELECT COUNT(*) FROM aid WHERE beneficiary_id = ? AND aid_type_id = ? AND disaster_id = ?";
+        } else {
+            sql = "SELECT COUNT(*) FROM aid WHERE beneficiary_id = ? AND aid_type_id = ? AND disaster_id IS NULL";
+        }
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, beneficiaryId);
             ps.setInt(2, aidTypeId);
-            ps.setInt(3, disasterId);
+            if (disasterId > 0) {
+                ps.setInt(3, disasterId);
+            }
 
             ResultSet rs = ps.executeQuery();
 
@@ -383,12 +401,20 @@ public class AidDAOImpl implements AidDAO {
     @Override
     public List<AidModel> getAidByDisaster(int disasterId) {
         List<AidModel> aidList = new ArrayList<>();
-        String sql = "SELECT * FROM aid WHERE disaster_id = ? ORDER BY date DESC";
+        String sql;
+
+        if (disasterId > 0) {
+            sql = "SELECT * FROM aid WHERE disaster_id = ? ORDER BY date DESC";
+        } else {
+            sql = "SELECT * FROM aid WHERE disaster_id IS NULL ORDER BY date DESC";
+        }
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, disasterId);
+            if (disasterId > 0) {
+                ps.setInt(1, disasterId);
+            }
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -440,14 +466,22 @@ public class AidDAOImpl implements AidDAO {
 
     @Override
     public double getTotalQuantityDistributed(int aidTypeId, int disasterId) {
-        String sql = "SELECT COALESCE(SUM(qty), 0) as total FROM aid WHERE aid_type_id = ? AND disaster_id = ?";
+        String sql;
+        if (disasterId > 0) {
+            sql = "SELECT COALESCE(SUM(qty), 0) as total FROM aid WHERE aid_type_id = ? AND disaster_id = ?";
+        } else {
+            sql = "SELECT COALESCE(SUM(qty), 0) as total FROM aid WHERE aid_type_id = ? AND disaster_id IS NULL";
+        }
+
         double total = 0.0;
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, aidTypeId);
-            ps.setInt(2, disasterId);
+            if (disasterId > 0) {
+                ps.setInt(2, disasterId);
+            }
 
             ResultSet rs = ps.executeQuery();
 
@@ -476,10 +510,10 @@ public class AidDAOImpl implements AidDAO {
         String sql = "SELECT a.aid_id, a.name as aid_name, a.date, a.qty, a.cost, " +
                 "a.provider, a.notes, a.beneficiary_id, a.disaster_id, a.aid_type_id, " +
                 "b.first_name, b.middle_name, b.last_name, " +
-                "d.name " +
+                "d.name as disaster_name " +
                 "FROM aid a " +
                 "INNER JOIN beneficiary b ON a.beneficiary_id = b.beneficiary_id " +
-                "INNER JOIN disaster d ON a.disaster_id = d.disaster_id " +
+                "LEFT JOIN disaster d ON a.disaster_id = d.disaster_id " +
                 "ORDER BY a.date DESC";
 
         try {
@@ -493,14 +527,16 @@ public class AidDAOImpl implements AidDAO {
                 String encryptedFirstName = rs.getString("first_name");
                 String encryptedMiddleName = rs.getString("middle_name");
                 String encryptedLastName = rs.getString("last_name");
-                String encryptedDisasterName = rs.getString("name");
+                String encryptedDisasterName = rs.getString("disaster_name");
 
                 String aidName = cs.decryptWithOneParameter(encryptedAidName);
                 String provider = cs.decryptWithOneParameter(encryptedProvider);
                 String firstName = cs.decryptWithOneParameter(encryptedFirstName);
                 String middleName = cs.decryptWithOneParameter(encryptedMiddleName);
                 String lastName = cs.decryptWithOneParameter(encryptedLastName);
-                String disasterName = cs.decryptWithOneParameter(encryptedDisasterName);
+                String disasterName = encryptedDisasterName != null
+                        ? cs.decryptWithOneParameter(encryptedDisasterName)
+                        : "General Aid (No Disaster)";
 
                 String beneficiaryName = firstName + " " +
                         (middleName != null && !middleName.isEmpty() ? middleName + " " : "") +
@@ -510,7 +546,11 @@ public class AidDAOImpl implements AidDAO {
                 AidModel aid = new AidModel();
                 aid.setAidId(rs.getInt("aid_id"));
                 aid.setBeneficiaryId(rs.getInt("beneficiary_id"));
-                aid.setDisasterId(rs.getInt("disaster_id"));
+
+                // Handle null disaster_id
+                int disasterId = rs.getInt("disaster_id");
+                aid.setDisasterId(rs.wasNull() ? 0 : disasterId);
+
                 aid.setName(aidName);
                 aid.setDate(rs.getDate("date").toLocalDate());
                 aid.setQuantity(rs.getDouble("qty"));
@@ -543,7 +583,10 @@ public class AidDAOImpl implements AidDAO {
         AidModel aid = new AidModel();
         aid.setAidId(rs.getInt("aid_id"));
         aid.setBeneficiaryId(rs.getInt("beneficiary_id"));
-        aid.setDisasterId(rs.getInt("disaster_id"));
+
+        // Handle null disaster_id
+        int disasterId = rs.getInt("disaster_id");
+        aid.setDisasterId(rs.wasNull() ? 0 : disasterId);
 
         String encryptedName = rs.getString("name");
         String encryptedProvider = rs.getString("provider");
@@ -570,31 +613,56 @@ public class AidDAOImpl implements AidDAO {
         }
 
         // Fetch ALL beneficiaries, filter by barangay in Java
-        String sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category, b.barangay " +
-                "FROM aid_and_household_score ahs " +
-                "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
-                "WHERE ahs.aid_type_id = ? " +
-                "AND ahs.disaster_id = ? " +
-                "AND NOT EXISTS (" +
-                "    SELECT 1 FROM aid a " +
-                "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
-                "    AND a.aid_type_id = ? " +
-                "    AND a.disaster_id = ? " +
-                ") " +
-                "ORDER BY ahs.final_score DESC";
+        String sql;
+        if (disasterId > 0) {
+            sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category, b.barangay " +
+                    "FROM aid_and_household_score ahs " +
+                    "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
+                    "WHERE ahs.aid_type_id = ? " +
+                    "AND ahs.disaster_id = ? " +
+                    "AND NOT EXISTS (" +
+                    "    SELECT 1 FROM aid a " +
+                    "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
+                    "    AND a.aid_type_id = ? " +
+                    "    AND a.disaster_id = ? " +
+                    ") " +
+                    "ORDER BY ahs.final_score DESC";
+        } else {
+            sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category, b.barangay " +
+                    "FROM aid_and_household_score ahs " +
+                    "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
+                    "WHERE ahs.aid_type_id = ? " +
+                    "AND ahs.disaster_id IS NULL " +
+                    "AND NOT EXISTS (" +
+                    "    SELECT 1 FROM aid a " +
+                    "    WHERE a.beneficiary_id = ahs.beneficiary_id " +
+                    "    AND a.aid_type_id = ? " +
+                    "    AND a.disaster_id IS NULL " +
+                    ") " +
+                    "ORDER BY ahs.final_score DESC";
+        }
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
 
-            ps.setInt(1, aidTypeId);
-            ps.setInt(2, disasterId);
-            ps.setInt(3, aidTypeId);
-            ps.setInt(4, disasterId);
+            if (disasterId > 0) {
+                ps.setInt(1, aidTypeId);
+                ps.setInt(2, disasterId);
+                ps.setInt(3, aidTypeId);
+                ps.setInt(4, disasterId);
+            } else {
+                ps.setInt(1, aidTypeId);
+                ps.setInt(2, aidTypeId);
+            }
 
             System.out.println("========== FETCHING BARANGAY-FILTERED BENEFICIARIES ==========");
             System.out.println("Aid Type ID: " + aidTypeId);
-            System.out.println("Disaster ID: " + disasterId);
+            if (disasterId > 0) {
+                System.out.println("Disaster ID: " + disasterId);
+            } else {
+                System.out.println("Disaster: NONE (General Aid)");
+            }
             System.out.println("Barangays: " + String.join(", ", barangays));
             System.out.println("===============================================================");
 
@@ -689,17 +757,29 @@ public class AidDAOImpl implements AidDAO {
     public List<String> getBarangaysByDisaster(int disasterId) {
         List<String> barangays = new ArrayList<>();
 
-        String sql = "SELECT DISTINCT b.barangay " +
-                "FROM beneficiary b " +
-                "INNER JOIN beneficiary_disaster_damage bdd ON b.beneficiary_id = bdd.beneficiary_id " +
-                "WHERE bdd.disaster_id = ? " +
-                "AND b.barangay IS NOT NULL " +
-                "ORDER BY b.barangay";
+        String sql;
+        if (disasterId > 0) {
+            // Get barangays affected by specific disaster
+            sql = "SELECT DISTINCT b.barangay " +
+                    "FROM beneficiary b " +
+                    "INNER JOIN beneficiary_disaster_damage bdd ON b.beneficiary_id = bdd.beneficiary_id " +
+                    "WHERE bdd.disaster_id = ? " +
+                    "AND b.barangay IS NOT NULL " +
+                    "ORDER BY b.barangay";
+        } else {
+            // Get all barangays for general aid distribution
+            sql = "SELECT DISTINCT barangay " +
+                    "FROM beneficiary " +
+                    "WHERE barangay IS NOT NULL " +
+                    "ORDER BY barangay";
+        }
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, disasterId);
+            if (disasterId > 0) {
+                ps.setInt(1, disasterId);
+            }
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -717,8 +797,13 @@ public class AidDAOImpl implements AidDAO {
             rs.close();
             ps.close();
 
-            System.out.println("Found " + barangays.size() +
-                    " barangays affected by disaster #" + disasterId);
+            if (disasterId > 0) {
+                System.out.println("Found " + barangays.size() +
+                        " barangays affected by disaster #" + disasterId);
+            } else {
+                System.out.println("Found " + barangays.size() +
+                        " barangays for general aid distribution");
+            }
 
         } catch (SQLException e) {
             System.err.println("Error fetching barangays by disaster: " + e.getMessage());
@@ -728,6 +813,45 @@ public class AidDAOImpl implements AidDAO {
         }
 
         return barangays;
+    }
+
+    @Override
+    public List<String> getDistinctAidNames() {
+        List<String> aidNames = new ArrayList<>();
+        String sql = "SELECT DISTINCT name FROM aid WHERE name IS NOT NULL ORDER BY name";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String encryptedName = rs.getString("name");
+
+                try {
+                    // Decrypt the aid name
+                    String aidName = cs.decryptWithOneParameter(encryptedName);
+                    if (aidName != null && !aidName.trim().isEmpty()) {
+                        aidNames.add(aidName);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error decrypting aid name: " + e.getMessage());
+                }
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println("DEBUG: Found " + aidNames.size() + " distinct aid names");
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching distinct aid names: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return aidNames;
     }
 
 

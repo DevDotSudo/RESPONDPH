@@ -9,7 +9,7 @@
       stylesheets="@/styles/send_sms/sendsms.css"
       fx:controller="com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController"
       spacing="15"
-      prefWidth="700"
+      prefWidth="750"
       prefHeight="600"
       styleClass="dialog-container">
 
@@ -31,7 +31,7 @@
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Search:" styleClass="input-label"/>
         <TextField fx:id="txtSearch"
-                   promptText="Search by name, barangay, or phone..."
+                   promptText="Search by ID, name, barangay, or phone..."
                    HBox.hgrow="ALWAYS"
                    styleClass="search-field"/>
         <Button text="Clear Search"
@@ -61,18 +61,21 @@
                          text=""
                          prefWidth="50"
                          sortable="false"/>
+            <TableColumn fx:id="colId"
+                         text="ID"
+                         prefWidth="60"/>
             <TableColumn fx:id="colName"
                          text="Full Name"
-                         prefWidth="200"/>
+                         prefWidth="180"/>
             <TableColumn fx:id="colBarangay"
                          text="Barangay"
-                         prefWidth="150"/>
+                         prefWidth="140"/>
             <TableColumn fx:id="colPhone"
                          text="Mobile Number"
-                         prefWidth="150"/>
+                         prefWidth="140"/>
             <TableColumn fx:id="colAddress"
                          text="Coordinates"
-                         prefWidth="150"/>
+                         prefWidth="140"/>
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

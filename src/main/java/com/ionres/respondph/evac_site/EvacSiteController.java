@@ -4,6 +4,7 @@ import com.ionres.respondph.evac_site.dialogs_controller.AddEvacSiteController;
 import com.ionres.respondph.evac_site.dialogs_controller.EditEvacSiteController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -123,6 +124,7 @@ public class EvacSiteController {
                     evacSiteList.remove(evacSite);
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Evacuation site has been successfully deleted.");
+                    DashboardRefresher.refreshEvacSiteMap();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete evacuation site. Please try again.");

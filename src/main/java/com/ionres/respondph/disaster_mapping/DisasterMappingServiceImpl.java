@@ -197,35 +197,66 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
             return beneficiaries;
         }
 
-        @Override
-        public List<BeneficiaryMarker> getBeneficiariesInsideCircle(double circleLat, double circleLon, double radiusMeters) {
-            List<BeneficiaryMarker> insideCircle = new ArrayList<>();
-            
-            if (Double.isNaN(circleLat) || Double.isNaN(circleLon) || Double.isNaN(radiusMeters) || radiusMeters <= 0) {
-                LOGGER.warning("Invalid circle parameters for getBeneficiariesInsideCircle");
-                return insideCircle;
-            }
+//        @Override
+//        public List<BeneficiaryMarker> getBeneficiariesInsideCircle(double circleLat, double circleLon, double radiusMeters) {
+//            List<BeneficiaryMarker> insideCircle = new ArrayList<>();
+//
+//            if (Double.isNaN(circleLat) || Double.isNaN(circleLon) || Double.isNaN(radiusMeters) || radiusMeters <= 0) {
+//                LOGGER.warning("Invalid circle parameters for getBeneficiariesInsideCircle");
+//                return insideCircle;
+//            }
+//
+//            List<BeneficiaryMarker> allBeneficiaries = getBeneficiaries();
+//
+//            for (BeneficiaryMarker b : allBeneficiaries) {
+//                if (Double.isNaN(b.lat) || Double.isNaN(b.lon)) {
+//                    continue;
+//                }
+//
+//                // Calculate distance using Haversine formula
+//                double distance = GeographicUtils.calculateDistance(
+//                    b.lat, b.lon, circleLat, circleLon
+//                );
+//
+//                if (!Double.isNaN(distance) && distance <= radiusMeters) {
+//                    insideCircle.add(b);
+//                }
+//            }
+//
+//            LOGGER.info("Found " + insideCircle.size() + " beneficiaries inside circle");
+//            return insideCircle;
+//        }
 
-            List<BeneficiaryMarker> allBeneficiaries = getBeneficiaries();
+    @Override
+    public List<BeneficiaryMarker> getBeneficiariesInsideCircle(double circleLat, double circleLon, double radiusMeters) {
+        List<BeneficiaryMarker> insideCircle = new ArrayList<>();
 
-            for (BeneficiaryMarker b : allBeneficiaries) {
-                if (Double.isNaN(b.lat) || Double.isNaN(b.lon)) {
-                    continue;
-                }
-
-                // Calculate distance using Haversine formula
-                double distance = GeographicUtils.calculateDistance(
-                    b.lat, b.lon, circleLat, circleLon
-                );
-
-                if (!Double.isNaN(distance) && distance <= radiusMeters) {
-                    insideCircle.add(b);
-                }
-            }
-
-            LOGGER.info("Found " + insideCircle.size() + " beneficiaries inside circle");
+        if (Double.isNaN(circleLat) || Double.isNaN(circleLon) || Double.isNaN(radiusMeters) || radiusMeters <= 0) {
+            LOGGER.warning("Invalid circle parameters for getBeneficiariesInsideCircle");
             return insideCircle;
         }
+
+        // ✅ Get ALL beneficiaries, not just those with disaster-specific scores
+        List<BeneficiaryMarker> allBeneficiaries = getBeneficiaries();
+
+        for (BeneficiaryMarker b : allBeneficiaries) {
+            if (Double.isNaN(b.lat) || Double.isNaN(b.lon)) {
+                continue;
+            }
+
+            // Calculate distance using Haversine formula
+            double distance = GeographicUtils.calculateDistance(
+                    b.lat, b.lon, circleLat, circleLon
+            );
+
+            if (!Double.isNaN(distance) && distance <= radiusMeters) {
+                insideCircle.add(b);
+            }
+        }
+
+        LOGGER.info("Found " + insideCircle.size() + " beneficiaries inside circle");
+        return insideCircle;
+    }
 
         @Override
         public DisasterModel getDisasterById(int disasterId) {

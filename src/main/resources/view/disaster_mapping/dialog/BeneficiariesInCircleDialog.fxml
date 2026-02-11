@@ -27,6 +27,13 @@
                 <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="info-icon"/>
                 <Label fx:id="infoLabel" styleClass="info-label" text="Disaster: "/>
             </HBox>
+            <Button fx:id="designatedSiteBtn" styleClass="primary-button" HBox.hgrow="ALWAYS">
+                <graphic>
+                    <HBox alignment="CENTER" spacing="8">
+                        <Label styleClass="button-label" text="Designated Site" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </graphic>
+            </Button>
             <Button fx:id="evacuateBtn" styleClass="primary-button" HBox.hgrow="ALWAYS">
                 <graphic>
                     <HBox alignment="CENTER" spacing="8">

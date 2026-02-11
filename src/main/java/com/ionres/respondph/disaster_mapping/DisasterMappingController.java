@@ -4,10 +4,7 @@ import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.common.model.DisasterModel;
 import com.ionres.respondph.disaster_mapping.dialogs_controller.BeneficiariesInCircleDialogController;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.DialogManager;
-import com.ionres.respondph.util.GeographicUtils;
-import com.ionres.respondph.util.Mapping;
+import com.ionres.respondph.util.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.GraphicsContext;
@@ -18,7 +15,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.util.ArrayList;
@@ -50,6 +46,8 @@ public class DisasterMappingController {
     public void initialize() {
         setupDisasterComboBox();
         setupComboBoxListeners();
+
+        DashboardRefresher.registerBeneficiaryMapInDisasterMapping(this);
         
         Platform.runLater(() -> {
             mapping.init(mapContainer);
@@ -127,7 +125,7 @@ public class DisasterMappingController {
         });
     }
 
-    private void loadDisasterTypes() {
+    public void loadDisasterTypes() {
         List<String> types = disasterMappingService.getDisasterTypes();
         disasterTypeComboBox.getItems().clear();
         disasterTypeComboBox.getItems().add("All Types");

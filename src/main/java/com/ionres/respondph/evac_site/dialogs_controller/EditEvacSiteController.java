@@ -6,6 +6,7 @@ import com.ionres.respondph.evac_site.EvacSiteController;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.DialogManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -101,6 +102,7 @@ public class EditEvacSiteController {
             if (success) {
                 AlertDialogManager.showSuccess("Success", "Evacuation site has been successfully updated.");
                 evacSiteController.loadTable();
+                DashboardRefresher.refreshEvacSiteMap();
                 closeDialog();
             } else {
                 AlertDialogManager.showError("Error", "Failed to update evacuation site. Please try again.");

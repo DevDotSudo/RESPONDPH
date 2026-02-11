@@ -103,8 +103,6 @@ public class AppLoader {
         DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
         DialogManager.preload("editAidType", "/view/aid_type/dialog/EditAidTypeDialog.fxml");
 
-        //Evacuation Plan
-        DialogManager.preload("allocate", "/view/evacuation_plan/dialog/AllocateEvacSiteDialog.fxml");
         // Utility dialogs
         DialogManager.preload("mapping", "/view/mapping/MapDialog.fxml");
         DialogManager.preload("beneficiariesInCircle", "/view/disaster_mapping/dialog/BeneficiariesInCircleDialog.fxml");
@@ -119,7 +117,8 @@ public class AppLoader {
 
         DialogManager.preload("evacuationSiteMapping", "/view/disaster_mapping/dialog/EvacuationSiteMappingDialog.fxml");
         DialogManager.preload("selection", "/view/send_sms/dialog/BeneficiarySelectionDialog.fxml");
-        DialogManager.preload("sendEvacMessage", "/view/evacuation_plan/dialog/SendEvacMessageDialog.fxml");
         DialogManager.preload("allocateBeneficiariesToEvacSite", "/view/disaster_mapping/dialog/AllocateBeneficiariesToEvacSite.fxml");
+
+        DialogManager.preload("evacuationAllocation", "/view/disaster_mapping/dialog/EvacuationAllocationDialog.fxml");
     }
 }

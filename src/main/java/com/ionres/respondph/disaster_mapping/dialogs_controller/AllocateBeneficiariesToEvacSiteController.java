@@ -5,6 +5,7 @@ import com.ionres.respondph.evacuation_plan.*;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DashboardRefresher;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -39,7 +40,7 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
     @FXML private TableColumn<BeneficiaryAllocationRow, Integer> householdColumn;
     @FXML private TableColumn<BeneficiaryAllocationRow, String> assignedSiteColumn;
     @FXML private TableColumn<BeneficiaryAllocationRow, String> statusColumn;
-    @FXML private Button saveBtn;
+//    @FXML private Button saveBtn;
     @FXML private Button closeBtn;
 
     private Stage dialogStage;
@@ -125,7 +126,7 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
     }
 
     private void setupButtons() {
-        saveBtn.setOnAction(e -> saveAllocation());
+//        saveBtn.setOnAction(e -> saveAllocation());
         closeBtn.setOnAction(e -> closeDialog());
     }
 
@@ -161,7 +162,7 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
         }
     }
 
-    private void loadBeneficiaries() {
+    public void loadBeneficiaries() {
         LOGGER.info("=== LOADING BENEFICIARIES ===");
         LOGGER.info("Disaster ID for query: " + disasterId);
         LOGGER.info("Current Evac Site ID: " + (evacSite != null ? evacSite.getEvacId() : "null"));

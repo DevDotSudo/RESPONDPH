@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.*?>
 
 <VBox fx:id="addAidRoot" prefHeight="800" prefWidth="850" spacing="0" styleClass="dialog-container" stylesheets="@/styles/aid/dialog/addaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.AddAidController">
-
     <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="dialog-header">
         <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="24" styleClass="header-icon" />
@@ -60,7 +59,26 @@
                     <Label styleClass="field-hint" text="Select the disaster event for which you're distributing aid" />
                 </VBox>
 
-                <!-- NEW: Barangay Filter Section -->
+                <!-- General Aid Option -->
+                <VBox spacing="12">
+                    <Separator />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-box">
+                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="16" styleClass="info-box-icon" />
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label styleClass="info-box-title" text="Distribution Mode" />
+                            <Label styleClass="info-box-text" wrapText="true"
+                                   text="You can distribute aid either for a specific disaster event OR as general aid. General aid is useful for ongoing programs not tied to disasters." />
+                        </VBox>
+                    </HBox>
+
+                    <CheckBox fx:id="generalAidCheckbox" styleClass="checkbox-label"
+                              text="✓ General Aid Distribution (No Specific Disaster)" />
+
+                    <Label styleClass="field-hint" wrapText="true"
+                           text="Check this to distribute aid based on general vulnerability scores, not tied to a specific disaster event. When checked, disaster selection above will be disabled. Uncheck to enable disaster-specific distribution." />
+                </VBox>
+
+                <!-- Barangay Filter Section -->
                 <VBox spacing="12">
                     <CheckBox fx:id="useBarangayFilterCheckbox" styleClass="checkbox-label"
                               text="Filter by Barangay" />
@@ -249,6 +267,16 @@
             </graphic>
         </Button>
 
+        <!-- Print Custom Button - NEW -->
+        <Button fx:id="printCustomBtn" styleClass="secondary-btn">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="PRINT" styleClass="btn-icon" />
+                    <Label styleClass="btn-label" text="Print Custom" textFill="#fffdfd" />
+                </HBox>
+            </graphic>
+        </Button>
+
         <Region HBox.hgrow="ALWAYS" />
 
         <!-- Cancel Button -->
@@ -271,5 +299,4 @@
             </graphic>
         </Button>
     </HBox>
-
 </VBox>

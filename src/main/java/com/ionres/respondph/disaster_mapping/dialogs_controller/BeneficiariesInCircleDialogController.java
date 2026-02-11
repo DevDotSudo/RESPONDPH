@@ -33,6 +33,7 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     @FXML private TableColumn<BeneficiaryMarker, String> nameColumn;
     @FXML private Button closeBtn;
     @FXML private Button evacuateBtn;
+    @FXML private Button designatedSiteBtn;
     @FXML private VBox root;
 
     private Stage dialogStage;
@@ -78,9 +79,12 @@ public class BeneficiariesInCircleDialogController implements Initializable {
         if (evacuateBtn != null) {
             evacuateBtn.setOnAction(e -> handleEvacuateNow());
         }
+        if (designatedSiteBtn != null){
+            designatedSiteBtn.setOnAction(e -> handleDesignatedSite() );
+        }
     }
 
-    private void handleEvacuateNow() {
+    private void handleDesignatedSite() {
         if (currentDisaster == null) {
             LOGGER.warning("Cannot evacuate: no disaster information available");
             AlertDialogManager.showError("Error", "Disaster information not available.");
@@ -128,6 +132,48 @@ public class BeneficiariesInCircleDialogController implements Initializable {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error opening evacuation site mapping for disaster ID: " + disasterId, e);
             AlertDialogManager.showError("Error", "Failed to open evacuation site mapping: " + e.getMessage());
+        }
+    }
+
+    private void handleEvacuateNow() {
+        if (currentDisaster == null) {
+            LOGGER.warning("Cannot evacuate: no disaster information available");
+            AlertDialogManager.showError("Error", "Disaster information not available.");
+            return;
+        }
+
+        final int disasterId = (currentDisasterId != INVALID_DISASTER_ID)
+                ? currentDisasterId
+                : AppContext.currentDisasterId;
+
+        LOGGER.info("Attempting evacuation - Disaster ID: " + disasterId);
+
+        if (disasterId == INVALID_DISASTER_ID || disasterId <= 0) {
+            LOGGER.warning("Cannot evacuate: disaster ID not set");
+            AlertDialogManager.showError("Error", "Unable to determine disaster ID. Please select a disaster first.");
+            return;
+        }
+
+        try {
+            LOGGER.info("Opening evacuation allocation dialog for disaster ID: " + disasterId);
+
+            EvacuationAllocationDialogController controller = DialogManager.getController(
+                    "evacuationAllocation",
+                    EvacuationAllocationDialogController.class
+            );
+
+            if (controller != null) {
+                controller.setDisasterData(currentDisaster, disasterId);
+                DialogManager.show("evacuationAllocation");
+                closeDialog();
+                LOGGER.info("Evacuation allocation dialog opened successfully");
+            } else {
+                LOGGER.severe("Could not get EvacuationAllocationDialogController from DialogManager");
+                AlertDialogManager.showError("Error", "Failed to open evacuation allocation dialog.");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error opening evacuation allocation dialog", e);
+            AlertDialogManager.showError("Error", "Failed to open evacuation allocation dialog: " + e.getMessage());
         }
     }
 

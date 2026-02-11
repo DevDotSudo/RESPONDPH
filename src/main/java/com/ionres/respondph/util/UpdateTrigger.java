@@ -293,7 +293,6 @@ public class UpdateTrigger {
             List<Integer> aidTypeIds = aidTypeService.getAllAidTypeIds();
             System.out.println("Found " + aidTypeIds.size() + " AidType(s)");
 
-            // Step 4: Calculate AidHouseholdScore for each AidType (without disaster)
             AidHouseholdScoreCalculate aidCalc = new AidHouseholdScoreCalculate();
             int successCount = 0;
             for (Integer aidTypeId : aidTypeIds) {
@@ -312,6 +311,68 @@ public class UpdateTrigger {
 
             System.out.println("Successfully calculated " + successCount + " out of " + aidTypeIds.size() + " AidHouseholdScores");
             System.out.println("========== CASCADE UPDATE COMPLETED (FULL) ==========");
+
+            return successCount > 0 || aidTypeIds.isEmpty();
+
+        } catch (Exception e) {
+            System.err.println("✗ Error during cascade update: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean triggerCascadeUpdateForNewBeneficiary(int beneficiaryId, int adminId) {
+        System.out.println("========== TRIGGERING CASCADE UPDATE FOR NEW BENEFICIARY (NO DISASTER) ==========");
+        System.out.println("Beneficiary ID: " + beneficiaryId);
+        System.out.println("Admin ID: " + adminId);
+
+        HouseholdScoreCalculate householdCalc = new HouseholdScoreCalculate();
+
+        try {
+            System.out.println("Step 1: Calculating household score...");
+            boolean householdSuccess = householdCalc.autoRecalculateHouseholdScore(beneficiaryId);
+
+            if (!householdSuccess) {
+                System.err.println("✗ Failed to calculate household score");
+                return false;
+            }
+            System.out.println("✓ Household score calculated successfully");
+
+            // Step 2: Check if any AidTypes exist
+            System.out.println("Step 2: Checking for existing AidTypes...");
+            boolean hasAidTypes = aidTypeService.hasAnyAidTypes();
+
+            if (!hasAidTypes) {
+                System.out.println("⚠ No AidTypes found in system");
+                System.out.println("========== CASCADE UPDATE COMPLETED (HOUSEHOLD ONLY) ==========");
+                return true;
+            }
+
+            System.out.println("✓ AidTypes found - proceeding with AidHouseholdScore calculation");
+
+            // Step 3: Get all AidType IDs
+            List<Integer> aidTypeIds = aidTypeService.getAllAidTypeIds();
+            System.out.println("Found " + aidTypeIds.size() + " AidType(s)");
+
+            // Step 4: Calculate AidHouseholdScore for each AidType (WITHOUT disaster)
+            AidHouseholdScoreCalculate aidCalc = new AidHouseholdScoreCalculate();
+            int successCount = 0;
+            for (Integer aidTypeId : aidTypeIds) {
+                System.out.println("Calculating AidHouseholdScore for AidType ID: " + aidTypeId);
+                boolean aidSuccess = aidCalc.calculateAndSaveAidHouseholdScore(
+                        beneficiaryId, aidTypeId, adminId
+                );
+
+                if (aidSuccess) {
+                    successCount++;
+                    System.out.println("✓ AidHouseholdScore calculated for AidType ID: " + aidTypeId);
+                } else {
+                    System.err.println("✗ Failed to calculate AidHouseholdScore for AidType ID: " + aidTypeId);
+                }
+            }
+
+            System.out.println("Successfully calculated " + successCount + " out of " + aidTypeIds.size() + " AidHouseholdScores");
+            System.out.println("========== CASCADE UPDATE COMPLETED ==========");
 
             return successCount > 0 || aidTypeIds.isEmpty();
 

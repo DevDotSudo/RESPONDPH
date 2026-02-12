@@ -345,7 +345,8 @@ public class AddDisasterDamageDialogController {
                 int adminId = SessionManager.getInstance().getCurrentAdminId();
 
                 UpdateTrigger trigger = new UpdateTrigger();
-                boolean cascadeSuccess = trigger.triggerCascadeUpdateForNewBeneficiaryWithDisaster(beneficiaryId, adminId, disaster.getDisasterId());
+//                boolean cascadeSuccess = trigger.triggerCascadeUpdateForNewBeneficiaryWithDisaster(beneficiaryId, adminId, disaster.getDisasterId());
+                boolean cascadeSuccess = trigger.triggerCascadeUpdateWithDisaster(beneficiaryId, disaster.getDisasterId());
 
                 if (cascadeSuccess) {
                     AlertDialogManager.showSuccess("Success",

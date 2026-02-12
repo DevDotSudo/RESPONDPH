@@ -304,6 +304,173 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
         return false;
     }
 
+//    @Override
+//    public boolean saveAidHouseholdScoreWithDisaster(int beneficiaryId, int aidTypeId, int adminId, int disasterId,
+//                                                     HouseholdScoreData household, double finalScore,
+//                                                     String scoreCategory, HouseholdMemberCounts memberCounts) {
+//
+//        AidTypeWeights weights = getAidTypeWeights(aidTypeId);
+//        if (weights == null) {
+//            System.err.println("Cannot save: Aid type weights not found for aid type ID: " + aidTypeId);
+//            return false;
+//        }
+//
+//        // Calculate combined scores WITH PROPER ROUNDING
+//        Double combinedAgeScore = null;
+//        if (household.ageScore != null && weights.ageWeight != null) {
+//            combinedAgeScore = roundToFourDecimals(household.ageScore * weights.ageWeight);
+//        }
+//
+//        double combinedGenderScore = roundToFourDecimals(household.genderScore * weights.genderWeight);
+//        double combinedMaritalScore = roundToFourDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
+//        double combinedSoloParentScore = roundToFourDecimals(household.soloParentScore * weights.soloParentWeight);
+//        double combinedDisabilityScore = roundToFourDecimals(household.disabilityScore * weights.disabilityWeight);
+//        double combinedHealthScore = roundToFourDecimals(household.healthConditionScore * weights.healthConditionWeight);
+//        double combinedWaterScore = roundToFourDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
+//        double combinedSanitationScore = roundToFourDecimals(household.sanitationScore * weights.sanitationWeight);
+//        double combinedHouseScore = roundToFourDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
+//        double combinedOwnershipScore = roundToFourDecimals(household.ownershipScore * weights.ownershipWeight);
+//        double combinedDamageScore = roundToFourDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
+//        double combinedEmploymentScore = roundToFourDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
+//        double combinedIncomeScore = roundToFourDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
+//        double combinedEducationScore = roundToFourDecimals(household.educationLevelScore * weights.educationLevelWeight);
+//        double combinedDigitalScore = roundToFourDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
+//
+//        Double combinedDependencyScore = null;
+//        if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
+//            combinedDependencyScore = roundToFourDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
+//        }
+//
+//        // ✅ MODIFIED: Check includes disaster_id
+//        String checkSql = "SELECT beneficiary_family_score_id FROM aid_and_household_score " +
+//                "WHERE beneficiary_id = ? AND aid_type_id = ? AND disaster_id = ?";
+//
+//        // ✅ MODIFIED: Insert includes disaster_id
+//        String insertSql = "INSERT INTO aid_and_household_score (" +
+//                "beneficiary_id, disaster_id, age_score, gender_score, marital_status_score, solo_parent_score, " +
+//                "disability_score, health_condition_score, access_to_clean_water_score, " +
+//                "sanitation_facilities_score, house_construction_type_score, ownership_score, " +
+//                "damage_severity_score, employment_status_score, monthly_income_score, " +
+//                "education_level_score, digital_access_score, household_members, able_bodied_members, " +
+//                "vulnerable_members, dependency_ratio_score, final_score, score_category, " +
+//                "scoring_model, assessment_date, aid_type_id, admin_id) " +
+//                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+//
+//        // ✅ MODIFIED: Update WHERE clause includes disaster_id
+//        String updateSql = "UPDATE aid_and_household_score SET " +
+//                "age_score=?, gender_score=?, marital_status_score=?, solo_parent_score=?, " +
+//                "disability_score=?, health_condition_score=?, access_to_clean_water_score=?, " +
+//                "sanitation_facilities_score=?, house_construction_type_score=?, ownership_score=?, " +
+//                "damage_severity_score=?, employment_status_score=?, monthly_income_score=?, " +
+//                "education_level_score=?, digital_access_score=?, household_members=?, able_bodied_members=?, " +
+//                "vulnerable_members=?, dependency_ratio_score=?, final_score=?, score_category=?, " +
+//                "scoring_model=?, assessment_date=NOW(), admin_id=? " +
+//                "WHERE beneficiary_id=? AND aid_type_id=? AND disaster_id=?";
+//
+//        try {
+//            conn = DBConnection.getInstance().getConnection();
+//
+//            PreparedStatement checkPs = conn.prepareStatement(checkSql);
+//            checkPs.setInt(1, beneficiaryId);
+//            checkPs.setInt(2, aidTypeId);
+//            checkPs.setInt(3, disasterId);  // ✅ NEW
+//            ResultSet rs = checkPs.executeQuery();
+//            boolean recordExists = rs.next();
+//            rs.close();
+//            checkPs.close();
+//
+//            PreparedStatement ps;
+//
+//            if (recordExists) {
+//                System.out.println("Aid-Household score exists - Updating existing record for disaster ID: " + disasterId);
+//                ps = conn.prepareStatement(updateSql);
+//
+//                int i = 1;
+//                ps.setObject(i++, combinedAgeScore);
+//                ps.setDouble(i++, combinedGenderScore);
+//                ps.setDouble(i++, combinedMaritalScore);
+//                ps.setDouble(i++, combinedSoloParentScore);
+//                ps.setDouble(i++, combinedDisabilityScore);
+//                ps.setDouble(i++, combinedHealthScore);
+//                ps.setDouble(i++, combinedWaterScore);
+//                ps.setDouble(i++, combinedSanitationScore);
+//                ps.setDouble(i++, combinedHouseScore);
+//                ps.setDouble(i++, combinedOwnershipScore);
+//                ps.setDouble(i++, combinedDamageScore);
+//                ps.setDouble(i++, combinedEmploymentScore);
+//                ps.setDouble(i++, combinedIncomeScore);
+//                ps.setDouble(i++, combinedEducationScore);
+//                ps.setDouble(i++, combinedDigitalScore);
+//                ps.setInt(i++, memberCounts.totalMembers);
+//                ps.setInt(i++, memberCounts.ableBodyMembers);
+//                ps.setInt(i++, memberCounts.vulnerableMembers);
+//                ps.setObject(i++, combinedDependencyScore);
+//                ps.setDouble(i++, finalScore);
+//                ps.setString(i++, scoreCategory);
+//                ps.setString(i++, "Weighted Average Model");
+//                ps.setInt(i++, adminId);
+//                ps.setInt(i++, beneficiaryId);
+//                ps.setInt(i++, aidTypeId);
+//                ps.setInt(i++, disasterId);  // ✅ NEW
+//
+//            } else {
+//                System.out.println("Aid-Household score doesn't exist - Inserting new record for disaster ID: " + disasterId);
+//                ps = conn.prepareStatement(insertSql);
+//
+//                int i = 1;
+//                ps.setInt(i++, beneficiaryId);
+//                ps.setInt(i++, disasterId);  // ✅ NEW
+//                ps.setObject(i++, combinedAgeScore);
+//                ps.setDouble(i++, combinedGenderScore);
+//                ps.setDouble(i++, combinedMaritalScore);
+//                ps.setDouble(i++, combinedSoloParentScore);
+//                ps.setDouble(i++, combinedDisabilityScore);
+//                ps.setDouble(i++, combinedHealthScore);
+//                ps.setDouble(i++, combinedWaterScore);
+//                ps.setDouble(i++, combinedSanitationScore);
+//                ps.setDouble(i++, combinedHouseScore);
+//                ps.setDouble(i++, combinedOwnershipScore);
+//                ps.setDouble(i++, combinedDamageScore);
+//                ps.setDouble(i++, combinedEmploymentScore);
+//                ps.setDouble(i++, combinedIncomeScore);
+//                ps.setDouble(i++, combinedEducationScore);
+//                ps.setDouble(i++, combinedDigitalScore);
+//                ps.setInt(i++, memberCounts.totalMembers);
+//                ps.setInt(i++, memberCounts.ableBodyMembers);
+//                ps.setInt(i++, memberCounts.vulnerableMembers);
+//                ps.setObject(i++, combinedDependencyScore);
+//                ps.setDouble(i++, finalScore);
+//                ps.setString(i++, scoreCategory);
+//                ps.setString(i++, "Weighted Average Model");
+//                ps.setInt(i++, aidTypeId);
+//                ps.setInt(i++, adminId);
+//            }
+//
+//            int rowsAffected = ps.executeUpdate();
+//            ps.close();
+//
+//            if (rowsAffected > 0) {
+//                System.out.println("Successfully saved aid_and_household_score with:");
+//                System.out.println("  - beneficiary_id: " + beneficiaryId);
+//                System.out.println("  - disaster_id: " + disasterId);
+//                System.out.println("  - aid_type_id: " + aidTypeId);
+//                System.out.println("  - household_members: " + memberCounts.totalMembers);
+//                System.out.println("  - able_bodied_members: " + memberCounts.ableBodyMembers);
+//                System.out.println("  - vulnerable_members: " + memberCounts.vulnerableMembers);
+//                System.out.println("  - final_score: " + finalScore);
+//            }
+//
+//            return rowsAffected > 0;
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return false;
+//        } finally {
+//            closeConnection();
+//        }
+//    }
+
+
     @Override
     public boolean saveAidHouseholdScoreWithDisaster(int beneficiaryId, int aidTypeId, int adminId, int disasterId,
                                                      HouseholdScoreData household, double finalScore,
@@ -318,34 +485,35 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
         // Calculate combined scores WITH PROPER ROUNDING
         Double combinedAgeScore = null;
         if (household.ageScore != null && weights.ageWeight != null) {
-            combinedAgeScore = roundToTwoDecimals(household.ageScore * weights.ageWeight);
+            combinedAgeScore = roundToFourDecimals(household.ageScore * weights.ageWeight);
         }
 
-        double combinedGenderScore = roundToTwoDecimals(household.genderScore * weights.genderWeight);
-        double combinedMaritalScore = roundToTwoDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
-        double combinedSoloParentScore = roundToTwoDecimals(household.soloParentScore * weights.soloParentWeight);
-        double combinedDisabilityScore = roundToTwoDecimals(household.disabilityScore * weights.disabilityWeight);
-        double combinedHealthScore = roundToTwoDecimals(household.healthConditionScore * weights.healthConditionWeight);
-        double combinedWaterScore = roundToTwoDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
-        double combinedSanitationScore = roundToTwoDecimals(household.sanitationScore * weights.sanitationWeight);
-        double combinedHouseScore = roundToTwoDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
-        double combinedOwnershipScore = roundToTwoDecimals(household.ownershipScore * weights.ownershipWeight);
-        double combinedDamageScore = roundToTwoDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
-        double combinedEmploymentScore = roundToTwoDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
-        double combinedIncomeScore = roundToTwoDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
-        double combinedEducationScore = roundToTwoDecimals(household.educationLevelScore * weights.educationLevelWeight);
-        double combinedDigitalScore = roundToTwoDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
+        double combinedGenderScore = roundToFourDecimals(household.genderScore * weights.genderWeight);
+        double combinedMaritalScore = roundToFourDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
+        double combinedSoloParentScore = roundToFourDecimals(household.soloParentScore * weights.soloParentWeight);
+        double combinedDisabilityScore = roundToFourDecimals(household.disabilityScore * weights.disabilityWeight);
+        double combinedHealthScore = roundToFourDecimals(household.healthConditionScore * weights.healthConditionWeight);
+        double combinedWaterScore = roundToFourDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
+        double combinedSanitationScore = roundToFourDecimals(household.sanitationScore * weights.sanitationWeight);
+        double combinedHouseScore = roundToFourDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
+        double combinedOwnershipScore = roundToFourDecimals(household.ownershipScore * weights.ownershipWeight);
+        double combinedDamageScore = roundToFourDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
+        double combinedEmploymentScore = roundToFourDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
+        double combinedIncomeScore = roundToFourDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
+        double combinedEducationScore = roundToFourDecimals(household.educationLevelScore * weights.educationLevelWeight);
+        double combinedDigitalScore = roundToFourDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
 
         Double combinedDependencyScore = null;
         if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
-            combinedDependencyScore = roundToTwoDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
+            combinedDependencyScore = roundToFourDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
         }
 
-        // ✅ MODIFIED: Check includes disaster_id
+        // ✅ IMPROVED: Check for existing record - first try with specific disaster_id, then with NULL
         String checkSql = "SELECT beneficiary_family_score_id FROM aid_and_household_score " +
-                "WHERE beneficiary_id = ? AND aid_type_id = ? AND disaster_id = ?";
+                "WHERE beneficiary_id = ? AND aid_type_id = ? AND " +
+                "(disaster_id = ? OR (disaster_id IS NULL AND ? IS NOT NULL))";
 
-        // ✅ MODIFIED: Insert includes disaster_id
+        // Insert SQL - always includes disaster_id
         String insertSql = "INSERT INTO aid_and_household_score (" +
                 "beneficiary_id, disaster_id, age_score, gender_score, marital_status_score, solo_parent_score, " +
                 "disability_score, health_condition_score, access_to_clean_water_score, " +
@@ -356,8 +524,9 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 "scoring_model, assessment_date, aid_type_id, admin_id) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
 
-        // ✅ MODIFIED: Update WHERE clause includes disaster_id
+        // ✅ IMPROVED: Update SQL that handles both NULL disaster update and regular update
         String updateSql = "UPDATE aid_and_household_score SET " +
+                "disaster_id=?, " +  // ✅ CRITICAL: Update disaster_id from NULL to actual value
                 "age_score=?, gender_score=?, marital_status_score=?, solo_parent_score=?, " +
                 "disability_score=?, health_condition_score=?, access_to_clean_water_score=?, " +
                 "sanitation_facilities_score=?, house_construction_type_score=?, ownership_score=?, " +
@@ -365,7 +534,8 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 "education_level_score=?, digital_access_score=?, household_members=?, able_bodied_members=?, " +
                 "vulnerable_members=?, dependency_ratio_score=?, final_score=?, score_category=?, " +
                 "scoring_model=?, assessment_date=NOW(), admin_id=? " +
-                "WHERE beneficiary_id=? AND aid_type_id=? AND disaster_id=?";
+                "WHERE beneficiary_id=? AND aid_type_id=? AND " +
+                "(disaster_id = ? OR (disaster_id IS NULL AND ? IS NOT NULL))";
 
         try {
             conn = DBConnection.getInstance().getConnection();
@@ -373,7 +543,8 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
             PreparedStatement checkPs = conn.prepareStatement(checkSql);
             checkPs.setInt(1, beneficiaryId);
             checkPs.setInt(2, aidTypeId);
-            checkPs.setInt(3, disasterId);  // ✅ NEW
+            checkPs.setObject(3, disasterId);
+            checkPs.setObject(4, disasterId);
             ResultSet rs = checkPs.executeQuery();
             boolean recordExists = rs.next();
             rs.close();
@@ -386,6 +557,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 ps = conn.prepareStatement(updateSql);
 
                 int i = 1;
+                ps.setObject(i++, disasterId);  // ✅ CRITICAL: Set disaster_id (updates NULL to actual value)
                 ps.setObject(i++, combinedAgeScore);
                 ps.setDouble(i++, combinedGenderScore);
                 ps.setDouble(i++, combinedMaritalScore);
@@ -405,13 +577,14 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 ps.setInt(i++, memberCounts.ableBodyMembers);
                 ps.setInt(i++, memberCounts.vulnerableMembers);
                 ps.setObject(i++, combinedDependencyScore);
-                ps.setDouble(i++, roundToTwoDecimals(finalScore));
+                ps.setDouble(i++, finalScore);
                 ps.setString(i++, scoreCategory);
                 ps.setString(i++, "Weighted Average Model");
                 ps.setInt(i++, adminId);
                 ps.setInt(i++, beneficiaryId);
                 ps.setInt(i++, aidTypeId);
-                ps.setInt(i++, disasterId);  // ✅ NEW
+                ps.setObject(i++, disasterId);  // For WHERE clause
+                ps.setObject(i++, disasterId);  // For NULL check
 
             } else {
                 System.out.println("Aid-Household score doesn't exist - Inserting new record for disaster ID: " + disasterId);
@@ -419,7 +592,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
 
                 int i = 1;
                 ps.setInt(i++, beneficiaryId);
-                ps.setInt(i++, disasterId);  // ✅ NEW
+                ps.setObject(i++, disasterId);  // Can be NULL
                 ps.setObject(i++, combinedAgeScore);
                 ps.setDouble(i++, combinedGenderScore);
                 ps.setDouble(i++, combinedMaritalScore);
@@ -439,7 +612,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 ps.setInt(i++, memberCounts.ableBodyMembers);
                 ps.setInt(i++, memberCounts.vulnerableMembers);
                 ps.setObject(i++, combinedDependencyScore);
-                ps.setDouble(i++, roundToTwoDecimals(finalScore));
+                ps.setDouble(i++, finalScore);
                 ps.setString(i++, scoreCategory);
                 ps.setString(i++, "Weighted Average Model");
                 ps.setInt(i++, aidTypeId);
@@ -457,7 +630,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 System.out.println("  - household_members: " + memberCounts.totalMembers);
                 System.out.println("  - able_bodied_members: " + memberCounts.ableBodyMembers);
                 System.out.println("  - vulnerable_members: " + memberCounts.vulnerableMembers);
-                System.out.println("  - final_score: " + roundToTwoDecimals(finalScore));
+                System.out.println("  - final_score: " + finalScore);
             }
 
             return rowsAffected > 0;
@@ -485,27 +658,27 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
         // Calculate combined scores WITH PROPER ROUNDING
         Double combinedAgeScore = null;
         if (household.ageScore != null && weights.ageWeight != null) {
-            combinedAgeScore = roundToTwoDecimals(household.ageScore * weights.ageWeight);
+            combinedAgeScore = roundToFourDecimals(household.ageScore * weights.ageWeight);
         }
 
-        double combinedGenderScore = roundToTwoDecimals(household.genderScore * weights.genderWeight);
-        double combinedMaritalScore = roundToTwoDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
-        double combinedSoloParentScore = roundToTwoDecimals(household.soloParentScore * weights.soloParentWeight);
-        double combinedDisabilityScore = roundToTwoDecimals(household.disabilityScore * weights.disabilityWeight);
-        double combinedHealthScore = roundToTwoDecimals(household.healthConditionScore * weights.healthConditionWeight);
-        double combinedWaterScore = roundToTwoDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
-        double combinedSanitationScore = roundToTwoDecimals(household.sanitationScore * weights.sanitationWeight);
-        double combinedHouseScore = roundToTwoDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
-        double combinedOwnershipScore = roundToTwoDecimals(household.ownershipScore * weights.ownershipWeight);
-        double combinedDamageScore = roundToTwoDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
-        double combinedEmploymentScore = roundToTwoDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
-        double combinedIncomeScore = roundToTwoDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
-        double combinedEducationScore = roundToTwoDecimals(household.educationLevelScore * weights.educationLevelWeight);
-        double combinedDigitalScore = roundToTwoDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
+        double combinedGenderScore = roundToFourDecimals(household.genderScore * weights.genderWeight);
+        double combinedMaritalScore = roundToFourDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
+        double combinedSoloParentScore = roundToFourDecimals(household.soloParentScore * weights.soloParentWeight);
+        double combinedDisabilityScore = roundToFourDecimals(household.disabilityScore * weights.disabilityWeight);
+        double combinedHealthScore = roundToFourDecimals(household.healthConditionScore * weights.healthConditionWeight);
+        double combinedWaterScore = roundToFourDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
+        double combinedSanitationScore = roundToFourDecimals(household.sanitationScore * weights.sanitationWeight);
+        double combinedHouseScore = roundToFourDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
+        double combinedOwnershipScore = roundToFourDecimals(household.ownershipScore * weights.ownershipWeight);
+        double combinedDamageScore = roundToFourDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
+        double combinedEmploymentScore = roundToFourDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
+        double combinedIncomeScore = roundToFourDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
+        double combinedEducationScore = roundToFourDecimals(household.educationLevelScore * weights.educationLevelWeight);
+        double combinedDigitalScore = roundToFourDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
 
         Double combinedDependencyScore = null;
         if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
-            combinedDependencyScore = roundToTwoDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
+            combinedDependencyScore = roundToFourDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
         }
 
         String checkSql = "SELECT beneficiary_family_score_id FROM aid_and_household_score " +
@@ -568,7 +741,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 ps.setInt(i++, memberCounts.ableBodyMembers);
                 ps.setInt(i++, memberCounts.vulnerableMembers);
                 ps.setObject(i++, combinedDependencyScore);
-                ps.setDouble(i++, roundToTwoDecimals(finalScore));
+                ps.setDouble(i++, finalScore);
                 ps.setString(i++, scoreCategory);
                 ps.setString(i++, "Weighted Average Model");
                 ps.setInt(i++, adminId);
@@ -600,7 +773,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 ps.setInt(i++, memberCounts.ableBodyMembers);
                 ps.setInt(i++, memberCounts.vulnerableMembers);
                 ps.setObject(i++, combinedDependencyScore);
-                ps.setDouble(i++, roundToTwoDecimals(finalScore));
+                ps.setDouble(i++, finalScore);
                 ps.setString(i++, scoreCategory);
                 ps.setString(i++, "Weighted Average Model");
                 ps.setInt(i++, aidTypeId);
@@ -615,7 +788,7 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
                 System.out.println("  - household_members: " + memberCounts.totalMembers);
                 System.out.println("  - able_bodied_members: " + memberCounts.ableBodyMembers);
                 System.out.println("  - vulnerable_members: " + memberCounts.vulnerableMembers);
-                System.out.println("  - final_score: " + roundToTwoDecimals(finalScore));
+                System.out.println("  - final_score: " + finalScore);
             }
 
             return rowsAffected > 0;
@@ -629,9 +802,10 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
     }
 
 
-    private double roundToTwoDecimals(double value) {
-        return Math.round(value * 100.0) / 100.0;
+    private double roundToFourDecimals(double value) {
+        return Math.round(value * 10000.0) / 10000.0;
     }
+
 
     private void closeConnection() {
         try {

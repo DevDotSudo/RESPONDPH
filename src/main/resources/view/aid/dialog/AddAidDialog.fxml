@@ -216,8 +216,6 @@
                         <Region HBox.hgrow="ALWAYS" />
                         <Label style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-padding: 4 10; -fx-background-radius: 3; -fx-font-size: 10px; -fx-font-weight: bold;" text="FIXED" />
                     </HBox>
-                    <Label styleClass="field-hint" wrapText="true"
-                           text="System uses 3 clusters: Low Priority (0.00-0.33), Medium Priority (0.34-0.66), High Priority (0.67-1.00)" />
                 </VBox>
 
                 <!-- Distribution Info Box -->

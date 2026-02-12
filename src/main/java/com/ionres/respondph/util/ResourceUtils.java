@@ -8,27 +8,16 @@ import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Utility class for proper database resource management.
- * Note: Connections from singleton DBConnection should NOT be closed here.
- */
 public final class ResourceUtils {
     private static final Logger LOGGER = Logger.getLogger(ResourceUtils.class.getName());
 
     private ResourceUtils() {}
 
-    /**
-     * Closes ResultSet and PreparedStatement safely.
-     * Does NOT close Connection as it's managed by DBConnection singleton.
-     */
     public static void closeResources(ResultSet rs, PreparedStatement ps) {
         closeResultSet(rs);
         closePreparedStatement(ps);
     }
 
-    /**
-     * Closes ResultSet safely.
-     */
     public static void closeResultSet(ResultSet rs) {
         if (rs != null) {
             try {
@@ -41,9 +30,6 @@ public final class ResourceUtils {
         }
     }
 
-    /**
-     * Closes PreparedStatement safely.
-     */
     public static void closePreparedStatement(PreparedStatement ps) {
         if (ps != null) {
             try {
@@ -56,9 +42,6 @@ public final class ResourceUtils {
         }
     }
 
-    /**
-     * Closes Statement safely.
-     */
     public static void closeStatement(Statement stmt) {
         if (stmt != null) {
             try {

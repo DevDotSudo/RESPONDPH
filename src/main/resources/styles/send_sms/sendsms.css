@@ -290,11 +290,10 @@
     -fx-highlight-text-fill: white;
     -fx-caret-color: rgba(249,115,22,0.95);
 }
-
-/* ---------- RADIO BUTTONS ---------- */
 .radio-button {
     -fx-text-fill: rgba(226,232,240,0.92);
     -fx-font-weight: 800;
+    -fx-font-size: 13.5px;
 }
 .radio-button .radio {
     -fx-background-color: rgba(255,255,255,0.06);
@@ -322,10 +321,70 @@
     -fx-font-weight: 900;
 }
 
-/* style dynamically added radio options */
 .ai-option {
     -fx-text-fill: rgba(226,232,240,0.92);
     -fx-font-weight: 800;
+}
+
+.ai-response-pane {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-pref-width: 100%;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 14px 16px;
+    -fx-spacing: 12px;
+}
+
+.ai-news-slot-container {
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 10;
+}
+
+.ai-news-slot {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-wrap-text: true;
+    -fx-content-display: LEFT;
+    -fx-alignment: top-left;
+    -fx-graphic-text-gap: 12px;
+    -fx-padding: 0;
+    -fx-text-overrun: clip;
+    -fx-background-color: transparent;
+}
+
+.ai-news-slot:hover {
+    -fx-background-color: rgba(249,115,22,0.08);
+    -fx-background-radius: 6px;
+}
+
+.ai-news-slot:selected {
+    -fx-background-color: rgba(249,115,22,0.14);
+    -fx-background-radius: 6px;
+}
+
+.ai-news-slot .radio {
+    -fx-padding: 5px;
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+}
+
+.ai-news-slot:selected .radio {
+    -fx-border-color: rgba(249,115,22,0.60);
+}
+
+.ai-news-slot:selected .dot {
+    -fx-background-color: rgba(249,115,22,0.95);
+}
+
+.ai-news-slot .text {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-fill: rgba(248,250,252,0.98);
+    -fx-text-overrun: clip;
 }
 
 /* ---------- TABLE ---------- */

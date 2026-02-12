@@ -1,981 +1,911 @@
-    package com.ionres.respondph.sendsms;
-    
-    import com.ionres.respondph.beneficiary.BeneficiaryModel;
-    import com.ionres.respondph.beneficiary.BeneficiaryServiceImpl;
-    import com.ionres.respondph.common.services.NewsGeneratorService;
-    import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
-    import com.ionres.respondph.util.*;
-    import javafx.application.Platform;
-    import javafx.beans.property.SimpleStringProperty;
-    import javafx.collections.FXCollections;
-    import javafx.collections.ObservableList;
-    import javafx.fxml.FXML;
-    import javafx.fxml.Initializable;
-    import javafx.scene.control.*;
-    import javafx.scene.control.cell.PropertyValueFactory;
-    import javafx.scene.layout.HBox;
-    import javafx.scene.layout.VBox;
-    import java.net.URI;
-    import java.net.URL;
-    import java.net.http.HttpClient;
-    import java.net.http.HttpRequest;
-    import java.net.http.HttpResponse;
-    import java.util.ArrayList;
-    import java.util.List;
-    import java.util.Optional;
-    import java.util.ResourceBundle;
-    
-    public class SendSMSController implements Initializable {
-        @FXML private ComboBox<String> cbSelectBeneficiary;
-        @FXML private ComboBox<String> cbSelectPorts;
-        @FXML private ComboBox<String> cbSelectBarangay;
-        @FXML private HBox barangaySelectionBox;
-        @FXML private TextArea txtMessage;
-        @FXML private Label charCount;
-        @FXML private Button btnSendSMS;
-        @FXML private TableView<SmsModel> adminTable;
-        @FXML private TableColumn<SmsModel, String> dateSentColumn;
-        @FXML private TableColumn<SmsModel, String> fullNameColumn;
-        @FXML private TableColumn<SmsModel, String> msgColumn;
-        @FXML private TableColumn<SmsModel, String> statusColumn;
-        @FXML private TableColumn<SmsModel, String> phoneColumn;
-        @FXML private TableColumn<SmsModel, Void> actionsColumn;
-        @FXML private RadioButton rbGsm;
-        @FXML private RadioButton rbApi;
-        @FXML private Label connectionStatusLabel;
-        @FXML private Button btnRefreshPorts;
-        @FXML private HBox disasterSelectionBox;
-        @FXML private ComboBox<DisasterModel> cbSelectDisaster;
-        @FXML private ComboBox<String> cbNewsTopic;
-        @FXML private Button btnGenerateNews;
-        @FXML private VBox aiResponseContainer;
-        @FXML private Label aiResponseLabel;
-        @FXML private HBox aiResponseActions;
-        @FXML private Button btnUseSelectedNews;
-        @FXML private ToggleGroup newsAiResponse;
-        @FXML private Label lblNetworkStatus;
-        @FXML private Button btnRefreshNetwork;
-        @FXML private VBox aiLoadingBox;
-        @FXML private ProgressIndicator piAi;
-        @FXML private HBox smsLoadingBox;
-        @FXML private ProgressIndicator piSms;
+package com.ionres.respondph.sendsms;
 
-        private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
-    
-        private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
-        private SmsService smsService;
-        private SMSSender smsSender;
-        private NewsGeneratorService newsGeneratorService;
-        private NewsGeneratorService.NewsResult lastNewsResult;
-        private BeneficiaryDAO beneficiaryDAO;
-        private DisasterDAO disasterDAO;
-    
-        private boolean isOpeningDialog = false;
-        private boolean isUpdatingComboBox = false;
-    
-        @Override
-        public void initialize(URL location, ResourceBundle resources) {
-            smsService = new SmsServiceImpl();
-            smsSender = SMSSender.getInstance();
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.common.services.NewsGeneratorService;
+import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
+import com.ionres.respondph.util.*;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+import javafx.geometry.Pos;
+import javafx.scene.layout.Region;
+
+public class SendSMSController implements Initializable {
+    @FXML private ComboBox<String> cbSelectBeneficiary;
+    @FXML private ComboBox<String> cbSelectPorts;
+    @FXML private ComboBox<String> cbSelectBarangay;
+    @FXML private HBox barangaySelectionBox;
+    @FXML private TextArea txtMessage;
+    @FXML private Label charCount;
+    @FXML private Button btnSendSMS;
+    @FXML private TableView<SmsModel> adminTable;
+    @FXML private TableColumn<SmsModel, String> dateSentColumn;
+    @FXML private TableColumn<SmsModel, String> fullNameColumn;
+    @FXML private TableColumn<SmsModel, String> msgColumn;
+    @FXML private TableColumn<SmsModel, String> statusColumn;
+    @FXML private TableColumn<SmsModel, String> phoneColumn;
+    @FXML private TableColumn<SmsModel, Void> actionsColumn;
+    @FXML private RadioButton rbGsm;
+    @FXML private RadioButton rbApi;
+    @FXML private Label connectionStatusLabel;
+    @FXML private Button btnRefreshPorts;
+    @FXML private HBox disasterSelectionBox;
+    @FXML private ComboBox<DisasterModel> cbSelectDisaster;
+    @FXML private ComboBox<String> cbNewsTopic;
+    @FXML private Button btnGenerateNews;
+    @FXML private VBox aiResponseContainer;
+    @FXML private Label aiResponseLabel;
+    @FXML private HBox aiResponseActions;
+    @FXML private Button btnUseSelectedNews;
+    @FXML private ToggleGroup newsAiResponse;
+    @FXML private Label lblNetworkStatus;
+    @FXML private Button btnRefreshNetwork;
+    @FXML private VBox aiLoadingBox;
+    @FXML private ProgressIndicator piAi;
+    @FXML private HBox smsLoadingBox;
+    @FXML private ProgressIndicator piSms;
+    @FXML private RadioButton rbNewsSlot1;
+    @FXML private RadioButton rbNewsSlot2;
+    @FXML private RadioButton rbNewsSlot3;
+    @FXML private RadioButton rbNewsSlot4;
+    @FXML private RadioButton rbNewsSlot5;
+
+    private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
+    private final List<String> storedNewsItems = new ArrayList<>();
+    private RadioButton[] newsSlots;
+    private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
+
+    private SmsService smsService;
+    private SMSSender smsSender;
+    private NewsGeneratorService newsGeneratorService;
+    private BeneficiaryDAO beneficiaryDAO;
+    private DisasterDAO disasterDAO;
+
+    private boolean isOpeningDialog = false;
+    private boolean isUpdatingComboBox = false;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        smsService = new SmsServiceImpl();
+        smsSender = SMSSender.getInstance();
+
+        try {
             newsGeneratorService = new NewsGeneratorService();
-            beneficiaryDAO = new BeneficiaryDAOImpl();
-            disasterDAO = new DisasterDAOImpl();
-            setupRadioButtons();
-            setupControls();
-            loadSMSLogs();
-            populateAvailablePorts();
-            setupNewsControls();
-            checkNetworkStatus();
-            DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
-    
-            if (charCount != null) charCount.setText("0/160 characters");
-    
-            updateConnectionStatus();
-    
-            System.out.println("SendSMSController initialized successfully");
-        }
-    
-        @FXML
-        private void onRecipientGroupChanged() {
-            System.out.println("DEBUG: onRecipientGroupChanged() called, isUpdatingComboBox=" + isUpdatingComboBox + ", isOpeningDialog=" + isOpeningDialog);
-    
-            if (isUpdatingComboBox || isOpeningDialog) {
-                System.out.println("DEBUG: Skipping onRecipientGroupChanged - flags are set");
-                return;
-            }
-    
-            String selectedGroup = cbSelectBeneficiary.getValue();
-    
-            if (selectedGroup == null) {
-                System.out.println("DEBUG: selectedGroup is null, returning");
-                return;
-            }
-    
-            System.out.println("DEBUG: Processing selectedGroup: " + selectedGroup);
-    
-            if ("By Barangay".equals(selectedGroup)) {
-                disasterSelectionBox.setVisible(false);
-                disasterSelectionBox.setManaged(false);
-    
-                barangaySelectionBox.setVisible(true);
-                barangaySelectionBox.setManaged(true);
-    
-                if (cbSelectBarangay.getItems().isEmpty()) {
-                    loadBarangayList();
-                }
-            }
-            else if ("By Disaster Area".equals(selectedGroup)) {
-                barangaySelectionBox.setVisible(false);
-                barangaySelectionBox.setManaged(false);
-    
-                disasterSelectionBox.setVisible(true);
-                disasterSelectionBox.setManaged(true);
-    
-                if (cbSelectDisaster.getItems().isEmpty()) {
-                    loadDisasters();
-                }
-            }
-            else if (selectedGroup.startsWith("Selected Beneficiaries")) {
-                barangaySelectionBox.setVisible(false);
-                barangaySelectionBox.setManaged(false);
-    
-                disasterSelectionBox.setVisible(false);
-                disasterSelectionBox.setManaged(false);
-    
-                openBeneficiarySelectionDialog();
-            }
-            else {
-                barangaySelectionBox.setVisible(false);
-                barangaySelectionBox.setManaged(false);
-                cbSelectBarangay.setValue(null);
-    
-                disasterSelectionBox.setVisible(false);
-                disasterSelectionBox.setManaged(false);
-                if (cbSelectDisaster != null) cbSelectDisaster.setValue(null);
-            }
-    
-            updateSendButtonState();
-        }
-    
-        public void loadDisasters() {
-            try {
-                System.out.println("DEBUG: Loading disaster list...");
-                List<DisasterModel> disasters = disasterDAO.getAllDisasters();
-                cbSelectDisaster.getItems().clear();
-                cbSelectDisaster.getItems().addAll(disasters);
-                System.out.println("DEBUG: Loaded " + disasters.size() + " disasters");
-            } catch (Exception e) {
-                System.err.println("Error loading disasters: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    
-        public void loadBarangayList() {
-            new Thread(() -> {
-                try {
-                    System.out.println("DEBUG: Loading barangay list...");
-                    List<String> barangays = beneficiaryDAO.getAllBarangays();
-    
-                    Platform.runLater(() -> {
-                        ObservableList<String> barangayList = FXCollections.observableArrayList(barangays);
-                        cbSelectBarangay.setItems(barangayList);
-    
-                        if (barangays.isEmpty()) {
-                            AlertDialogManager.showError("No Barangays Found",
-                                    "No barangays were found. Make sure beneficiaries have valid coordinates."
-                            );
-                        } else {
-                            System.out.println("DEBUG: Loaded " + barangays.size() + " barangays");
-                        }
-                    });
-    
-                } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        AlertDialogManager.showError("Error Loading Barangays",
-                                "Failed to load barangay list: " + e.getMessage()
-                        );
-                    });
-                    e.printStackTrace();
-                }
-            }, "Load-Barangays-Thread").start();
-        }
-    
-        private void openBeneficiarySelectionDialog() {
-            if (isOpeningDialog) return;
-    
-            try {
-                isOpeningDialog = true;
-    
-                List<BeneficiaryModel> allBeneficiaries = beneficiaryDAO.getAllBeneficiaries();
-    
-                if (allBeneficiaries == null || allBeneficiaries.isEmpty()) {
-                    AlertDialogManager.showWarning(
-                            "No Beneficiaries Available",
-                            "There are no beneficiaries in the system to select from.\nPlease add beneficiaries first."
-                    );
-                    return;
-                }
-    
-                BeneficiarySelectionDialogController controller =
-                        DialogManager.getController("selection", BeneficiarySelectionDialogController.class);
-    
-                // ✅ reset button/flags + clear search but KEEP checkbox selections
-                controller.resetState();
-    
-                // ✅ IMPORTANT: do not call setBeneficiaries every time (it clears selections)
-                if (!controller.isLoaded()) {
-                    controller.setBeneficiaries(allBeneficiaries);
-                }
-    
-                // ✅ keep checks synced with last selected list (safe)
-                if (!selectedBeneficiariesList.isEmpty()) {
-                    controller.setPreselectedBeneficiaries(selectedBeneficiariesList);
-                }
-    
-                DialogManager.show("selection");
-    
-                if (controller.isOkClicked()) {
-                    updateSelectedBeneficiaries(controller.getSelectedBeneficiaries());
-                } else {
-                    handleDialogCancelled();
-                }
-    
-                updateSendButtonState();
-    
-            } catch (Exception e) {
-                System.err.println("Error opening beneficiary selection dialog: " + e.getMessage());
-                e.printStackTrace();
-                AlertDialogManager.showError("Error", "Failed to open beneficiary selection dialog.");
-                isUpdatingComboBox = false;
-    
-            } finally {
-                isOpeningDialog = false;
-                Platform.runLater(() -> isUpdatingComboBox = false);
-            }
-        }
-    
-        private void updateSelectedBeneficiaries(List<BeneficiaryModel> beneficiaries) {
-            isUpdatingComboBox = true;
-    
-            try {
-                selectedBeneficiariesList = beneficiaries;
-    
-                String displayText = String.format("Selected Beneficiaries (%d selected)", beneficiaries.size());
-                ObservableList<String> items = cbSelectBeneficiary.getItems();
-    
-                for (int i = 0; i < items.size(); i++) {
-                    if (items.get(i).startsWith("Selected Beneficiaries")) {
-                        items.set(i, displayText);
-                        cbSelectBeneficiary.getSelectionModel().select(i);
-                        break;
-                    }
-                }
-            } finally {
-                Platform.runLater(() -> {
-                    isUpdatingComboBox = false;
-                    updateSendButtonState();
-                });
-            }
-        }
-    
-    
-        private void handleDialogCancelled() {
-            isUpdatingComboBox = true;
-    
-            try {
-                if (selectedBeneficiariesList.isEmpty()) {
-                    Platform.runLater(() -> cbSelectBeneficiary.getSelectionModel().selectFirst());
-                } else {
-                    String displayText = String.format("Selected Beneficiaries (%d selected)", selectedBeneficiariesList.size());
-                    ObservableList<String> items = cbSelectBeneficiary.getItems();
-    
-                    for (int i = 0; i < items.size(); i++) {
-                        if (items.get(i).startsWith("Selected Beneficiaries")) {
-                            items.set(i, displayText);
-                            cbSelectBeneficiary.getSelectionModel().select(i);
-                            break;
-                        }
-                    }
-                }
-            } finally {
-                Platform.runLater(() -> {
-                    isUpdatingComboBox = false;
-                    updateSendButtonState();
-                });
-            }
+        } catch (Exception e) {
+            newsGeneratorService = null;
+            System.err.println("[AI] Disabled: " + e.getMessage());
         }
 
+        beneficiaryDAO = new BeneficiaryDAOImpl();
+        disasterDAO = new DisasterDAOImpl();
 
-        private void setupRadioButtons() {
-            // ToggleGroup is already created in FXML, just set listeners
+        newsSlots = new RadioButton[]{rbNewsSlot1, rbNewsSlot2, rbNewsSlot3, rbNewsSlot4, rbNewsSlot5};
 
-            rbApi.selectedProperty().addListener((o, oldV, api) -> {
-                if (cbSelectPorts != null) cbSelectPorts.setDisable(api);
-                if (btnRefreshPorts != null) btnRefreshPorts.setDisable(api);
+        Platform.runLater(this::bindAiSlotWidths);
+
+        setupRadioButtons();
+        setupControls();
+        loadSMSLogs();
+        populateAvailablePorts();
+        setupNewsControls();
+        setupNewsSlots();
+        checkNetworkStatus();
+
+        DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
+
+        if (charCount != null) {
+            charCount.setText("0/160 characters");
+        }
+
+        updateConnectionStatus();
+
+        System.out.println("SendSMSController initialized successfully");
+    }
+
+    private void bindAiSlotWidths() {
+        if (aiResponseContainer == null) return;
+
+        aiResponseContainer.setFillWidth(true); // ✅ important
+
+        double paddingLR = 32;
+
+        for (RadioButton rb : newsSlots) {
+            if (rb == null) continue;
+            rb.setMaxWidth(Double.MAX_VALUE);
+            rb.setMinWidth(0);
+            rb.prefWidthProperty().bind(aiResponseContainer.widthProperty().subtract(paddingLR));
+        }
+    }
+
+    private void setupNewsSlots() {
+        if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
+
+        for (int i = 0; i < newsSlots.length; i++) {
+            final int index = i;
+            RadioButton slot = newsSlots[i];
+            if (slot == null) continue;
+
+            slot.setToggleGroup(newsAiResponse);
+
+            slot.getStyleClass().add("ai-news-slot");
+
+            // ✅ WRAP + GROW HEIGHT
+            slot.setWrapText(true);
+            slot.setAlignment(Pos.TOP_LEFT);
+            slot.setTextOverrun(OverrunStyle.CLIP);   // (or ELLIPSIS if you want)
+            slot.setMinHeight(Region.USE_PREF_SIZE);
+            slot.setPrefHeight(Region.USE_COMPUTED_SIZE);
+            slot.setMaxHeight(Double.MAX_VALUE);
+
+            slot.setDisable(true);
+
+            slot.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                if (isSelected && index < storedNewsItems.size()) {
+                    loadNewsToMessage(index);
+                }
+            });
+        }
+    }
+
+    private void loadNewsToMessage(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= storedNewsItems.size() || txtMessage == null) return;
+
+        String newsText = storedNewsItems.get(slotIndex);
+        if (newsText == null) return;
+
+        String cleaned = newsText
+                .replaceAll("(?i)\\s*\\(\\s*Source\\s*:\\s*https?://[^\\s)]+\\s*\\)\\s*$", "")
+                .trim();
+
+        txtMessage.setText(cleaned);
+    }
+
+    private void updateNewsSlot(int slotIndex, String newsText) {
+        if (slotIndex < 0 || slotIndex >= newsSlots.length) return;
+        RadioButton slot = newsSlots[slotIndex];
+        if (slot == null) return;
+
+        String displayText = (newsText != null) ? newsText.trim() : "";
+
+        slot.setText(displayText);
+        slot.setDisable(false);
+
+        if (slotIndex == 0) slot.setSelected(true);
+    }
+
+    private void clearNewsSlots() {
+        for (int i = 0; i < newsSlots.length; i++) {
+            RadioButton slot = newsSlots[i];
+            if (slot != null) {
+                slot.setText("Slot " + (i + 1) + " (Empty)");
+                slot.setDisable(true);
+                slot.setSelected(false);
+            }
+        }
+    }
+
+    private void setupRadioButtons() {
+        if (rbApi != null) {
+            rbApi.selectedProperty().addListener((obs, old, selected) -> {
+                if (cbSelectPorts != null) cbSelectPorts.setDisable(selected);
+                if (btnRefreshPorts != null) btnRefreshPorts.setDisable(selected);
                 updateSendButtonState();
                 updateConnectionStatus();
             });
+        }
 
-            rbGsm.selectedProperty().addListener((o, oldV, gsm) -> {
-                if (!gsm) return;
-
-                if (cbSelectPorts != null && cbSelectPorts.getSelectionModel().getSelectedItem() != null) {
-                    String selectedPort = cbSelectPorts.getSelectionModel().getSelectedItem();
-                    connectToSelectedPort(selectedPort);
+        if (rbGsm != null) {
+            rbGsm.selectedProperty().addListener((obs, old, selected) -> {
+                if (!selected) return;
+                if (cbSelectPorts != null) {
+                    String port = cbSelectPorts.getSelectionModel().getSelectedItem();
+                    if (port != null && !port.contains("No") && !port.contains("Error")) {
+                        connectToSelectedPort(port);
+                    }
                 }
                 updateSendButtonState();
             });
         }
+    }
 
-        private void populateAvailablePorts() {
-            if (cbSelectPorts == null) return;
+    private void populateAvailablePorts() {
+        if (cbSelectPorts == null) return;
 
-            Platform.runLater(() -> {
-                try {
-                    System.out.println("DEBUG: Scanning for serial ports...");
-                    List<String> availablePorts = smsSender.getAvailablePorts();
+        Platform.runLater(() -> {
+            try {
+                List<String> ports = smsSender.getAvailablePorts();
 
-                    if (availablePorts.isEmpty()) {
-                        cbSelectPorts.setItems(FXCollections.observableArrayList("No ports available"));
-                        cbSelectPorts.setDisable(true);
-                        cbSelectPorts.getSelectionModel().selectFirst();
-
-                        if (connectionStatusLabel != null) {
-                            connectionStatusLabel.setText("Disconnected - No ports found");
-                            connectionStatusLabel.setStyle("-fx-text-fill: red;");
-                        }
-                        System.out.println("DEBUG: No serial ports found");
-                    } else {
-                        ObservableList<String> portOptions = FXCollections.observableArrayList(availablePorts);
-                        cbSelectPorts.setItems(portOptions);
-                        cbSelectPorts.setDisable(false);
-
-                        String connectedPort = smsSender.getConnectedPort();
-                        if (connectedPort != null && portOptions.contains(connectedPort)) {
-                            cbSelectPorts.getSelectionModel().select(connectedPort);
-                            if (connectionStatusLabel != null) {
-                                connectionStatusLabel.setText("Connected to " + connectedPort);
-                                connectionStatusLabel.setStyle("-fx-text-fill: green;");
-                            }
-                        } else {
-                            cbSelectPorts.getSelectionModel().selectFirst();
-                            if (connectionStatusLabel != null) {
-                                connectionStatusLabel.setText("Disconnected");
-                                connectionStatusLabel.setStyle("-fx-text-fill: orange;");
-                            }
-                        }
-
-                        System.out.println("DEBUG: Found " + availablePorts.size() + " serial ports");
-
-                        // FIXED: Remove existing listener before adding new one
-                        cbSelectPorts.getSelectionModel().selectedItemProperty().removeListener(portChangeListener);
-                        cbSelectPorts.getSelectionModel().selectedItemProperty().addListener(portChangeListener);
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error detecting serial ports: " + e.getMessage());
-                    e.printStackTrace();
-                    cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));
+                if (ports.isEmpty()) {
+                    cbSelectPorts.setItems(FXCollections.observableArrayList("No ports available"));
                     cbSelectPorts.setDisable(true);
                     cbSelectPorts.getSelectionModel().selectFirst();
+                    updateConnectionLabel("Disconnected - No ports found", "red");
+                } else {
+                    ObservableList<String> items = FXCollections.observableArrayList(ports);
+                    cbSelectPorts.setItems(items);
+                    cbSelectPorts.setDisable(false);
 
-                    if (connectionStatusLabel != null) {
-                        connectionStatusLabel.setText("Error: " + e.getMessage());
-                        connectionStatusLabel.setStyle("-fx-text-fill: red;");
+                    String connected = smsSender.getConnectedPort();
+                    if (connected != null && items.contains(connected)) {
+                        cbSelectPorts.getSelectionModel().select(connected);
+                        updateConnectionLabel("Connected to " + connected, "green");
+                    } else {
+                        cbSelectPorts.getSelectionModel().selectFirst();
+                        updateConnectionLabel("Disconnected", "orange");
                     }
+
+                    // Re-attach listener (safe even if already attached)
+                    cbSelectPorts.getSelectionModel().selectedItemProperty().addListener(portChangeListener);
                 }
+            } catch (Exception e) {
+                cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));
+                cbSelectPorts.setDisable(true);
+                cbSelectPorts.getSelectionModel().selectFirst();
+                updateConnectionLabel("Error: " + e.getMessage(), "red");
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private final javafx.beans.value.ChangeListener<String> portChangeListener =
+            (obs, oldPort, newPort) -> {
+                if (newPort != null && !newPort.equals(oldPort) && rbGsm != null && rbGsm.isSelected()) {
+                    connectToSelectedPort(newPort);
+                }
+                updateSendButtonState();
+            };
+
+    private void connectToSelectedPort(String portName) {
+        if (portName == null || portName.isEmpty() || portName.contains("No") || portName.contains("Error")) {
+            return;
+        }
+
+        new Thread(() -> {
+            boolean success = smsSender.connectToPort(portName, 5000);
+
+            Platform.runLater(() -> {
+                if (success) {
+                    updateConnectionLabel("Connected to " + portName, "green");
+                    AlertDialogManager.showSuccess("Success", "Connected to GSM modem on " + portName);
+                } else {
+                    updateConnectionLabel("Failed to connect to " + portName, "red");
+                    AlertDialogManager.showError("Connection Failed",
+                            "Could not connect to GSM modem on " + portName);
+                }
+                updateSendButtonState();
+            });
+        }, "GSM-Connect-Thread").start();
+    }
+
+    private void updateConnectionLabel(String text, String color) {
+        if (connectionStatusLabel != null) {
+            connectionStatusLabel.setText(text);
+            connectionStatusLabel.setStyle("-fx-text-fill: " + color + ";");
+        }
+    }
+
+    private void updateConnectionStatus() {
+        if (connectionStatusLabel == null) return;
+
+        if (rbApi != null && rbApi.isSelected()) {
+            connectionStatusLabel.setText("Using SMS API");
+            connectionStatusLabel.setStyle("-fx-text-fill: blue;");
+        } else if (rbGsm != null && rbGsm.isSelected()) {
+            if (smsSender.isConnected()) {
+                String port = smsSender.getConnectedPort();
+                connectionStatusLabel.setText("Connected to " + (port != null ? port : "unknown port"));
+                connectionStatusLabel.setStyle("-fx-text-fill: green;");
+            } else {
+                connectionStatusLabel.setText("Disconnected - Select a port");
+                connectionStatusLabel.setStyle("-fx-text-fill: orange;");
+            }
+        }
+    }
+
+    private void loadSMSLogs() {
+        try {
+            List<SmsModel> logs = smsService.getAllSMSLogs();
+            if (logs != null) {
+                logRows.setAll(logs);
+                if (adminTable != null) adminTable.setItems(logRows);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupControls() {
+        setupTableColumns();
+        setupEventHandlers();
+        populateComboBoxes();
+    }
+
+    private void setupNewsControls() {
+        if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
+
+        // ✅ Disable AI features if API key missing
+        boolean aiEnabled = newsGeneratorService != null;
+
+        if (aiResponseContainer != null) {
+            aiResponseContainer.setVisible(false);
+            aiResponseContainer.setManaged(false);
+        }
+
+        if (btnUseSelectedNews != null) {
+            btnUseSelectedNews.setVisible(false);
+            btnUseSelectedNews.setManaged(false);
+            btnUseSelectedNews.setDisable(true);
+            btnUseSelectedNews.setOnAction(e -> onUseSelectedNews());
+        }
+
+        if (btnGenerateNews != null) {
+            btnGenerateNews.setDisable(!aiEnabled);
+            btnGenerateNews.setOnAction(e -> onGenerateNews());
+        }
+
+        if (cbNewsTopic != null) {
+            cbNewsTopic.setDisable(!aiEnabled);
+        }
+
+        updateAiResponseVisibility(false);
+    }
+
+    private void setupTableColumns() {
+        if (dateSentColumn != null) {
+            dateSentColumn.setCellValueFactory(cell -> {
+                SmsModel m = cell.getValue();
+                return new SimpleStringProperty(m != null && m.getDateSent() != null ? m.getDateSent().toString() : "");
+            });
+        }
+        if (fullNameColumn != null) {
+            fullNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullname"));
+        }
+        if (msgColumn != null) {
+            msgColumn.setCellValueFactory(new PropertyValueFactory<>("message"));
+        }
+        if (statusColumn != null) {
+            statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        }
+        if (phoneColumn != null) {
+            phoneColumn.setCellValueFactory(cell -> {
+                SmsModel m = cell.getValue();
+                return new SimpleStringProperty(m != null ? m.getPhoneString() : "");
             });
         }
 
-        private final javafx.beans.value.ChangeListener<String> portChangeListener = (obs, oldPort, newPort) -> {
-            if (newPort != null && !newPort.equals(oldPort) && rbGsm.isSelected()) {
-                connectToSelectedPort(newPort);
-            }
-            updateSendButtonState();
-        };
-    
-        private void connectToSelectedPort(String portName) {
-            if (portName == null || portName.isEmpty() || portName.contains("No ports") || portName.contains("Error")) return;
-    
-            System.out.println("DEBUG: Attempting to connect to port: " + portName);
-    
-            new Thread(() -> {
-                boolean connected = smsSender.connectToPort(portName, 5000);
-    
-                Platform.runLater(() -> {
-                    if (connected) {
-                        System.out.println("Successfully connected to port: " + portName);
-                        if (connectionStatusLabel != null) {
-                            connectionStatusLabel.setText("Connected to " + portName);
-                            connectionStatusLabel.setStyle("-fx-text-fill: green;");
-                        }
-                        AlertDialogManager.showSuccess("Connection Successful", "Connected to GSM modem on port: " + portName);
-                    } else {
-                        System.err.println("Failed to connect to port: " + portName);
-                        if (connectionStatusLabel != null) {
-                            connectionStatusLabel.setText("Failed to connect to " + portName);
-                            connectionStatusLabel.setStyle("-fx-text-fill: red;");
-                        }
-                        AlertDialogManager.showError("Connection Failed",
-                                "Failed to connect to GSM modem on port: " + portName + "\nPlease check if the modem is properly connected.");
-                    }
-                    updateSendButtonState();
-                });
-            }, "GSM-Connect-Thread").start();
-        }
-    
-        private void updateConnectionStatus() {
-            if (connectionStatusLabel == null) return;
-    
-            if (rbApi.isSelected()) {
-                connectionStatusLabel.setText("Using SMS API");
-                connectionStatusLabel.setStyle("-fx-text-fill: blue;");
-            } else if (rbGsm.isSelected()) {
-                if (smsSender.isConnected()) {
-                    String port = smsSender.getConnectedPort();
-                    connectionStatusLabel.setText("Connected to " + port);
-                    connectionStatusLabel.setStyle("-fx-text-fill: green;");
-                } else {
-                    connectionStatusLabel.setText("Disconnected - Select a port");
-                    connectionStatusLabel.setStyle("-fx-text-fill: orange;");
-                }
-            }
-        }
-    
-        private void loadSMSLogs() {
-            try {
-                System.out.println("DEBUG: Loading SMS logs...");
-                List<SmsModel> saved = smsService.getAllSMSLogs();
-                if (saved != null) {
-                    logRows.clear();
-                    logRows.addAll(saved);
-                    System.out.println("DEBUG: Loaded " + saved.size() + " SMS logs");
-                }
-                if (adminTable != null) adminTable.setItems(logRows);
-            } catch (Exception e) {
-                System.err.println("Failed to load SMS logs: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    
-        private void setupControls() {
-            setupTableColumns();
-            setupEventHandlers();
-            populateComboBoxes();
-        }
-    
-        private void setupNewsControls() {
-            if (aiResponseContainer != null) {
-                aiResponseContainer.setVisible(false);
-                aiResponseContainer.setManaged(false);
-            }
-            if (btnUseSelectedNews != null) {
-                btnUseSelectedNews.setVisible(false);
-                btnUseSelectedNews.setManaged(false);
-                btnUseSelectedNews.setOnAction(e -> onUseSelectedNews());
-            }
-            if (btnGenerateNews != null) {
-                btnGenerateNews.setOnAction(e -> onGenerateNews());
-            }
-            if (newsAiResponse == null) {
-                newsAiResponse = new ToggleGroup();
-            }
-        }
-    
-        private void setupTableColumns() {
-            if (dateSentColumn != null) {
-                dateSentColumn.setCellValueFactory(cell -> {
-                    if (cell.getValue() == null || cell.getValue().getDateSent() == null)
-                        return new SimpleStringProperty("");
-                    return new SimpleStringProperty(cell.getValue().getDateSent().toString());
-                });
-            }
-    
-            if (fullNameColumn != null) {
-                fullNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullname"));
-            }
-    
-            if (msgColumn != null) {
-                msgColumn.setCellValueFactory(new PropertyValueFactory<>("message"));
-            }
-    
-            if (statusColumn != null) {
-                statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-            }
-    
-            if (phoneColumn != null) {
-                phoneColumn.setCellValueFactory(cell ->
-                        new SimpleStringProperty(cell.getValue() == null ? "" : cell.getValue().getPhoneString())
-                );
-            }
-    
-            if (actionsColumn != null) {
-                actionsColumn.setCellFactory(col -> new TableCell<>() {
-                    private final Button resendBtn = new Button("Resend");
-    
-                    {
-                        resendBtn.setOnAction(evt -> handleResend());
-                    }
-    
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
-                            setGraphic(null);
-                            return;
-                        }
-    
-                        SmsModel row = getTableRow().getItem();
-                        String status = row.getStatus();
-                        resendBtn.setDisable("SENT".equalsIgnoreCase(status));
-                        setGraphic(resendBtn);
-                    }
-    
-                    private void handleResend() {
+        if (actionsColumn != null) {
+            actionsColumn.setCellFactory(col -> new TableCell<SmsModel, Void>() {
+                private final Button resendBtn = new Button("Resend");
+
+                {
+                    resendBtn.setOnAction(e -> {
                         SmsModel row = getTableRow().getItem();
                         if (row == null) return;
-    
+
                         resendBtn.setDisable(true);
-                        String method = rbApi.isSelected() ? "API" : "GSM";
-    
+                        String method = (rbApi != null && rbApi.isSelected()) ? "API" : "GSM";
+
                         javafx.concurrent.Task<Boolean> task = new javafx.concurrent.Task<>() {
                             @Override
                             protected Boolean call() {
                                 return smsService.resendSMS(row, method);
                             }
                         };
-    
-                        task.setOnSucceeded(e -> Platform.runLater(() -> {
-                            boolean success = task.getValue();
-                            row.setStatus(success ? "SENT" : "FAILED");
+
+                        task.setOnSucceeded(ev -> Platform.runLater(() -> {
+                            boolean ok = task.getValue();
+                            row.setStatus(ok ? "SENT" : "FAILED");
                             adminTable.refresh();
-                            resendBtn.setDisable(success);
-    
-                            if (success) {
-                                AlertDialogManager.showSuccess("Resend Successful", "SMS has been resent successfully.");
-                            } else {
-                                AlertDialogManager.showError("Resend Failed", "Failed to resend SMS. Check console for details.");
-                            }
+                            resendBtn.setDisable(ok);
+                            AlertDialogManager.showInfo(
+                                    ok ? "Success" : "Failed",
+                                    ok ? "SMS resent successfully." : "Failed to resend SMS.");
                         }));
-    
-                        task.setOnFailed(e -> Platform.runLater(() -> {
+
+                        task.setOnFailed(ev -> Platform.runLater(() -> {
                             row.setStatus("FAILED");
                             adminTable.refresh();
                             resendBtn.setDisable(false);
-                            AlertDialogManager.showError("Resend Error", "An error occurred while resending.");
+                            AlertDialogManager.showError("Error", "Resend task failed.");
                         }));
-    
-                        new Thread(task, "Resend-SMS-Task").start();
-                    }
-                });
-            }
-        }
-    
-        private void setupEventHandlers() {
-            if (btnSendSMS != null) {
-                btnSendSMS.setOnAction(e -> onSendSMS());
-            }
-    
-            if (txtMessage != null) {
-                txtMessage.textProperty().addListener((obs, oldText, newText) -> {
-                    int len = newText == null ? 0 : newText.length();
-                    if (charCount != null) charCount.setText(len + "/160 characters");
-                });
-            }
-    
-            if (btnRefreshPorts != null) {
-                btnRefreshPorts.setOnAction(e -> populateAvailablePorts());
-            }
-    
-            if (btnRefreshNetwork != null) {
-                btnRefreshNetwork.setOnAction(e -> onRefreshNetwork());
-            }
-        }
-    
-        @FXML
-        private void onRefreshNetwork() {
-            checkNetworkStatus();
-        }
-    
-        private void checkNetworkStatus() {
-            if (lblNetworkStatus == null) return;
-    
-            javafx.concurrent.Task<Boolean> task = new javafx.concurrent.Task<>() {
+
+                        new Thread(task).start();
+                    });
+                }
+
                 @Override
-                protected Boolean call() {
-                    try {
-                        HttpClient client = HttpClient.newBuilder()
-                                .connectTimeout(java.time.Duration.ofSeconds(5))
-                                .build();
-                        HttpRequest req = HttpRequest.newBuilder()
-                                .uri(URI.create("https://www.google.com"))
-                                .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                                .timeout(java.time.Duration.ofSeconds(5))
-                                .build();
-                        HttpResponse<Void> resp = client.send(req, HttpResponse.BodyHandlers.discarding());
-                        return resp.statusCode() / 100 == 2;
-                    } catch (Exception ex) {
-                        return false;
+                protected void updateItem(Void item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                        setGraphic(null);
+                        return;
                     }
-                }
-            };
-    
-            task.setOnSucceeded(e -> Platform.runLater(() -> updateNetworkLabel(Boolean.TRUE.equals(task.getValue()))));
-            task.setOnFailed(e -> Platform.runLater(() -> updateNetworkLabel(false)));
-    
-            Thread t = new Thread(task, "network-check");
-            t.setDaemon(true);
-            t.start();
-        }
-    
-        private void updateNetworkLabel(boolean online) {
-            if (lblNetworkStatus == null) return;
-            lblNetworkStatus.setText(online ? "Online" : "Offline - Internet required for AI APIs");
-            lblNetworkStatus.setStyle(online ? "-fx-text-fill: #22c55e;" : "-fx-text-fill: #ef4444;");
-        }
 
-        @FXML
-        private void onGenerateNews() {
-            if (cbNewsTopic == null || btnGenerateNews == null) return;
-
-            if (!InternetConnectionChecker.isOnline()) {
-                AlertDialogManager.showError("Offline", "No internet connection. AI news generation requires internet.");
-                return;
-            }
-
-            String topic = cbNewsTopic.getSelectionModel().getSelectedItem();
-            if (topic == null || topic.isBlank()) {
-                AlertDialogManager.showWarning("Select Topic", "Please select a news topic first.");
-                return;
-            }
-
-            setAiLoading(true);
-
-            newsGeneratorService.generateNewsHeadlines(topic, 5)
-                    .whenComplete((list, err) -> Platform.runLater(() -> {
-                        setAiLoading(false);
-                        if (err != null) {
-                            AlertDialogManager.showError("AI News Error", err.getMessage());
-                            return;
-                        }
-                        populateAiOptions(list);
-                    }));
-        }
-
-
-
-        private void populateAiOptions(List<String> options) {
-            if (aiResponseContainer == null) return;
-    
-            clearAiOptions();
-            if (options == null || options.isEmpty()) {
-                showAiContainer(false);
-                AlertDialogManager.showWarning("No News", "No generated news was returned.");
-                return;
-            }
-    
-            int index = 1;
-            for (String option : options) {
-                String text = option == null ? "" : option.trim();
-                if (text.isEmpty()) continue;
-    
-                RadioButton rb = new RadioButton(index + ") " + text);
-                rb.getStyleClass().add("ai-news-option");
-                rb.setToggleGroup(newsAiResponse);
-                rb.setWrapText(true);
-                rb.setMaxWidth(Double.MAX_VALUE);
-    
-                insertOptionNode(rb);
-    
-                if (index == 1) rb.setSelected(true);
-                index++;
-            }
-    
-            showAiContainer(true);
-            aiResponseContainer.applyCss();
-            aiResponseContainer.layout();
-        }
-    
-        @FXML
-        private void onUseSelectedNews() {
-            if (newsAiResponse == null || txtMessage == null) return;
-            Toggle selected = newsAiResponse.getSelectedToggle();
-            if (selected instanceof RadioButton) {
-                String text = ((RadioButton) selected).getText();
-                if (text != null) {
-                    String cleaned = text.replaceFirst("^\\d+\\)\\s*", "");
-                    txtMessage.setText(cleaned);
-                }
-            }
-        }
-    
-        private void setAiBusy(boolean busy, String placeholder) {
-            if (btnGenerateNews != null) btnGenerateNews.setDisable(busy);
-            if (busy) {
-                clearAiOptions();
-                showAiContainer(false);
-            }
-        }
-    
-        private void clearAiOptions() {
-            if (aiResponseContainer == null) return;
-            int fromIndex = aiResponseLabel == null ? 0 : aiResponseContainer.getChildren().indexOf(aiResponseLabel) + 1;
-            int toIndex = aiResponseActions == null ? aiResponseContainer.getChildren().size()
-                    : aiResponseContainer.getChildren().indexOf(aiResponseActions);
-    
-            if (fromIndex < 0 || toIndex < 0 || fromIndex >= toIndex) return;
-            aiResponseContainer.getChildren().remove(fromIndex, toIndex);
-        }
-    
-        private void insertOptionNode(javafx.scene.Node node) {
-            if (aiResponseContainer == null) return;
-            int insertIndex = aiResponseActions == null ? aiResponseContainer.getChildren().size()
-                    : aiResponseContainer.getChildren().indexOf(aiResponseActions);
-            if (insertIndex < 0) insertIndex = aiResponseContainer.getChildren().size();
-            aiResponseContainer.getChildren().add(insertIndex, node);
-        }
-    
-        private void showAiContainer(boolean show) {
-            if (aiResponseContainer != null) {
-                aiResponseContainer.setVisible(show);
-                aiResponseContainer.setManaged(show);
-            }
-            if (btnUseSelectedNews != null) {
-                btnUseSelectedNews.setVisible(show);
-                btnUseSelectedNews.setManaged(show);
-            }
-        }
-    
-        private void populateComboBoxes() {
-            if (cbSelectBeneficiary != null) {
-                cbSelectBeneficiary.setItems(FXCollections.observableArrayList(
-                        "All Beneficiaries",
-                        "By Barangay",
-                        "Selected Beneficiaries",
-                        "By Disaster Area",
-                        "Custom List"
-                ));
-                cbSelectBeneficiary.getSelectionModel().selectFirst();
-                cbSelectBeneficiary.getSelectionModel().selectedItemProperty()
-                        .addListener((obs, oldVal, newVal) -> onRecipientGroupChanged());
-            }
-        }
-    
-        private void updateSendButtonState() {
-            boolean canSend = false;
-    
-            if (rbApi != null && rbApi.isSelected()) {
-                canSend = true;
-            } else if (rbGsm != null && rbGsm.isSelected()) {
-                String selectedPort = cbSelectPorts == null ? null : cbSelectPorts.getSelectionModel().getSelectedItem();
-    
-                boolean validPort = selectedPort != null &&
-                        !selectedPort.contains("No ports") &&
-                        !selectedPort.contains("Error");
-    
-                boolean isConnected = smsSender != null && smsSender.isConnected();
-    
-                canSend = validPort && isConnected;
-            }
-    
-            String sel = cbSelectBeneficiary == null ? null : cbSelectBeneficiary.getSelectionModel().getSelectedItem();
-            if ("All Beneficiaries".equals(sel)) {
-                try {
-                    if (AppContext.beneficiaryService == null && AppContext.db != null) {
-                        AppContext.beneficiaryService = new BeneficiaryServiceImpl(AppContext.db);
-                    }
-                    List<BeneficiaryModel> all = AppContext.beneficiaryService == null
-                            ? List.of()
-                            : AppContext.beneficiaryService.getAllBeneficiary();
-                    canSend = canSend && all != null && !all.isEmpty();
-                } catch (Exception e) {
-                    canSend = false;
-                }
-            }
-    
-            if (btnSendSMS != null) btnSendSMS.setDisable(!canSend);
-    
-            System.out.println("DEBUG: Send button state - Enabled: " + canSend);
-        }
-    
-        @FXML
-        private void onSendSMS() {
-            String message = txtMessage.getText();
-            if (message == null || message.trim().isEmpty()) {
-                AlertDialogManager.showError("Empty Message", "Please enter a message to send.");
-                return;
-            }
-    
-            String recipientGroup = cbSelectBeneficiary.getValue();
-            if (recipientGroup == null) {
-                AlertDialogManager.showError("No Recipients", "Please select a recipient group.");
-                return;
-            }
-    
-            String sendMethod = rbGsm.isSelected() ? "GSM" : "API";
-    
-            System.out.println("DEBUG: Preparing to send SMS");
-            System.out.println("DEBUG: Recipient group: " + recipientGroup);
-            System.out.println("DEBUG: Send method: " + sendMethod);
-    
-            List<BeneficiaryModel> recipients = getRecipients(recipientGroup);
-    
-            if (recipients.isEmpty()) {
-                AlertDialogManager.showError("No Recipients Found",
-                        "No beneficiaries found for the selected criteria.\n" +
-                                "Please check that beneficiaries have valid phone numbers."
-                );
-                return;
-            }
-    
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Confirm Send");
-            confirm.setHeaderText("Send SMS to " + recipients.size() + " recipient(s)?");
-            confirm.setContentText("Method: " + sendMethod + "\nMessage: " +
-                    message.substring(0, Math.min(50, message.length())) + "...");
-    
-            confirm.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    sendSMSToRecipients(recipients, message, sendMethod);
+                    SmsModel row = getTableRow().getItem();
+                    resendBtn.setDisable("SENT".equalsIgnoreCase(row.getStatus()));
+                    setGraphic(resendBtn);
                 }
             });
         }
-    
-        private List<BeneficiaryModel> getRecipients(String recipientGroup) {
-            System.out.println("DEBUG: Getting recipients for group: " + recipientGroup);
-    
-            String baseGroup = recipientGroup;
-            if (recipientGroup.contains("(") && recipientGroup.contains("selected)")) {
-                baseGroup = recipientGroup.substring(0, recipientGroup.indexOf("(")).trim();
-            }
-    
-            switch (baseGroup) {
-                case "All Beneficiaries": {
-                    List<BeneficiaryModel> all = beneficiaryDAO.getAllBeneficiaries();
-                    System.out.println("DEBUG: Found " + all.size() + " beneficiaries");
-                    return all;
-                }
-    
-                case "By Barangay": {
-                    String selectedBarangay = cbSelectBarangay.getValue();
-                    if (selectedBarangay == null) {
-                        Platform.runLater(() ->
-                                AlertDialogManager.showError("No Barangay Selected", "Please select a barangay.")
-                        );
-                        return List.of();
-                    }
-                    List<BeneficiaryModel> byBarangay = beneficiaryDAO.getBeneficiariesByBarangay(selectedBarangay);
-                    System.out.println("DEBUG: Found " + byBarangay.size() + " beneficiaries in " + selectedBarangay);
-                    return byBarangay;
-                }
-    
-                case "Selected Beneficiaries": {
-                    if (selectedBeneficiariesList.isEmpty()) {
-                        Platform.runLater(() ->
-                                AlertDialogManager.showError("No Beneficiaries Selected", "Please select beneficiaries first.")
-                        );
-                        return List.of();
-                    }
-                    System.out.println("DEBUG: Using " + selectedBeneficiariesList.size() + " pre-selected beneficiaries");
-                    return new ArrayList<>(selectedBeneficiariesList);
-                }
-    
-                case "By Disaster Area": {
-                    DisasterModel selectedDisaster = cbSelectDisaster.getValue();
-                    if (selectedDisaster == null) {
-                        Platform.runLater(() ->
-                                AlertDialogManager.showError("No Disaster Selected", "Please select a disaster.")
-                        );
-                        return List.of();
-                    }
-                    System.out.println("DEBUG: Selected disaster: " + selectedDisaster.getName() +
-                            " (ID: " + selectedDisaster.getDisasterId() + ")");
-                    List<BeneficiaryModel> byDisaster =
-                            beneficiaryDAO.getBeneficiariesByDisaster(selectedDisaster.getDisasterId());
-                    System.out.println("DEBUG: Found " + byDisaster.size() + " beneficiaries affected by " + selectedDisaster.getName());
-                    return byDisaster;
-                }
-    
-                case "Custom List":
-                    Platform.runLater(() ->
-                            AlertDialogManager.showError("Not Implemented", "This feature will be implemented soon.")
-                    );
-                    return List.of();
-    
-                default:
-                    return List.of();
-            }
+    }
+
+    private void setupEventHandlers() {
+        if (btnSendSMS != null) btnSendSMS.setOnAction(e -> onSendSMS());
+        if (txtMessage != null) {
+            txtMessage.textProperty().addListener((obs, old, newVal) -> {
+                int len = (newVal != null) ? newVal.length() : 0;
+                if (charCount != null) charCount.setText(len + "/160 characters");
+            });
         }
+        if (btnRefreshPorts != null) btnRefreshPorts.setOnAction(e -> populateAvailablePorts());
+        if (btnRefreshNetwork != null) btnRefreshNetwork.setOnAction(e -> checkNetworkStatus());
+    }
 
-        private void sendSMSToRecipients(List<BeneficiaryModel> recipients,
-                                         String message,
-                                         String method) {
+    private void checkNetworkStatus() {
+        if (lblNetworkStatus == null) return;
 
-            Platform.runLater(() -> setSmsLoading(true));
-
-            new Thread(() -> {
-                int sent = smsService.sendBulkSMS(recipients, message, method);
-
-                Platform.runLater(() -> {
-                    setSmsLoading(false);
-
-                    AlertDialogManager.showSuccess("SMS Send Complete",
-                            "Successfully sent " + sent + " out of " + recipients.size());
-
-                    loadSMSLogs();
-                });
-            }).start();
-        }
-
-        @FXML
-        private void onRefreshPorts() {
-            populateAvailablePorts();
-        }
-    
-        @FXML
-        private void onDisconnect() {
-            if (smsSender != null && smsSender.isConnected()) {
-                smsSender.disconnect();
-                if (connectionStatusLabel != null) {
-                    connectionStatusLabel.setText("Disconnected");
-                    connectionStatusLabel.setStyle("-fx-text-fill: orange;");
-                }
-                AlertDialogManager.showInfo("Disconnected", "Disconnected from GSM modem.");
-                updateSendButtonState();
+        javafx.concurrent.Task<Boolean> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected Boolean call() throws Exception {
+                HttpClient client = HttpClient.newBuilder()
+                        .connectTimeout(java.time.Duration.ofSeconds(5))
+                        .build();
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("https://www.google.com"))
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .timeout(java.time.Duration.ofSeconds(5))
+                        .build();
+                HttpResponse<Void> resp = client.send(req, HttpResponse.BodyHandlers.discarding());
+                return resp.statusCode() >= 200 && resp.statusCode() < 400;
             }
-        }
+        };
 
-        private void setAiLoading(boolean loading) {
-            if (aiResponseContainer != null) {
-                aiResponseContainer.setVisible(true);
-                aiResponseContainer.setManaged(true);
-            }
+        task.setOnSucceeded(e -> Platform.runLater(() ->
+                updateNetworkLabel(Boolean.TRUE.equals(task.getValue()))));
 
-            if (aiLoadingBox != null) {
-                aiLoadingBox.setVisible(loading);
-                aiLoadingBox.setManaged(loading);
-            }
+        task.setOnFailed(e -> Platform.runLater(() -> updateNetworkLabel(false)));
 
-            if (btnGenerateNews != null) btnGenerateNews.setDisable(loading);
-            if (cbNewsTopic != null) cbNewsTopic.setDisable(loading);
-            if (btnUseSelectedNews != null) btnUseSelectedNews.setDisable(loading);
+        new Thread(task, "Network-Check-Thread").start();
+    }
 
-            if (loading) {
-                clearAiOptions();
-                // hide button while loading (optional)
-                if (btnUseSelectedNews != null) {
-                    btnUseSelectedNews.setVisible(false);
-                    btnUseSelectedNews.setManaged(false);
-                }
-            }
-        }
+    private void updateNetworkLabel(boolean online) {
+        if (lblNetworkStatus == null) return;
+        lblNetworkStatus.setText(online ? "Online" : "Offline - Internet required for AI");
+        lblNetworkStatus.setStyle("-fx-text-fill: " + (online ? "#22c55e;" : "#ef4444;"));
+    }
 
-        private void setSmsLoading(boolean loading) {
-            if (smsLoadingBox != null) {
-                smsLoadingBox.setVisible(loading);
-                smsLoadingBox.setManaged(loading);
-            }
-
-            if (btnSendSMS != null) btnSendSMS.setDisable(loading);
-            if (txtMessage != null) txtMessage.setDisable(loading);
+    private void populateComboBoxes() {
+        if (cbSelectBeneficiary != null) {
+            cbSelectBeneficiary.setItems(FXCollections.observableArrayList(
+                    "All Beneficiaries",
+                    "By Barangay",
+                    "Selected Beneficiaries",
+                    "By Disaster Area",
+                    "Custom List"
+            ));
+            cbSelectBeneficiary.getSelectionModel().selectFirst();
+            cbSelectBeneficiary.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, old, val) -> onRecipientGroupChanged());
         }
     }
+
+    private void onRecipientGroupChanged() {
+        if (isUpdatingComboBox || isOpeningDialog) return;
+
+        String group = (cbSelectBeneficiary != null) ? cbSelectBeneficiary.getValue() : null;
+        if (group == null) return;
+
+        if ("By Barangay".equals(group)) {
+            showBarangaySelection(true);
+            showDisasterSelection(false);
+        } else if ("By Disaster Area".equals(group)) {
+            showBarangaySelection(false);
+            showDisasterSelection(true);
+            if (cbSelectDisaster != null && cbSelectDisaster.getItems().isEmpty()) {
+                loadDisasters();
+            }
+        } else if (group.startsWith("Selected Beneficiaries")) {
+            showBarangaySelection(false);
+            showDisasterSelection(false);
+            openBeneficiarySelectionDialog();
+        } else {
+            showBarangaySelection(false);
+            showDisasterSelection(false);
+        }
+
+        updateSendButtonState();
+    }
+
+    private void showBarangaySelection(boolean show) {
+        if (barangaySelectionBox != null) {
+            barangaySelectionBox.setVisible(show);
+            barangaySelectionBox.setManaged(show);
+        }
+        if (show && cbSelectBarangay != null && cbSelectBarangay.getItems().isEmpty()) {
+            loadBarangayList();
+        }
+    }
+
+    private void showDisasterSelection(boolean show) {
+        if (disasterSelectionBox != null) {
+            disasterSelectionBox.setVisible(show);
+            disasterSelectionBox.setManaged(show);
+        }
+    }
+
+    public void loadDisasters() {
+        try {
+            List<DisasterModel> disasters = disasterDAO.getAllDisasters();
+            if (cbSelectDisaster != null) {
+                cbSelectDisaster.getItems().setAll(disasters);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadBarangayList() {
+        new Thread(() -> {
+            try {
+                List<String> barangays = beneficiaryDAO.getAllBarangays();
+                Platform.runLater(() -> {
+                    if (cbSelectBarangay != null) {
+                        cbSelectBarangay.setItems(FXCollections.observableArrayList(barangays));
+                        if (barangays.isEmpty()) {
+                            AlertDialogManager.showError("No Barangays", "No barangays found.");
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() ->
+                        AlertDialogManager.showError("Error", "Failed to load barangays: " + e.getMessage()));
+                e.printStackTrace();
+            }
+        }, "LoadBarangayThread").start();
+    }
+
+    // ────────────────────────────────────────────────
+    // Beneficiary Selection Dialog
+    // ────────────────────────────────────────────────
+
+    private void openBeneficiarySelectionDialog() {
+        if (isOpeningDialog) return;
+        isOpeningDialog = true;
+
+        try {
+            List<BeneficiaryModel> all = beneficiaryDAO.getAllBeneficiaries();
+            if (all == null || all.isEmpty()) {
+                AlertDialogManager.showWarning("No Beneficiaries", "Add beneficiaries first.");
+                return;
+            }
+
+            BeneficiarySelectionDialogController ctrl =
+                    DialogManager.getController("selection", BeneficiarySelectionDialogController.class);
+
+            ctrl.resetState();
+
+            if (!ctrl.isLoaded()) {
+                ctrl.setBeneficiaries(all);
+            }
+
+            if (!selectedBeneficiariesList.isEmpty()) {
+                ctrl.setPreselectedBeneficiaries(selectedBeneficiariesList);
+            }
+
+            DialogManager.show("selection");
+
+            if (ctrl.isOkClicked()) {
+                updateSelectedBeneficiaries(ctrl.getSelectedBeneficiaries());
+            } else {
+                handleDialogCancelled();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Dialog Error", "Failed to open selection dialog.");
+        } finally {
+            isOpeningDialog = false;
+            Platform.runLater(() -> isUpdatingComboBox = false);
+            updateSendButtonState();
+        }
+    }
+
+    private void updateSelectedBeneficiaries(List<BeneficiaryModel> selected) {
+        isUpdatingComboBox = true;
+        try {
+            selectedBeneficiariesList = (selected != null) ? new ArrayList<>(selected) : new ArrayList<>();
+
+            String text = String.format("Selected Beneficiaries (%d selected)", selectedBeneficiariesList.size());
+
+            if (cbSelectBeneficiary != null) {
+                ObservableList<String> items = cbSelectBeneficiary.getItems();
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).startsWith("Selected Beneficiaries")) {
+                        items.set(i, text);
+                        cbSelectBeneficiary.getSelectionModel().select(i);
+                        break;
+                    }
+                }
+            }
+        } finally {
+            Platform.runLater(() -> {
+                isUpdatingComboBox = false;
+                updateSendButtonState();
+            });
+        }
+    }
+
+    private void handleDialogCancelled() {
+        isUpdatingComboBox = true;
+        try {
+            if (cbSelectBeneficiary != null) {
+                if (selectedBeneficiariesList.isEmpty()) {
+                    cbSelectBeneficiary.getSelectionModel().selectFirst();
+                } else {
+                    String text = String.format("Selected Beneficiaries (%d selected)", selectedBeneficiariesList.size());
+                    ObservableList<String> items = cbSelectBeneficiary.getItems();
+                    for (int i = 0; i < items.size(); i++) {
+                        if (items.get(i).startsWith("Selected Beneficiaries")) {
+                            items.set(i, text);
+                            cbSelectBeneficiary.getSelectionModel().select(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        } finally {
+            Platform.runLater(() -> {
+                isUpdatingComboBox = false;
+                updateSendButtonState();
+            });
+        }
+    }
+
+    // ────────────────────────────────────────────────
+    // AI News Generation
+    // ────────────────────────────────────────────────
+
+    @FXML
+    private void onGenerateNews() {
+        if (cbNewsTopic == null || btnGenerateNews == null) return;
+
+        if (newsGeneratorService == null) {
+            AlertDialogManager.showError(
+                    "AI Disabled",
+                    "Missing GEMINI_API_KEY environment variable.\nSet GEMINI_API_KEY then restart the app."
+            );
+            return;
+        }
+
+        if (!InternetConnectionChecker.isOnline()) {
+            AlertDialogManager.showError("Offline", "Internet required for AI news generation.");
+            return;
+        }
+
+        String topic = cbNewsTopic.getSelectionModel().getSelectedItem();
+        if (topic == null || topic.trim().isEmpty()) {
+            AlertDialogManager.showWarning("Topic Required", "Please select a news topic.");
+            return;
+        }
+
+        // ✅ if topic is Weather, force current day
+        boolean forceToday = topic.toLowerCase().contains("weather");
+
+        storedNewsItems.clear();
+        clearNewsSlots();
+        updateAiResponseVisibility(false);
+        setAiLoading(true);
+
+        newsGeneratorService.generateNewsHeadlines(topic, 5)
+                .whenComplete((result, ex) -> Platform.runLater(() -> {
+                    setAiLoading(false);
+
+                    if (ex != null) {
+                        ex.printStackTrace();
+                        AlertDialogManager.showError("AI Error", "News generation failed: " + ex.getMessage());
+                        return;
+                    }
+
+                    if (result == null || result.isEmpty()) {
+                        AlertDialogManager.showWarning("No News", "No headlines generated.");
+                        return;
+                    }
+
+                    storedNewsItems.clear();
+                    storedNewsItems.addAll(result);
+
+                    for (int i = 0; i < Math.min(storedNewsItems.size(), newsSlots.length); i++) {
+                        updateNewsSlot(i, storedNewsItems.get(i));
+                    }
+
+                    updateAiResponseVisibility(true);
+
+                    AlertDialogManager.showSuccess("Success",
+                            storedNewsItems.size() + " news headline(s) generated.");
+                }));
+    }
+
+    @FXML
+    private void onUseSelectedNews() {
+        if (newsAiResponse == null || txtMessage == null) return;
+
+        Toggle toggle = newsAiResponse.getSelectedToggle();
+        if (toggle == null) return;
+
+        for (int i = 0; i < newsSlots.length; i++) {
+            if (newsSlots[i] == toggle && i < storedNewsItems.size()) {
+                loadNewsToMessage(i);
+                break;
+            }
+        }
+    }
+
+    private void setAiLoading(boolean loading) {
+        if (aiLoadingBox != null) {
+            aiLoadingBox.setVisible(loading);
+            aiLoadingBox.setManaged(loading);
+        }
+        if (btnGenerateNews != null) btnGenerateNews.setDisable(loading);
+        if (cbNewsTopic != null) cbNewsTopic.setDisable(loading);
+    }
+
+    private void updateAiResponseVisibility(boolean visible) {
+        if (aiResponseContainer != null) {
+            aiResponseContainer.setVisible(visible);
+            aiResponseContainer.setManaged(visible);
+        }
+        if (btnUseSelectedNews != null) {
+            btnUseSelectedNews.setVisible(visible);
+            btnUseSelectedNews.setManaged(visible);
+            btnUseSelectedNews.setDisable(!visible);
+        }
+        for (RadioButton slot : newsSlots) {
+            if (slot != null) {
+                slot.setVisible(visible);
+                slot.setManaged(visible);
+            }
+        }
+        if (!visible && newsAiResponse != null) {
+            newsAiResponse.selectToggle(null);
+        }
+    }
+
+    private void setSmsLoading(boolean loading) {
+        if (smsLoadingBox != null) {
+            smsLoadingBox.setVisible(loading);
+            smsLoadingBox.setManaged(loading);
+        }
+        if (btnSendSMS != null) btnSendSMS.setDisable(loading);
+        if (txtMessage != null) txtMessage.setDisable(loading);
+    }
+
+    // ────────────────────────────────────────────────
+    // Send SMS Logic
+    // ────────────────────────────────────────────────
+
+    @FXML
+    private void onSendSMS() {
+        if (txtMessage == null || txtMessage.getText().trim().isEmpty()) {
+            AlertDialogManager.showError("Empty Message", "Please enter message content.");
+            return;
+        }
+
+        String group = (cbSelectBeneficiary != null) ? cbSelectBeneficiary.getValue() : null;
+        if (group == null) {
+            AlertDialogManager.showError("No Group", "Select recipient group.");
+            return;
+        }
+
+        String method = (rbGsm != null && rbGsm.isSelected()) ? "GSM" : "API";
+
+        List<BeneficiaryModel> recipients = getRecipients(group);
+        if (recipients.isEmpty()) {
+            AlertDialogManager.showError("No Recipients", "No valid recipients found for this selection.");
+            return;
+        }
+
+        String msgPreview = txtMessage.getText().substring(0, Math.min(50, txtMessage.getText().length())) + "...";
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Send");
+        confirm.setHeaderText("Send to " + recipients.size() + " recipient(s)?");
+        confirm.setContentText("Method: " + method + "\nMessage: " + msgPreview);
+
+        confirm.showAndWait().ifPresent(resp -> {
+            if (resp == ButtonType.OK) {
+                sendSMSToRecipients(recipients, txtMessage.getText(), method);
+            }
+        });
+    }
+
+    private List<BeneficiaryModel> getRecipients(String group) {
+        if (group == null) return List.of();
+
+        String base = group;
+        if (group.contains("(")) {
+            base = group.substring(0, group.indexOf("(")).trim();
+        }
+
+        switch (base) {
+            case "All Beneficiaries":
+                return beneficiaryDAO.getAllBeneficiaries();
+
+            case "By Barangay":
+                String brgy = (cbSelectBarangay != null) ? cbSelectBarangay.getValue() : null;
+                return (brgy != null) ? beneficiaryDAO.getBeneficiariesByBarangay(brgy) : List.of();
+
+            case "By Disaster Area":
+                DisasterModel d = (cbSelectDisaster != null) ? cbSelectDisaster.getValue() : null;
+                return (d != null) ? beneficiaryDAO.getBeneficiariesByDisaster(d.getDisasterId()) : List.of();
+
+            default:
+                // ✅ handle "Selected Beneficiaries (N selected)" safely
+                if (base.startsWith("Selected Beneficiaries")) {
+                    return new ArrayList<>(selectedBeneficiariesList);
+                }
+                return List.of();
+        }
+    }
+
+    private void sendSMSToRecipients(List<BeneficiaryModel> recipients, String message, String method) {
+        setSmsLoading(true);
+
+        new Thread(() -> {
+            int successCount = smsService.sendBulkSMS(recipients, message, method);
+
+            Platform.runLater(() -> {
+                setSmsLoading(false);
+                AlertDialogManager.showSuccess("Send Complete",
+                        successCount + " of " + recipients.size() + " messages sent.");
+                loadSMSLogs();
+            });
+        }).start();
+    }
+
+    private void updateSendButtonState() {
+        boolean enabled = false;
+
+        if (rbApi != null && rbApi.isSelected()) {
+            enabled = true;
+        } else if (rbGsm != null && rbGsm.isSelected()) {
+            String port = (cbSelectPorts != null) ? cbSelectPorts.getSelectionModel().getSelectedItem() : null;
+            boolean validPort = port != null && !port.contains("No") && !port.contains("Error");
+            enabled = validPort && smsSender.isConnected();
+        }
+
+        if (btnSendSMS != null) {
+            btnSendSMS.setDisable(!enabled);
+        }
+    }
+
+    @FXML
+    private void onRefreshPorts() {
+        populateAvailablePorts();
+    }
+
+    @FXML
+    private void onDisconnect() {
+        if (smsSender != null && smsSender.isConnected()) {
+            smsSender.disconnect();
+            updateConnectionLabel("Disconnected", "orange");
+            AlertDialogManager.showInfo("Disconnected", "GSM modem disconnected.");
+            updateSendButtonState();
+        }
+    }
+}

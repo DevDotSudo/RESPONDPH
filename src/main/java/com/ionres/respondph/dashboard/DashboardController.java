@@ -28,7 +28,7 @@ public class DashboardController {
     private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
     private static final double MARKER_WIDTH = 32;
     private static final double MARKER_HEIGHT = 32;
-    private static final double MARKER_OFFSET_Y = MARKER_HEIGHT; // Offset to place the point at the bottom
+    private static final double MARKER_OFFSET_Y = MARKER_HEIGHT;
 
     private final double[][] boundary = {
             {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
@@ -92,61 +92,58 @@ public class DashboardController {
     }
 
     private void drawBeneficiaries() {
-        if (!mapping.isInitialized() || beneficiaries.isEmpty()) {
-            return;
-        }
-
-        // ────────────────────────────────────────────────
-        // Only draw markers when zoomed in enough
-        if (mapping.getZoom() < MIN_ZOOM_FOR_MARKERS) {
-            return;
-        }
-        // ────────────────────────────────────────────────
+        if (!mapping.isInitialized() || beneficiaries.isEmpty()) return;
 
         GraphicsContext gc = mapping.getGc();
         double canvasWidth  = mapping.getCanvas().getWidth();
         double canvasHeight = mapping.getCanvas().getHeight();
 
         double padding = 50;
-        double minX = -padding;
-        double maxX = canvasWidth + padding;
-        double minY = -padding;
-        double maxY = canvasHeight + padding;
+        double minX = -padding, maxX = canvasWidth + padding;
+        double minY = -padding, maxY = canvasHeight + padding;
+
+        boolean useMarkerImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
+
+        double dotRadius = 4; // adjust if you want bigger/smaller
+        Color dotFill   = Color.rgb(0, 120, 255, 0.85);   // bright blue fill
+        Color dotStroke = Color.rgb(0, 70, 180, 0.95);    // deeper blue stroke
 
         for (BeneficiaryMarker b : beneficiaries) {
-            if (!Mapping.isValidCoordinate(b.lat, b.lon)) {
-                continue;
-            }
+            if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
 
-            // Optional: still filter by polygon (most apps keep this)
-            if (!isPointInPolygon(b.lon, b.lat, boundary)) {
-                continue;
-            }
+            // keep polygon filtering
+            if (!isPointInPolygon(b.lon, b.lat, boundary)) continue;
 
             try {
                 Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
 
-                if (p.x < 0 || p.y < 0) {
-                    continue;
+                if (p.x < 0 || p.y < 0) continue;
+
+                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
+
+                if (useMarkerImage && personMarker != null) {
+                    double markerX = p.x - (MARKER_WIDTH / 2);
+                    double markerY = p.y - MARKER_OFFSET_Y;
+                    gc.drawImage(personMarker, markerX, markerY, MARKER_WIDTH, MARKER_HEIGHT);
+
+                } else if (useMarkerImage) {
+                    gc.setFill(Color.RED);
+                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
+                    gc.setStroke(Color.DARKRED);
+                    gc.setLineWidth(1.5);
+                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
+
+                } else {
+                    gc.setFill(dotFill);
+                    gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+
+                    gc.setStroke(dotStroke);
+                    gc.setLineWidth(1.2);
+                    gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
                 }
 
-                if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) {
-                    if (personMarker != null) {
-                        double markerX = p.x - (MARKER_WIDTH / 2);
-                        double markerY = p.y - MARKER_OFFSET_Y;
-
-                        gc.drawImage(personMarker, markerX, markerY, MARKER_WIDTH, MARKER_HEIGHT);
-                    } else {
-                        // fallback
-                        gc.setFill(Color.RED);
-                        gc.fillOval(p.x - 5, p.y - 5, 10, 10);
-                        gc.setStroke(Color.DARKRED);
-                        gc.setLineWidth(1.5);
-                        gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
-                    }
-                }
-            } catch (Exception e) {
-                continue;
+            } catch (Exception ignored) {
+                // keep rendering others even if one fails
             }
         }
     }

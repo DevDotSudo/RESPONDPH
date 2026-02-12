@@ -1,313 +1,195 @@
 package com.ionres.respondph.common.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.GenerateContentResponse;
+import com.google.genai.types.GoogleSearch;
+import com.google.genai.types.Tool;
 
 import java.net.URI;
-import java.net.http.*;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NewsGeneratorService {
 
-    private static final String BASE = "https://generativelanguage.googleapis.com/v1beta";
+    private static final String ENV_API_KEY = "GEMINI_API_KEY";
+    private static final String MODEL_ID = "gemini-3-pro-preview";
 
-    private static final String[] MODELS = {
-            "gemini-3-pro-preview",
-            "gemini-pro=latest",
-            "gemini-1.5-pro-latest"
-    };
+    private static final int MIN_LEN = 140;
+    private static final int MAX_LEN = 160;
 
-    private static final java.time.Duration TIMEOUT = java.time.Duration.ofSeconds(30);
-    private static final long MAX_TIME_MS = 90_000; // 90 seconds max
-    private static final int MAX_ATTEMPTS = 10;
-    private static final int MIN_TEXT_LENGTH = 60;
-
-    private final HttpClient http;
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final ScheduledExecutorService scheduler;
-
-    private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s\\)\\]]+");
+    private final Client client;
 
     public NewsGeneratorService() {
-        this.http = HttpClient.newBuilder()
-                .connectTimeout(java.time.Duration.ofSeconds(12))
-                .build();
+        String apiKey = System.getenv(ENV_API_KEY);
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Missing environment variable " + ENV_API_KEY);
+        }
+        this.client = Client.builder().apiKey(apiKey.trim()).build();
+    }
 
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "news-gen");
-            t.setDaemon(true);
-            return t;
+    public CompletableFuture<List<String>> generateNewsHeadlines(String topic, int count) {
+
+        final int wanted = Math.max(1, Math.min(count, 5));
+
+        return CompletableFuture.supplyAsync(() -> {
+
+            String today = LocalDate.now().toString();
+
+            GenerateContentConfig config = GenerateContentConfig.builder()
+                    .tools(Tool.builder().googleSearch(GoogleSearch.builder().build()).build())
+                    .build();
+
+            String prompt =
+                    "Ikaw isa ka generator sang SMS balita.\n" +
+                            "Gamita ang Google Search grounding kag magkuha lang sang TINUOD kag naga-ubra nga FULL article links.\n" +
+                            "Dapat ang balita halin sa Iloilo City, Philippines.\n" +
+                            "Mas ginapaboran ang subong nga adlaw (" + today + ") ukon sulod sang last 3 days.\n" +
+                            "Topiko: " + topic + "\n\n" +
+
+                            "MAGBALIK SANG EXACTLY " + wanted + " ITEMS LANG.\n" +
+                            "Isa lang ka linya kada item.\n\n" +
+
+                            "FORMAT EXACTLY:\n" +
+                            "1. <Hiligaynon SMS text 140-160 characters lang> (Source: FULL ARTICLE URL)\n\n" +
+
+                            "HARD RULES:\n" +
+                            "- Hiligaynon lang ang SMS text, likawan ang English words kon indi kinahanglan.\n" +
+                            "- Indi pagbutang ang URL sa sulod sang SMS text.\n" +
+                            "- Ang Source link dapat FULL article URL (may path), indi homepage.\n" +
+                            "- Indi maghatag sang peke nga links.\n" +
+                            "- Wala sang extra commentary ukon blank lines.\n";
+
+            GenerateContentResponse response =
+                    client.models.generateContent(MODEL_ID, prompt, config);
+
+            String raw = safeText(response);
+
+            System.out.println("\n================ AI RAW RESPONSE ================");
+            System.out.println(raw == null ? "(null)" : raw);
+            System.out.println("=================================================\n");
+
+            return parseSmsWithSource(raw, wanted);
         });
     }
 
-    public CompletableFuture<List<String>> generateNewsHeadlines(String category, int count) {
-        CompletableFuture<List<String>> future = new CompletableFuture<>();
-
-        String apiKey = System.getenv("GEMINI_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            future.completeExceptionally(new IllegalStateException(
-                    "Missing GEMINI_API_KEY environment variable"));
-            return future;
+    private String safeText(GenerateContentResponse response) {
+        try {
+            if (response == null) return null;
+            String t = response.text();
+            return (t == null) ? null : t.trim();
+        } catch (Exception e) {
+            System.out.println("[AI] response.text() failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-
-        System.out.println(">>> Generating " + count + " " + category + " headlines in Hiligaynon");
-
-        long startTime = System.currentTimeMillis();
-        generate(category, count, apiKey, 0, future, startTime);
-
-        return future;
     }
 
-    private void generate(String category,
-                          int count,
-                          String apiKey,
-                          int attempt,
-                          CompletableFuture<List<String>> future,
-                          long startTime) {
+    private List<String> parseSmsWithSource(String raw, int wanted) {
 
-        if (future.isDone()) return;
-
-        // Check timeout
-        long elapsed = System.currentTimeMillis() - startTime;
-        if (elapsed > MAX_TIME_MS) {
-            future.completeExceptionally(new TimeoutException("Timed out after " + (elapsed/1000) + "s"));
-            return;
-        }
-
-        if (attempt >= MAX_ATTEMPTS) {
-            future.completeExceptionally(new RuntimeException(
-                    "Failed after " + MAX_ATTEMPTS + " attempts. Check API key and network."));
-            return;
-        }
-
-        String model = MODELS[attempt % MODELS.length];
-        System.out.println("[" + attempt + "] Trying: " + model);
-
-        callGemini(category, count, apiKey, model)
-                .whenComplete((items, error) -> {
-
-                    if (future.isDone()) return;
-
-                    if (error != null) {
-                        System.err.println("✗ Error: " + error.getMessage());
-                        retry(category, count, apiKey, attempt + 1, future, startTime);
-                        return;
-                    }
-
-                    if (items == null || items.isEmpty()) {
-                        System.err.println("✗ No valid items generated");
-                        retry(category, count, apiKey, attempt + 1, future, startTime);
-                        return;
-                    }
-
-                    System.out.println("✓ SUCCESS: Got " + items.size() + " valid headlines");
-                    future.complete(items);
-                });
-    }
-
-    private CompletableFuture<List<String>> callGemini(String category, int count, String apiKey, String model) {
-        CompletableFuture<List<String>> future = new CompletableFuture<>();
-
-        String endpoint = BASE + "/models/" + model + ":generateContent";
-        String prompt = buildPrompt(category, count);
-        String body = buildBody(prompt);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .timeout(TIMEOUT)
-                .header("Content-Type", "application/json")
-                .header("x-goog-api-key", apiKey)
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build();
-
-        http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .whenComplete((response, error) -> {
-
-                    if (error != null) {
-                        future.completeExceptionally(error);
-                        return;
-                    }
-
-                    try {
-                        int code = response.statusCode();
-
-                        if (code == 401 || code == 403) {
-                            future.completeExceptionally(new IllegalStateException("Invalid API key"));
-                            return;
-                        }
-
-                        if (code != 200) {
-                            String body_snippet = response.body().substring(0, Math.min(200, response.body().length()));
-                            System.err.println("HTTP " + code + ": " + body_snippet);
-                            future.completeExceptionally(new RuntimeException("HTTP " + code));
-                            return;
-                        }
-
-                        String text = parseResponse(response.body());
-                        List<String> validated = validateAndFormat(text, count);
-
-                        future.complete(validated);
-
-                    } catch (Exception e) {
-                        future.completeExceptionally(e);
-                    }
-                });
-
-        return future;
-    }
-
-    private void retry(String category, int count, String apiKey, int nextAttempt,
-                       CompletableFuture<List<String>> future, long startTime) {
-
-        if (future.isDone()) return;
-
-        long delay = Math.min(500 + (nextAttempt * 300), 3000);
-        System.out.println("Retrying in " + delay + "ms...");
-
-        scheduler.schedule(
-                () -> generate(category, count, apiKey, nextAttempt, future, startTime),
-                delay,
-                TimeUnit.MILLISECONDS
-        );
-    }
-
-    private List<String> validateAndFormat(String text, int maxCount) {
         List<String> result = new ArrayList<>();
+        if (raw == null || raw.isBlank()) return result;
 
-        if (text == null || text.isBlank()) {
-            return result;
-        }
+        Pattern p = Pattern.compile(
+                "^\\s*(\\d+)\\.\\s*(.+?)\\s*\\(\\s*Source\\s*:\\s*(https?://[^\\s)]+)\\s*\\)\\s*$",
+                Pattern.CASE_INSENSITIVE
+        );
 
-        String[] lines = text.split("\n");
+        String[] lines = raw.split("\\r?\\n");
 
         for (String line : lines) {
-            String cleaned = line.trim();
 
-            cleaned = cleaned.replaceFirst("^\\d+[\\).:\\-]\\s*", "");
-            cleaned = cleaned.replaceFirst("^[•\\-*]\\s*", "");
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) continue;
 
-            if (cleaned.isEmpty() || cleaned.length() < 20) continue;
+            Matcher m = p.matcher(trimmed);
+            if (!m.matches()) continue;
 
-            Matcher matcher = URL_PATTERN.matcher(cleaned);
-            if (!matcher.find()) {
-                System.out.println("  ⊘ No URL: " + cleaned.substring(0, Math.min(50, cleaned.length())) + "...");
-                continue;
-            }
+            String smsText = m.group(2).trim();
+            String url = m.group(3).trim();
 
-            String url = matcher.group();
-            String textPart = cleaned.replace(url, "").trim();
-            textPart = textPart.replaceAll("\\s+", " ");
+            if (!isValidFullArticleUrl(url)) continue;
 
-            if (textPart.length() < MIN_TEXT_LENGTH) {
-                System.out.println("  ⊘ Too short (" + textPart.length() + "): " +
-                        textPart.substring(0, Math.min(40, textPart.length())) + "...");
-                continue;
-            }
+            smsText = stripAnyUrlInsideText(smsText);
 
-            String formatted = textPart + " " + url;
-            result.add(formatted);
+            smsText = enforceLen(smsText);
 
-            System.out.println("  ✓ Valid (" + textPart.length() + " chars)");
+            result.add(smsText + " (Source: " + url + ")");
 
-            if (result.size() >= maxCount) break;
+            if (result.size() >= wanted) break;
         }
 
         return result;
     }
 
-    private String buildBody(String prompt) {
-        return "{" +
-                "\"contents\":[{\"parts\":[{\"text\":" + escape(prompt) + "}]}]," +
-                "\"generationConfig\":{" +
-                "\"temperature\":0.8," +
-                "\"maxOutputTokens\":1500" +
-                "}}";
+    private boolean isValidFullArticleUrl(String url) {
+        try {
+            URI u = URI.create(url);
+
+            String scheme = u.getScheme();
+            String host = u.getHost();
+            String path = u.getPath();
+
+            if (scheme == null) return false;
+            if (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https")) return false;
+
+            if (host == null || host.isBlank()) return false;
+
+            if (path == null || path.isBlank() || "/".equals(path)) return false;
+
+            if (path.length() < 2) return false;
+
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private String escape(String s) {
-        return "\"" + s
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t") + "\"";
+    private String stripAnyUrlInsideText(String text) {
+        if (text == null) return "";
+        return text.replaceAll("https?://\\S+", "")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
-    private String parseResponse(String json) throws Exception {
-        JsonNode root = mapper.readTree(json);
+    private String enforceLen(String text) {
 
-        JsonNode candidates = root.path("candidates");
-        if (!candidates.isArray() || candidates.isEmpty()) {
-            throw new RuntimeException("No candidates");
+        if (text == null) text = "";
+        text = text.replaceAll("\\s+", " ").trim();
+
+        if (text.length() > MAX_LEN) {
+            String cut = text.substring(0, MAX_LEN).trim();
+            cut = cut.replaceAll("[,;:\\-–—]+$", "").trim();
+            return cut;
         }
 
-        JsonNode parts = candidates.get(0).path("content").path("parts");
-        if (!parts.isArray() || parts.isEmpty()) {
-            throw new RuntimeException("No parts");
-        }
+        if (text.length() < MIN_LEN) {
 
-        String text = parts.get(0).path("text").asText("");
-        if (text.isBlank()) {
-            throw new RuntimeException("Empty response");
+            String filler =
+                    " Padayon nga bantayan ang opisyal nga pahibalo sang LGU para sa seguridad.";
+
+            String combined = (text + " " + filler)
+                    .replaceAll("\\s+", " ")
+                    .trim();
+
+            if (combined.length() > MAX_LEN) {
+                combined = combined.substring(0, MAX_LEN).trim();
+                combined = combined.replaceAll("[,;:\\-–—]+$", "").trim();
+            }
+
+            while (combined.length() < MIN_LEN) {
+                combined = (combined + ".").trim();
+                if (combined.length() > MAX_LEN) break;
+            }
+
+            return combined;
         }
 
         return text;
-    }
-
-    private String buildPrompt(String category, int count) {
-        LocalDate today = LocalDate.now(ZoneId.systemDefault());
-        String date = today.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH));
-
-        // SINGLE STEP: Generate directly in Hiligaynon with URLs
-        return String.format(
-                "Ikaw isa ka news writer para sa Iloilo City, Philippines.\n" +
-                        "Petsa: %s\n" +
-                        "Kategorya: %s\n\n" +
-                        "TRABAHO: Himua %d ka balita nga naka-sulat sa HILIGAYNON (Ilonggo).\n\n" +
-                        "MGA KINANGLANON:\n" +
-                        "1. Sulat sa HILIGAYNON lang - wala English\n" +
-                        "2. Kada balita: 80-120 nga mga pulong\n" +
-                        "3. Butangi detalye: petsa, lugar, numero, ngalan\n" +
-                        "4. Magamit sini nga mga pulong para sa oras:\n" +
-                        "   - Subong/karon (today/now)\n" +
-                        "   - Bag-o lang/kamakaagi (recently)\n" +
-                        "   - Kahapon (yesterday)\n" +
-                        "   - Sini nga semana (this week)\n" +
-                        "5. IMPORTANTE: Butangi ISA ka URL sa katapusan sang kada linya\n" +
-                        "   Gamita sini: https://rappler.com, https://philstar.com, \n" +
-                        "   https://gmanetwork.com, https://pna.gov.ph, https://abs-cbn.com\n" +
-                        "6. Para sa Iloilo City o Western Visayas\n" +
-                        "7. Tunog urgent kag importante\n\n" +
-                        "FORMAT (sundon gid ini):\n" +
-                        "1) [Balita sa Hiligaynon] https://example.com/article\n" +
-                        "2) [Balita sa Hiligaynon] https://example.com/article2\n" +
-                        "3) [Balita sa Hiligaynon] https://example.com/article3\n\n" +
-                        "HALIMBAWA:\n" +
-                        "1) Subong nga adlaw, ang lokal nga gobyerno sang Iloilo City nagdeklarar sang estado sang emergency tungod sa malakas nga ulan kag baha. Napinsala ang mga dalan kag madamo nga pamilya ang nag-evacuate sa mas luwas nga lugar. Ang mayor nagpahibalo nga nagpadala na sila sang tulong para sa mga naapektuhan. https://rappler.com/iloilo-flood-2026\n\n" +
-                        "KARON, himua %d ka balita sa Hiligaynon (gamita ang format sa ibabaw):",
-                date, category, count, count
-        );
-    }
-
-    public static class NewsResult {
-        private final List<String> options;
-        private final List<String> sources;
-        private final String rawText;
-
-        public NewsResult(List<String> options, List<String> sources, String rawText) {
-            this.options = options == null ? List.of() : options;
-            this.sources = sources == null ? List.of() : sources;
-            this.rawText = rawText;
-        }
-
-        public List<String> getOptions() { return options; }
-        public List<String> getSources() { return sources; }
-        public String getRawText() { return rawText; }
     }
 }

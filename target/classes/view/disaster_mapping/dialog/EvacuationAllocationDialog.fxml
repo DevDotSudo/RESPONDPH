@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="800.0" prefWidth="1200.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/evacuationallocationdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationAllocationDialogController">
+
+    <!-- ==================== HEADER SECTION ==================== -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
+        <padding>
+            <Insets bottom="18" left="24" right="24" top="18" />
+        </padding>
+
+        <FontAwesomeIconView glyphName="HOME" size="22" styleClass="header-icon" />
+        <VBox spacing="2">
+            <Label fx:id="titleLabel" styleClass="dialog-title" text="Allocate Beneficiaries to Evacuation Sites" />
+            <Label styleClass="dialog-subtitle" text="Assign beneficiaries to nearest evacuation sites and send SMS notifications" />
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button fx:id="closeBtn" styleClass="dialog-close">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- ==================== ERROR CONTAINER ==================== -->
+    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
+        <padding>
+            <Insets bottom="12" left="24" right="24" top="10" />
+        </padding>
+        <Label fx:id="errorLabel" styleClass="error-text" />
+    </VBox>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <ScrollPane fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
+        <VBox spacing="24" styleClass="dialog-body">
+            <padding>
+                <Insets bottom="24" left="24" right="24" top="20" />
+            </padding>
+
+            <!-- ==================== SECTION 1: DISASTER CONTEXT ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <!-- Section Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Disaster Context" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Event Details" />
+                </HBox>
+
+                <!-- Disaster Info Card -->
+                <HBox spacing="16" styleClass="info-box">
+                    <FontAwesomeIconView glyphName="FIRE" size="24" styleClass="info-icon" />
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label fx:id="disasterInfoLabel" styleClass="info-title" text="Disaster: " />
+                        <HBox spacing="16">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <FontAwesomeIconView glyphName="CALENDAR" size="12" styleClass="field-icon" />
+                                <Label styleClass="info-text" text="March 15, 2024" />
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <FontAwesomeIconView glyphName="MAP_MARKER" size="12" styleClass="field-icon" />
+                                <Label styleClass="info-text" text="Affected Area: Region I" />
+                            </HBox>
+                        </HBox>
+                    </VBox>
+                    <Label styleClass="badge-active">ACTIVE</Label>
+                </HBox>
+            </VBox>
+
+            <Separator />
+
+            <!-- ==================== SECTION 2: EVACUATION SITES ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <!-- Section Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="BUILDINGS" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Evacuation Sites" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Tabbed View" />
+                </HBox>
+
+                <!-- TabPane for Evacuation Sites -->
+                <TabPane fx:id="evacuationSitesTabPane" styleClass="custom-tab-pane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+                    <!-- Tabs will be dynamically added here -->
+                </TabPane>
+            </VBox>
+
+            <Separator />
+
+            <!-- ==================== SECTION 3: SMS NOTIFICATION ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <!-- Section Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="COMMENTS" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="SMS Notification" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Step 3 of 3" />
+                </HBox>
+
+                <!-- SMS Method Selection -->
+                <VBox spacing="16" styleClass="sms-container">
+                    <!-- SMS Method Card -->
+                    <VBox spacing="12" styleClass="method-card">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <FontAwesomeIconView glyphName="PAPER_PLANE" size="16" styleClass="field-icon" />
+                            <Label styleClass="field-label" text="SMS Sending Method *" />
+                        </HBox>
+
+                        <HBox spacing="24" styleClass="method-options">
+                            <RadioButton fx:id="rbGsm" styleClass="custom-radio" text="GSM Module (Hardware)">
+                                <graphic>
+                                    <HBox alignment="CENTER_LEFT" spacing="6">
+                                        <FontAwesomeIconView glyphName="MICROCHIP" size="14" styleClass="radio-icon" />
+                                    </HBox>
+                                </graphic>
+                            </RadioButton>
+                            <RadioButton fx:id="rbApi" selected="true" styleClass="custom-radio" text="SMS API (Semaphore/Chikka)">
+                                <graphic>
+                                    <HBox alignment="CENTER_LEFT" spacing="6">
+                                        <FontAwesomeIconView glyphName="CLOUD" size="14" styleClass="radio-icon" />
+                                    </HBox>
+                                </graphic>
+                            </RadioButton>
+                        </HBox>
+
+                        <!-- GSM Port Selection (visible only when GSM is selected) -->
+                        <VBox fx:id="gsmPortContainer" managed="false" spacing="12" styleClass="gsm-config" visible="false">
+                            <padding>
+                                <Insets bottom="16" left="16" right="16" top="16" />
+                            </padding>
+
+                            <GridPane hgap="16" vgap="12">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="NEVER" minWidth="80" />
+                                    <ColumnConstraints hgrow="ALWAYS" />
+                                    <ColumnConstraints hgrow="NEVER" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints vgrow="NEVER" />
+                                    <RowConstraints vgrow="NEVER" />
+                                </rowConstraints>
+
+                                <Label styleClass="config-label" text="COM Port:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <ComboBox fx:id="cbGsmPort" prefWidth="200" promptText="Select COM port" styleClass="field-combo" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                <Button fx:id="btnRefreshPorts" styleClass="btn-icon-text" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                    <graphic>
+                                        <HBox alignment="CENTER" spacing="6">
+                                            <FontAwesomeIconView glyphName="REFRESH" size="12" styleClass="btn-icon" />
+                                            <Label styleClass="btn-text-small" text="Refresh" />
+                                        </HBox>
+                                    </graphic>
+                                </Button>
+
+                                <Label styleClass="config-label" text="Status:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                                    <Label fx:id="lblConnectionStatus" styleClass="status-disconnected" text="Disconnected" />
+                                    <Label styleClass="status-indicator" text="●" />
+                                </HBox>
+                            </GridPane>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Progress Section (initially hidden) -->
+                <VBox fx:id="progressBox" managed="false" spacing="12" styleClass="progress-container" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <FontAwesomeIconView glyphName="SPINNER" size="16" styleClass="progress-icon" />
+                        <Label fx:id="progressLabel" styleClass="progress-title" text="Sending SMS Notifications" />
+                    </HBox>
+
+                    <ProgressBar fx:id="progressBar" prefWidth="Infinity" progress="0" styleClass="custom-progress" />
+
+                    <HBox alignment="CENTER_RIGHT" spacing="6">
+                        <Label fx:id="progressStatusLabel" styleClass="progress-text" text="0 / 0 sent" />
+                    </HBox>
+                </VBox>
+
+                <!-- SMS Info Box -->
+                <HBox spacing="12" styleClass="info-box">
+                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="info-icon" />
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label styleClass="info-title" text="SMS Notification Details" />
+                        <Label styleClass="info-text" text="• Beneficiaries will receive SMS with evacuation site name, address, and capacity information.&#10;• API method requires active internet connection. GSM module requires connected hardware.&#10;• Messages are queued and sent sequentially to ensure delivery." wrapText="true" />
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <!-- ==================== FOOTER SECTION ==================== -->
+    <HBox alignment="CENTER_RIGHT" spacing="14" styleClass="dialog-footer">
+        <padding>
+            <Insets bottom="20" left="24" right="24" top="20" />
+        </padding>
+
+        <Button fx:id="saveAllocationBtn" prefHeight="42.0" styleClass="btn-primary">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="btn-icon" />
+                    <Label styleClass="btn-text" text="Save Allocation &amp; Send SMS" />
+                </HBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="cancelBtn" prefHeight="42.0" styleClass="btn-secondary-alt">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="btn-icon" />
+                    <Label styleClass="btn-text" text="Cancel" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

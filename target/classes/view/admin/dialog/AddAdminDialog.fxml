@@ -5,15 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root"
-      prefHeight="600.0"
-      prefWidth="800.0"
-      spacing="0"
-      styleClass="dialog-root"
-      stylesheets="@/styles/admin/dialog/addadmindialog.css"
-      xmlns="http://javafx.com/javafx/17.0.12"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
+<VBox fx:id="root" spacing="0" styleClass="dialog-root" stylesheets="@/styles/admin/dialog/addadmindialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.admin.dialogs_controller.AddAdminDialogController">
 
     <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -69,10 +61,7 @@
                     <Label styleClass="field-label" text="Username *" />
                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
                         <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                        <TextField fx:id="usernameField"
-                                   promptText="Enter unique username"
-                                   styleClass="field-input"
-                                   HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="usernameField" promptText="Enter unique username" styleClass="field-input" HBox.hgrow="ALWAYS" />
                     </HBox>
                 </VBox>
 
@@ -88,10 +77,7 @@
                         <Label styleClass="field-label" text="Password *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="LOCK" size="14" styleClass="field-icon" />
-                            <PasswordField fx:id="passwordField"
-                                           promptText="Enter password"
-                                           styleClass="field-input"
-                                           HBox.hgrow="ALWAYS" />
+                            <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -100,12 +86,12 @@
                         <Label styleClass="field-label" text="Confirm Password *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="LOCK" size="14" styleClass="field-icon" />
-                            <PasswordField fx:id="confirmPasswordField"
-                                           promptText="Re-enter password"
-                                           styleClass="field-input"
-                                           HBox.hgrow="ALWAYS" />
+                            <PasswordField fx:id="confirmPasswordField" promptText="Re-enter password" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
 
                 <!-- Password Requirements -->
@@ -145,10 +131,7 @@
                         <Label styleClass="field-label" text="First Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="firstNameField"
-                                       promptText="Enter first name"
-                                       styleClass="field-input"
-                                       HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -157,10 +140,7 @@
                         <Label styleClass="field-label" text="Middle Name" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="middleNameField"
-                                       promptText="Middle name"
-                                       styleClass="field-input"
-                                       HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="middleNameField" promptText="Middle name" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -169,12 +149,12 @@
                         <Label styleClass="field-label" text="Last Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="lastNameField"
-                                       promptText="Last name"
-                                       styleClass="field-input"
-                                       HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="lastNameField" promptText="Last name" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
             </VBox>
 

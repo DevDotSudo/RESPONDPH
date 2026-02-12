@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="800.0" prefWidth="1100.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/beneficiary/dialog/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
+<VBox fx:id="root" prefHeight="750.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/beneficiary/dialog/addbeneficiariesdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialogController">
 
     <!-- Header Section -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -185,32 +185,31 @@
                         </HBox>
                     </VBox>
                     <VBox layoutX="347.0" layoutY="10.0" spacing="8">
-                        <Label styleClass="field-label" text="Barangay *"/>
+                        <Label styleClass="field-label" text="Barangay *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <children>
-                                <FontAwesomeIconView glyphName="HEART" size="14" styleClass="field-icon"/>
-                                <ComboBox fx:id="barangaySelection" maxWidth="1.7976931348623157E308"
-                                          promptText="Select barangay" styleClass="field-combo" HBox.hgrow="ALWAYS">
+                                <FontAwesomeIconView glyphName="HEART" size="14" styleClass="field-icon" />
+                                <ComboBox fx:id="barangaySelection" maxWidth="1.7976931348623157E308" promptText="Select barangay" styleClass="field-combo" HBox.hgrow="ALWAYS">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
-                                            <String fx:value="Alacaygan"/>
-                                            <String fx:value="Bariga"/>
-                                            <String fx:value="Belen"/>
-                                            <String fx:value="Bobon"/>
-                                            <String fx:value="Bularan"/>
-                                            <String fx:value="Carmelo"/>
-                                            <String fx:value="De La Paz"/>
-                                            <String fx:value="Dugwakan"/>
-                                            <String fx:value="Fuentes"/>
-                                            <String fx:value="Juanico"/>
-                                            <String fx:value="Libertad"/>
-                                            <String fx:value="Magdalo"/>
-                                            <String fx:value="Managopaya"/>
-                                            <String fx:value="Merced"/>
-                                            <String fx:value="Poblacion"/>
-                                            <String fx:value="San Salvador"/>
-                                            <String fx:value="Talokgangan"/>
-                                            <String fx:value="Zona Sur"/>
+                                            <String fx:value="Alacaygan" />
+                                            <String fx:value="Bariga" />
+                                            <String fx:value="Belen" />
+                                            <String fx:value="Bobon" />
+                                            <String fx:value="Bularan" />
+                                            <String fx:value="Carmelo" />
+                                            <String fx:value="De La Paz" />
+                                            <String fx:value="Dugwakan" />
+                                            <String fx:value="Fuentes" />
+                                            <String fx:value="Juanico" />
+                                            <String fx:value="Libertad" />
+                                            <String fx:value="Magdalo" />
+                                            <String fx:value="Managopaya" />
+                                            <String fx:value="Merced" />
+                                            <String fx:value="Poblacion" />
+                                            <String fx:value="San Salvador" />
+                                            <String fx:value="Talokgangan" />
+                                            <String fx:value="Zona Sur" />
                                         </FXCollections>
                                     </items>
                                 </ComboBox>

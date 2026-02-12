@@ -1,121 +1,94 @@
-.dialog-root {
+/* ========== SEND SMS ROOT - MATCHING DISASTER DIALOG THEME ========== */
+.send-sms-root {
     -fx-background-color: #0b1220;
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 0;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0.0, 0, 4);
 }
 
-/* ---------- HEADER ---------- */
-.dialog-header {
+/* ========== HEADER SECTION ========== */
+.header-section {
     -fx-background-color: rgba(255,255,255,0.02);
     -fx-border-color: rgba(148,163,184,0.12);
     -fx-border-width: 0 0 1px 0;
-    -fx-background-radius: 8px 8px 0 0;
+    -fx-background-radius: 0;
 }
 
-.header-icon {
-    -fx-fill: rgba(249,115,22,0.95);
-    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.4), 8, 0.0, 0, 0);
-}
-
-.dialog-title {
+.page-title {
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 21px;
+    -fx-font-size: 24px;
     -fx-font-weight: 900;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 1);
 }
 
-.dialog-subtitle {
+.page-subtitle {
     -fx-text-fill: rgba(148,163,184,0.85);
     -fx-font-size: 13px;
     -fx-font-weight: 600;
 }
 
-/* ---------- CLOSE BUTTON ---------- */
-.dialog-close {
+.network-status-label {
+    -fx-text-fill: rgba(148,163,184,0.90);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
     -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148,163,184,0.20);
-    -fx-border-width: 1px;
     -fx-background-radius: 6px;
+    -fx-padding: 8px 14px;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
     -fx-border-radius: 6px;
-    -fx-padding: 10px 14px;
-    -fx-cursor: hand;
-    -fx-min-height: 42px;
-    -fx-pref-height: 42px;
-    -fx-max-height: 42px;
-}
-.dialog-close:hover {
-    -fx-background-color: rgba(239,68,68,0.12);
-    -fx-border-color: rgba(239,68,68,0.50);
-    -fx-scale-x: 1.02;
-    -fx-scale-y: 1.02;
-}
-.dialog-close:pressed {
-    -fx-background-color: rgba(239,68,68,0.18);
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
 }
 
-.close-icon { -fx-fill: rgba(248,250,252,0.95); }
-
-.button.dialog-close {
-    -fx-alignment: CENTER;
-}
-
-/* ---------- SCROLL ---------- */
-.dialog-scroll {
+/* ========== SCROLLPANE ========== */
+.content-scroll {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-padding: 0;
 }
-.dialog-scroll .viewport { -fx-background-color: transparent; }
-.dialog-scroll .corner { -fx-background-color: transparent; }
 
-/* scrollbars - modern minimal design */
-.dialog-scroll .scroll-bar:vertical,
-.dialog-scroll .scroll-bar:horizontal {
+.content-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.content-scroll .corner {
+    -fx-background-color: transparent;
+}
+
+.content-scroll .scroll-bar:vertical,
+.content-scroll .scroll-bar:horizontal {
     -fx-background-color: transparent;
     -fx-padding: 2px;
 }
-.dialog-scroll .scroll-bar .track {
+
+.content-scroll .scroll-bar .track {
     -fx-background-color: rgba(148,163,184,0.08);
     -fx-background-radius: 6px;
 }
-.dialog-scroll .scroll-bar .thumb {
+
+.content-scroll .scroll-bar .thumb {
     -fx-background-color: rgba(249,115,22,0.30);
     -fx-background-radius: 6px;
 }
-.dialog-scroll .scroll-bar .thumb:hover {
+
+.content-scroll .scroll-bar .thumb:hover {
     -fx-background-color: rgba(249,115,22,0.50);
 }
-.dialog-scroll .scroll-bar .thumb:pressed {
+
+.content-scroll .scroll-bar .thumb:pressed {
     -fx-background-color: rgba(249,115,22,0.70);
 }
-.dialog-scroll .increment-button,
-.dialog-scroll .decrement-button {
+
+.content-container {
     -fx-background-color: transparent;
-    -fx-padding: 0;
+    -fx-padding: 20 30 30 30;
+    -fx-spacing: 24;
 }
 
-/* ---------- BODY ---------- */
-.dialog-body {
-    -fx-background-color: transparent;
-}
-
-/* ---------- SEPARATOR ---------- */
-.separator {
-    -fx-padding: 0;
-}
-.separator .line {
-    -fx-background-color: rgba(148,163,184,0.12);
-    -fx-border-color: transparent;
-}
-
-/* ---------- SECTION CARD ---------- */
-.form-section {
+/* ========== SECTION CARDS - MATCHING FORM-SECTION ========== */
+.news-section,
+.custom-message-section,
+.message-section {
     -fx-background-color: rgba(255,255,255,0.025);
     -fx-border-color: rgba(148,163,184,0.14);
     -fx-border-width: 1px;
@@ -125,326 +98,71 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
 }
 
-/* section header */
-.section-header {
+.section-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 16.5px;
+    -fx-font-weight: 900;
     -fx-padding: 0 0 12px 0;
     -fx-border-color: rgba(148,163,184,0.08);
     -fx-border-width: 0 0 1px 0;
 }
 
-.section-icon {
-    -fx-fill: rgba(249,115,22,0.90);
+/* ========== INPUT LABELS - MATCHING FIELD-LABEL ========== */
+.input-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
 }
-.section-title {
+
+/* ========== COMBOBOX - MATCHING FIELD-COMBO ========== */
+.recipient-combo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+}
+
+.recipient-combo > .list-cell {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 16.5px;
-    -fx-font-weight: 900;
-}
-
-.section-subtitle {
-    -fx-text-fill: rgba(148,163,184,0.75);
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-background-color: rgba(249,115,22,0.10);
-    -fx-background-radius: 12px;
-    -fx-padding: 4px 12px;
-}
-
-/* ---------- INFO BOX ---------- */
-.info-box {
-    -fx-background-color: rgba(59,130,246,0.08);
-    -fx-border-color: rgba(59,130,246,0.25);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-padding: 14px 16px;
-}
-
-.info-icon {
-    -fx-fill: rgba(96,165,250,0.95);
-}
-
-.info-box-icon {
-    -fx-fill: rgba(96,165,250,0.95);
-}
-
-.info-title {
-    -fx-text-fill: rgba(147,197,253,0.98);
-    -fx-font-size: 13px;
-    -fx-font-weight: 800;
-}
-
-.info-box-title {
-    -fx-text-fill: rgba(147,197,253,0.98);
-    -fx-font-size: 13.5px;
-    -fx-font-weight: 900;
-}
-
-.info-text {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-    -fx-padding: 0 0 0 22px;
-}
-
-.info-box-text {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-    -fx-padding: 0 0 0 24px;
-}
-
-/* ---------- WARNING BOX ---------- */
-.warning-box {
-    -fx-background-color: rgba(245,158,11,0.08);
-    -fx-border-color: rgba(245,158,11,0.25);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-padding: 14px 16px;
-}
-
-.warning-icon {
-    -fx-fill: rgba(251,191,36,0.95);
-}
-
-.warning-title {
-    -fx-text-fill: rgba(253,230,138,0.98);
-    -fx-font-size: 13.5px;
-    -fx-font-weight: 900;
-}
-
-.warning-text {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-    -fx-padding: 0 0 0 24px;
-}
-
-/* ---------- SUCCESS BOX ---------- */
-.success-box {
-    -fx-background-color: rgba(34,197,94,0.08);
-    -fx-border-color: rgba(34,197,94,0.25);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-padding: 14px 16px;
-}
-
-.success-icon {
-    -fx-fill: rgba(74,222,128,0.95);
-}
-
-.success-title {
-    -fx-text-fill: rgba(134,239,172,0.98);
-    -fx-font-size: 13.5px;
-    -fx-font-weight: 900;
-}
-
-.success-text {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-    -fx-padding: 0 0 0 24px;
-}
-
-/* ---------- FIELD LABEL ---------- */
-.field-label {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13.5px;
-    -fx-font-weight: 800;
-}
-
-.field-helper-text {
-    -fx-text-fill: rgba(148,163,184,0.80);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-    -fx-font-style: italic;
-}
-
-/* ---------- CHECKBOX ---------- */
-.checkbox {
-    -fx-text-fill: rgba(226,232,240,0.95);
     -fx-font-size: 14px;
     -fx-font-weight: 700;
-}
-
-.checkbox .box {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 4px;
-    -fx-border-radius: 4px;
-}
-
-.checkbox:selected .box {
-    -fx-background-color: rgba(249,115,22,0.22);
-    -fx-border-color: rgba(249,115,22,0.75);
-}
-
-.checkbox:selected .mark {
-    -fx-background-color: rgba(249,115,22,0.95);
-}
-
-/* ---------- RADIO BUTTON ---------- */
-.radio-button {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13.5px;
-    -fx-font-weight: 700;
-}
-
-.radio-button .radio {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 100%;
-    -fx-border-radius: 100%;
-}
-
-.radio-button:selected .radio {
-    -fx-background-color: rgba(249,115,22,0.22);
-    -fx-border-color: rgba(249,115,22,0.75);
-}
-
-.radio-button:selected .dot {
-    -fx-background-color: rgba(249,115,22,0.95);
-    -fx-background-radius: 100%;
-}
-
-/* ---------- SUBSECTION CONTAINER ---------- */
-.subsection-container {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(148,163,184,0.10);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-}
-
-/* ---------- FLAT INPUT CONTAINER ---------- */
-.flat-input {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
     -fx-padding: 0 14px;
-    -fx-alignment: center-left;
-    -fx-min-height: 44px;
-    -fx-pref-height: 44px;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+    -fx-alignment: CENTER_LEFT;
 }
 
-.flat-input:hover {
+.recipient-combo > .list-cell:hover {
     -fx-border-color: rgba(249,115,22,0.40);
     -fx-background-color: rgba(255,255,255,0.05);
 }
 
-.flat-input.flat-focused {
-    -fx-border-color: rgba(249,115,22,0.75);
-    -fx-background-color: rgba(249,115,22,0.08);
-    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.25), 8, 0.0, 0, 0);
-}
-
-.field-icon {
-    -fx-fill: rgba(226,232,240,0.70);
-}
-
-/* ---------- TEXT INPUT ---------- */
-.field-input {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-border-width: 0;
-    -fx-padding: 0;
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-prompt-text-fill: rgba(148,163,184,0.60);
-    -fx-min-height: 38px;
-    -fx-pref-height: 38px;
-    -fx-max-height: 38px;
-    -fx-alignment: CENTER_LEFT;
-}
-
-.text-field.field-input {
-    -fx-highlight-fill: rgba(249,115,22,0.30);
-    -fx-highlight-text-fill: white;
-    -fx-caret-color: rgba(249,115,22,0.95);
-}
-
-/* Remove default focus indicators */
-.button:focused,
-.combo-box:focused,
-.date-picker:focused,
-.text-field:focused {
-    -fx-faint-focus-color: transparent;
-    -fx-focus-color: transparent;
-}
-
-/* ---------- COMBO BOX ---------- */
-.field-combo {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-padding: 0;
-    -fx-min-height: 38px;
-    -fx-pref-height: 38px;
-    -fx-max-height: 38px;
-}
-
-.field-combo.combo-box-base:editable > .text-field {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-prompt-text-fill: rgba(148,163,184,0.60);
-}
-
-.field-combo.combo-box-base:editable .text-input {
-    -fx-background-color: transparent;
-    -fx-text-fill: rgba(248,250,252,0.98);
-}
-
-.field-combo.combo-box-base > .text-field {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-}
-
-.field-combo.combo-box-base:editable > .arrow-button {
-    -fx-background-color: transparent;
-}
-
-.field-combo > .list-cell {
-    -fx-background-color: transparent;
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-padding: 0;
-    -fx-min-height: 38px;
-    -fx-pref-height: 38px;
-    -fx-max-height: 38px;
-    -fx-alignment: CENTER_LEFT;
-}
-
-.field-combo .list-cell:empty {
-    -fx-text-fill: rgba(148,163,184,0.60);
-}
-
-.field-combo > .list-cell:empty .text {
-    -fx-fill: rgba(148,163,184,0.60);
-}
-
-.field-combo .arrow-button {
+.recipient-combo .arrow-button {
     -fx-background-color: transparent;
     -fx-padding: 0 10px 0 12px;
     -fx-min-height: 38px;
     -fx-pref-height: 38px;
     -fx-max-height: 38px;
 }
-.field-combo .arrow {
+
+.recipient-combo .arrow {
     -fx-background-color: rgba(226,232,240,0.65);
 }
-.field-combo:hover .arrow {
+
+.recipient-combo:hover .arrow {
     -fx-background-color: rgba(249,115,22,0.75);
+}
+
+.recipient-combo .list-cell:empty {
+    -fx-text-fill: rgba(148,163,184,0.60);
 }
 
 /* Combo box dropdown popup */
@@ -457,6 +175,7 @@
     -fx-padding: 8px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 16, 0.0, 0, 4);
 }
+
 .combo-box-popup .list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: rgba(226,232,240,0.95);
@@ -465,79 +184,52 @@
     -fx-padding: 11px 12px;
     -fx-background-radius: 5px;
 }
+
 .combo-box-popup .list-view .list-cell:hover {
     -fx-background-color: rgba(249,115,22,0.12);
     -fx-text-fill: rgba(248,250,252,0.98);
 }
+
 .combo-box-popup .list-view .list-cell:selected {
     -fx-background-color: rgba(249,115,22,0.22);
     -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-weight: 800;
 }
 
-/* ---------- CLUSTER BADGES ---------- */
-.cluster-label {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: rgba(226,232,240,0.95);
+/* ========== BUTTONS - MATCHING DIALOG THEME ========== */
+.generate-button,
+.secondary-button {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 11px 18px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+    -fx-text-fill: rgba(248,250,252,0.95);
+    -fx-font-weight: 800;
+    -fx-font-size: 13.5px;
 }
 
-.cluster-badge-low {
-    -fx-background-color: rgba(148,163,184,0.70);
-    -fx-text-fill: white;
-    -fx-padding: 2px 8px;
-    -fx-background-radius: 3px;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
+.generate-button:hover,
+.secondary-button:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-border-color: rgba(249,115,22,0.50);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
-.cluster-badge-medium {
-    -fx-background-color: rgba(245,158,11,0.85);
-    -fx-text-fill: white;
-    -fx-padding: 2px 8px;
-    -fx-background-radius: 3px;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
+.generate-button:pressed,
+.secondary-button:pressed {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
 
-.cluster-badge-high {
-    -fx-background-color: rgba(239,68,68,0.85);
-    -fx-text-fill: white;
-    -fx-padding: 2px 8px;
-    -fx-background-radius: 3px;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-}
-
-/* ---------- BADGES ---------- */
-.badge-recommended {
-    -fx-background-color: rgba(34,197,94,0.85);
-    -fx-text-fill: white;
-    -fx-padding: 4px 10px;
-    -fx-background-radius: 3px;
-    -fx-font-size: 10px;
-    -fx-font-weight: bold;
-}
-
-.badge-fixed {
-    -fx-background-color: rgba(59,130,246,0.85);
-    -fx-text-fill: white;
-    -fx-padding: 4px 10px;
-    -fx-background-radius: 3px;
-    -fx-font-size: 10px;
-    -fx-font-weight: bold;
-}
-
-/* ---------- FOOTER ---------- */
-.dialog-footer {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 1px 0 0 0;
-    -fx-background-radius: 0 0 8px 8px;
-}
-
-/* ---------- PRIMARY BUTTON ---------- */
-.btn-primary {
+.primary-button {
     -fx-background-color: rgba(249,115,22,0.92);
     -fx-text-fill: rgba(255,255,255,0.98);
     -fx-font-size: 14.5px;
@@ -553,45 +245,346 @@
     -fx-border-width: 1px;
     -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 10, 0.0, 0, 3);
 }
-.btn-primary:hover {
+
+.primary-button:hover {
     -fx-background-color: rgba(249,115,22,1.00);
     -fx-scale-x: 1.02;
     -fx-scale-y: 1.02;
     -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.45), 14, 0.0, 0, 4);
 }
-.btn-primary:pressed {
+
+.primary-button:pressed {
     -fx-background-color: rgba(234,88,12,1.00);
     -fx-scale-x: 0.98;
     -fx-scale-y: 0.98;
 }
 
-/* ---------- SECONDARY BUTTON ---------- */
-.btn-secondary {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 14.5px;
-    -fx-font-weight: 900;
-    -fx-padding: 11px 20px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-cursor: hand;
+#btnRefreshNetwork {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.25);
     -fx-min-height: 42px;
     -fx-pref-height: 42px;
-    -fx-max-height: 42px;
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
 }
-.btn-secondary:hover {
-    -fx-background-color: rgba(255,255,255,0.08);
-    -fx-border-color: rgba(249,115,22,0.60);
+
+/* ========== CUSTOM EVACUATION MESSAGE SECTION ========== */
+.custom-message-section > VBox {
+    -fx-background-color: rgba(255,255,255,0.02) !important;
+    -fx-border-color: rgba(148,163,184,0.12) !important;
+    -fx-border-width: 1px !important;
+    -fx-border-radius: 6px !important;
+    -fx-background-radius: 6px !important;
+    -fx-padding: 16px !important;
+}
+
+.custom-message-section .input-label {
+    -fx-text-fill: rgba(226,232,240,0.95) !important;
+    -fx-font-size: 13px !important;
+}
+
+/* TextArea - matching flat-input */
+.custom-message-section .message-textarea {
+    -fx-background-color: rgba(255,255,255,0.04) !important;
+    -fx-border-color: rgba(148,163,184,0.18) !important;
+    -fx-border-width: 1px !important;
+    -fx-background-radius: 6px !important;
+    -fx-border-radius: 6px !important;
+    -fx-text-fill: rgba(248,250,252,0.98) !important;
+    -fx-font-size: 13px !important;
+    -fx-font-weight: 600 !important;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60) !important;
+    -fx-padding: 8px 14px !important;
+}
+
+.custom-message-section .message-textarea .content {
+    -fx-background-color: transparent !important;
+}
+
+.custom-message-section .message-textarea:hover {
+    -fx-border-color: rgba(249,115,22,0.40) !important;
+    -fx-background-color: rgba(255,255,255,0.05) !important;
+}
+
+.custom-message-section .message-textarea:focused {
+    -fx-border-color: rgba(249,115,22,0.60) !important;
+}
+
+/* Save Button - matching btn-primary but with green */
+.custom-message-section #btnSaveEvacMessage {
+    -fx-background-color: rgba(34,197,94,0.85) !important;
+    -fx-border-color: rgba(34,197,94,0.30) !important;
+    -fx-border-width: 1px !important;
+    -fx-background-radius: 6px !important;
+    -fx-border-radius: 6px !important;
+    -fx-text-fill: white !important;
+    -fx-font-size: 13.5px !important;
+    -fx-font-weight: 800 !important;
+    -fx-padding: 11px 20px !important;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.20), 10, 0.0, 0, 3);
+    -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>');
+    -fx-graphic-text-gap: 8;
+    -fx-content-display: left;
+}
+
+.custom-message-section #btnSaveEvacMessage:hover {
+    -fx-background-color: rgba(34,197,94,0.95) !important;
+    -fx-border-color: rgba(34,197,94,0.50) !important;
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.35), 14, 0.0, 0, 4);
     -fx-scale-x: 1.02;
     -fx-scale-y: 1.02;
 }
-.btn-secondary:pressed {
-    -fx-background-color: rgba(255,255,255,0.12);
+
+.custom-message-section #btnSaveEvacMessage:pressed {
+    -fx-background-color: rgba(22,163,74,0.95) !important;
     -fx-scale-x: 0.98;
     -fx-scale-y: 0.98;
 }
 
-.btn-icon { -fx-fill: rgba(255,255,255,0.98); }
-.btn-text { -fx-text-fill: rgba(255,255,255,0.98); -fx-font-weight: 900; }
+/* Status Label */
+.custom-message-section #lblMessageStatus {
+    -fx-text-fill: rgba(148,163,184,0.85) !important;
+    -fx-font-size: 12px !important;
+    -fx-font-style: italic !important;
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 20px;
+    -fx-padding: 6px 16px !important;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+}
+
+/* ========== TEXTAREA ========== */
+.message-textarea {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60);
+    -fx-padding: 8px 14px;
+}
+
+.message-textarea .content {
+    -fx-background-color: transparent;
+}
+
+.message-textarea:hover {
+    -fx-border-color: rgba(249,115,22,0.40);
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+
+.message-textarea:focused {
+    -fx-border-color: rgba(249,115,22,0.60);
+}
+
+/* ========== AI RESPONSE PANE ========== */
+.ai-response-pane {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(249,115,22,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 16px;
+}
+
+.ai-response-label {
+    -fx-text-fill: rgba(249,115,22,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-padding: 0 0 10px 0;
+    -fx-border-color: rgba(249,115,22,0.15);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.ai-news-slot {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 14px;
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
+.ai-news-slot:hover {
+    -fx-background-color: rgba(249,115,22,0.08);
+    -fx-border-color: rgba(249,115,22,0.30);
+}
+
+.ai-news-slot:selected {
+    -fx-background-color: rgba(249,115,22,0.15);
+    -fx-border-color: rgba(249,115,22,0.60);
+}
+
+/* ========== RADIO BUTTONS ========== */
+.radio-button {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.radio-button .radio {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.30);
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-padding: 4px;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: rgba(249,115,22,0.85);
+    -fx-border-color: rgba(249,115,22,0.90);
+}
+
+.radio-button .dot {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+}
+
+/* ========== CONNECTION STATUS ========== */
+.connection-status {
+    -fx-text-fill: rgba(248,113,113,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-background-radius: 20px;
+    -fx-padding: 6px 16px;
+    -fx-border-color: rgba(239,68,68,0.25);
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+}
+
+/* ========== CHAR COUNT ========== */
+.char-count {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 16px;
+    -fx-padding: 6px 14px;
+}
+
+/* ========== TABLEVIEW ========== */
+.logs-table {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+}
+
+.logs-table .column-header-background {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 7px 7px 0 0;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.logs-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.logs-table .column-header .label {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
+    -fx-padding: 14px 8px;
+}
+
+.logs-table .table-cell {
+    -fx-text-fill: rgba(226,232,240,0.90);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 12px 8px;
+    -fx-border-color: rgba(148,163,184,0.06);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.logs-table .table-row-cell {
+    -fx-background-color: transparent;
+}
+
+.logs-table .table-row-cell:odd {
+    -fx-background-color: rgba(255,255,255,0.01);
+}
+
+.logs-table .table-row-cell:hover {
+    -fx-background-color: rgba(249,115,22,0.08);
+}
+
+.logs-table .table-row-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.15);
+}
+
+.logs-count {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(249,115,22,0.10);
+    -fx-background-radius: 16px;
+    -fx-padding: 6px 16px;
+    -fx-border-color: rgba(249,115,22,0.20);
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+}
+
+/* ========== LOADING INDICATORS ========== */
+#aiLoadingBox,
+#smsLoadingBox {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 7px;
+    -fx-padding: 14px 18px;
+    -fx-border-color: rgba(249,115,22,0.20);
+    -fx-border-width: 1px;
+    -fx-border-radius: 7px;
+}
+
+.progress-indicator {
+    -fx-progress-color: rgba(249,115,22,0.95);
+}
+
+/* ========== BARANGAY/DISASTER SELECTION BOXES ========== */
+#barangaySelectionBox,
+#disasterSelectionBox {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 6px;
+    -fx-padding: 16px;
+    -fx-border-color: rgba(148,163,184,0.10);
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
+/* ========== ACTION BUTTONS CONTAINER ========== */
+.action-buttons-container {
+    -fx-padding: 16px 0 0 0;
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 1px 0 0 0;
+}
+
+/* ========== REMOVE FOCUS INDICATORS ========== */
+.button:focused,
+.combo-box:focused,
+.radio-button:focused,
+.text-area:focused,
+.table-view:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}
+
+/* ========== ANIMATIONS ========== */
+.primary-button,
+.secondary-button,
+.generate-button,
+.recipient-combo > .list-cell,
+.message-textarea,
+#btnSaveEvacMessage {
+    -fx-transition: all 0.2s ease;
+}

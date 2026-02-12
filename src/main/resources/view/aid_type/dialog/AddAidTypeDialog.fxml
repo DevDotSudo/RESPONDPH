@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="900" prefWidth="1100" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid_type/dialog/addaidtypedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid_type.dialogs_controller.AddAidTypeController">
+<VBox fx:id="root" prefHeight="750.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid_type/dialog/addaidtypedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid_type.dialogs_controller.AddAidTypeController">
 
     <!-- Header Section -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -61,12 +61,9 @@
                     <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="20" styleClass="info-box-icon" />
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
                         <Label styleClass="info-box-title" text="Weight Configuration Guide:" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Values should be between 0.0 and 1.0" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Higher weights = Higher priority for that factor" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Total doesn't need to sum to 1.0 - each factor is normalized separately" />
+                        <Label styleClass="info-box-text" text="• Values should be between 0.0 and 1.0" wrapText="true" />
+                        <Label styleClass="info-box-text" text="• Higher weights = Higher priority for that factor" wrapText="true" />
+                        <Label styleClass="info-box-text" text="• Total doesn't need to sum to 1.0 - each factor is normalized separately" wrapText="true" />
                     </VBox>
                 </HBox>
             </VBox>

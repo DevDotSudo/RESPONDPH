@@ -31,7 +31,7 @@ public final class AppContext {
     public static VulnerabilityIndicatorService vulnerabilityIndicatorService;
     public static DisasterMappingService disasterMappingService;
     public static EvacSiteMappingService evacSiteMappingService;
-
+    public static int currentDisasterId = -1;
     private AppContext() {
         throw new AssertionError("AppContext should not be instantiated");
     }

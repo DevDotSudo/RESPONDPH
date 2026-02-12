@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import java.lang.*?>
+<?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import java.lang.String?>
-<?import javafx.collections.FXCollections?>
-<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_damage/dialog/adddisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.AddDisasterDamageDialogController">
+<VBox fx:id="root" prefHeight="750.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_damage/dialog/adddisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.AddDisasterDamageDialogController">
 
     <!-- Header Section -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -126,11 +126,11 @@
                             <ComboBox fx:id="damageSeverityFld" maxWidth="1.7976931348623157E308" promptText="Select damage severity" styleClass="field-combo" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="No visible damage"/>
-                                        <String fx:value="Minor damage (non-structural)"/>
-                                        <String fx:value="Moderate damage (partially unusable)"/>
-                                        <String fx:value="Severe damage (unsafe for use)"/>
-                                        <String fx:value="Destruction or collapse"/>
+                                        <String fx:value="No visible damage" />
+                                        <String fx:value="Minor damage (non-structural)" />
+                                        <String fx:value="Moderate damage (partially unusable)" />
+                                        <String fx:value="Severe damage (unsafe for use)" />
+                                        <String fx:value="Destruction or collapse" />
                                     </FXCollections>
                                 </items>
                             </ComboBox>

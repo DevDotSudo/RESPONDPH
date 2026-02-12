@@ -4,10 +4,7 @@ import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.common.model.DisasterModel;
 import com.ionres.respondph.disaster_mapping.dialogs_controller.BeneficiariesInCircleDialogController;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.DialogManager;
-import com.ionres.respondph.util.GeographicUtils;
-import com.ionres.respondph.util.Mapping;
+import com.ionres.respondph.util.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.GraphicsContext;
@@ -18,7 +15,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.util.ArrayList;
@@ -50,7 +46,9 @@ public class DisasterMappingController {
     public void initialize() {
         setupDisasterComboBox();
         setupComboBoxListeners();
-        
+
+        DashboardRefresher.registerBeneficiaryMapInDisasterMapping(this);
+
         Platform.runLater(() -> {
             mapping.init(mapContainer);
             mapping.setAfterRedraw(() -> {
@@ -121,12 +119,13 @@ public class DisasterMappingController {
         disasterComboBox.setOnAction(event -> {
             DisasterModel selectedDisaster = disasterComboBox.getValue();
             if (selectedDisaster != null) {
+                AppContext.currentDisasterId = selectedDisaster.getDisasterId();
                 filterByDisaster(selectedDisaster);
             }
         });
     }
 
-    private void loadDisasterTypes() {
+    public void loadDisasterTypes() {
         List<String> types = disasterMappingService.getDisasterTypes();
         disasterTypeComboBox.getItems().clear();
         disasterTypeComboBox.getItems().add("All Types");
@@ -145,17 +144,17 @@ public class DisasterMappingController {
         } else {
             disastersToShow = disasterMappingService.getDisastersByType(type);
         }
-        
+
         disasterComboBox.getItems().clear();
         if (disastersToShow != null && !disastersToShow.isEmpty()) {
             disasterComboBox.getItems().addAll(disastersToShow);
         }
-        
+
         Platform.runLater(() -> {
             disasterComboBox.getSelectionModel().clearSelection();
             disasterComboBox.requestLayout();
         });
-        
+
         mapping.redraw();
     }
 
@@ -183,7 +182,7 @@ public class DisasterMappingController {
         if (circles != null) {
             for (DisasterCircleInfo c : circles) {
                 if (!Double.isNaN(c.lat) && !Double.isNaN(c.lon) &&
-                    !Double.isNaN(c.radius) && c.radius > 0) {
+                        !Double.isNaN(c.radius) && c.radius > 0) {
                     disasterCircles.add(new DisasterCircleInfo(
                             c.lat,
                             c.lon,
@@ -194,7 +193,7 @@ public class DisasterMappingController {
                 }
             }
         }
-        
+
         mapping.redraw();
     }
 
@@ -215,7 +214,7 @@ public class DisasterMappingController {
         GraphicsContext gc = mapping.getGc();
         double canvasWidth = mapping.getCanvas().getWidth();
         double canvasHeight = mapping.getCanvas().getHeight();
-        
+
         double padding = 50;
         double minX = -padding;
         double maxX = canvasWidth + padding;
@@ -239,7 +238,7 @@ public class DisasterMappingController {
             if (isInsideDisaster) {
                 try {
                     Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
-                    
+
                     if (p.x < 0 || p.y < 0) {
                         continue;
                     }
@@ -254,7 +253,7 @@ public class DisasterMappingController {
                     }
                 } catch (Exception e) {
                     java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
-                        .log(java.util.logging.Level.FINE, "Error drawing beneficiary marker", e);
+                            .log(java.util.logging.Level.FINE, "Error drawing beneficiary marker", e);
                     continue;
                 }
             }
@@ -269,7 +268,7 @@ public class DisasterMappingController {
         GraphicsContext gc = mapping.getGc();
         double canvasWidth = mapping.getCanvas().getWidth();
         double canvasHeight = mapping.getCanvas().getHeight();
-        
+
         double padding = 2000;
         double minX = -padding;
         double maxX = canvasWidth + padding;
@@ -279,22 +278,22 @@ public class DisasterMappingController {
         for (DisasterCircleInfo c : disasterCircles) {
             try {
                 if (!Mapping.isValidCoordinate(c.lat, c.lon) ||
-                    Double.isNaN(c.radius) || c.radius <= 0) {
+                        Double.isNaN(c.radius) || c.radius <= 0) {
                     continue;
                 }
 
                 Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
-                
+
                 if (center.x < 0 || center.y < 0) {
                     continue;
                 }
 
                 double px = c.radius / mapping.metersPerPixel(c.lat);
-                
+
                 if (center.x < minX || center.x > maxX ||
-                    center.y < minY || center.y > maxY) {
+                        center.y < minY || center.y > maxY) {
                     if (center.x + px < minX || center.x - px > maxX ||
-                        center.y + px < minY || center.y - px > maxY) {
+                            center.y + px < minY || center.y - px > maxY) {
                         continue; // Circle is completely outside viewport
                     }
                 }
@@ -310,7 +309,7 @@ public class DisasterMappingController {
                     String type = c.disasterType != null ? c.disasterType : "";
                     String name = c.disasterName != null ? c.disasterName : "";
                     String label = (type + " " + name).trim();
-                    
+
                     if (!label.isEmpty()) {
                         gc.setFont(Font.font("Segoe UI", 10));
                         double labelWidth = textWidth(label, gc);
@@ -324,7 +323,7 @@ public class DisasterMappingController {
                 }
             } catch (Exception e) {
                 java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
-                    .log(java.util.logging.Level.FINE, "Error drawing disaster circle", e);
+                        .log(java.util.logging.Level.FINE, "Error drawing disaster circle", e);
                 continue;
             }
         }
@@ -414,17 +413,17 @@ public class DisasterMappingController {
     private void showBeneficiariesDialog(DisasterCircleInfo circle, List<BeneficiaryMarker> beneficiaries) {
         try {
             BeneficiariesInCircleDialogController controller = DialogManager.getController(
-                "beneficiariesInCircle", 
-                BeneficiariesInCircleDialogController.class
+                    "beneficiariesInCircle",
+                    BeneficiariesInCircleDialogController.class
             );
-            
+
             if (controller != null) {
                 controller.setData(circle, beneficiaries);
                 DialogManager.show("beneficiariesInCircle");
             }
         } catch (Exception e) {
             java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
-                .log(java.util.logging.Level.SEVERE, "Error showing beneficiaries dialog", e);
+                    .log(java.util.logging.Level.SEVERE, "Error showing beneficiaries dialog", e);
         }
     }
 }

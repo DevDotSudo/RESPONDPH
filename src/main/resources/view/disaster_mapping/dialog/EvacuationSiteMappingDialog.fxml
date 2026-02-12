@@ -7,7 +7,6 @@
 
 <VBox fx:id="evacMappingRoot"
       prefHeight="900.0" prefWidth="1200.0"
-      spacing="0"
       styleClass="dialog-root"
       stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css"
       xmlns="http://javafx.com/javafx/17.0.12"
@@ -29,7 +28,6 @@
 
         <Region HBox.hgrow="ALWAYS"/>
 
-        <!-- Optional chip (safe even if you don't use it) -->
         <Label fx:id="statusChip" text="No disaster selected" styleClass="chip"/>
 
         <Button fx:id="closeButton" styleClass="dialog-close">

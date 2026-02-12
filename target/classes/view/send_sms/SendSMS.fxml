@@ -6,212 +6,201 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane styleClass="send-sms-root"
-            stylesheets="@/styles/send_sms/sendsms.css"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.ionres.respondph.sendsms.SendSMSController">
+<AnchorPane styleClass="send-sms-root" stylesheets="@/styles/send_sms/sendsms.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.sendsms.SendSMSController">
 
     <fx:define>
-        <ToggleGroup fx:id="smsMode"/>
-        <ToggleGroup fx:id="newsAiResponse"/>
+        <ToggleGroup fx:id="smsMode" />
+        <ToggleGroup fx:id="newsAiResponse" />
     </fx:define>
 
-    <VBox AnchorPane.topAnchor="0.0"
-          AnchorPane.rightAnchor="0.0"
-          AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <!-- ==================== HEADER ==================== -->
         <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
             <padding>
-                <Insets top="20" right="30" bottom="20" left="30"/>
+                <Insets bottom="20" left="30" right="30" top="20" />
             </padding>
 
             <VBox spacing="6">
-                <Label styleClass="page-title" text="Send SMS"/>
-                <Label styleClass="page-subtitle" text="Send emergency alerts and notifications to beneficiaries"/>
+                <Label styleClass="page-title" text="Send SMS" />
+                <Label styleClass="page-subtitle" text="Send emergency alerts and notifications to beneficiaries" />
             </VBox>
 
-            <Region HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS" />
 
             <HBox alignment="CENTER_RIGHT" spacing="10">
-                <Label fx:id="lblNetworkStatus" styleClass="network-status-label" text="Internet Status: Checking..."/>
-                <Button fx:id="btnRefreshNetwork" styleClass="secondary-button" text="Refresh"/>
+                <Label fx:id="lblNetworkStatus" styleClass="network-status-label" text="Internet Status: Checking..." />
+                <Button fx:id="btnRefreshNetwork" styleClass="secondary-button" text="Refresh" />
             </HBox>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
         </HBox>
 
         <!-- ==================== BODY ==================== -->
         <ScrollPane fitToWidth="true" styleClass="content-scroll" VBox.vgrow="ALWAYS">
             <VBox spacing="20" styleClass="content-container">
                 <padding>
-                    <Insets top="20" right="30" bottom="30" left="30"/>
+                    <Insets top="20.0" />
                 </padding>
 
                 <!-- ==================== NEWS SECTION ==================== -->
                 <VBox spacing="15" styleClass="news-section">
-                    <Label styleClass="section-title" text="News Selection"/>
+                    <Label styleClass="section-title" text="News Selection" />
 
                     <VBox spacing="14" styleClass="news-input-container">
 
                         <HBox alignment="CENTER_LEFT" spacing="10">
-                            <Label styleClass="input-label" text="Topic:"/>
-                            <ComboBox fx:id="cbNewsTopic"
-                                      prefWidth="300"
-                                      promptText="Select a topic..."
-                                      styleClass="recipient-combo">
+                            <Label styleClass="input-label" text="Topic:" />
+                            <ComboBox fx:id="cbNewsTopic" prefWidth="300" promptText="Select a topic..." styleClass="recipient-combo">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="National News"/>
-                                        <String fx:value="Local News"/>
-                                        <String fx:value="Weather News"/>
-                                        <String fx:value="Politics News"/>
-                                        <String fx:value="Health News"/>
-                                        <String fx:value="Crime / Law / Public Safety News"/>
+                                        <String fx:value="National News" />
+                                        <String fx:value="Local News" />
+                                        <String fx:value="Weather News" />
+                                        <String fx:value="Politics News" />
+                                        <String fx:value="Health News" />
+                                        <String fx:value="Crime / Law / Public Safety News" />
                                     </FXCollections>
                                 </items>
                             </ComboBox>
 
-                            <Button fx:id="btnGenerateNews"
-                                    onAction="#onGenerateNews"
-                                    styleClass="generate-button"
-                                    text="Generate News">
+                            <Button fx:id="btnGenerateNews" onAction="#onGenerateNews" styleClass="generate-button" text="Generate News">
                                 <padding>
-                                    <Insets left="20" right="20"/>
+                                    <Insets left="20" right="20" />
                                 </padding>
                             </Button>
 
-                            <Region HBox.hgrow="ALWAYS"/>
+                            <Region HBox.hgrow="ALWAYS" />
                         </HBox>
 
-                        <VBox fx:id="aiLoadingBox"
-                              alignment="CENTER_LEFT"
-                              managed="false"
-                              visible="false"
-                              spacing="10">
-                            <ProgressIndicator fx:id="piAi" prefHeight="26" prefWidth="26"/>
-                            <Label text="Generating news..."/>
+                        <VBox fx:id="aiLoadingBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                            <ProgressIndicator fx:id="piAi" prefHeight="26" prefWidth="26" />
+                            <Label text="Generating news..." />
                         </VBox>
 
-                        <VBox fx:id="aiResponseContainer"
-                              managed="false"
-                              visible="false"
-                              spacing="10"
-                              styleClass="ai-response-pane"
-                              fillWidth="true"
-                              maxWidth="1.7976931348623157E308">
+                        <VBox fx:id="aiResponseContainer" fillWidth="true" managed="false" maxWidth="1.7976931348623157E308" spacing="10" styleClass="ai-response-pane" visible="false">
 
-                            <Label fx:id="aiResponseLabel"
-                                   styleClass="ai-response-label"
-                                   text="AI Generated News Options:"/>
+                            <Label fx:id="aiResponseLabel" styleClass="ai-response-label" text="AI Generated News Options:" />
 
-                            <RadioButton fx:id="rbNewsSlot1"
-                                         styleClass="ai-news-slot"
-                                         wrapText="true"
-                                         toggleGroup="$newsAiResponse"
-                                         maxWidth="1.7976931348623157E308"/>
+                            <RadioButton fx:id="rbNewsSlot1" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" wrapText="true">
+                        <toggleGroup>
+                           <ToggleGroup fx:id="newsAiResponse" />
+                        </toggleGroup></RadioButton>
 
-                            <RadioButton fx:id="rbNewsSlot2"
-                                         styleClass="ai-news-slot"
-                                         wrapText="true"
-                                         toggleGroup="$newsAiResponse"
-                                         maxWidth="1.7976931348623157E308"/>
+                            <RadioButton fx:id="rbNewsSlot2" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
 
-                            <RadioButton fx:id="rbNewsSlot3"
-                                         styleClass="ai-news-slot"
-                                         wrapText="true"
-                                         toggleGroup="$newsAiResponse"
-                                         maxWidth="1.7976931348623157E308"/>
+                            <RadioButton fx:id="rbNewsSlot3" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
 
-                            <RadioButton fx:id="rbNewsSlot4"
-                                         styleClass="ai-news-slot"
-                                         wrapText="true"
-                                         toggleGroup="$newsAiResponse"
-                                         maxWidth="1.7976931348623157E308"/>
+                            <RadioButton fx:id="rbNewsSlot4" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
 
-                            <RadioButton fx:id="rbNewsSlot5"
-                                         styleClass="ai-news-slot"
-                                         wrapText="true"
-                                         toggleGroup="$newsAiResponse"
-                                         maxWidth="1.7976931348623157E308"/>
+                            <RadioButton fx:id="rbNewsSlot5" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
                         </VBox>
 
                     </VBox>
                 </VBox>
 
+                  <!-- ==================== CUSTOM EVACUATION MESSAGE SUBSECTION ==================== -->
+                  <VBox spacing="12" styleClass="evacuation-subsection">
+                      <VBox spacing="8">
+                          <Label styleClass="subsection-title" text="Evacuation SMS Template" />
+                          <Label styleClass="field-helper-text" text="Create a custom message template for evacuation SMS notifications. Use placeholders: {name}, {evacSite}" wrapText="true" />
+                      </VBox>
+
+                      <VBox spacing="8">
+                          <Label styleClass="input-label" text="Custom Evacuation Message:" />
+                          <TextArea fx:id="txtCustomEvacMessage" prefRowCount="3" promptText="Example: URGENT: {name}, evacuate immediately to {evacSite}. Bring essential items only." styleClass="message-textarea" wrapText="true" />
+                      </VBox>
+
+                      <HBox alignment="CENTER_RIGHT" spacing="12">
+                          <Button fx:id="btnSaveEvacMessage" onAction="#onSaveEvacMessage" styleClass="btn-success" text="Save Template">
+                              <padding>
+                                  <Insets left="20" right="20" />
+                              </padding>
+                          </Button>
+                      </HBox>
+                  </VBox>
+
+                <!-- ==================== MESSAGE CONTENT SECTION ==================== -->
                 <VBox spacing="15" styleClass="message-section">
-                    <Label styleClass="section-title" text="Message Content"/>
+                    <Label styleClass="section-title" text="Message Content" />
 
                     <VBox spacing="15" styleClass="message-input-container">
 
+                        <!-- SMS Port Row -->
                         <HBox alignment="CENTER_LEFT" spacing="10">
-                            <Label styleClass="input-label" text="SMS Port:"/>
-                            <ComboBox fx:id="cbSelectPorts" prefWidth="250" promptText="Select a port..." styleClass="recipient-combo"/>
-                            <Button fx:id="btnRefreshPorts" onAction="#onRefreshPorts" styleClass="secondary-button" text="Refresh Ports"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Label fx:id="connectionStatusLabel" styleClass="connection-status" text="Disconnected"/>
+                            <Label styleClass="input-label" text="SMS Port:" />
+                            <ComboBox fx:id="cbSelectPorts" prefWidth="250" promptText="Select a port..." styleClass="recipient-combo" />
+                            <Button fx:id="btnRefreshPorts" onAction="#onRefreshPorts" styleClass="secondary-button" text="Refresh Ports" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="connectionStatusLabel" styleClass="connection-status" text="Disconnected" />
                         </HBox>
 
+                        <!-- Recipient Group Row -->
                         <HBox alignment="CENTER_LEFT" spacing="10">
-                            <Label styleClass="input-label" text="Recipient Group:"/>
+                            <Label styleClass="input-label" text="Recipient Group:" />
                             <ComboBox fx:id="cbSelectBeneficiary" prefWidth="300" styleClass="recipient-combo">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="All Beneficiaries"/>
-                                        <String fx:value="By Barangay"/>
-                                        <String fx:value="Selected Beneficiaries"/>
-                                        <String fx:value="By Disaster Area"/>
-                                        <String fx:value="Custom List"/>
+                                        <String fx:value="All Beneficiaries" />
+                                        <String fx:value="By Barangay" />
+                                        <String fx:value="Selected Beneficiaries" />
+                                        <String fx:value="By Disaster Area" />
+                                        <String fx:value="Custom List" />
                                     </FXCollections>
                                 </items>
                             </ComboBox>
                         </HBox>
 
-                        <HBox fx:id="barangaySelectionBox" alignment="CENTER_LEFT" managed="false" visible="false" spacing="10">
-                            <Label styleClass="input-label" text="Select Barangay:"/>
-                            <ComboBox fx:id="cbSelectBarangay" prefWidth="300" promptText="Choose a barangay..." styleClass="recipient-combo"/>
+                        <!-- Barangay Selection (Dynamic) -->
+                        <HBox fx:id="barangaySelectionBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                            <Label styleClass="input-label" text="Select Barangay:" />
+                            <ComboBox fx:id="cbSelectBarangay" prefWidth="300" promptText="Choose a barangay..." styleClass="recipient-combo" />
                         </HBox>
 
-                        <HBox fx:id="disasterSelectionBox" alignment="CENTER_LEFT" managed="false" visible="false" spacing="10">
-                            <Label styleClass="input-label" text="Select Disaster:"/>
-                            <ComboBox fx:id="cbSelectDisaster" prefWidth="300" promptText="Choose a Disaster..." styleClass="recipient-combo"/>
+                        <!-- Disaster Selection (Dynamic) -->
+                        <HBox fx:id="disasterSelectionBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                            <Label styleClass="input-label" text="Select Disaster:" />
+                            <ComboBox fx:id="cbSelectDisaster" prefWidth="300" promptText="Choose a Disaster..." styleClass="recipient-combo" />
                         </HBox>
 
+                        <!-- Main Message -->
                         <VBox spacing="8">
-                            <Label styleClass="input-label" text="Message:"/>
-                            <TextArea fx:id="txtMessage"
-                                      prefRowCount="6"
-                                      promptText="Type your message here..."
-                                      styleClass="message-textarea"
-                                      wrapText="true"/>
+                            <Label styleClass="input-label" text="Message:" />
+                            <TextArea fx:id="txtMessage" prefRowCount="6" promptText="Type your message here..." styleClass="message-textarea" wrapText="true" />
                         </VBox>
 
+                        <!-- Send Options -->
                         <HBox alignment="CENTER_LEFT" spacing="15">
                             <HBox alignment="CENTER_LEFT" spacing="10">
-                                <Label styleClass="input-label" text="Send via:"/>
-                                <RadioButton fx:id="rbGsm" text="GSM Module" toggleGroup="$smsMode"/>
-                                <RadioButton fx:id="rbApi" text="API" selected="true" toggleGroup="$smsMode"/>
+                                <Label styleClass="input-label" text="Send via:" />
+                                <RadioButton fx:id="rbGsm" text="GSM Module">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="smsMode" />
+                           </toggleGroup></RadioButton>
+                                <RadioButton fx:id="rbApi" selected="true" text="API" toggleGroup="$smsMode" />
                             </HBox>
 
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Label fx:id="charCount" styleClass="char-count" text="0/160 characters"/>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="charCount" styleClass="char-count" text="0/160 characters" />
                         </HBox>
 
+                        <!-- Action Buttons -->
                         <HBox alignment="CENTER_LEFT" spacing="15" styleClass="action-buttons-container">
                             <Button fx:id="btnSendSMS" styleClass="primary-button" text="Send SMS">
                                 <padding>
-                                    <Insets left="30" right="30"/>
+                                    <Insets left="30" right="30" />
                                 </padding>
                             </Button>
 
-                            <HBox fx:id="smsLoadingBox" alignment="CENTER_LEFT" managed="false" visible="false" spacing="8">
-                                <ProgressIndicator fx:id="piSms" prefHeight="18" prefWidth="18"/>
-                                <Label text="Sending..."/>
+                            <HBox fx:id="smsLoadingBox" alignment="CENTER_LEFT" managed="false" spacing="8" visible="false">
+                                <ProgressIndicator fx:id="piSms" prefHeight="18" prefWidth="18" />
+                                <Label text="Sending..." />
                             </HBox>
 
                             <Button fx:id="btnClear" styleClass="secondary-button" text="Clear">
                                 <padding>
-                                    <Insets left="25" right="25"/>
+                                    <Insets left="25" right="25" />
                                 </padding>
                             </Button>
                         </HBox>
@@ -222,23 +211,23 @@
                 <!-- ==================== HISTORY SECTION ==================== -->
                 <VBox spacing="15" styleClass="message-section">
                     <HBox alignment="CENTER_LEFT" spacing="15">
-                        <Label styleClass="section-title" text="SMS History"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Label styleClass="logs-count" text="Recent Messages"/>
+                        <Label styleClass="section-title" text="SMS History" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="logs-count" text="Recent Messages" />
                     </HBox>
 
                     <TableView fx:id="adminTable" styleClass="logs-table" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="dateSentColumn" prefWidth="150" text="Date Sent"/>
-                            <TableColumn fx:id="fullNameColumn" prefWidth="180" text="Recipient"/>
-                            <TableColumn fx:id="phoneColumn" prefWidth="130" text="Phone Number"/>
-                            <TableColumn fx:id="msgColumn" prefWidth="300" text="Message"/>
-                            <TableColumn fx:id="statusColumn" prefWidth="100" text="Status"/>
-                            <TableColumn fx:id="actionsColumn" prefWidth="100" text="Actions"/>
+                            <TableColumn fx:id="dateSentColumn" prefWidth="150" text="Date Sent" />
+                            <TableColumn fx:id="fullNameColumn" prefWidth="180" text="Recipient" />
+                            <TableColumn fx:id="phoneColumn" prefWidth="130" text="Phone Number" />
+                            <TableColumn fx:id="msgColumn" prefWidth="300" text="Message" />
+                            <TableColumn fx:id="statusColumn" prefWidth="100" text="Status" />
+                            <TableColumn fx:id="actionsColumn" prefWidth="100" text="Actions" />
                         </columns>
 
                         <columnResizePolicy>
-                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                         </columnResizePolicy>
                     </TableView>
                 </VBox>

@@ -11,7 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +22,7 @@ public class BeneficiarySelectionDialogController {
     @FXML private TableColumn<BeneficiarySelectionItem, String> colBarangay;
     @FXML private TableColumn<BeneficiarySelectionItem, String> colPhone;
     @FXML private TableColumn<BeneficiarySelectionItem, String> colAddress;
+    @FXML private TableColumn<BeneficiarySelectionItem, Integer> colId;
     @FXML private TextField txtSearch;
     @FXML private Label lblSelectedCount;
     @FXML private Label lblTotalCount;
@@ -46,10 +46,12 @@ public class BeneficiarySelectionDialogController {
         colCheckbox.setCellFactory(CheckBoxTableCell.forTableColumn(colCheckbox));
         colCheckbox.setEditable(true);
 
+        colId.setCellValueFactory(new PropertyValueFactory<>("beneficiaryId"));
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colBarangay.setCellValueFactory(new PropertyValueFactory<>("barangay"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("mobileNumber"));
         colAddress.setCellValueFactory(new PropertyValueFactory<>("coordinates"));
+
 
         tblBeneficiaries.setEditable(true);
         tblBeneficiaries.setItems(filteredItems);
@@ -65,7 +67,7 @@ public class BeneficiarySelectionDialogController {
         }
     }
 
-    /** ✅ Used by SendSMSController to avoid wiping selections on reopen */
+    /**  Used by SendSMSController to avoid wiping selections on reopen */
     public boolean isLoaded() {
         return allItems != null && !allItems.isEmpty();
     }
@@ -163,16 +165,20 @@ public class BeneficiarySelectionDialogController {
         } else {
             String lowerCaseFilter = searchText.toLowerCase().trim();
             filteredItems.setPredicate(item -> {
+                String id = String.valueOf(item.getBeneficiaryId());
                 String fullName = item.getFullName().toLowerCase();
                 String barangay = item.getBarangay() != null ? item.getBarangay().toLowerCase() : "";
                 String phone = item.getMobileNumber() != null ? item.getMobileNumber().toLowerCase() : "";
-                return fullName.contains(lowerCaseFilter) || barangay.contains(lowerCaseFilter) || phone.contains(lowerCaseFilter);
+                return id.contains(lowerCaseFilter) ||
+                        fullName.contains(lowerCaseFilter) ||
+                        barangay.contains(lowerCaseFilter) ||
+                        phone.contains(lowerCaseFilter);
             });
         }
         updateCountLabels();
     }
 
-    /** ✅ Reset dialog behavior WITHOUT clearing checkboxes */
+    /**  Reset dialog behavior WITHOUT clearing checkboxes */
     public void resetState() {
         okClicked = false;
         isClosing = false;
@@ -235,6 +241,7 @@ public class BeneficiarySelectionDialogController {
     public static class BeneficiarySelectionItem {
         private final BeneficiaryModel beneficiary;
         private final BooleanProperty selected;
+        private final int beneficiaryId;
         private final String fullName;
         private final String barangay;
         private final String mobileNumber;
@@ -243,6 +250,7 @@ public class BeneficiarySelectionDialogController {
         public BeneficiarySelectionItem(BeneficiaryModel beneficiary) {
             this.beneficiary = beneficiary;
             this.selected = new SimpleBooleanProperty(false);
+            this.beneficiaryId = beneficiary.getId();
 
             String fn = beneficiary.getFirstname() != null ? beneficiary.getFirstname() : "";
             String mn = beneficiary.getMiddlename() != null ? beneficiary.getMiddlename() : "";
@@ -262,6 +270,7 @@ public class BeneficiarySelectionDialogController {
         public void setSelected(boolean selected) { this.selected.set(selected); }
         public BooleanProperty selectedProperty() { return selected; }
 
+        public int getBeneficiaryId() { return beneficiaryId; }
         public String getFullName() { return fullName; }
         public String getBarangay() { return barangay; }
         public String getMobileNumber() { return mobileNumber; }

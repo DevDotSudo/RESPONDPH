@@ -5,9 +5,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="addAidRoot" prefHeight="800" prefWidth="1000" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid/dialog/addaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.AddAidController">
+<VBox fx:id="root" prefHeight="750.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid/dialog/addaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.AddAidController">
 
-    <!-- Header Section -->
+    <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
         <padding>
             <Insets bottom="18" left="24" right="24" top="18" />
@@ -16,7 +16,7 @@
         <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="22" styleClass="header-icon" />
         <VBox spacing="2">
             <Label styleClass="dialog-title" text="Distribute Aid" />
-            <Label styleClass="dialog-subtitle" text="Fields marked with * are required. Configure aid distribution for disaster-affected beneficiaries." />
+            <Label styleClass="dialog-subtitle" text="Fields marked with * are required. Record a new aid distribution." />
         </VBox>
 
         <Region HBox.hgrow="ALWAYS" />
@@ -30,7 +30,24 @@
         </Button>
     </HBox>
 
-    <!-- Main Form Container -->
+    <!-- ==================== ERROR CONTAINER ==================== -->
+    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
+        <padding>
+            <Insets bottom="12" left="24" right="24" top="10" />
+        </padding>
+        <Label fx:id="errorLabel" styleClass="error-text" />
+    </VBox>
+
+    <!-- ==================== INFO BANNER ==================== -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-banner">
+        <padding>
+            <Insets bottom="12" left="24" right="24" top="12" />
+        </padding>
+        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="16" styleClass="banner-icon" />
+        <Label fx:id="infoLabel" styleClass="banner-text" text="Select aid type and disaster to begin distribution" />
+    </HBox>
+
+    <!-- ==================== MAIN FORM CONTAINER ==================== -->
     <ScrollPane fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
         <VBox spacing="24" styleClass="dialog-body">
             <padding>
@@ -41,93 +58,122 @@
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="MAP_MARKER" size="18" styleClass="section-icon" />
+                    <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Distribution Context" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="section-subtitle" text="Step 1 of 4" />
                 </HBox>
 
-                <!-- Info Box -->
-                <VBox spacing="6" styleClass="info-box">
-                    <HBox alignment="CENTER_LEFT" spacing="8">
-                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="info-icon" />
-                        <Label styleClass="info-title" text="Distribution Setup" />
-                    </HBox>
-                    <Label styleClass="info-text" text="• Select aid type and disaster event to begin distribution" />
-                    <Label styleClass="info-text" text="• Use barangay filtering to target specific areas" />
-                    <Label styleClass="info-text" text="• Configure distribution parameters carefully" />
-                </VBox>
-
-                <!-- Distribution Context Fields -->
+                <!-- Aid Type and Disaster Fields -->
                 <GridPane hgap="16" vgap="14">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
                     </columnConstraints>
 
-                    <!-- Aid Type Selection -->
+                    <!-- Aid Type -->
                     <VBox spacing="8" GridPane.columnIndex="0">
                         <Label styleClass="field-label" text="Aid Type *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="HEARTBEAT" size="14" styleClass="field-icon" />
-                            <ComboBox fx:id="aidTypeComboBox" maxWidth="1.7976931348623157E308" promptText="Select Aid Type" styleClass="field-combo" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="aidTypeComboBox" maxWidth="1.7976931348623157E308" promptText="Select aid type" styleClass="field-combo" HBox.hgrow="ALWAYS" />
                         </HBox>
-                        <Label styleClass="field-helper-text" text="Choose the type of aid you want to distribute" />
+                        <Label styleClass="field-helper-text" text="Choose the type of aid to distribute" />
                     </VBox>
 
-                    <!-- Disaster Selection -->
+                    <!-- Disaster Event -->
                     <VBox spacing="8" GridPane.columnIndex="1">
                         <Label styleClass="field-label" text="Disaster Event *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="FIRE" size="14" styleClass="field-icon" />
-                            <ComboBox fx:id="disasterComboBox" maxWidth="1.7976931348623157E308" promptText="Select Disaster Event" styleClass="field-combo" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="disasterComboBox" maxWidth="1.7976931348623157E308" promptText="Select disaster event" styleClass="field-combo" HBox.hgrow="ALWAYS" />
                         </HBox>
-                        <Label styleClass="field-helper-text" text="Select the disaster event for which you're distributing aid" />
+                        <Label styleClass="field-helper-text" text="Select the disaster event for distribution" />
+                    </VBox>
+
+                    <!-- General Aid Toggle (as a field) -->
+                    <VBox spacing="8" GridPane.columnIndex="2">
+                        <Label styleClass="field-label" text="Distribution Mode" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="field-icon" />
+                            <CheckBox fx:id="generalAidCheckbox" styleClass="field-checkbox" text="General Aid (No Disaster)" HBox.hgrow="ALWAYS" />
+                        </HBox>
                     </VBox>
                     <rowConstraints>
                         <RowConstraints />
                     </rowConstraints>
                 </GridPane>
 
-                <!-- Barangay Filter Section -->
-                <VBox spacing="12">
-                    <CheckBox fx:id="useBarangayFilterCheckbox" styleClass="checkbox"
-                              text="Filter by Barangay" />
+                <!-- Distribution Mode Info Box -->
+                <VBox spacing="12" styleClass="info-box">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="16" styleClass="info-icon" />
+                        <Label styleClass="info-title" text="About Distribution Modes" />
+                    </HBox>
+                    <Label styleClass="info-text" text="• Disaster-specific: Aid tied to a specific disaster event, targeting affected beneficiaries.&#10;• General aid: Ongoing distribution not tied to disasters, based on general vulnerability scores." wrapText="true" />
+                </VBox>
+            </VBox>
 
-                    <VBox fx:id="barangaySelectionContainer" spacing="12" styleClass="subsection-container">
+            <Separator />
+
+            <!-- ==================== SECTION 2: BARANGAY FILTER ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <!-- Section Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="MAP_MARKER" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Location Filter" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Step 2 of 4" />
+                </HBox>
+
+                <!-- Barangay Filter Checkbox -->
+                <VBox spacing="12">
+                    <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
                         <padding>
-                            <Insets bottom="12" left="16" right="16" top="12" />
+                            <Insets left="14" right="14" />
+                        </padding>
+                        <FontAwesomeIconView glyphName="FILTER" size="14" styleClass="field-icon" />
+                        <CheckBox fx:id="useBarangayFilterCheckbox" styleClass="field-checkbox" text="Filter by Barangay" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <VBox fx:id="barangaySelectionContainer" spacing="14" styleClass="subsection-container">
+                        <padding>
+                            <Insets left="10" top="10" />
                         </padding>
 
-                        <!-- Distribution Scope -->
-                        <VBox spacing="8">
-                            <Label styleClass="field-label" text="Distribution Scope" />
+                        <!-- Barangay Mode Selection -->
+                        <GridPane hgap="16" vgap="14">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                            </columnConstraints>
 
-                            <RadioButton fx:id="allBarangaysRadio" styleClass="radio-button"
-                                         text="All Barangays (No Filter)" />
+                            <VBox spacing="10" GridPane.columnIndex="0">
+                                <RadioButton fx:id="allBarangaysRadio" selected="true" styleClass="radio-label" text="All Barangays (No Filter)" />
+                                <RadioButton fx:id="singleBarangayRadio" styleClass="radio-label" text="Single Barangay" />
+                            </VBox>
 
-                            <RadioButton fx:id="singleBarangayRadio" styleClass="radio-button"
-                                         text="Single Barangay" />
-
-                            <!-- Single Barangay Container -->
-                            <VBox fx:id="singleBarangayContainer" spacing="8" managed="false" visible="false">
-                                <padding>
-                                    <Insets left="24" />
-                                </padding>
+                            <VBox fx:id="singleBarangayContainer" spacing="8" GridPane.columnIndex="1">
                                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                                     <FontAwesomeIconView glyphName="MAP_MARKER" size="14" styleClass="field-icon" />
-                                    <ComboBox fx:id="barangayComboBox" maxWidth="1.7976931348623157E308"
-                                              promptText="Select Barangay" styleClass="field-combo" HBox.hgrow="ALWAYS" />
+                                    <ComboBox fx:id="barangayComboBox" maxWidth="1.7976931348623157E308" promptText="Select Barangay" styleClass="field-combo" HBox.hgrow="ALWAYS" />
                                 </HBox>
                             </VBox>
-                        </VBox>
+                     <rowConstraints>
+                        <RowConstraints />
+                     </rowConstraints>
+                        </GridPane>
                     </VBox>
                 </VBox>
 
                 <!-- Selection Summary -->
                 <HBox fx:id="selectionSummaryBox" managed="false" spacing="12" styleClass="success-box" visible="false">
+                    <padding>
+                        <Insets bottom="12" left="16" right="16" top="12" />
+                    </padding>
                     <FontAwesomeIconView glyphName="CHECK_CIRCLE" size="20" styleClass="success-icon" />
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
                         <Label styleClass="success-title" text="Distribution Configuration Ready" />
                         <Label fx:id="selectionSummaryLabel" styleClass="success-text" wrapText="true" />
                     </VBox>
@@ -136,25 +182,55 @@
 
             <Separator />
 
-            <!-- ==================== SECTION 2: AID INFORMATION ==================== -->
+            <!-- ==================== SECTION 3: AID INFORMATION ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="section-icon" />
+                    <FontAwesomeIconView glyphName="CUBES" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Aid Information" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="section-subtitle" text="Step 2 of 4" />
+                    <Label styleClass="section-subtitle" text="Step 3 of 4" />
                 </HBox>
 
-                <!-- Aid Name -->
-                <VBox spacing="8">
-                    <Label styleClass="field-label" text="Aid Name *" />
-                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                        <FontAwesomeIconView glyphName="TAG" size="14" styleClass="field-icon" />
-                        <TextField fx:id="nameFld" promptText="e.g., Food Pack, Medical Supplies"
-                                   styleClass="field-input" HBox.hgrow="ALWAYS" />
-                    </HBox>
-                </VBox>
+                <!-- Aid Fields -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                    </columnConstraints>
+
+                    <!-- Aid Name -->
+                    <VBox spacing="8" GridPane.columnIndex="0">
+                        <Label styleClass="field-label" text="Aid Name *" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="TAG" size="14" styleClass="field-icon" />
+                            <TextField fx:id="nameFld" maxWidth="1.7976931348623157E308" promptText="e.g., Food Pack, Medical Supplies" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Provider -->
+                    <VBox spacing="8" GridPane.columnIndex="1">
+                        <Label styleClass="field-label" text="Provider *" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="TRUCK" size="14" styleClass="field-icon" />
+                            <TextField fx:id="providerFld" maxWidth="1.7976931348623157E308" promptText="e.g., Red Cross, DSWD" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Cost Per Unit -->
+                    <VBox spacing="8" GridPane.columnIndex="2">
+                        <Label styleClass="field-label" text="Cost Per Unit *" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                            <FontAwesomeIconView glyphName="MONEY" size="14" styleClass="field-icon" />
+                            <TextField fx:id="costFld" maxWidth="1.7976931348623157E308" promptText="₱ 0.00" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                        <Label styleClass="field-helper-text" text="Philippine Pesos (₱)" />
+                    </VBox>
+                    <rowConstraints>
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
 
                 <!-- Quantity Row -->
                 <GridPane hgap="16" vgap="14">
@@ -168,10 +244,9 @@
                         <Label styleClass="field-label" text="Available Quantity *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="CUBES" size="14" styleClass="field-icon" />
-                            <TextField fx:id="quantityFld" promptText="Total units (e.g., 100)"
-                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="quantityFld" maxWidth="1.7976931348623157E308" promptText="Total units available" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
-                        <Label styleClass="field-helper-text" text="Total units available to distribute" />
+                        <Label styleClass="field-helper-text" text="Total units to distribute" />
                     </VBox>
 
                     <!-- Quantity Per Beneficiary -->
@@ -179,105 +254,61 @@
                         <Label styleClass="field-label" text="Quantity Per Beneficiary *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="quantityPerBeneficiaryFld" promptText="Units per person (e.g., 2)"
-                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="quantityPerBeneficiaryFld" maxWidth="1.7976931348623157E308" promptText="Units per person" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                         <Label styleClass="field-helper-text" text="How many units each beneficiary receives" />
                     </VBox>
-                    <rowConstraints>
-                        <RowConstraints />
-                    </rowConstraints>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
-
-                <!-- Cost Per Unit -->
-                <VBox spacing="8">
-                    <Label styleClass="field-label" text="Cost Per Unit *" />
-                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                        <FontAwesomeIconView glyphName="MONEY" size="14" styleClass="field-icon" />
-                        <TextField fx:id="costFld" promptText="Cost per unit (e.g., 500.00)"
-                                   styleClass="field-input" HBox.hgrow="ALWAYS" />
-                    </HBox>
-                    <Label styleClass="field-helper-text" text="Enter cost in Philippine Pesos (₱)" />
-                </VBox>
-
-                <!-- Provider -->
-                <VBox spacing="8">
-                    <Label styleClass="field-label" text="Provider *" />
-                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                        <FontAwesomeIconView glyphName="TRUCK" size="14" styleClass="field-icon" />
-                        <TextField fx:id="providerFld" promptText="e.g., Red Cross, DSWD, LGU"
-                                   styleClass="field-input" HBox.hgrow="ALWAYS" />
-                    </HBox>
-                </VBox>
             </VBox>
 
             <Separator />
 
-            <!-- ==================== SECTION 3: DISTRIBUTION METHOD ==================== -->
+            <!-- ==================== SECTION 4: DISTRIBUTION METHOD ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="SITEMAP" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Distribution Method" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="section-subtitle" text="Step 3 of 4" />
+                    <Label styleClass="section-subtitle" text="Step 4 of 4" />
                 </HBox>
 
                 <!-- K-means Toggle -->
                 <VBox spacing="12">
-                    <HBox alignment="CENTER_LEFT" spacing="12">
-                        <CheckBox fx:id="useKMeansCheckbox" selected="true" styleClass="checkbox"
-                                  text="Use K-Means Clustering Algorithm (3 Clusters)" />
+                    <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
+                        <padding>
+                            <Insets left="14" right="14" />
+                        </padding>
+                        <FontAwesomeIconView glyphName="CLUSTER" size="14" styleClass="field-icon" />
+                        <CheckBox fx:id="useKMeansCheckbox" selected="true" styleClass="field-checkbox" text="Use K-Means Clustering Algorithm (3 Clusters)" HBox.hgrow="ALWAYS" />
                         <Region HBox.hgrow="ALWAYS" />
                         <Label styleClass="badge-recommended">RECOMMENDED</Label>
                     </HBox>
 
-                    <Label styleClass="field-helper-text" wrapText="true"
-                           text="K-means ensures fair distribution across 3 vulnerability levels by grouping beneficiaries based on their scores and prioritizing those with highest needs." />
-                </VBox>
-
-                <!-- Cluster Settings -->
-                <VBox spacing="8">
-                    <Label styleClass="field-label" text="Distribution Clusters" />
-                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
-                        <FontAwesomeIconView glyphName="SITEMAP" size="14" styleClass="field-icon" />
-                        <HBox alignment="CENTER_LEFT" spacing="8">
-                            <Label styleClass="cluster-label" text="3 Clusters:" />
-                            <Label styleClass="cluster-badge-low" text="Low" />
-                            <Label styleClass="cluster-badge-medium" text="Medium" />
-                            <Label styleClass="cluster-badge-high" text="High" />
-                        </HBox>
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label styleClass="badge-fixed" text="FIXED" />
-                    </HBox>
-                    <Label styleClass="field-helper-text" wrapText="true"
-                           text="System uses 3 clusters: Low Priority (0.00-0.33), Medium Priority (0.34-0.66), High Priority (0.67-1.00)" />
+                    <Label styleClass="field-description" text="K-means ensures fair distribution across 3 vulnerability levels by grouping beneficiaries based on their scores and prioritizing those with highest needs." wrapText="true" />
                 </VBox>
 
                 <!-- Distribution Info Box -->
-                <HBox spacing="12" styleClass="info-box">
-                    <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="20" styleClass="info-box-icon" />
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label styleClass="info-box-title" text="How 3-Cluster K-Means Works:" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Groups beneficiaries into 3 clusters based on vulnerability scores (0.0 to 1.0)" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Distributes aid starting from High Priority cluster first" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Ensures balanced distribution across different need levels" />
-                        <Label styleClass="info-box-text" wrapText="true"
-                               text="• Works seamlessly with barangay filtering" />
-                    </VBox>
-                </HBox>
+                <VBox spacing="12" styleClass="info-box">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="16" styleClass="info-icon" />
+                        <Label styleClass="info-title" text="How 3-Cluster K-Means Works" />
+                    </HBox>
+                    <Label styleClass="info-text" text="• Groups beneficiaries into 3 clusters based on vulnerability scores (0.0 to 1.0)&#10;• Distributes aid starting from highest priority cluster first&#10;• Ensures balanced distribution across different need levels&#10;• Works seamlessly with barangay filtering" wrapText="true" />
+                </VBox>
 
                 <!-- Simple Distribution Warning -->
-                <HBox fx:id="simpleDistributionWarning" managed="false" spacing="12"
-                      styleClass="warning-box" visible="false">
+                <HBox fx:id="simpleDistributionWarning" managed="false" spacing="12" styleClass="warning-box" visible="false">
+                    <padding>
+                        <Insets bottom="12" left="16" right="16" top="12" />
+                    </padding>
                     <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="20" styleClass="warning-icon" />
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
                         <Label styleClass="warning-title" text="Simple Score-Based Distribution" />
-                        <Label styleClass="warning-text" wrapText="true"
-                               text="Aid will be distributed to the top N beneficiaries by score only, without clustering." />
+                        <Label styleClass="warning-text" text="Aid will be distributed to the top N beneficiaries by score only, without clustering." wrapText="true" />
                     </VBox>
                 </HBox>
             </VBox>
@@ -291,7 +322,7 @@
             <Insets bottom="20" left="24" right="24" top="20" />
         </padding>
 
-        <Button fx:id="previewBtn" styleClass="btn-secondary">
+        <Button fx:id="previewBtn" prefHeight="42.0" styleClass="btn-secondary">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
                     <FontAwesomeIconView glyphName="EYE" size="16" styleClass="btn-icon" />
@@ -300,9 +331,18 @@
             </graphic>
         </Button>
 
+        <Button fx:id="printCustomBtn" prefHeight="42.0" styleClass="btn-secondary">
+            <graphic>
+                <HBox alignment="CENTER" spacing="10">
+                    <FontAwesomeIconView glyphName="PRINT" size="16" styleClass="btn-icon" />
+                    <Label styleClass="btn-text" text="Print Custom" />
+                </HBox>
+            </graphic>
+        </Button>
+
         <Region HBox.hgrow="ALWAYS" />
 
-        <Button fx:id="cancelBtn" onAction="#handleClose" styleClass="btn-secondary">
+        <Button fx:id="cancelBtn" prefHeight="42.0" styleClass="btn-secondary-alt">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
                     <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="btn-icon" />
@@ -311,7 +351,7 @@
             </graphic>
         </Button>
 
-        <Button fx:id="saveAidBtn" styleClass="btn-primary">
+        <Button fx:id="saveAidBtn" prefHeight="42.0" prefWidth="180.0" styleClass="btn-primary">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
                     <FontAwesomeIconView glyphName="PAPER_PLANE" size="16" styleClass="btn-icon" />

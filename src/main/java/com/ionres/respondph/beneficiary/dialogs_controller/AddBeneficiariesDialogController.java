@@ -263,31 +263,29 @@ public class AddBeneficiariesDialogController {
                 int newBeneficiaryId = getLatestBeneficiaryId();
 
                 if (newBeneficiaryId > 0) {
+                    int adminId = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminId();
+
                     // Calculate and save household scores
 
                     UpdateTrigger trigger = new UpdateTrigger();
                     boolean cascadeSuccess = trigger.triggerCascadeUpdate(newBeneficiaryId);
 
 
+                    trigger.triggerCascadeUpdateForNewBeneficiary(newBeneficiaryId, adminId);
+
+
                     if (cascadeSuccess) {
-                        javax.swing.JOptionPane.showMessageDialog(
-                                null,
-                                "Beneficiary and household scores successfully saved.",
+                        AlertDialogManager.showSuccess(
                                 "Success",
-                                javax.swing.JOptionPane.INFORMATION_MESSAGE
-                        );
+                                "Beneficiary and household scores successfully saved.");
                     } else {
-                        javax.swing.JOptionPane.showMessageDialog(
-                                null,
-                                "Beneficiary saved, but household score calculation failed.",
-                                "Warning",
-                                javax.swing.JOptionPane.WARNING_MESSAGE
-                        );
+                        AlertDialogManager.showError("Warning", "Beneficiary saved, but household score calculation failed.");
                     }
                 }
                 clearFields();
                 DashboardRefresher.refresh();
                 DashboardRefresher.refreshBeneInSend();
+                DashboardRefresher.refreshMapInDisasterMapping();
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,

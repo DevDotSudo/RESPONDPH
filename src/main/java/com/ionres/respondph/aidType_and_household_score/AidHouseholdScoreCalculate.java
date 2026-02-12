@@ -23,7 +23,6 @@ public class AidHouseholdScoreCalculate {
                 return false;
             }
 
-            // Step 2: Get aid type weights from database
             AidTypeWeights aidWeights = dao.getAidTypeWeights(aidTypeId);
             if (aidWeights == null) {
                 System.err.println("No aid type weights found for aid type ID: " + aidTypeId);
@@ -199,7 +198,7 @@ public class AidHouseholdScoreCalculate {
         System.out.printf("FINAL SCORE (FS = Σ[Weight × Score]): %.4f\n", finalScore);
         System.out.println("=========================================================");
 
-        return Math.round(finalScore * 100.0) / 100.0;
+        return finalScore;
     }
 
     private String determineScoreCategory(double finalScore) {

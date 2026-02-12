@@ -148,6 +148,4 @@ public class AllocateEvacSiteDialogController {
             disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
         }
     }
-
-
 }

@@ -12,12 +12,14 @@ public class KMeansAidDistribution {
         private final double finalScore;
         private final String scoreCategory;
         private int cluster;
+        private String clusterPriorityLabel; // ← NEW: label based on cluster rank
 
         public BeneficiaryCluster(int beneficiaryId, double finalScore, String scoreCategory) {
             this.beneficiaryId = beneficiaryId;
             this.finalScore = finalScore;
             this.scoreCategory = scoreCategory;
             this.cluster = -1;
+            this.clusterPriorityLabel = scoreCategory; // default to original until clustering runs
         }
 
         public int getBeneficiaryId() {
@@ -40,10 +42,19 @@ public class KMeansAidDistribution {
             return scoreCategory;
         }
 
+        /** Returns the priority label derived from this beneficiary's cluster rank (High/Medium/Low). */
+        public String getClusterPriorityLabel() {
+            return clusterPriorityLabel;
+        }
+
+        public void setClusterPriorityLabel(String label) {
+            this.clusterPriorityLabel = label;
+        }
+
         @Override
         public String toString() {
-            return String.format("Beneficiary #%d [Score: %.3f, Category: %s, Cluster: %d]",
-                    beneficiaryId, finalScore, scoreCategory, cluster);
+            return String.format("Beneficiary #%d [Score: %.3f, Category: %s, Cluster: %d, Priority: %s]",
+                    beneficiaryId, finalScore, scoreCategory, cluster, clusterPriorityLabel);
         }
     }
 
@@ -95,11 +106,14 @@ public class KMeansAidDistribution {
         // Step 1: Perform K-means clustering
         performKMeansClustering(beneficiaries, k);
 
-        // Step 2: Identify the highest priority cluster
+        // Step 2: Assign priority labels to every beneficiary based on their cluster rank
+        assignClusterPriorityLabels(beneficiaries, k);
+
+        // Step 3: Identify the highest priority cluster
         int highestPriorityCluster = findHighestPriorityCluster(beneficiaries, k);
         System.out.println("Highest Priority Cluster: " + highestPriorityCluster);
 
-        // Step 3: Select beneficiaries starting from highest priority cluster
+        // Step 4: Select beneficiaries starting from highest priority cluster
         List<BeneficiaryCluster> prioritized = selectPrioritizedBeneficiaries(
                 beneficiaries, availableQuantity, highestPriorityCluster);
 
@@ -107,6 +121,65 @@ public class KMeansAidDistribution {
         System.out.println("========================================");
 
         return prioritized;
+    }
+
+    /**
+     * After clustering, ranks clusters by average score and assigns each beneficiary
+     * a clusterPriorityLabel consistent with their cluster's rank:
+     *   Rank 0 (highest avg) → "High Priority"
+     *   Rank 1               → "Medium Priority"
+     *   Rank 2+ (lowest avg) → "Low Priority"
+     *
+     * This ensures the per-beneficiary label always matches the cluster header shown
+     * in the distribution preview.
+     */
+    private void assignClusterPriorityLabels(List<BeneficiaryCluster> beneficiaries, int k) {
+        // Compute average score per cluster
+        double[] clusterSums = new double[k];
+        int[]    clusterCounts = new int[k];
+
+        for (BeneficiaryCluster b : beneficiaries) {
+            int c = b.getCluster();
+            if (c >= 0 && c < k) {
+                clusterSums[c]   += b.getFinalScore();
+                clusterCounts[c] += 1;
+            }
+        }
+
+        double[] clusterAvg = new double[k];
+        for (int i = 0; i < k; i++) {
+            clusterAvg[i] = clusterCounts[i] > 0 ? clusterSums[i] / clusterCounts[i] : 0.0;
+        }
+
+        // Build a list of cluster indices sorted descending by average score
+        List<Integer> sortedClusters = new ArrayList<>();
+        for (int i = 0; i < k; i++) {
+            if (clusterCounts[i] > 0) sortedClusters.add(i);
+        }
+        sortedClusters.sort((a, b) -> Double.compare(clusterAvg[b], clusterAvg[a]));
+
+        // Map cluster index → priority label based on rank
+        Map<Integer, String> clusterLabel = new HashMap<>();
+        for (int rank = 0; rank < sortedClusters.size(); rank++) {
+            int clusterIdx = sortedClusters.get(rank);
+            if (rank == 0) {
+                clusterLabel.put(clusterIdx, "High Priority");
+            } else if (rank == sortedClusters.size() - 1 && sortedClusters.size() > 1) {
+                clusterLabel.put(clusterIdx, "Low Priority");
+            } else {
+                clusterLabel.put(clusterIdx, "Medium Priority");
+            }
+        }
+
+        // Stamp each beneficiary with their cluster's resolved priority label
+        for (BeneficiaryCluster b : beneficiaries) {
+            String label = clusterLabel.getOrDefault(b.getCluster(), b.getScoreCategory());
+            b.setClusterPriorityLabel(label);
+        }
+
+        System.out.println("Cluster priority labels assigned:");
+        clusterLabel.forEach((idx, lbl) ->
+                System.out.printf("  Cluster %d (avg %.3f) → %s%n", idx, clusterAvg[idx], lbl));
     }
 
     /**

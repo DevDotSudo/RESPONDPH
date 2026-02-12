@@ -387,6 +387,183 @@
     -fx-text-overrun: clip;
 }
 
+.custom-message-section {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 20px 20px 18px 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
+}
+
+.custom-message-section > VBox {
+    -fx-background-color: rgba(15, 23, 42, 0.8) !important;
+    -fx-border-color: rgba(59,130,246,0.25) !important;
+    -fx-border-width: 1px !important;
+    -fx-border-radius: 6px !important;
+    -fx-background-radius: 6px !important;
+    -fx-padding: 16px !important;
+}
+
+
+.custom-message-section .input-label {
+    -fx-text-fill: rgba(226,232,240,0.95) !important;
+    -fx-font-size: 13px !important;
+    -fx-font-weight: 800 !important;
+}
+
+/* TextArea - dark theme */
+.custom-message-section .message-textarea {
+    -fx-background-color: rgba(0,0,0,0.3) !important;
+    -fx-border-color: rgba(148,163,184,0.25) !important;
+    -fx-border-width: 1px !important;
+    -fx-background-radius: 6px !important;
+    -fx-border-radius: 6px !important;
+    -fx-text-fill: rgba(248,250,252,0.98) !important;
+    -fx-font-size: 13px !important;
+    -fx-font-weight: 600 !important;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60) !important;
+    -fx-padding: 8px 14px !important;
+}
+
+.custom-message-section .message-textarea .content {
+    -fx-background-color: transparent !important;
+}
+
+.custom-message-section .message-textarea:hover {
+    -fx-border-color: rgba(249,115,22,0.40) !important;
+    -fx-background-color: rgba(0,0,0,0.4) !important;
+}
+
+.custom-message-section .message-textarea:focused {
+    -fx-border-color: rgba(249,115,22,0.60) !important;
+}
+
+/* Save Button - matching btn-primary with green theme */
+.custom-message-section #btnSaveEvacMessage {
+    -fx-background-color: rgba(34,197,94,0.85) !important;
+    -fx-border-color: rgba(34,197,94,0.30) !important;
+    -fx-border-width: 1px !important;
+    -fx-background-radius: 6px !important;
+    -fx-border-radius: 6px !important;
+    -fx-text-fill: white !important;
+    -fx-font-size: 13.5px !important;
+    -fx-font-weight: 800 !important;
+    -fx-padding: 11px 20px !important;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.20), 10, 0.0, 0, 3);
+    -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>');
+    -fx-graphic-text-gap: 8;
+    -fx-content-display: left;
+}
+
+.custom-message-section #btnSaveEvacMessage:hover {
+    -fx-background-color: rgba(34,197,94,0.95) !important;
+    -fx-border-color: rgba(34,197,94,0.50) !important;
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.35), 14, 0.0, 0, 4);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.custom-message-section #btnSaveEvacMessage:pressed {
+    -fx-background-color: rgba(22,163,74,0.95) !important;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+/* Status Label - dark theme */
+.custom-message-section #lblEvacMessageStatus {
+    -fx-text-fill: rgba(148,163,184,0.85) !important;
+    -fx-font-size: 12px !important;
+    -fx-font-style: italic !important;
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 20px;
+    -fx-padding: 6px 16px !important;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+}
+
+/* Success state for status label */
+.custom-message-section #lblEvacMessageStatus.saved {
+    -fx-text-fill: rgba(74,222,128,0.95) !important;
+    -fx-background-color: rgba(34,197,94,0.12);
+    -fx-border-color: rgba(34,197,94,0.25);
+}
+
+/* ========== EVACUATION SUBSECTION ========== */
+.evacuation-subsection {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 16px;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0.0, 0, 1);
+}
+
+.subsection-title {
+    -fx-text-fill: rgba(249,115,22,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-padding: 0 0 4px 0;
+}
+
+.field-helper-text {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+    -fx-font-style: italic;
+}
+
+/* Success Button Style */
+.btn-success {
+    -fx-background-color: rgba(34,197,94,0.85);
+    -fx-border-color: rgba(34,197,94,0.30);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: white;
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+    -fx-padding: 11px 20px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.20), 10, 0.0, 0, 3);
+}
+
+.btn-success:hover {
+    -fx-background-color: rgba(34,197,94,0.95);
+    -fx-border-color: rgba(34,197,94,0.50);
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.35), 14, 0.0, 0, 4);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.btn-success:pressed {
+    -fx-background-color: rgba(22,163,74,0.95);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+/* Status Label */
+.status-label {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 20px;
+    -fx-padding: 6px 16px;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+}
+
 /* ---------- TABLE ---------- */
 .logs-table {
     -fx-background-color: rgba(255,255,255,0.02);

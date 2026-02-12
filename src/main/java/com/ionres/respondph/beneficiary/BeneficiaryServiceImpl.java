@@ -266,7 +266,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             d.setMiddlename(decrypted.get(1));
             d.setLastname(decrypted.get(2));
             d.setBirthDate(decrypted.get(3));
-            d.setBarangay(decrypted.get(4));
+            d.setBarangay(decrypted.get(4).trim());
             d.setAgeScore(encrypted.getAgeScore()); // Age score is not encrypted
             d.setGender(decrypted.get(5));
             d.setMaritalStatus(decrypted.get(6));

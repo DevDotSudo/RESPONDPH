@@ -21,11 +21,11 @@ public class AppLoader {
     public static void initializeUtilities() {
         try {
             ConfigLoader.get("secretKey");
-            
+
             CryptographyManager.getInstance();
-            
+
             SessionManager.getInstance();
-            
+
             LOGGER.info("Utilities initialized successfully");
         } catch (Exception e) {
             LOGGER.severe("Failed to initialize utilities: " + e.getMessage());
@@ -84,27 +84,25 @@ public class AppLoader {
         // Admin dialogs
         DialogManager.preload("addAdmin", "/view/admin/dialog/AddAdminDialog.fxml");
         DialogManager.preload("editAdmin", "/view/admin/dialog/EditAdminDialog.fxml");
-        
+
         // Disaster dialogs
         DialogManager.preload("addDisaster", "/view/disaster/dialog/AddDisasterDialog.fxml");
         DialogManager.preload("editDisaster", "/view/disaster/dialog/EditDisasterDialog.fxml");
         DialogManager.preload("addDisasterDamage", "/view/disaster_damage/dialog/AddDisasterDamageDialog.fxml");
         DialogManager.preload("editDisasterDamage", "/view/disaster_damage/dialog/EditDisasterDamageDialog.fxml");
-        
+
         // Beneficiary dialogs
         DialogManager.preload("addBeneficiary", "/view/beneficiary/dialog/AddBeneficiariesDialog.fxml");
         DialogManager.preload("editBeneficiary", "/view/beneficiary/dialog/EditBeneficiariesDialog.fxml");
-        
+
         // Family member dialogs
         DialogManager.preload("addFamilyMember", "/view/family/dialog/AddFamilyMemberDialog.fxml");
         DialogManager.preload("editFamilyMember", "/view/family/dialog/EditFamilyMemberDialog.fxml");
-        
+
         // Aid type dialogs
         DialogManager.preload("addAidType", "/view/aid_type/dialog/AddAidTypeDialog.fxml");
         DialogManager.preload("editAidType", "/view/aid_type/dialog/EditAidTypeDialog.fxml");
 
-        //Evacuation Plan
-        DialogManager.preload("allocate", "/view/evacuation_plan/dialog/AllocateEvacSiteDialog.fxml");
         // Utility dialogs
         DialogManager.preload("mapping", "/view/mapping/MapDialog.fxml");
         DialogManager.preload("beneficiariesInCircle", "/view/disaster_mapping/dialog/BeneficiariesInCircleDialog.fxml");
@@ -119,5 +117,8 @@ public class AppLoader {
 
         DialogManager.preload("evacuationSiteMapping", "/view/disaster_mapping/dialog/EvacuationSiteMappingDialog.fxml");
         DialogManager.preload("selection", "/view/send_sms/dialog/BeneficiarySelectionDialog.fxml");
+        DialogManager.preload("allocateBeneficiariesToEvacSite", "/view/disaster_mapping/dialog/AllocateBeneficiariesToEvacSite.fxml");
+
+        DialogManager.preload("evacuationAllocation", "/view/disaster_mapping/dialog/EvacuationAllocationDialog.fxml");
     }
 }

@@ -1,3 +1,4 @@
+/* ========== INHERIT CORE STYLES FROM DISASTER DIALOG ========== */
 .dialog-root {
     -fx-background-color: #0b1220;
     -fx-border-color: rgba(148,163,184,0.18);
@@ -5,10 +6,9 @@
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 20, 0.0, 0, 4);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0.0, 0, 4);
 }
 
-/* ---------- HEADER ---------- */
 .dialog-header {
     -fx-background-color: rgba(255,255,255,0.02);
     -fx-border-color: rgba(148,163,184,0.12);
@@ -18,32 +18,20 @@
 
 .header-icon {
     -fx-fill: rgba(249,115,22,0.95);
-    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.40), 8, 0.0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.4), 8, 0.0, 0, 0);
 }
 
 .dialog-title {
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 20px;
+    -fx-font-size: 21px;
     -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 1);
 }
 
 .dialog-subtitle {
-    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-text-fill: rgba(148,163,184,0.85);
     -fx-font-size: 13px;
     -fx-font-weight: 600;
-}
-
-/* ---------- CHIP ---------- */
-.chip {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 12px;
-    -fx-font-weight: 900;
-    -fx-background-color: rgba(249,115,22,0.12);
-    -fx-border-color: rgba(249,115,22,0.35);
-    -fx-border-width: 1px;
-    -fx-background-radius: 999px;
-    -fx-border-radius: 999px;
-    -fx-padding: 6px 14px;
 }
 
 /* ---------- CLOSE BUTTON ---------- */
@@ -53,7 +41,7 @@
     -fx-border-width: 1px;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
-    -fx-padding: 10px 12px;
+    -fx-padding: 10px 14px;
     -fx-cursor: hand;
     -fx-min-height: 42px;
     -fx-pref-height: 42px;
@@ -62,23 +50,76 @@
 .dialog-close:hover {
     -fx-background-color: rgba(239,68,68,0.12);
     -fx-border-color: rgba(239,68,68,0.50);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 .dialog-close:pressed {
     -fx-background-color: rgba(239,68,68,0.18);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
-.close-icon { -fx-fill: rgba(248,250,252,0.95); }
+
+.close-icon {
+    -fx-fill: rgba(248,250,252,0.95);
+}
+
+/* ---------- ERROR ---------- */
+.error-box {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.25);
+    -fx-border-width: 1px 0;
+}
+.error-text {
+    -fx-text-fill: rgba(248,113,113,0.98);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+/* ---------- SCROLL ---------- */
+.dialog-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+.dialog-scroll .viewport {
+    -fx-background-color: transparent;
+}
+.dialog-scroll .corner {
+    -fx-background-color: transparent;
+}
+
+.dialog-scroll .scroll-bar:vertical,
+.dialog-scroll .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
+}
+.dialog-scroll .scroll-bar .track {
+    -fx-background-color: rgba(148,163,184,0.08);
+    -fx-background-radius: 6px;
+}
+.dialog-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(249,115,22,0.30);
+    -fx-background-radius: 6px;
+}
+.dialog-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(249,115,22,0.50);
+}
+.dialog-scroll .scroll-bar .thumb:pressed {
+    -fx-background-color: rgba(249,115,22,0.70);
+}
 
 /* ---------- BODY ---------- */
 .dialog-body {
     -fx-background-color: transparent;
 }
 
-/* ---------- FOOTER ---------- */
-.dialog-footer {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 1px 0 0 0;
-    -fx-background-radius: 0 0 8px 8px;
+/* ---------- SEPARATOR ---------- */
+.separator {
+    -fx-padding: 0;
+}
+.separator .line {
+    -fx-background-color: rgba(148,163,184,0.12);
+    -fx-border-color: transparent;
 }
 
 /* ---------- SECTION CARD ---------- */
@@ -88,22 +129,22 @@
     -fx-border-width: 1px;
     -fx-background-radius: 7px;
     -fx-border-radius: 7px;
-    -fx-padding: 16px;
+    -fx-padding: 20px 20px 18px 20px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
 }
 
-/* Section header */
 .section-header {
     -fx-padding: 0 0 12px 0;
     -fx-border-color: rgba(148,163,184,0.08);
     -fx-border-width: 0 0 1px 0;
 }
 
-.section-icon { -fx-fill: rgba(249,115,22,0.90); }
-
+.section-icon {
+    -fx-fill: rgba(249,115,22,0.90);
+}
 .section-title {
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 16px;
+    -fx-font-size: 16.5px;
     -fx-font-weight: 900;
 }
 
@@ -123,24 +164,174 @@
     -fx-border-width: 1px;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
-    -fx-padding: 12px 14px;
+    -fx-padding: 14px 16px;
 }
 
-.info-icon { -fx-fill: rgba(96,165,250,0.95); }
+.info-icon {
+    -fx-fill: rgba(96,165,250,0.95);
+}
 
-.info-text {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13.5px;
+.info-title {
+    -fx-text-fill: rgba(147,197,253,0.98);
+    -fx-font-size: 14px;
     -fx-font-weight: 800;
 }
 
-/* ---------- BUTTONS ---------- */
+.info-text {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+}
+
+/* ---------- FIELD ICON ---------- */
+.field-icon {
+    -fx-fill: rgba(226,232,240,0.70);
+}
+
+/* ---------- BADGE ---------- */
+.badge-active {
+    -fx-background-color: rgba(34,197,94,0.20);
+    -fx-text-fill: rgba(74,222,128,0.98);
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+    -fx-background-radius: 12px;
+    -fx-padding: 6px 14px;
+    -fx-border-color: rgba(34,197,94,0.30);
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+.badge-info {
+    -fx-background-color: rgba(59,130,246,0.20);
+    -fx-text-fill: rgba(147,197,253,0.98);
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 16px;
+    -fx-padding: 6px 14px;
+    -fx-border-color: rgba(59,130,246,0.30);
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+}
+
+/* ---------- TABLE CONTAINER ---------- */
+.table-container {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+
+/* ---------- TABLE TOOLBAR ---------- */
+.table-toolbar {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-radius: 6px 6px 0 0;
+}
+
+.table-search-field {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px 12px;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60);
+}
+.table-search-field:focused {
+    -fx-border-color: rgba(249,115,22,0.75);
+}
+
+/* ---------- CUSTOM TABLE ---------- */
+.custom-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.custom-table .column-header-background {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-background-radius: 0;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.custom-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 14px 10px;
+}
+
+.custom-table .column-header .label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.custom-table .table-cell {
+    -fx-text-fill: rgba(248,250,252,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 12px 10px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent transparent rgba(148,163,184,0.06) transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.custom-table .table-row-cell {
+    -fx-background-color: transparent;
+}
+.custom-table .table-row-cell:hover {
+    -fx-background-color: rgba(249,115,22,0.08);
+}
+.custom-table .table-row-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.18);
+}
+.custom-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: rgba(255,255,255,0.98);
+    -fx-font-weight: 800;
+}
+
+/* ---------- PLACEHOLDER ---------- */
+.placeholder-icon {
+    -fx-fill: rgba(148,163,184,0.30);
+}
+.placeholder-text {
+    -fx-text-fill: rgba(148,163,184,0.60);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+/* ---------- TABLE STATUS BAR ---------- */
+.table-status-bar {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 1px 0 0 0;
+    -fx-background-radius: 0 0 6px 6px;
+}
+
+.status-text {
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+.status-value {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+/* ---------- PRIMARY BUTTON ---------- */
 .btn-primary {
     -fx-background-color: rgba(249,115,22,0.92);
     -fx-text-fill: rgba(255,255,255,0.98);
-    -fx-font-size: 14.5px;
+    -fx-font-size: 14px;
     -fx-font-weight: 900;
-    -fx-padding: 11px 18px;
+    -fx-padding: 11px 20px;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
     -fx-cursor: hand;
@@ -149,118 +340,59 @@
     -fx-max-height: 42px;
     -fx-border-color: rgba(249,115,22,0.30);
     -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 10, 0.0, 0, 3);
 }
-.btn-primary:hover { -fx-background-color: rgba(249,115,22,1.00); }
-.btn-primary:pressed { -fx-background-color: rgba(234,88,12,1.00); }
+.btn-primary:hover {
+    -fx-background-color: rgba(249,115,22,1.00);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.45), 14, 0.0, 0, 4);
+}
+.btn-primary:pressed {
+    -fx-background-color: rgba(234,88,12,1.00);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
 
+/* ---------- SECONDARY BUTTON ---------- */
 .btn-secondary {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-weight: 900;
-    -fx-padding: 11px 18px;
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
+    -fx-padding: 11px 18px;
     -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
 }
 .btn-secondary:hover {
-    -fx-border-color: rgba(249,115,22,0.60);
     -fx-background-color: rgba(255,255,255,0.08);
+    -fx-border-color: rgba(249,115,22,0.50);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+.btn-secondary:pressed {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
 
-.btn-icon { -fx-fill: rgba(255,255,255,0.98); }
-.btn-text { -fx-text-fill: rgba(255,255,255,0.98); -fx-font-weight: 900; }
-
-/* remove focus rings */
-.button:focused, .table-view:focused {
-    -fx-faint-focus-color: transparent;
-    -fx-focus-color: transparent;
+.btn-icon {
+    -fx-fill: rgba(248,250,252,0.95);
 }
-
-/* =========================================================
-   TABLE FIX (force dark – no Modena white)
-   ========================================================= */
-
-.beneficiaries-table.table-view {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148,163,184,0.14);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-
-    -fx-control-inner-background: rgba(15,23,42,0.95);
-    -fx-control-inner-background-alt: rgba(15,23,42,0.80);
-
-    -fx-table-cell-border-color: rgba(148,163,184,0.10);
-}
-
-.beneficiaries-table.table-view .virtual-flow,
-.beneficiaries-table.table-view .virtual-flow .clipped-container,
-.beneficiaries-table.table-view .virtual-flow .sheet {
-    -fx-background-color: transparent;
-}
-
-.beneficiaries-table.table-view .column-header-background {
-    -fx-background-color: rgba(255,255,255,0.05);
-    -fx-background-radius: 6px 6px 0 0;
-}
-
-.beneficiaries-table.table-view .column-header,
-.beneficiaries-table.table-view .filler {
-    -fx-background-color: transparent;
-    -fx-border-color: rgba(148,163,184,0.10);
-    -fx-border-width: 0 1px 1px 0;
-    -fx-size: 42px;
-}
-
-.beneficiaries-table.table-view .column-header .label {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-weight: 900;
+.btn-text {
+    -fx-text-fill: rgba(248,250,252,0.95);
+    -fx-font-weight: 800;
     -fx-font-size: 13.5px;
 }
 
-.beneficiaries-table.table-view .table-row-cell {
-    -fx-background-color: transparent;
-    -fx-border-color: rgba(148,163,184,0.08);
-    -fx-border-width: 0 0 1px 0;
-}
-
-.beneficiaries-table.table-view .table-row-cell:odd { -fx-background-color: rgba(255,255,255,0.00); }
-.beneficiaries-table.table-view .table-row-cell:even { -fx-background-color: rgba(255,255,255,0.015); }
-
-.beneficiaries-table.table-view .table-row-cell:hover {
-    -fx-background-color: rgba(148,163,184,0.08);
-}
-
-.beneficiaries-table.table-view .table-row-cell:selected {
-    -fx-background-color: rgba(249,115,22,0.14);
-    -fx-border-color: rgba(249,115,22,0.75);
-    -fx-border-width: 0 0 0 3px;
-}
-
-.beneficiaries-table.table-view .table-cell {
-    -fx-background-color: transparent;
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-padding: 12px 14px;
-    -fx-alignment: CENTER_LEFT;
-}
-
-/* scrollbars */
-.beneficiaries-table.table-view .scroll-bar:vertical,
-.beneficiaries-table.table-view .scroll-bar:horizontal {
-    -fx-background-color: transparent;
-}
-.beneficiaries-table.table-view .scroll-bar .track {
-    -fx-background-color: rgba(148,163,184,0.08);
-    -fx-background-radius: 8px;
-}
-.beneficiaries-table.table-view .scroll-bar .thumb {
-    -fx-background-color: rgba(148,163,184,0.25);
-    -fx-background-radius: 8px;
-}
-.beneficiaries-table.table-view .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148,163,184,0.40);
+/* Remove default focus indicators */
+.button:focused,
+.combo-box:focused,
+.text-field:focused,
+.table-view:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
 }

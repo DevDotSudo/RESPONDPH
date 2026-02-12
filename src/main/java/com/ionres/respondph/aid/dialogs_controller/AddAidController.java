@@ -13,14 +13,20 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
+import javafx.print.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AddAidController {
 
-    @FXML private VBox addAidRoot;
+    @FXML private VBox root;
     @FXML private TextField nameFld;
     @FXML private TextField quantityFld;
     @FXML private TextField quantityPerBeneficiaryFld;
@@ -28,9 +34,11 @@ public class AddAidController {
     @FXML private TextField providerFld;
     @FXML private CheckBox useKMeansCheckbox;
     @FXML private Button previewBtn;
+    @FXML private Button printCustomBtn;
     @FXML private Button saveAidBtn;
     @FXML private Button cancelBtn;
     @FXML private Button closeBtn;
+    @FXML private Label infoLabel;
     @FXML private HBox simpleDistributionWarning;
     @FXML private HBox selectionSummaryBox;
     @FXML private Label selectionSummaryLabel;
@@ -42,6 +50,8 @@ public class AddAidController {
     @FXML private RadioButton allBarangaysRadio;
     @FXML private VBox barangaySelectionContainer;
     @FXML private VBox singleBarangayContainer;
+    @FXML private CheckBox generalAidCheckbox;
+    @FXML private VBox disasterSelectionContainer;
 
     private AidService aidService;
     private AidDAO aidDAO;
@@ -77,6 +87,7 @@ public class AddAidController {
         }
         if (disaster != null) {
             disasterComboBox.setValue(disaster);
+            generalAidCheckbox.setSelected(false);
         }
         updateSelectionSummary();
         loadBarangays();
@@ -90,11 +101,27 @@ public class AddAidController {
 
         aidDAO = new AidDAOImpl(DBConnection.getInstance());
 
+        setupGeneralAidOption();
         setupBarangayMode();
         setupEventHandlers();
         setupDefaultValues();
         setupComboBoxListeners();
         makeDraggable();
+    }
+
+    private void setupGeneralAidOption() {
+        if (generalAidCheckbox != null) {
+            generalAidCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal) {
+                    disasterComboBox.setValue(null);
+                    disasterComboBox.setDisable(true);
+                } else {
+                    disasterComboBox.setDisable(false);
+                }
+                updateSelectionSummary();
+                loadBarangays();
+            });
+        }
     }
 
     private void setupBarangayMode() {
@@ -132,11 +159,17 @@ public class AddAidController {
         if (useBarangayFilterCheckbox != null) {
             useBarangayFilterCheckbox.setSelected(false);
         }
+        if (generalAidCheckbox != null) {
+            generalAidCheckbox.setSelected(false);
+        }
     }
 
     private void setupComboBoxListeners() {
         aidTypeComboBox.setOnAction(e -> updateSelectionSummary());
         disasterComboBox.setOnAction(e -> {
+            if (disasterComboBox.getValue() != null) {
+                generalAidCheckbox.setSelected(false);
+            }
             updateSelectionSummary();
             loadBarangays();
         });
@@ -144,14 +177,9 @@ public class AddAidController {
     }
 
     private void loadBarangays() {
-        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+        int disasterId = getSelectedDisasterId();
 
-        List<String> barangays;
-        if (selectedDisaster != null) {
-            barangays = aidDAO.getBarangaysByDisaster(selectedDisaster.getDisasterId());
-        } else {
-            barangays = aidDAO.getAllBarangays();
-        }
+        List<String> barangays = aidDAO.getBarangaysByDisaster(disasterId);
 
         barangays = barangays.stream()
                 .sorted()
@@ -163,32 +191,53 @@ public class AddAidController {
         }
     }
 
+    private int getSelectedDisasterId() {
+        if (generalAidCheckbox != null && generalAidCheckbox.isSelected()) {
+            return 0;
+        }
+
+        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+        return selectedDisaster != null ? selectedDisaster.getDisasterId() : 0;
+    }
+
     private void updateSelectionSummary() {
         AidTypeModelComboBox selectedAidType = aidTypeComboBox.getValue();
+        boolean isGeneralAid = generalAidCheckbox != null && generalAidCheckbox.isSelected();
         DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
 
-        if (selectedAidType != null && selectedDisaster != null) {
+        if (selectedAidType != null && (isGeneralAid || selectedDisaster != null)) {
             selectionSummaryBox.setVisible(true);
             selectionSummaryBox.setManaged(true);
 
+            int disasterId = getSelectedDisasterId();
             int eligibleCount = getEligibleBeneficiaryCount(
                     selectedAidType.getAidTypeId(),
-                    selectedDisaster.getDisasterId()
+                    disasterId
             );
 
             String barangayInfo = getBarangayInfoText();
+            String disasterInfo = isGeneralAid
+                    ? "General Aid (No Disaster)"
+                    : "Disaster: " + selectedDisaster.getDisasterName();
 
             selectionSummaryLabel.setText(String.format(
-                    "Aid Type: %s | Disaster: %s%s | Eligible Beneficiaries: %d",
+                    "Aid Type: %s | %s%s | Eligible Beneficiaries: %d",
                     selectedAidType.getAidName(),
-                    selectedDisaster.getDisasterName(),
+                    disasterInfo,
                     barangayInfo,
                     eligibleCount
             ));
 
+            infoLabel.setText(String.format(
+                    "Distributing %s%s%s",
+                    selectedAidType.getAidName(),
+                    isGeneralAid ? " (General Aid)" : " for " + selectedDisaster.getDisasterName() + " disaster",
+                    barangayInfo
+            ));
         } else {
             selectionSummaryBox.setVisible(false);
             selectionSummaryBox.setManaged(false);
+            infoLabel.setText("Select aid type and choose disaster or general aid option");
         }
     }
 
@@ -257,6 +306,10 @@ public class AddAidController {
             previewBtn.setOnAction(this::handlePreview);
         }
 
+        if (printCustomBtn != null) {
+            printCustomBtn.setOnAction(this::handlePrintCustom);
+        }
+
         if (useKMeansCheckbox != null) {
             useKMeansCheckbox.setOnAction(e -> {
                 boolean useKMeans = useKMeansCheckbox.isSelected();
@@ -270,17 +323,12 @@ public class AddAidController {
 
     @FXML
     private void handlePreview(ActionEvent event) {
-        if (!validateSelection()) {
-            return;
-        }
-
-        if (!validateInput()) {
-            return;
-        }
+        if (!validateSelection()) return;
+        if (!validateInput()) return;
 
         try {
             int aidTypeId = aidTypeComboBox.getValue().getAidTypeId();
-            int disasterId = disasterComboBox.getValue().getDisasterId();
+            int disasterId = getSelectedDisasterId();
             int quantity = Integer.parseInt(quantityFld.getText().trim());
             int quantityPerBeneficiary = Integer.parseInt(quantityPerBeneficiaryFld.getText().trim());
             boolean useKMeans = useKMeansCheckbox != null && useKMeansCheckbox.isSelected();
@@ -294,8 +342,7 @@ public class AddAidController {
             } else {
                 String barangay = barangayComboBox.getValue();
                 if (barangay == null) {
-                    AlertDialogManager.showWarning("Selection Required",
-                            "Please select a barangay.");
+                    AlertDialogManager.showWarning("Selection Required", "Please select a barangay.");
                     return;
                 }
                 preview = aidService.previewAidDistributionByBarangay(
@@ -304,10 +351,8 @@ public class AddAidController {
             }
 
             if (preview.isEmpty()) {
-                AlertDialogManager.showWarning(
-                        "No Eligible Beneficiaries",
-                        "No beneficiaries are currently eligible for this aid distribution."
-                );
+                AlertDialogManager.showWarning("No Eligible Beneficiaries",
+                        "No beneficiaries are currently eligible for this aid distribution.");
                 return;
             }
 
@@ -322,58 +367,343 @@ public class AddAidController {
         }
     }
 
-    private void showPreviewDialog(List<BeneficiaryCluster> preview, boolean usedKMeans, int qtyPerBeneficiary) {
+    @FXML
+    private void handlePrintCustom(ActionEvent event) {
+        if (!validateSelection()) return;
+        if (!validateInput()) return;
+
+        try {
+            int aidTypeId = aidTypeComboBox.getValue().getAidTypeId();
+            int disasterId = getSelectedDisasterId();
+            int quantity = Integer.parseInt(quantityFld.getText().trim());
+            int quantityPerBeneficiary = Integer.parseInt(quantityPerBeneficiaryFld.getText().trim());
+            boolean useKMeans = useKMeansCheckbox != null && useKMeansCheckbox.isSelected();
+
+            List<BeneficiaryCluster> preview;
+
+            if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
+                preview = aidService.previewAidDistribution(
+                        aidTypeId, disasterId, quantity, quantityPerBeneficiary, FIXED_CLUSTERS
+                );
+            } else {
+                String barangay = barangayComboBox.getValue();
+                if (barangay == null) {
+                    AlertDialogManager.showWarning("Selection Required", "Please select a barangay.");
+                    return;
+                }
+                preview = aidService.previewAidDistributionByBarangay(
+                        aidTypeId, disasterId, quantity, quantityPerBeneficiary, FIXED_CLUSTERS, barangay
+                );
+            }
+
+            if (preview.isEmpty()) {
+                AlertDialogManager.showWarning("No Eligible Beneficiaries",
+                        "No beneficiaries are currently eligible for this aid distribution.");
+                return;
+            }
+
+            showPrintCustomDialog(preview, useKMeans, quantityPerBeneficiary);
+
+        } catch (NumberFormatException e) {
+            AlertDialogManager.showError("Invalid Input", "Please enter valid quantities.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Print Error",
+                    "Failed to generate print preview:\n" + e.getMessage());
+        }
+    }
+
+    /**
+     * Builds a cluster-rank-based priority map from the given beneficiary list.
+     * rank 0 (highest avg score) → "High Priority"
+     * rank 1                     → "Medium Priority"
+     * rank 2 (lowest avg score)  → "Low Priority"
+     *
+     * This is the single source of truth so cluster headers and per-row labels
+     * are always the same.
+     */
+    private Map<Integer, String> buildClusterPriorityMap(List<BeneficiaryCluster> beneficiaries) {
+        Map<Integer, Double> sumMap   = new HashMap<>();
+        Map<Integer, Integer> countMap = new HashMap<>();
+
+        for (BeneficiaryCluster b : beneficiaries) {
+            int cluster = b.getCluster();
+            sumMap.put(cluster, sumMap.getOrDefault(cluster, 0.0) + b.getFinalScore());
+            countMap.put(cluster, countMap.getOrDefault(cluster, 0) + 1);
+        }
+
+        // Average score per cluster
+        for (Integer cluster : sumMap.keySet()) {
+            sumMap.put(cluster, sumMap.get(cluster) / countMap.get(cluster));
+        }
+
+        // Sort by average score descending
+        List<Map.Entry<Integer, Double>> sorted = new ArrayList<>(sumMap.entrySet());
+        sorted.sort((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()));
+
+        // Assign rank-based labels
+        String[] labels = {"High Priority", "Medium Priority", "Low Priority"};
+        Map<Integer, String> labelMap = new HashMap<>();
+        for (int i = 0; i < sorted.size() && i < labels.length; i++) {
+            labelMap.put(sorted.get(i).getKey(), labels[i]);
+        }
+        return labelMap;
+    }
+
+    // ── FIX 1: groupBeneficiariesByPriority ──────────────────────────────────
+    // OLD: used b.getScoreCategory() → stale SAW-calculated label
+    // NEW: uses buildClusterPriorityMap() → correct K-Means cluster rank label
+    private Map<String, List<BeneficiaryCluster>> groupBeneficiariesByPriority(
+            List<BeneficiaryCluster> beneficiaries) {
+
+        Map<String, List<BeneficiaryCluster>> groups = new HashMap<>();
+        groups.put("High Priority",   new ArrayList<>());
+        groups.put("Medium Priority", new ArrayList<>());
+        groups.put("Low Priority",    new ArrayList<>());
+
+        // Build the correct cluster→label mapping from the actual data
+        Map<Integer, String> clusterPriorityMap = buildClusterPriorityMap(beneficiaries);
+
+        for (BeneficiaryCluster b : beneficiaries) {
+            // Use cluster rank label instead of the original SAW scoreCategory
+            String label = clusterPriorityMap.getOrDefault(b.getCluster(), "Low Priority");
+            groups.get(label).add(b);
+        }
+
+        return groups;
+    }
+
+    private void showPrintCustomDialog(List<BeneficiaryCluster> preview,
+                                       boolean usedKMeans, int qtyPerBeneficiary) {
+        Map<String, List<BeneficiaryCluster>> priorityGroups = groupBeneficiariesByPriority(preview);
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Print Custom - Select Priority Levels");
+        dialog.setHeaderText("Select which priority levels to print:");
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        CheckBox highPriorityCheck = new CheckBox("High Priority (" +
+                priorityGroups.getOrDefault("High Priority", new ArrayList<>()).size() + " beneficiaries)");
+        highPriorityCheck.setSelected(true);
+
+        CheckBox mediumPriorityCheck = new CheckBox("Medium Priority (" +
+                priorityGroups.getOrDefault("Medium Priority", new ArrayList<>()).size() + " beneficiaries)");
+        mediumPriorityCheck.setSelected(true);
+
+        CheckBox lowPriorityCheck = new CheckBox("Low Priority (" +
+                priorityGroups.getOrDefault("Low Priority", new ArrayList<>()).size() + " beneficiaries)");
+        lowPriorityCheck.setSelected(true);
+
+        content.getChildren().addAll(
+                new Label("Select priority levels to include in the print:"),
+                highPriorityCheck,
+                mediumPriorityCheck,
+                lowPriorityCheck
+        );
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(result -> {
+            if (result == ButtonType.OK) {
+                List<BeneficiaryCluster> selectedBeneficiaries = new ArrayList<>();
+
+                if (highPriorityCheck.isSelected()) {
+                    selectedBeneficiaries.addAll(priorityGroups.getOrDefault("High Priority", new ArrayList<>()));
+                }
+                if (mediumPriorityCheck.isSelected()) {
+                    selectedBeneficiaries.addAll(priorityGroups.getOrDefault("Medium Priority", new ArrayList<>()));
+                }
+                if (lowPriorityCheck.isSelected()) {
+                    selectedBeneficiaries.addAll(priorityGroups.getOrDefault("Low Priority", new ArrayList<>()));
+                }
+
+                if (selectedBeneficiaries.isEmpty()) {
+                    AlertDialogManager.showWarning("No Selection",
+                            "Please select at least one priority level to print.");
+                    return;
+                }
+
+                printBeneficiaryList(selectedBeneficiaries, usedKMeans, qtyPerBeneficiary);
+            }
+        });
+    }
+
+    private void printBeneficiaryList(List<BeneficiaryCluster> beneficiaries,
+                                      boolean usedKMeans, int qtyPerBeneficiary) {
+        try {
+            PrinterJob printerJob = PrinterJob.createPrinterJob();
+
+            if (printerJob == null) {
+                AlertDialogManager.showError("Print Error", "No printer available.");
+                return;
+            }
+
+            boolean proceed = printerJob.showPrintDialog(dialogStage);
+            if (!proceed) return;
+
+            VBox printContent = createPrintContent(beneficiaries, usedKMeans, qtyPerBeneficiary);
+            boolean success = printerJob.printPage(printContent);
+
+            if (success) {
+                printerJob.endJob();
+                AlertDialogManager.showInfo("Print Success", "Document sent to printer successfully.");
+            } else {
+                AlertDialogManager.showError("Print Error", "Failed to print document.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Print Error",
+                    "An error occurred during printing:\n" + e.getMessage());
+        }
+    }
+
+    private VBox createPrintContent(List<BeneficiaryCluster> beneficiaries,
+                                    boolean usedKMeans, int qtyPerBeneficiary) {
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
+
+        Label title = new Label("Aid Distribution Beneficiary List");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        title.setAlignment(Pos.CENTER);
+
+        Label scopeLabel  = new Label("Distribution Scope: " + getDistributionScopeText());
+        scopeLabel.setFont(Font.font("Arial", 12));
+
+        Label methodLabel = new Label("Distribution Method: " +
+                (usedKMeans ? "K-Means Clustering (3 Clusters)" : "Score-Based"));
+        methodLabel.setFont(Font.font("Arial", 12));
+
+        Label countLabel = new Label("Total Recipients: " + beneficiaries.size() + " beneficiaries");
+        countLabel.setFont(Font.font("Arial", 12));
+
+        Label qtyLabel = new Label("Quantity per Beneficiary: " + qtyPerBeneficiary + " units");
+        qtyLabel.setFont(Font.font("Arial", 12));
+
+        content.getChildren().addAll(title, new Label(""),
+                scopeLabel, methodLabel, countLabel, qtyLabel, new Label(""));
+
+        Map<String, List<BeneficiaryCluster>> priorityGroups = groupBeneficiariesByPriority(beneficiaries);
+
+        if (!priorityGroups.get("High Priority").isEmpty()) {
+            addPrioritySection(content, "High Priority",
+                    priorityGroups.get("High Priority"), qtyPerBeneficiary);
+        }
+        if (!priorityGroups.get("Medium Priority").isEmpty()) {
+            addPrioritySection(content, "Medium Priority",
+                    priorityGroups.get("Medium Priority"), qtyPerBeneficiary);
+        }
+        if (!priorityGroups.get("Low Priority").isEmpty()) {
+            addPrioritySection(content, "Low Priority",
+                    priorityGroups.get("Low Priority"), qtyPerBeneficiary);
+        }
+
+        return content;
+    }
+
+    private void addPrioritySection(VBox content, String priorityName,
+                                    List<BeneficiaryCluster> beneficiaries, int qtyPerBeneficiary) {
+        Label sectionHeader = new Label(priorityName + " (" + beneficiaries.size() + " beneficiaries)");
+        sectionHeader.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        sectionHeader.setStyle("-fx-text-fill: #2c3e50;");
+        content.getChildren().add(sectionHeader);
+
+        beneficiaries.sort((b1, b2) -> Double.compare(b2.getFinalScore(), b1.getFinalScore()));
+
+        int count = 1;
+        for (BeneficiaryCluster b : beneficiaries) {
+            Label beneficiaryLabel = new Label(String.format(
+                    "%d. Beneficiary #%d | Score: %.3f | Receives: %d units",
+                    count++, b.getBeneficiaryId(), b.getFinalScore(), qtyPerBeneficiary
+            ));
+            beneficiaryLabel.setFont(Font.font("Arial", 11));
+            content.getChildren().add(beneficiaryLabel);
+        }
+
+        content.getChildren().add(new Label(""));
+    }
+
+    private void showPreviewDialog(List<BeneficiaryCluster> preview,
+                                   boolean usedKMeans, int qtyPerBeneficiary) {
         StringBuilder message = new StringBuilder();
 
-        String distributionScope = getDistributionScopeText();
-
-        message.append(String.format("Distribution Scope: %s\n", distributionScope));
+        message.append(String.format("Distribution Scope: %s\n", getDistributionScopeText()));
         message.append(String.format("Distribution Method: %s\n",
                 usedKMeans ? "K-Means Clustering (3 Clusters)" : "Score-Based"));
         message.append(String.format("Total Recipients: %d beneficiaries\n", preview.size()));
         message.append(String.format("Quantity per Beneficiary: %d units\n", qtyPerBeneficiary));
-        message.append(String.format("Total Units to Distribute: %d units\n\n", preview.size() * qtyPerBeneficiary));
+        message.append(String.format("Total Units to Distribute: %d units\n\n",
+                preview.size() * qtyPerBeneficiary));
 
         if (usedKMeans) {
             message.append("=== Distribution by Cluster (3 Clusters) ===\n\n");
 
-            String[] clusterNames = {"Low Priority", "Medium Priority", "High Priority"};
+            // ── FIX 2: build priority map by cluster RANK (highest avg = High) ──
+            Map<Integer, String> clusterToPriority = buildClusterPriorityMap(preview);
 
-            int currentCluster = -1;
-            int count = 1;
-
+            // Compute averages again for display in the header line
+            Map<Integer, Double> clusterSums   = new HashMap<>();
+            Map<Integer, Integer> clusterCounts = new HashMap<>();
             for (BeneficiaryCluster b : preview) {
-                if (b.getCluster() != currentCluster) {
-                    if (currentCluster != -1) {
-                        message.append("\n");
-                    }
-                    currentCluster = b.getCluster();
-                    String clusterName = (currentCluster >= 0 && currentCluster < 3) ?
-                            clusterNames[currentCluster] : "Cluster " + currentCluster;
-                    message.append(String.format("--- %s (Cluster %d) ---\n", clusterName, currentCluster));
-                }
+                int c = b.getCluster();
+                clusterSums.put(c, clusterSums.getOrDefault(c, 0.0) + b.getFinalScore());
+                clusterCounts.put(c, clusterCounts.getOrDefault(c, 0) + 1);
+            }
+            Map<Integer, Double> clusterAvg = new HashMap<>();
+            for (Integer c : clusterSums.keySet()) {
+                clusterAvg.put(c, clusterSums.get(c) / clusterCounts.get(c));
+            }
 
-                message.append(String.format(
-                        "%d. Beneficiary #%d | Score: %.3f | %s | Receives: %d units\n",
-                        count++,
-                        b.getBeneficiaryId(),
-                        b.getFinalScore(),
-                        b.getScoreCategory(),
-                        qtyPerBeneficiary
-                ));
+            // Sort clusters by average descending (High → Medium → Low)
+            List<Integer> sortedClusterKeys = new ArrayList<>(clusterAvg.keySet());
+            sortedClusterKeys.sort((a, b) -> Double.compare(clusterAvg.get(b), clusterAvg.get(a)));
+
+            // Group beneficiaries by cluster
+            Map<Integer, List<BeneficiaryCluster>> byCluster = new HashMap<>();
+            for (BeneficiaryCluster b : preview) {
+                byCluster.computeIfAbsent(b.getCluster(), k -> new ArrayList<>()).add(b);
+            }
+
+            int overallCount = 1;
+            for (Integer clusterNum : sortedClusterKeys) {
+                // priorityName comes from the rank map → always matches header
+                String priorityName = clusterToPriority.get(clusterNum);
+                List<BeneficiaryCluster> clusterBeneficiaries = byCluster.get(clusterNum);
+
+                if (clusterBeneficiaries != null && !clusterBeneficiaries.isEmpty()) {
+                    message.append(String.format("--- %s (Cluster %d, Avg Score: %.3f) ---\n",
+                            priorityName, clusterNum, clusterAvg.get(clusterNum)));
+
+                    clusterBeneficiaries.sort((b1, b2) ->
+                            Double.compare(b2.getFinalScore(), b1.getFinalScore()));
+
+                    for (BeneficiaryCluster b : clusterBeneficiaries) {
+                        message.append(String.format(
+                                "%d. Beneficiary #%d | Score: %.3f | %s | Receives: %d units\n",
+                                overallCount++,
+                                b.getBeneficiaryId(),
+                                b.getFinalScore(),
+                                // ── FIX 3: priorityName from rank map, NOT b.getScoreCategory() ──
+                                priorityName,
+                                qtyPerBeneficiary
+                        ));
+                    }
+                    message.append("\n");
+                }
             }
         } else {
             message.append("=== Top Beneficiaries by Score ===\n\n");
-
             for (int i = 0; i < preview.size(); i++) {
                 BeneficiaryCluster b = preview.get(i);
+                // Non-K-Means: scoreCategory is fine, no cluster ranking involved
                 message.append(String.format(
                         "%d. Beneficiary #%d | Score: %.3f | %s | Receives: %d units\n",
-                        i + 1,
-                        b.getBeneficiaryId(),
-                        b.getFinalScore(),
-                        b.getScoreCategory(),
-                        qtyPerBeneficiary
+                        i + 1, b.getBeneficiaryId(), b.getFinalScore(),
+                        b.getScoreCategory(), qtyPerBeneficiary
                 ));
             }
         }
@@ -396,51 +726,49 @@ public class AddAidController {
     }
 
     private String getDistributionScopeText() {
+        boolean isGeneralAid = generalAidCheckbox != null && generalAidCheckbox.isSelected();
+        String disasterContext = isGeneralAid
+                ? "General Aid (No Disaster)"
+                : "Disaster: " + disasterComboBox.getValue().getDisasterName();
+
+        String barangayContext;
         if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
-            return "All Barangays";
+            barangayContext = "All Barangays";
         } else if (singleBarangayRadio.isSelected()) {
             String barangay = barangayComboBox.getValue();
-            return barangay != null ? "Barangay: " + barangay : "";
+            barangayContext = barangay != null ? "Barangay: " + barangay : "";
+        } else {
+            barangayContext = "";
         }
-        return "";
+
+        return disasterContext + " | " + barangayContext;
     }
 
     @FXML
     private void handleSave(ActionEvent event) {
-        if (!validateSelection()) {
-            return;
-        }
-
-        if (!validateInput()) {
-            return;
-        }
-
-        if (!showConfirmationDialog()) {
-            return;
-        }
+        if (!validateSelection()) return;
+        if (!validateInput()) return;
+        if (!showConfirmationDialog()) return;
 
         try {
-            String aidName = nameFld.getText().trim();
-            int aidTypeId = aidTypeComboBox.getValue().getAidTypeId();
-            int disasterId = disasterComboBox.getValue().getDisasterId();
-            int quantity = Integer.parseInt(quantityFld.getText().trim());
+            String aidName            = nameFld.getText().trim();
+            int aidTypeId             = aidTypeComboBox.getValue().getAidTypeId();
+            int disasterId            = getSelectedDisasterId();
+            int quantity              = Integer.parseInt(quantityFld.getText().trim());
             int quantityPerBeneficiary = Integer.parseInt(quantityPerBeneficiaryFld.getText().trim());
-            double costPerUnit = Double.parseDouble(costFld.getText().trim());
-            String provider = providerFld.getText().trim();
-
-            boolean useKMeans = useKMeansCheckbox != null && useKMeansCheckbox.isSelected();
+            double costPerUnit        = Double.parseDouble(costFld.getText().trim());
+            String provider           = providerFld.getText().trim();
+            boolean useKMeans         = useKMeansCheckbox != null && useKMeansCheckbox.isSelected();
 
             int distributedCount;
 
             if (useKMeans) {
                 if (!useBarangayFilterCheckbox.isSelected() || allBarangaysRadio.isSelected()) {
-                    // Standard K-means distribution
                     distributedCount = aidService.distributeAidWithKMeans(
                             aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary,
                             costPerUnit, provider, FIXED_CLUSTERS
                     );
                 } else {
-                    // Single barangay K-means
                     String barangay = barangayComboBox.getValue();
                     distributedCount = aidService.distributeAidWithKMeansByBarangay(
                             aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary,
@@ -448,19 +776,16 @@ public class AddAidController {
                     );
                 }
             } else {
-                // Simple distribution (no barangay filtering for simple mode)
                 distributedCount = aidService.distributeAidSimple(
-                        aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary, costPerUnit, provider
+                        aidName, aidTypeId, disasterId, quantity, quantityPerBeneficiary,
+                        costPerUnit, provider
                 );
             }
 
             if (distributedCount > 0) {
-                showSuccessDialog(aidName, distributedCount, costPerUnit, useKMeans);
-
-                if (aidController != null) {
-                    aidController.loadAidData();
-                }
-
+                showSuccessDialog(aidName, distributedCount, quantityPerBeneficiary,
+                        costPerUnit, useKMeans);
+                if (aidController != null) aidController.loadAidData();
                 clearFields();
             } else {
                 showNoDistributionWarning();
@@ -484,18 +809,16 @@ public class AddAidController {
             return false;
         }
 
-        if (disasterComboBox.getValue() == null) {
+        boolean isGeneralAid = generalAidCheckbox != null && generalAidCheckbox.isSelected();
+        if (!isGeneralAid && disasterComboBox.getValue() == null) {
             AlertDialogManager.showWarning("Selection Required",
-                    "Please select a Disaster Event before distributing aid.");
-            disasterComboBox.requestFocus();
+                    "Please either select a Disaster Event or check the 'General Aid' option.");
             return false;
         }
 
-        // Validate barangay selection if filter is enabled
         if (useBarangayFilterCheckbox.isSelected()) {
             if (singleBarangayRadio.isSelected() && barangayComboBox.getValue() == null) {
-                AlertDialogManager.showWarning("Selection Required",
-                        "Please select a barangay.");
+                AlertDialogManager.showWarning("Selection Required", "Please select a barangay.");
                 return false;
             }
         }
@@ -508,78 +831,65 @@ public class AddAidController {
         confirmAlert.setTitle("Confirm Distribution");
         confirmAlert.setHeaderText("Distribute Aid to Beneficiaries");
 
-        double totalCost = Integer.parseInt(quantityFld.getText().trim()) *
-                Double.parseDouble(costFld.getText().trim());
+        int totalQuantity  = Integer.parseInt(quantityFld.getText().trim());
+        double costPerUnit = Double.parseDouble(costFld.getText().trim());
+        double totalCost   = totalQuantity * costPerUnit;
 
-        String scopeText = getDistributionScopeText();
-
-        confirmAlert.setContentText(
-                String.format(
-                        "Are you sure you want to distribute this aid?\n\n" +
-                                "Aid: %s\n" +
-                                "Aid Type: %s\n" +
-                                "Disaster: %s\n" +
-                                "Scope: %s\n" +
-                                "Quantity: %s units\n" +
-                                "Cost per unit: ₱%s\n" +
-                                "Total cost: ₱%.2f\n" +
-                                "Provider: %s\n" +
-                                "Method: %s (3 Clusters)",
-                        nameFld.getText().trim(),
-                        aidTypeComboBox.getValue().getAidName(),
-                        disasterComboBox.getValue().getDisasterName(),
-                        scopeText,
-                        quantityFld.getText().trim(),
-                        costFld.getText().trim(),
-                        totalCost,
-                        providerFld.getText().trim(),
-                        (useKMeansCheckbox != null && useKMeansCheckbox.isSelected()) ?
-                                "K-means Clustering" : "Score-based"
-                )
-        );
+        confirmAlert.setContentText(String.format(
+                "Are you sure you want to distribute this aid?\n\n" +
+                        "Aid: %s\n" +
+                        "Aid Type: %s\n" +
+                        "Scope: %s\n" +
+                        "Quantity: %s units\n" +
+                        "Cost per unit: ₱%s\n" +
+                        "Total cost: ₱%.2f\n" +
+                        "Provider: %s\n" +
+                        "Method: %s (3 Clusters)",
+                nameFld.getText().trim(),
+                aidTypeComboBox.getValue().getAidName(),
+                getDistributionScopeText(),
+                quantityFld.getText().trim(),
+                costFld.getText().trim(),
+                totalCost,
+                providerFld.getText().trim(),
+                (useKMeansCheckbox != null && useKMeansCheckbox.isSelected()) ?
+                        "K-means Clustering" : "Score-based"
+        ));
 
         return confirmAlert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 
-    private void showSuccessDialog(String aidName, int count, double costPerUnit, boolean usedKMeans) {
-        double totalCost = count * costPerUnit;
-
+    private void showSuccessDialog(String aidName, int count, int qtyPerBeneficiary,
+                                   double costPerUnit, boolean usedKMeans) {
         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
         successAlert.setTitle("Distribution Successful");
         successAlert.setHeaderText("✓ Aid Distribution Complete");
 
-        String scopeText = getDistributionScopeText();
-
-        successAlert.setContentText(
-                String.format(
-                        "Successfully distributed aid!\n\n" +
-                                "Aid Type: %s\n" +
-                                "Scope: %s\n" +
-                                "Beneficiaries Served: %d\n" +
-                                "Total Quantity: %d units\n" +
-                                "Total Cost: ₱%.2f\n" +
-                                "Distribution Method: %s",
-                        aidName,
-                        scopeText,
-                        count,
-                        count,
-                        totalCost,
-                        usedKMeans ? "K-means Clustering (3 Clusters)" : "Score-based"
-                )
-        );
+        successAlert.setContentText(String.format(
+                "Successfully distributed aid!\n\n" +
+                        "Aid Type: %s\n" +
+                        "Scope: %s\n" +
+                        "Beneficiaries Served: %d\n" +
+                        "Total Quantity: %d units\n" +
+                        "Total Cost: ₱%.2f\n" +
+                        "Distribution Method: %s",
+                aidName,
+                getDistributionScopeText(),
+                count,
+                count * qtyPerBeneficiary,
+                (double) count * qtyPerBeneficiary * costPerUnit,
+                usedKMeans ? "K-means Clustering (3 Clusters)" : "Score-based"
+        ));
         successAlert.showAndWait();
     }
 
     private void showNoDistributionWarning() {
-        AlertDialogManager.showWarning(
-                "No Distribution",
+        AlertDialogManager.showWarning("No Distribution",
                 "No beneficiaries were eligible for this aid distribution.\n\n" +
                         "Please check:\n" +
                         "• Beneficiaries have been scored for this aid type\n" +
                         "• Beneficiaries haven't already received this aid\n" +
-                        "• Beneficiaries are affected by this disaster\n" +
-                        "• Selected barangay has eligible beneficiaries"
-        );
+                        "• Selected barangay has eligible beneficiaries");
     }
 
     @FXML
@@ -654,16 +964,11 @@ public class AddAidController {
         disasterComboBox.setValue(null);
         barangayComboBox.setValue(null);
 
-        if (useKMeansCheckbox != null) {
-            useKMeansCheckbox.setSelected(true);
-        }
-
-        if (useBarangayFilterCheckbox != null) {
-            useBarangayFilterCheckbox.setSelected(false);
-        }
+        if (useKMeansCheckbox != null)        useKMeansCheckbox.setSelected(true);
+        if (useBarangayFilterCheckbox != null) useBarangayFilterCheckbox.setSelected(false);
+        if (generalAidCheckbox != null)        generalAidCheckbox.setSelected(false);
 
         allBarangaysRadio.setSelected(true);
-
         updateSelectionSummary();
     }
 
@@ -680,15 +985,16 @@ public class AddAidController {
         final double[] xOffset = {0};
         final double[] yOffset = {0};
 
-        addAidRoot.setOnMousePressed(event -> {
+        root.setOnMousePressed(event -> {
             xOffset[0] = event.getSceneX();
             yOffset[0] = event.getSceneY();
         });
 
-        addAidRoot.setOnMouseDragged(event -> {
-            Stage stage = (Stage) addAidRoot.getScene().getWindow();
-            stage.setX(event.getScreenX() - xOffset[0]);
-            stage.setY(event.getScreenY() - yOffset[0]);
+        root.setOnMouseDragged(event -> {
+            if(dialogStage != null) {
+                dialogStage.setX(event.getScreenX() - xOffset[0]);
+                dialogStage.setY(event.getScreenY() - yOffset[0]);
+            }
         });
     }
 }

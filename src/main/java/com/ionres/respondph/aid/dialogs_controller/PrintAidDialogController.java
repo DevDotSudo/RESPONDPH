@@ -4,9 +4,6 @@ import com.ionres.respondph.aid.AidDAO;
 import com.ionres.respondph.aid.AidDAOImpl;
 import com.ionres.respondph.aid.AidModel;
 import com.ionres.respondph.aid.AidPrintService;
-import com.ionres.respondph.aid_type.AidTypeDAO;
-import com.ionres.respondph.aid_type.AidTypeDAOImpl;
-import com.ionres.respondph.aid_type.AidTypeModelComboBox;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterDAO;
 import com.ionres.respondph.disaster.DisasterDAOImpl;
@@ -27,20 +24,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
 public class PrintAidDialogController {
 
     @FXML private ComboBox<DisasterModelComboBox> disasterComboBox;
-    @FXML private ComboBox<AidTypeModelComboBox> aidTypeComboBox;
+    @FXML private ComboBox<String> aidNameComboBox;
     @FXML private ComboBox<String> barangayComboBox;
     @FXML private CheckBox useBarangayFilterCheckBox;
+    @FXML private CheckBox generalAidCheckBox;
     @FXML private Label beneficiaryCountLabel;
     @FXML private Button printButton;
     @FXML private Button cancelButton;
     @FXML private Button previewButton;
 
     private DisasterDAO disasterDAO;
-    private AidTypeDAO aidTypeDAO;
     private AidDAO aidDAO;
     private AidPrintService printService;
     private Cryptography cs;
@@ -50,7 +46,6 @@ public class PrintAidDialogController {
     @FXML
     private void initialize() {
         disasterDAO = new DisasterDAOImpl(DBConnection.getInstance());
-        aidTypeDAO = new AidTypeDAOImpl(DBConnection.getInstance());
         aidDAO = new AidDAOImpl(DBConnection.getInstance());
         printService = new AidPrintService();
         cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
@@ -58,6 +53,7 @@ public class PrintAidDialogController {
         DashboardRefresher.registerDisasterNameAndAidtypeName(this);
 
         setupComboBoxes();
+        setupGeneralAidOption();
         setupListeners();
         setupButtons();
         setupBarangayFilter();
@@ -67,23 +63,39 @@ public class PrintAidDialogController {
         List<DisasterModelComboBox> disasters = disasterDAO.findAll();
         disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
 
-        List<AidTypeModelComboBox> aidTypes = aidTypeDAO.findAll();
-        aidTypeComboBox.setItems(FXCollections.observableArrayList(aidTypes));
+        // Get distinct aid names from aid table
+        List<String> aidNames = aidDAO.getDistinctAidNames();
+        aidNameComboBox.setItems(FXCollections.observableArrayList(aidNames));
 
         disasterComboBox.setPromptText("Select Disaster");
-        aidTypeComboBox.setPromptText("Select Aid Type");
+        aidNameComboBox.setPromptText("Select Aid Name");
         if (barangayComboBox != null) {
             barangayComboBox.setPromptText("Select Barangay");
         }
     }
 
+    private void setupGeneralAidOption() {
+        if (generalAidCheckBox != null) {
+            generalAidCheckBox.setSelected(false);
+
+            generalAidCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal) {
+                    disasterComboBox.setValue(null);
+                    disasterComboBox.setDisable(true);
+                } else {
+                    disasterComboBox.setDisable(false);
+                }
+                loadBarangays();
+                updateBeneficiaryCount();
+            });
+        }
+    }
+
     private void setupBarangayFilter() {
-        // If barangay components exist in FXML, set them up
         if (barangayComboBox != null && useBarangayFilterCheckBox != null) {
             barangayComboBox.setDisable(true);
             useBarangayFilterCheckBox.setSelected(false);
 
-            // Setup checkbox listener
             useBarangayFilterCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
                 barangayComboBox.setDisable(!newVal);
                 if (!newVal) {
@@ -96,10 +108,15 @@ public class PrintAidDialogController {
 
     private void setupListeners() {
         disasterComboBox.setOnAction(e -> {
+            if (disasterComboBox.getValue() != null && generalAidCheckBox != null) {
+                generalAidCheckBox.setSelected(false);
+            }
             loadBarangays();
             updateBeneficiaryCount();
         });
-        aidTypeComboBox.setOnAction(e -> updateBeneficiaryCount());
+
+        aidNameComboBox.setOnAction(e -> updateBeneficiaryCount());
+
         if (barangayComboBox != null) {
             barangayComboBox.setOnAction(e -> updateBeneficiaryCount());
         }
@@ -114,71 +131,77 @@ public class PrintAidDialogController {
     private void loadBarangays() {
         if (barangayComboBox == null) return;
 
-        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+        int disasterId = getSelectedDisasterId();
 
-        List<String> barangays;
-        if (selectedDisaster != null) {
-            barangays = aidDAO.getBarangaysByDisaster(selectedDisaster.getDisasterId());
-        } else {
-            barangays = aidDAO.getAllBarangays();
-        }
+        List<String> barangays = aidDAO.getBarangaysByDisaster(disasterId);
 
-        // Sort alphabetically
         barangays = barangays.stream().sorted().collect(Collectors.toList());
-
-        // Add "All Barangays" option at the beginning
         barangays.add(0, ALL_BARANGAYS);
 
         barangayComboBox.setItems(FXCollections.observableArrayList(barangays));
         barangayComboBox.setValue(ALL_BARANGAYS);
 
-        System.out.println("Loaded " + (barangays.size() - 1) + " barangays for printing");
+        String context = disasterId > 0 ? "disaster #" + disasterId : "general aid";
+        System.out.println("Loaded " + (barangays.size() - 1) + " barangays for " + context);
+    }
+
+    private int getSelectedDisasterId() {
+        if (generalAidCheckBox != null && generalAidCheckBox.isSelected()) {
+            return 0; // General aid
+        }
+
+        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+        return selectedDisaster != null ? selectedDisaster.getDisasterId() : -1;
     }
 
     private void updateBeneficiaryCount() {
-        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-        AidTypeModelComboBox selectedAidType = aidTypeComboBox.getValue();
+        String selectedAidName = aidNameComboBox.getValue();
+        int disasterId = getSelectedDisasterId();
 
-        if (selectedDisaster == null || selectedAidType == null) {
+        if (selectedAidName == null || selectedAidName.trim().isEmpty() || disasterId < 0) {
             beneficiaryCountLabel.setText("Beneficiaries: 0");
             printButton.setDisable(true);
             previewButton.setDisable(true);
             return;
         }
 
-        // Get filtered and sorted aid records
         List<AidModel> aidRecords = getFilteredAndSortedAidRecords(
-                selectedDisaster.getDisasterId(),
-                selectedAidType.getAidTypeId()
+                disasterId,
+                selectedAidName
         );
 
+        String contextInfo = getContextInfoText();
         String barangayInfo = getBarangayInfoText();
-        beneficiaryCountLabel.setText("Beneficiaries: " + aidRecords.size() + barangayInfo);
+        beneficiaryCountLabel.setText("Beneficiaries: " + aidRecords.size() + contextInfo + barangayInfo);
         printButton.setDisable(aidRecords.isEmpty());
         previewButton.setDisable(aidRecords.isEmpty());
+    }
+
+    private String getContextInfoText() {
+        boolean isGeneralAid = generalAidCheckBox != null && generalAidCheckBox.isSelected();
+        return isGeneralAid ? " (General Aid)" : "";
     }
 
     private String getBarangayInfoText() {
         if (!isBarangayFilterActive()) {
             return "";
         }
-        return " (Barangay: " + barangayComboBox.getValue() + ")";
+        return " | Barangay: " + barangayComboBox.getValue();
     }
 
     private void handlePrint() {
-        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-        AidTypeModelComboBox selectedAidType = aidTypeComboBox.getValue();
+        String selectedAidName = aidNameComboBox.getValue();
+        int disasterId = getSelectedDisasterId();
 
-        if (selectedDisaster == null || selectedAidType == null) {
+        if (selectedAidName == null || selectedAidName.trim().isEmpty() || disasterId < 0) {
             AlertDialogManager.showWarning("Selection Required",
-                    "Please select both Disaster and Aid Type.");
+                    "Please select an Aid Name and either a Disaster or check General Aid option.");
             return;
         }
 
-        // Get filtered and sorted records
         List<AidModel> aidRecords = getFilteredAndSortedAidRecords(
-                selectedDisaster.getDisasterId(),
-                selectedAidType.getAidTypeId()
+                disasterId,
+                selectedAidName
         );
 
         if (aidRecords.isEmpty()) {
@@ -187,16 +210,11 @@ public class PrintAidDialogController {
             return;
         }
 
-        // Build report title with barangay info
-        String reportTitle = buildReportTitle(
-                selectedDisaster.getDisasterName(),
-                selectedAidType.getAidName()
-        );
+        String reportTitle = buildReportTitle(selectedAidName);
 
-        // Print
         boolean success = printService.printSpecificReport(
                 reportTitle,
-                selectedAidType.getAidName(),
+                selectedAidName,
                 aidRecords
         );
 
@@ -206,18 +224,18 @@ public class PrintAidDialogController {
     }
 
     private void handlePreview() {
-        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-        AidTypeModelComboBox selectedAidType = aidTypeComboBox.getValue();
+        String selectedAidName = aidNameComboBox.getValue();
+        int disasterId = getSelectedDisasterId();
 
-        if (selectedDisaster == null || selectedAidType == null) {
+        if (selectedAidName == null || selectedAidName.trim().isEmpty() || disasterId < 0) {
             AlertDialogManager.showWarning("Selection Required",
-                    "Please select both Disaster and Aid Type.");
+                    "Please select an Aid Name and either a Disaster or check General Aid option.");
             return;
         }
 
         List<AidModel> aidRecords = getFilteredAndSortedAidRecords(
-                selectedDisaster.getDisasterId(),
-                selectedAidType.getAidTypeId()
+                disasterId,
+                selectedAidName
         );
 
         if (aidRecords.isEmpty()) {
@@ -225,14 +243,20 @@ public class PrintAidDialogController {
             return;
         }
 
-        // Build preview with barangay and score information
         StringBuilder preview = new StringBuilder();
         preview.append("═".repeat(60)).append("\n");
         preview.append("          AID DISTRIBUTION PREVIEW          \n");
         preview.append("═".repeat(60)).append("\n\n");
 
-        preview.append("Disaster: ").append(selectedDisaster.getDisasterName()).append("\n");
-        preview.append("Aid Type: ").append(selectedAidType.getAidName()).append("\n");
+        boolean isGeneralAid = generalAidCheckBox != null && generalAidCheckBox.isSelected();
+        if (isGeneralAid) {
+            preview.append("Distribution Type: General Aid (No Disaster)\n");
+        } else {
+            DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+            preview.append("Disaster: ").append(selectedDisaster.getDisasterName()).append("\n");
+        }
+
+        preview.append("Aid Name: ").append(selectedAidName).append("\n");
 
         if (isBarangayFilterActive()) {
             preview.append("Barangay: ").append(barangayComboBox.getValue()).append("\n");
@@ -260,10 +284,9 @@ public class PrintAidDialogController {
         preview.append("\nNote: Beneficiaries are sorted by K-Means priority score.\n");
         preview.append("Higher scores indicate higher priority for aid distribution.\n");
 
-        // Show in scrollable dialog
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Distribution Preview");
-        alert.setHeaderText("Barangay-Filtered Aid Distribution");
+        alert.setHeaderText(isGeneralAid ? "General Aid Distribution" : "Disaster Aid Distribution");
 
         TextArea textArea = new TextArea(preview.toString());
         textArea.setEditable(false);
@@ -281,31 +304,32 @@ public class PrintAidDialogController {
         closeDialog();
     }
 
-
-    private List<AidModel> getFilteredAndSortedAidRecords(int disasterId, int aidTypeId) {
-        // Step 1: Get all aid records for this disaster and aid type
+    private List<AidModel> getFilteredAndSortedAidRecords(int disasterId, String aidName) {
         List<AidModel> allAid = aidDAO.getAllAidForTable();
 
         List<AidModel> filtered = allAid.stream()
-                .filter(aid -> aid.getDisasterId() == disasterId &&
-                        aid.getAidTypeId() == aidTypeId)
+                .filter(aid -> {
+                    boolean disasterMatch = (disasterId == 0 && aid.getDisasterId() == 0) ||
+                            (disasterId > 0 && aid.getDisasterId() == disasterId);
+
+                    boolean aidNameMatch = aid.getName() != null &&
+                            aid.getName().equals(aidName);
+
+                    return disasterMatch && aidNameMatch;
+                })
                 .collect(Collectors.toList());
 
-        // Step 2: Apply barangay filter if enabled
         if (isBarangayFilterActive()) {
             String selectedBarangay = barangayComboBox.getValue();
             filtered = filterByBarangay(filtered, selectedBarangay);
         }
 
-        // Step 3: Sort by K-means score (highest priority first)
+        // Sort by K-means score (highest priority first)
         filtered = sortByKMeansScore(filtered);
 
         return filtered;
     }
 
-    /**
-     * Check if barangay filter is active
-     */
     private boolean isBarangayFilterActive() {
         return useBarangayFilterCheckBox != null &&
                 useBarangayFilterCheckBox.isSelected() &&
@@ -314,23 +338,14 @@ public class PrintAidDialogController {
                 !barangayComboBox.getValue().equals(ALL_BARANGAYS);
     }
 
-    /**
-     * Filter aid records by barangay
-     * Matches beneficiaries belonging to the specified barangay
-     */
     private List<AidModel> filterByBarangay(List<AidModel> aidRecords, String barangay) {
-        // Get beneficiary IDs for this barangay
         Set<Integer> barangayBeneficiaryIds = getBeneficiaryIdsByBarangay(barangay);
 
-        // Filter aid records
         return aidRecords.stream()
                 .filter(aid -> barangayBeneficiaryIds.contains(aid.getBeneficiaryId()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get all beneficiary IDs for a specific barangay
-     */
     private Set<Integer> getBeneficiaryIdsByBarangay(String barangay) {
         Set<Integer> beneficiaryIds = new HashSet<>();
 
@@ -365,31 +380,22 @@ public class PrintAidDialogController {
         return beneficiaryIds;
     }
 
-    /**
-     * Sort aid records by K-means priority score (highest first)
-     * Extracts score from notes field
-     */
     private List<AidModel> sortByKMeansScore(List<AidModel> aidRecords) {
         return aidRecords.stream()
                 .sorted((aid1, aid2) -> {
                     double score1 = extractScore(aid1.getNotes());
                     double score2 = extractScore(aid2.getNotes());
-                    return Double.compare(score2, score1); // Descending order (highest first)
+                    return Double.compare(score2, score1);
                 })
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Extract numerical score from notes field
-     * Format: "K-means Distribution | Priority: High | Score: 0.850 | Cluster: 2"
-     */
     private double extractScore(String notes) {
         if (notes == null || notes.isEmpty()) {
             return 0.0;
         }
 
         try {
-            // Pattern to match "Score: X.XXX"
             Pattern pattern = Pattern.compile("Score:\\s*([0-9]+\\.?[0-9]*)");
             Matcher matcher = pattern.matcher(notes);
 
@@ -403,24 +409,18 @@ public class PrintAidDialogController {
         return 0.0;
     }
 
-    /**
-     * Extract score information for display
-     */
     private String extractScoreInfo(String notes) {
         if (notes == null || notes.isEmpty()) {
             return "N/A";
         }
 
         try {
-            // Extract score
             Pattern scorePattern = Pattern.compile("Score:\\s*([0-9]+\\.?[0-9]*)");
             Matcher scoreMatcher = scorePattern.matcher(notes);
 
-            // Extract cluster
             Pattern clusterPattern = Pattern.compile("Cluster:\\s*([0-9]+)");
             Matcher clusterMatcher = clusterPattern.matcher(notes);
 
-            // Extract priority category
             Pattern priorityPattern = Pattern.compile("Priority:\\s*([A-Za-z]+)");
             Matcher priorityMatcher = priorityPattern.matcher(notes);
 
@@ -434,19 +434,25 @@ public class PrintAidDialogController {
         }
     }
 
-    /**
-     * Build report title with barangay information
-     */
-    private String buildReportTitle(String disasterName, String aidName) {
-        if (isBarangayFilterActive()) {
-            return disasterName + " - Barangay " + barangayComboBox.getValue();
+    private String buildReportTitle(String aidName) {
+        boolean isGeneralAid = generalAidCheckBox != null && generalAidCheckBox.isSelected();
+
+        StringBuilder title = new StringBuilder();
+
+        if (isGeneralAid) {
+            title.append("General Aid Distribution");
+        } else {
+            DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
+            title.append(selectedDisaster.getDisasterName());
         }
-        return disasterName;
+
+        if (isBarangayFilterActive()) {
+            title.append(" - Barangay ").append(barangayComboBox.getValue());
+        }
+
+        return title.toString();
     }
 
-    /**
-     * Truncate name to fit column width
-     */
     private String truncateName(String name, int maxLength) {
         if (name == null) return "";
         if (name.length() <= maxLength) return name;
@@ -472,22 +478,19 @@ public class PrintAidDialogController {
         }
     }
 
-    private void loadAidTypes() {
-        AidTypeModelComboBox selectedAidType = aidTypeComboBox.getValue();
-        List<AidTypeModelComboBox> aidTypes = aidTypeDAO.findAll();
-        aidTypeComboBox.setItems(FXCollections.observableArrayList(aidTypes));
+    private void loadAidNames() {
+        String selectedAidName = aidNameComboBox.getValue();
+        List<String> aidNames = aidDAO.getDistinctAidNames();
+        aidNameComboBox.setItems(FXCollections.observableArrayList(aidNames));
 
-        if (selectedAidType != null) {
-            aidTypeComboBox.getItems().stream()
-                    .filter(at -> at.getAidTypeId() == selectedAidType.getAidTypeId())
-                    .findFirst()
-                    .ifPresent(aidTypeComboBox::setValue);
+        if (selectedAidName != null) {
+            aidNameComboBox.setValue(selectedAidName);
         }
     }
 
     public void refreshComboBoxes() {
         loadDisasters();
-        loadAidTypes();
+        loadAidNames();
         loadBarangays();
         updateBeneficiaryCount();
     }

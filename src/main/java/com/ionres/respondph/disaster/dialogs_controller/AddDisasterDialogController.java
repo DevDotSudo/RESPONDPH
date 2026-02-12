@@ -105,6 +105,7 @@ public class AddDisasterDialogController {
                 DashboardRefresher.refresh();
                 DashboardRefresher.refreshDisasterInSend();
                 DashboardRefresher.refreshComboBoxOfDNAndAN();
+                DashboardRefresher.refreshComboAllTypesDisaster();
             } else {
                 AlertDialogManager.showError("Error", "Failed to add disaster. Please try again.");
             }

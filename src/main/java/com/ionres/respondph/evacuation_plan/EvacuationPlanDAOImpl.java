@@ -1,5 +1,6 @@
 package com.ionres.respondph.evacuation_plan;
 
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.ConfigLoader;
 import com.ionres.respondph.util.Cryptography;
@@ -486,6 +487,110 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
         } finally {
             closeConnection();
         }
+    }
+
+
+    @Override
+    public List<BeneficiaryModel> getBeneficiariesByEvacSiteAndDisaster(int evacSiteId, int disasterId) {
+        List<BeneficiaryModel> beneficiaries = new ArrayList<>();
+
+        String sql =
+                "SELECT DISTINCT " +
+                        "    b.beneficiary_id, " +
+                        "    b.first_name, " +
+                        "    b.middle_name, " +
+                        "    b.last_name, " +
+                        "    b.mobile_number, " +
+                        "    b.barangay, " +
+                        "    b.latitude, " +
+                        "    b.longitude " +
+                        "FROM evac_plan ep " +
+                        "INNER JOIN beneficiary b ON ep.beneficiary_id = b.beneficiary_id " +
+                        "WHERE ep.evac_site_id = ? AND ep.disaster_id = ? " +
+                        "ORDER BY b.last_name, b.first_name";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, evacSiteId);
+            ps.setInt(2, disasterId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                List<String> encrypted = new ArrayList<>();
+                encrypted.add(rs.getString("first_name"));
+                encrypted.add(rs.getString("middle_name"));
+                encrypted.add(rs.getString("last_name"));
+                encrypted.add(rs.getString("mobile_number"));
+                encrypted.add(rs.getString("barangay"));
+                encrypted.add(rs.getString("latitude"));
+                encrypted.add(rs.getString("longitude"));
+
+                List<String> decrypted = cs.decrypt(encrypted);
+
+                BeneficiaryModel model = new BeneficiaryModel();
+                model.setId(rs.getInt("beneficiary_id"));
+                model.setFirstname(decrypted.get(0));
+                model.setMiddlename(decrypted.get(1));
+                model.setLastname(decrypted.get(2));
+                model.setMobileNumber(decrypted.get(3));
+                model.setBarangay(decrypted.get(4));
+                model.setLatitude(decrypted.get(5));
+                model.setLongitude(decrypted.get(6));
+
+                beneficiaries.add(model);
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Error fetching beneficiaries by evac site and disaster: " + ex.getMessage());
+        } finally {
+            closeConnection();
+        }
+
+        return beneficiaries;
+    }
+
+    @Override
+    public Integer getAssignedEvacSiteId(int beneficiaryId, int disasterId) {
+        String sql = "SELECT evac_site_id FROM evac_plan WHERE beneficiary_id = ? AND disaster_id = ? LIMIT 1";
+
+        try {
+            conn = dbConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, beneficiaryId);
+            pstmt.setInt(2, disasterId);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int evacSiteId = rs.getInt("evac_site_id"); // ← CHECK THIS LINE - should be "evac_site_id" NOT "evacs_site_id"
+
+                // ADD LOGGING TO DEBUG
+                System.out.println("DEBUG: Found evac_site_id = " + evacSiteId + " for beneficiary " + beneficiaryId);
+
+                rs.close();
+                pstmt.close();
+
+                return evacSiteId;
+            }
+
+            // ADD LOGGING TO DEBUG
+            System.out.println("DEBUG: No assignment found for beneficiary " + beneficiaryId + ", disaster " + disasterId);
+
+            rs.close();
+            pstmt.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error getting assigned evac site ID: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return null;
     }
 
     private void closeConnection() {

@@ -22,6 +22,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Region;
@@ -65,12 +66,15 @@ public class SendSMSController implements Initializable {
     @FXML private RadioButton rbNewsSlot3;
     @FXML private RadioButton rbNewsSlot4;
     @FXML private RadioButton rbNewsSlot5;
+    @FXML private TextArea txtCustomEvacMessage;
+    @FXML private Button btnSaveEvacMessage;
+    @FXML private Label lblMessageStatus;
 
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
     private final List<String> storedNewsItems = new ArrayList<>();
     private RadioButton[] newsSlots;
     private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
-
+    private CustomEvacMessageManager evacMessageManager;
     private SmsService smsService;
     private SMSSender smsSender;
     private NewsGeneratorService newsGeneratorService;
@@ -108,6 +112,8 @@ public class SendSMSController implements Initializable {
         checkNetworkStatus();
 
         DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
+
+        evacMessageManager = CustomEvacMessageManager.getInstance();
 
         if (charCount != null) {
             charCount.setText("0/160 characters");
@@ -339,7 +345,6 @@ public class SendSMSController implements Initializable {
     private void setupNewsControls() {
         if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
 
-        // ✅ Disable AI features if API key missing
         boolean aiEnabled = newsGeneratorService != null;
 
         if (aiResponseContainer != null) {
@@ -361,6 +366,10 @@ public class SendSMSController implements Initializable {
 
         if (cbNewsTopic != null) {
             cbNewsTopic.setDisable(!aiEnabled);
+        }
+
+        if(btnSaveEvacMessage != null) {
+            btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
         }
 
         updateAiResponseVisibility(false);
@@ -505,6 +514,59 @@ public class SendSMSController implements Initializable {
         }
     }
 
+    private void loadExistingEvacMessage() {
+        if (evacMessageManager.hasCustomMessage()) {
+            String savedMessage = evacMessageManager.getCustomEvacuationMessage();
+            if (txtCustomEvacMessage != null) {
+                txtCustomEvacMessage.setText(savedMessage);
+            }
+            updateEvacMessageStatus(true, savedMessage.length());
+        }
+    }
+
+    @FXML
+    private void onSaveEvacMessage() {
+        String message = txtCustomEvacMessage != null ? txtCustomEvacMessage.getText() : null;
+
+        if (message == null || message.trim().isEmpty()) {
+            AlertDialogManager.showWarning("Empty Message",
+                    "Please enter a custom evacuation message before saving.");
+            return;
+        }
+
+        // Validate message length (typical SMS is 160 characters)
+        if (message.length() > 160) {
+            AlertDialogManager.showWarning("Message Too Long",
+                    "Message is " + message.length() + " characters. SMS messages are typically limited to 160 characters.\n\n" +
+                            "Your message may be split into multiple SMS or truncated.");
+        }
+
+        // Validate that placeholders are present
+        if (!message.contains("{name}") && !message.contains("{evacSite}") && !message.contains("{site}")) {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Missing Placeholders");
+            confirm.setHeaderText("Your message doesn't contain placeholders");
+            confirm.setContentText("Recommended placeholders: {name}, {evacSite}\n\n" +
+                    "Continue saving anyway?");
+
+            Optional<ButtonType> result = confirm.showAndWait();
+            if (result.isEmpty() || result.get() != ButtonType.OK) {
+                return;
+            }
+        }
+
+        // Save the custom message to the singleton manager
+        evacMessageManager.setCustomEvacuationMessage(message.trim());
+
+        // Update status label
+        updateEvacMessageStatus(true, message.trim().length());
+
+        System.out.println("Custom evacuation SMS message saved: " + message.trim());
+        AlertDialogManager.showSuccess("Message Saved",
+                "Custom evacuation message template has been saved successfully.\n\n" +
+                        "This message will be used when allocating beneficiaries to evacuation sites.");
+    }
+
     private void onRecipientGroupChanged() {
         if (isUpdatingComboBox || isOpeningDialog) return;
 
@@ -539,6 +601,18 @@ public class SendSMSController implements Initializable {
         }
         if (show && cbSelectBarangay != null && cbSelectBarangay.getItems().isEmpty()) {
             loadBarangayList();
+        }
+    }
+
+    private void updateEvacMessageStatus(boolean saved, int length) {
+        if (lblMessageStatus != null) {
+            if (saved) {
+                lblMessageStatus.setText("✓ Custom evacuation message saved (" + length + " characters)");
+                lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+            } else {
+                lblMessageStatus.setText("No custom evacuation message set (using default format)");
+                lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
+            }
         }
     }
 

@@ -63,7 +63,6 @@ public class PrintAidDialogController {
         List<DisasterModelComboBox> disasters = disasterDAO.findAll();
         disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
 
-        // Get distinct aid names from aid table
         List<String> aidNames = aidDAO.getDistinctAidNames();
         aidNameComboBox.setItems(FXCollections.observableArrayList(aidNames));
 
@@ -115,7 +114,10 @@ public class PrintAidDialogController {
             updateBeneficiaryCount();
         });
 
-        aidNameComboBox.setOnAction(e -> updateBeneficiaryCount());
+        aidNameComboBox.setOnAction(e -> {
+                updateBeneficiaryCount();
+                loadBarangays();
+        });
 
         if (barangayComboBox != null) {
             barangayComboBox.setOnAction(e -> updateBeneficiaryCount());
@@ -132,17 +134,27 @@ public class PrintAidDialogController {
         if (barangayComboBox == null) return;
 
         int disasterId = getSelectedDisasterId();
+        String selectedAidName = aidNameComboBox.getValue();
 
-        List<String> barangays = aidDAO.getBarangaysByDisaster(disasterId);
+        if (disasterId < 0) {
+            barangayComboBox.setItems(FXCollections.observableArrayList(ALL_BARANGAYS));
+            barangayComboBox.setValue(ALL_BARANGAYS);
+            return;
+        }
 
-        barangays = barangays.stream().sorted().collect(Collectors.toList());
+        List<String> barangays;
+        if (selectedAidName != null && !selectedAidName.trim().isEmpty()) {
+            barangays = aidDAO.getBarangaysByAidNameAndDisaster(disasterId, selectedAidName);
+        } else {
+            barangays = aidDAO.getBarangaysByDisaster(disasterId, 0);
+        }
+
         barangays.add(0, ALL_BARANGAYS);
 
         barangayComboBox.setItems(FXCollections.observableArrayList(barangays));
         barangayComboBox.setValue(ALL_BARANGAYS);
 
-        String context = disasterId > 0 ? "disaster #" + disasterId : "general aid";
-        System.out.println("Loaded " + (barangays.size() - 1) + " barangays for " + context);
+        System.out.println("Loaded " + (barangays.size() - 1) + " unique barangays");
     }
 
     private int getSelectedDisasterId() {
@@ -324,7 +336,6 @@ public class PrintAidDialogController {
             filtered = filterByBarangay(filtered, selectedBarangay);
         }
 
-        // Sort by K-means score (highest priority first)
         filtered = sortByKMeansScore(filtered);
 
         return filtered;
@@ -464,7 +475,6 @@ public class PrintAidDialogController {
         stage.close();
     }
 
-    // Methods for DashboardRefresher
     private void loadDisasters() {
         DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
         List<DisasterModelComboBox> disasters = disasterDAO.findAll();

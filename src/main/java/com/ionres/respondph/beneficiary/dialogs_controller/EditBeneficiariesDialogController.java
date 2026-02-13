@@ -107,6 +107,7 @@ public class EditBeneficiariesDialogController {
         exitBtn.setOnAction(handlers);
         updateBeneficiaryBtn.setOnAction(handlers);
         getLocationBtn.setOnAction(handlers);
+        PhoneNumberValidator.setupInputFilter(mobileNumberFld);
     }
 
     private void handleActions(ActionEvent event) {
@@ -216,8 +217,8 @@ public class EditBeneficiariesDialogController {
                 AlertDialogManager.showWarning("Warning","Gender is required");
                 return;
             }
-            if (mobileNumber.isEmpty()) {
-                AlertDialogManager.showWarning("Warning","Mobile number is required");
+            if (!PhoneNumberValidator.isValid(mobileNumber)) {
+                AlertDialogManager.showWarning("Invalid Mobile Number", PhoneNumberValidator.getErrorMessage(mobileNumber));
                 return;
             }
             if (barangay == null) {

@@ -117,22 +117,22 @@ public class AddAidTypeController {
         try {
             if (!validateWeightSum()) return;
 
-            double ageWeight = Double.parseDouble(ageWeightFld.getText().trim());
-            double genderWeight = Double.parseDouble(genderWeightFld.getText().trim());
-            double maritalStatusWeight = Double.parseDouble(maritalStatusWeightFld.getText().trim());
-            double soloParentWeight = Double.parseDouble(soloParentWeightFld.getText().trim());
-            double disabilityWeight = Double.parseDouble(disabilityWeightFld.getText().trim());
-            double healthConditionWeight = Double.parseDouble(healthConditionWeightFld.getText().trim());
-            double accessToCleanWaterWeight = Double.parseDouble(waterAccessWeightFld.getText().trim());
-            double sanitationFacilityWeight = Double.parseDouble(sanitationWeightFld.getText().trim());
-            double houseConstructionTypeWeight = Double.parseDouble(houseTypeWeightFld.getText().trim());
-            double ownershipWeight = Double.parseDouble(ownershipWeightFld.getText().trim());
-            double damageSeverityWeight = Double.parseDouble(damageSeverityWeightFld.getText().trim());
-            double employmentStatusWeight = Double.parseDouble(employmentWeightFld.getText().trim());
-            double monthlyIncomeWeight = Double.parseDouble(monthlyIncomeWeightFld.getText().trim());
-            double educationalLevelWeight = Double.parseDouble(educationWeightFld.getText().trim());
-            double digitalAccessWeight = Double.parseDouble(digitalAccessWeightFld.getText().trim());
-            double dependencyRatioWeight = Double.parseDouble(dependencyRatioWeightFld.getText().trim());
+            double ageWeight = parseWeight(ageWeightFld);
+            double genderWeight = parseWeight(genderWeightFld);
+            double maritalStatusWeight = parseWeight(maritalStatusWeightFld);
+            double soloParentWeight = parseWeight(soloParentWeightFld);
+            double disabilityWeight = parseWeight(disabilityWeightFld);
+            double healthConditionWeight = parseWeight(healthConditionWeightFld);
+            double accessToCleanWaterWeight = parseWeight(waterAccessWeightFld);
+            double sanitationFacilityWeight = parseWeight(sanitationWeightFld);
+            double houseConstructionTypeWeight = parseWeight(houseTypeWeightFld);
+            double ownershipWeight = parseWeight(ownershipWeightFld);
+            double damageSeverityWeight = parseWeight(damageSeverityWeightFld);
+            double employmentStatusWeight = parseWeight(employmentWeightFld);
+            double monthlyIncomeWeight = parseWeight(monthlyIncomeWeightFld);
+            double educationalLevelWeight = parseWeight(educationWeightFld);
+            double digitalAccessWeight = parseWeight(digitalAccessWeightFld);
+            double dependencyRatioWeight = parseWeight(dependencyRatioWeightFld);
 
             String aidTypeName = aidNameFld.getText().trim();
             String notes = notesFld.getText().trim();
@@ -200,6 +200,11 @@ public class AddAidTypeController {
         }
     }
 
+    private double parseWeight(TextField field) {
+        String text = field.getText().trim();
+        return text.isEmpty() ? 0.0 : Double.parseDouble(text);
+    }
+
 
     private int getLatestAidTypeId() {
         try {
@@ -262,12 +267,6 @@ public class AddAidTypeController {
                     beneficiaryDisasterPairs.size());
             System.out.println("Failed: " + failCount);
 
-            if (failCount > 0) {
-                AlertDialogManager.showWarning("Partial Success",
-                        "Aid type created successfully.\n" +
-                                "Calculated scores for " + successCount + " beneficiary-disaster pairs.\n" +
-                                "Failed to calculate scores for " + failCount + " pairs.");
-            }
 
         } catch (Exception e) {
             System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());
@@ -325,27 +324,28 @@ public class AddAidTypeController {
 
     private boolean validateWeightSum() {
         try {
-            double ageWeight = Double.parseDouble(ageWeightFld.getText().trim());
-            double genderWeight = Double.parseDouble(genderWeightFld.getText().trim());
-            double maritalStatusWeight = Double.parseDouble(maritalStatusWeightFld.getText().trim());
-            double soloParentWeight = Double.parseDouble(soloParentWeightFld.getText().trim());
-            double disabilityWeight = Double.parseDouble(disabilityWeightFld.getText().trim());
-            double healthConditionWeight = Double.parseDouble(healthConditionWeightFld.getText().trim());
-            double accessToCleanWaterWeight = Double.parseDouble(waterAccessWeightFld.getText().trim());
-            double sanitationFacilityWeight = Double.parseDouble(sanitationWeightFld.getText().trim());
-            double houseConstructionTypeWeight = Double.parseDouble(houseTypeWeightFld.getText().trim());
-            double ownershipWeight = Double.parseDouble(ownershipWeightFld.getText().trim());
-            double damageSeverityWeight = Double.parseDouble(damageSeverityWeightFld.getText().trim());
-            double employmentStatusWeight = Double.parseDouble(employmentWeightFld.getText().trim());
-            double monthlyIncomeWeight = Double.parseDouble(monthlyIncomeWeightFld.getText().trim());
-            double educationalLevelWeight = Double.parseDouble(educationWeightFld.getText().trim());
-            double digitalAccessWeight = Double.parseDouble(digitalAccessWeightFld.getText().trim());
-            double dependencyRatioWeight = Double.parseDouble(dependencyRatioWeightFld.getText().trim());
 
-            double totalWeight = ageWeight + genderWeight + maritalStatusWeight + soloParentWeight +
-                    disabilityWeight + healthConditionWeight + accessToCleanWaterWeight + sanitationFacilityWeight +
-                    houseConstructionTypeWeight + ownershipWeight + damageSeverityWeight + employmentStatusWeight +
-                    monthlyIncomeWeight + educationalLevelWeight + digitalAccessWeight + dependencyRatioWeight;
+                double ageWeight = parseWeight(ageWeightFld);
+                double genderWeight = parseWeight(genderWeightFld);
+                double maritalStatusWeight = parseWeight(maritalStatusWeightFld);
+                double soloParentWeight =parseWeight(soloParentWeightFld);
+                double disabilityWeight = parseWeight(disabilityWeightFld);
+                double healthConditionWeight = parseWeight(healthConditionWeightFld);
+                double accessToCleanWaterWeight = parseWeight(waterAccessWeightFld);
+                double sanitationFacilityWeight = parseWeight(sanitationWeightFld);
+                double houseConstructionTypeWeight = parseWeight(houseTypeWeightFld);
+                double ownershipWeight = parseWeight(ownershipWeightFld);
+                double damageSeverityWeight = parseWeight(damageSeverityWeightFld);
+                double employmentStatusWeight = parseWeight(employmentWeightFld);
+                double monthlyIncomeWeight = parseWeight(monthlyIncomeWeightFld);
+                double educationalLevelWeight = parseWeight(educationWeightFld);
+                double digitalAccessWeight = parseWeight(digitalAccessWeightFld);
+                double dependencyRatioWeight = parseWeight(dependencyRatioWeightFld);
+
+                double totalWeight = ageWeight + genderWeight + maritalStatusWeight + soloParentWeight +
+                        disabilityWeight + healthConditionWeight + accessToCleanWaterWeight + sanitationFacilityWeight +
+                        houseConstructionTypeWeight + ownershipWeight + damageSeverityWeight + employmentStatusWeight +
+                        monthlyIncomeWeight + educationalLevelWeight + digitalAccessWeight + dependencyRatioWeight;
 
             totalWeight = Math.round(totalWeight * 100.0) / 100.0;
 

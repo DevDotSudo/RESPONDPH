@@ -266,7 +266,6 @@ public class DashboardController {
         for (EvacSiteMarker site : evacSites) {
             if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
 
-            // keep polygon filtering
             if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
 
             try {

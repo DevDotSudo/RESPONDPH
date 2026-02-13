@@ -38,9 +38,12 @@ public interface AidDAO {
     List<String> getAllBarangays();
 
 
-    List<String> getBarangaysByDisaster(int disasterId);
+    List<String> getBarangaysByDisaster(int disasterId, int aidTypeId);
 
     List<String> getDistinctAidNames();
+    // Add this new method to the interface
+    List<String> getBarangaysByAidNameAndDisaster(int disasterId, String aidName);
+
 
 
 

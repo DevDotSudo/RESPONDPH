@@ -14,4 +14,5 @@ public interface DashBoardDAO {
     List<DisasterCircleEncrypted> fetchAllEncrypted();
     List<BeneficiariesMappingModel> fetchAllBeneficiaries();
     List<EvacSiteMappingModel> fetchAllEvacSites();
+    int getDistinctAidCount();
 }

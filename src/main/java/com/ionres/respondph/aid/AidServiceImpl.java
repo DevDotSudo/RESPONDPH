@@ -313,12 +313,7 @@ public class AidServiceImpl implements AidService {
                 "FCM Distribution (Multi-Barangay)", disasterContext);
     }
 
-    /**
-     * Preview FCM distribution (all barangays).
-     * Returns FCM BeneficiaryCluster objects cast/wrapped to the common
-     * KMeans BeneficiaryCluster type so the controller can reuse its existing
-     * preview rendering without changes.
-     */
+
     @Override
     public List<BeneficiaryCluster> previewAidDistributionFCM(
             int aidTypeId, int disasterId,
@@ -492,12 +487,7 @@ public class AidServiceImpl implements AidService {
         return out;
     }
 
-    /**
-     * Convert FCM BeneficiaryCluster list → KMeans BeneficiaryCluster list
-     * so the controller can reuse its existing preview/print logic.
-     * The clusterPriorityLabel is copied into scoreCategory slot, and
-     * cluster index is preserved.
-     */
+
     private List<BeneficiaryCluster> fromFCMList(List<FCMAidDistribution.BeneficiaryCluster> src) {
         List<BeneficiaryCluster> out = new ArrayList<>();
         for (FCMAidDistribution.BeneficiaryCluster b : src) {

@@ -3,18 +3,22 @@ package com.ionres.respondph.dashboard;
 import com.ionres.respondph.common.model.DisasterCircleEncrypted;
 import com.ionres.respondph.common.model.EvacSiteMappingModel;
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.ResourceUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DashBoardDAOImpl implements DashBoardDAO {
     private static final Logger LOGGER = Logger.getLogger(DashBoardDAOImpl.class.getName());
     private final DBConnection connection;
+    Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
     public DashBoardDAOImpl(DBConnection connection) {
         this.connection = connection;
@@ -32,8 +36,44 @@ public class DashBoardDAOImpl implements DashBoardDAO {
 
     @Override
     public int getTotalAids() {
-        return getCount("SELECT COUNT(*) FROM aid_type");
+        return getDistinctAidCount();
     }
+
+    @Override
+    public int getDistinctAidCount() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Set<String> uniqueAidNames = new HashSet<>();
+
+        try {
+            conn = connection.getConnection();
+            String sql = "SELECT DISTINCT name FROM aid WHERE name IS NOT NULL";
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String encryptedName = rs.getString("name");
+                try {
+                    String decryptedName = cs.decryptWithOneParameter(encryptedName);
+                    if (decryptedName != null && !decryptedName.trim().isEmpty()) {
+                        uniqueAidNames.add(decryptedName.trim().toLowerCase());
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error decrypting aid name" + e);
+                }
+            }
+
+
+        } catch (Exception e) {
+            System.out.println("Error decrypting aid name" + e);
+        } finally {
+            ResourceUtils.closeResources(rs, ps);
+        }
+
+        return uniqueAidNames.size();
+    }
+
 
     @Override
     public int getTotalEvacutaionSites() {

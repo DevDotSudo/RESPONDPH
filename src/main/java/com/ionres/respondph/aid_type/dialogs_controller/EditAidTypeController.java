@@ -236,7 +236,6 @@ public class EditAidTypeController {
             System.out.println("Aid Type ID: " + aidTypeId);
             System.out.println("Admin ID: " + adminId);
 
-            // ✅ NEW: Get all beneficiary-disaster pairs that have household scores
             java.util.List<BeneficiaryDisasterPair> beneficiaryDisasterPairs =
                     getAllBeneficiaryDisasterPairsWithHouseholdScores();
 
@@ -276,13 +275,6 @@ public class EditAidTypeController {
             System.out.println("Successfully calculated: " + successCount + " out of " +
                     beneficiaryDisasterPairs.size());
             System.out.println("Failed: " + failCount);
-
-            if (failCount > 0) {
-                AlertDialogManager.showWarning("Partial Success",
-                        "Aid type created successfully.\n" +
-                                "Calculated scores for " + successCount + " beneficiary-disaster pairs.\n" +
-                                "Failed to calculate scores for " + failCount + " pairs.");
-            }
 
         } catch (Exception e) {
             System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());

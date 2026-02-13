@@ -3,10 +3,7 @@ package com.ionres.respondph.beneficiary.dialogs_controller;
 import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.common.controller.MappingDialogController;
 import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
-import com.ionres.respondph.util.DialogManager;
-import com.ionres.respondph.util.UpdateTrigger;
+import com.ionres.respondph.util.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -105,6 +102,8 @@ public class AddBeneficiariesDialogController {
         exitBtn.setOnAction(handlers);
         addBeneficiaryBtn.setOnAction(handlers);
         getLocationBtn.setOnAction(handlers);
+
+        PhoneNumberValidator.setupInputFilter(mobileNumberFld);
     }
 
     private void handleActions(ActionEvent event) {
@@ -180,8 +179,8 @@ public class AddBeneficiariesDialogController {
                 AlertDialogManager.showWarning("Warning", "Gender is required");
                 return;
             }
-            if (mobileNumber.isEmpty()) {
-                AlertDialogManager.showWarning("Warning", "Mobile number is required");
+            if (!PhoneNumberValidator.isValid(mobileNumber)) {
+                AlertDialogManager.showWarning("Invalid Mobile Number", PhoneNumberValidator.getErrorMessage(mobileNumber));
                 return;
             }
             if (maritalStatus == null) {
@@ -265,7 +264,6 @@ public class AddBeneficiariesDialogController {
                 if (newBeneficiaryId > 0) {
                     int adminId = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminId();
 
-                    // Calculate and save household scores
 
                     UpdateTrigger trigger = new UpdateTrigger();
                     boolean cascadeSuccess = trigger.triggerCascadeUpdate(newBeneficiaryId);

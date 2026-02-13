@@ -120,7 +120,7 @@ public class DashboardController {
                     String display = (admin.getFirstname() != null && !admin.getFirstname().isEmpty())
                             ? admin.getFirstname() + " " + admin.getLastname()
                             : admin.getUsername();
-                    adminNameLabel.setText("Admin : " + display);
+                    adminNameLabel.setText("Loggen in : " + display);
                 }
             });
         });
@@ -266,7 +266,6 @@ public class DashboardController {
         for (EvacSiteMarker site : evacSites) {
             if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
 
-            // keep polygon filtering
             if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
 
             try {

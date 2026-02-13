@@ -4,7 +4,6 @@ import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.familymembers.FamilyMemberService;
 import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
-import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.UpdateTrigger;
 import javafx.event.ActionEvent;

@@ -7,12 +7,6 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane styleClass="send-sms-root" stylesheets="@/styles/send_sms/sendsms.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.sendsms.SendSMSController">
-
-    <fx:define>
-        <ToggleGroup fx:id="smsMode" />
-        <ToggleGroup fx:id="newsAiResponse" />
-    </fx:define>
-
     <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <!-- ==================== HEADER ==================== -->
@@ -43,6 +37,27 @@
                 <padding>
                     <Insets top="20.0" />
                 </padding>
+
+                  <!-- ==================== CUSTOM EVACUATION MESSAGE SUBSECTION ==================== -->
+                  <VBox spacing="12" styleClass="evacuation-subsection">
+                      <VBox spacing="8">
+                          <Label styleClass="subsection-title" text="Evacuation SMS Template" />
+                          <Label styleClass="field-helper-text" text="Create a custom message template for evacuation SMS notifications. Use placeholders: {name}, {evacSite}" wrapText="true" />
+                      </VBox>
+
+                      <VBox spacing="8">
+                          <Label styleClass="input-label" text="Custom Evacuation Message:" />
+                          <TextArea fx:id="txtCustomEvacMessage" prefRowCount="3" promptText="Example: URGENT: {name}, evacuate immediately to {evacSite}. Bring essential items only." styleClass="message-textarea" wrapText="true" />
+                      </VBox>
+
+                      <HBox alignment="CENTER_RIGHT" spacing="12">
+                          <Button fx:id="btnSaveEvacMessage" onAction="#onSaveEvacMessage" styleClass="btn-success" text="Save Template">
+                              <padding>
+                                  <Insets left="20" right="20" />
+                              </padding>
+                          </Button>
+                      </HBox>
+                  </VBox>
 
                 <!-- ==================== NEWS SECTION ==================== -->
                 <VBox spacing="15" styleClass="news-section">
@@ -99,27 +114,6 @@
 
                     </VBox>
                 </VBox>
-
-                  <!-- ==================== CUSTOM EVACUATION MESSAGE SUBSECTION ==================== -->
-                  <VBox spacing="12" styleClass="evacuation-subsection">
-                      <VBox spacing="8">
-                          <Label styleClass="subsection-title" text="Evacuation SMS Template" />
-                          <Label styleClass="field-helper-text" text="Create a custom message template for evacuation SMS notifications. Use placeholders: {name}, {evacSite}" wrapText="true" />
-                      </VBox>
-
-                      <VBox spacing="8">
-                          <Label styleClass="input-label" text="Custom Evacuation Message:" />
-                          <TextArea fx:id="txtCustomEvacMessage" prefRowCount="3" promptText="Example: URGENT: {name}, evacuate immediately to {evacSite}. Bring essential items only." styleClass="message-textarea" wrapText="true" />
-                      </VBox>
-
-                      <HBox alignment="CENTER_RIGHT" spacing="12">
-                          <Button fx:id="btnSaveEvacMessage" onAction="#onSaveEvacMessage" styleClass="btn-success" text="Save Template">
-                              <padding>
-                                  <Insets left="20" right="20" />
-                              </padding>
-                          </Button>
-                      </HBox>
-                  </VBox>
 
                 <!-- ==================== MESSAGE CONTENT SECTION ==================== -->
                 <VBox spacing="15" styleClass="message-section">

@@ -84,7 +84,7 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
 
     @Override
     public boolean insertEvacPlan(int beneficiaryId, int evacSiteId, int disasterId, String notes) {
-        String sql = "INSERT INTO evac_plan (beneficiary_id, evac_site_id, disaster_id, datetime, notes) " +
+        String sql = "INSERT IGNORE INTO evac_plan (beneficiary_id, evac_site_id, disaster_id, datetime, notes) " +
                 "VALUES (?, ?, ?, NOW(), ?)";
 
         try {
@@ -97,6 +97,12 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
 
             int rowsAffected = ps.executeUpdate();
             ps.close();
+
+            if (rowsAffected == 0) {
+                System.out.println("[DUPLICATE] Beneficiary #" + beneficiaryId +
+                        " already assigned to disaster #" + disasterId + " — insert skipped.");
+            }
+
             return rowsAffected > 0;
 
         } catch (SQLException e) {
@@ -193,17 +199,20 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
                         "    d.name AS disaster_name, " +
                         "    ep.datetime, " +
                         "    ep.notes, " +
-                        "    COALESCE(ahs.household_members, " +
-                        "        (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ep.beneficiary_id) + 1) AS household_members " +
+                        "    COALESCE(" +
+                        "        (SELECT ahs2.household_members " +
+                        "         FROM aid_and_household_score ahs2 " +
+                        "         WHERE ahs2.beneficiary_id = ep.beneficiary_id " +
+                        "           AND ahs2.disaster_id = ep.disaster_id " +
+                        "         ORDER BY ahs2.beneficiary_family_score_id DESC " +
+                        "         LIMIT 1), " +
+                        "        (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ep.beneficiary_id) + 1" +
+                        "    ) AS household_members " +
                         "FROM evac_plan ep " +
                         "INNER JOIN beneficiary b ON ep.beneficiary_id = b.beneficiary_id " +
                         "INNER JOIN evac_site es ON ep.evac_site_id = es.evac_id " +
                         "INNER JOIN disaster d ON ep.disaster_id = d.disaster_id " +
-                        "LEFT JOIN aid_and_household_score ahs " +
-                        "    ON ep.beneficiary_id = ahs.beneficiary_id " +
-                        "    AND ep.disaster_id = ahs.disaster_id " +
                         "ORDER BY ep.datetime DESC";
-
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -577,7 +586,6 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
                 return evacSiteId;
             }
 
-            // ADD LOGGING TO DEBUG
             System.out.println("DEBUG: No assignment found for beneficiary " + beneficiaryId + ", disaster " + disasterId);
 
             rs.close();

@@ -230,9 +230,70 @@
     </left>
 
     <center>
-        <StackPane styleClass="content-shell">
+        <StackPane fx:id="contentShell" styleClass="content-shell">
             <VBox fx:id="contentArea" styleClass="content-area"/>
+
+            <VBox fx:id="smsProgressToast"
+                  visible="false" managed="false"
+                  spacing="8"
+                  styleClass="sms-toast"
+                  StackPane.alignment="BOTTOM_RIGHT">
+
+                <!-- HEADER -->
+                <HBox alignment="CENTER_LEFT" styleClass="sms-toast-header">
+
+                    <Label fx:id="smsProgressTitle"
+                           text="Sending SMS (API)"
+                           styleClass="sms-toast-title"
+                           HBox.hgrow="ALWAYS"/>
+
+                    <!-- Flat Icons Top Right -->
+                    <HBox alignment="CENTER_RIGHT" spacing="6">
+
+                        <Button fx:id="smsMinimizeBtn"
+                                text="–"
+                                styleClass="sms-icon-btn"/>
+
+                        <Button fx:id="smsCloseBtn"
+                                text="✕"
+                                styleClass="sms-icon-btn"/>
+
+                    </HBox>
+                </HBox>
+
+                <!-- BODY -->
+                <VBox fx:id="smsToastBody"
+                      spacing="6"
+                      styleClass="sms-toast-body">
+
+                    <Label fx:id="smsProgressMessage"
+                           text="Sending 1 of 200"
+                           styleClass="sms-toast-subtitle"/>
+
+                    <ProgressBar fx:id="smsProgressBar"
+                                 prefWidth="260"
+                                 styleClass="sms-toast-progress"/>
+                </VBox>
+
+            </VBox>
         </StackPane>
     </center>
+
+    <bottom>
+        <HBox fx:id="footerBar"
+              visible="false" managed="false"
+              alignment="CENTER_RIGHT"
+              spacing="10"
+              styleClass="main-footer">
+
+            <Label fx:id="footerStatusLabel"
+                   text="SMS sending in background..."
+                   styleClass="footer-text"/>
+
+            <Button fx:id="btnShowProgress"
+                    text="Show progress"
+                    styleClass="footer-link-button"/>
+        </HBox>
+    </bottom>
 
 </BorderPane>

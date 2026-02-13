@@ -1,6 +1,7 @@
 package com.ionres.respondph.sendsms;
 
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.common.interfaces.BulkProgressListener;
 import com.ionres.respondph.util.SMSApi;
 import com.ionres.respondph.util.SMSSender;
 
@@ -10,10 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SmsServiceImpl implements SmsService {
-
+    private volatile BulkProgressListener bulkProgressListener;
     private final SmsDAO smsDAO;
     private final SMSApi smsApi;
     private final SMSSender smsSender;
+
+    private final Object bulkLock = new Object();
+    private boolean gsmBulkActive = false;
+    private int gsmTotal = 0;
+    private int gsmDone = 0;
+    private int gsmSuccess = 0;
 
     public SmsServiceImpl() {
         this.smsDAO = new SmsDAOImpl();
@@ -21,6 +28,10 @@ public class SmsServiceImpl implements SmsService {
         this.smsSender = SMSSender.getInstance();
 
         this.smsSender.addSendResultListener(this::handleSendResult);
+    }
+
+    public void setBulkProgressListener(BulkProgressListener listener) {
+        this.bulkProgressListener = listener;
     }
 
     public SmsServiceImpl(SmsDAO smsDAO) {
@@ -31,8 +42,8 @@ public class SmsServiceImpl implements SmsService {
         this.smsSender.addSendResultListener(this::handleSendResult);
     }
 
-
-    private void handleSendResult(SMSSender.SendResult result) {
+    @Override
+    public void handleSendResult(SMSSender.SendResult result) {
         try {
             SmsModel smsModel = new SmsModel();
             smsModel.setBeneficiaryID(result.getBeneficiaryId());
@@ -52,6 +63,24 @@ public class SmsServiceImpl implements SmsService {
             System.err.println("Error saving SMS result to database: " + e.getMessage());
             e.printStackTrace();
         }
+
+        boolean active;
+        int done, total, success;
+
+        synchronized (bulkLock) {
+            active = gsmBulkActive;
+            if (!active) return;
+
+            gsmDone++;
+            if (result.isSuccess()) gsmSuccess++;
+
+            done = gsmDone;
+            total = gsmTotal;
+            success = gsmSuccess;
+        }
+
+        notifyProgress(done, total, success, "GSM");
+        endGsmBulkSessionIfDone();
     }
 
     @Override
@@ -130,6 +159,7 @@ public class SmsServiceImpl implements SmsService {
     public int sendBulkSMS(List<BeneficiaryModel> beneficiaries, String message, String method) {
         if (beneficiaries == null || beneficiaries.isEmpty()) {
             System.err.println("No beneficiaries to send SMS to");
+            notifyFinished(0, 0, method);
             return 0;
         }
 
@@ -139,28 +169,29 @@ public class SmsServiceImpl implements SmsService {
         int successCount = 0;
 
         if ("API".equalsIgnoreCase(method)) {
-            // API method - send one by one with rate limiting
+
+            int total = 0;
+            // count valid recipients
+            for (BeneficiaryModel b : beneficiaries) {
+                String phone = b.getMobileNumber();
+                if (phone != null && !phone.trim().isEmpty()) total++;
+            }
+
+            int done = 0;
+            notifyProgress(0, total, 0, "API");
+
             for (BeneficiaryModel beneficiary : beneficiaries) {
                 String phone = beneficiary.getMobileNumber();
-                if (phone == null || phone.trim().isEmpty()) {
-                    System.out.println("DEBUG: Skipping beneficiary " + beneficiary.getId() +
-                            " - no phone number");
-                    continue;
-                }
+                if (phone == null || phone.trim().isEmpty()) continue;
 
                 String fullname = buildFullName(beneficiary);
-                System.out.println("DEBUG: Sending to " + fullname + " (" + phone + ")");
 
-                boolean sent = sendSingleSMS(phone.trim(), fullname, message, method);
+                boolean sent = sendSingleSMS(phone.trim(), fullname, message, "API");
+                done++;
+                if (sent) successCount++;
 
-                if (sent) {
-                    successCount++;
-                    System.out.println("DEBUG: Successfully sent to " + fullname);
-                } else {
-                    System.err.println("DEBUG: Failed to send to " + fullname);
-                }
+                notifyProgress(done, total, successCount, "API");
 
-                // Rate limiting for API
                 try {
                     Thread.sleep(300);
                 } catch (InterruptedException ignored) {
@@ -169,10 +200,14 @@ public class SmsServiceImpl implements SmsService {
                 }
             }
 
+            notifyFinished(total, successCount, "API");
+            return successCount;
+
         } else if ("GSM".equalsIgnoreCase(method)) {
-            // GSM method - use bulk send with listener handling DB saves
+
             if (!smsSender.isConnected()) {
                 System.err.println("GSM modem not connected");
+                notifyFinished(0, 0, "GSM");
                 return 0;
             }
 
@@ -189,15 +224,22 @@ public class SmsServiceImpl implements SmsService {
                 ids.add(beneficiary.getId());
             }
 
-            System.out.println("DEBUG: Sending bulk GSM to " + numbers.size() + " recipients");
-            successCount = smsSender.sendBulkSMS(numbers, names, ids, message, 1000, 3);
-            System.out.println("DEBUG: GSM bulk send complete - " + successCount + " sent");
+            int total = numbers.size();
+            if (total == 0) {
+                notifyFinished(0, 0, "GSM");
+                return 0;
+            }
+
+            startGsmBulkSession(total);
+            System.out.println("DEBUG: Sending bulk GSM to " + total + " recipients");
+            smsSender.sendBulkSMS(numbers, names, ids, message, 1000, 3);
+
+            return 0;
         }
 
-        System.out.println("DEBUG: Bulk send complete - " + successCount + "/" +
-                beneficiaries.size() + " sent successfully");
-
-        return successCount;
+        System.err.println("Unknown method: " + method);
+        notifyFinished(0, 0, method);
+        return 0;
     }
 
     @Override
@@ -238,6 +280,50 @@ public class SmsServiceImpl implements SmsService {
     @Override
     public List<SmsModel> getSMSLogsByStatus(String status) {
         return smsDAO.getSMSByStatus(status);
+    }
+
+    @Override
+    public void notifyProgress(int done, int total, int success, String method) {
+        BulkProgressListener l = bulkProgressListener;
+        if (l != null) l.onProgress(done, total, success, method);
+    }
+
+    @Override
+    public void notifyFinished(int total, int success, String method) {
+        BulkProgressListener l = bulkProgressListener;
+        if (l != null) l.onFinished(total, success, method);
+    }
+
+    @Override
+    public void startGsmBulkSession(int total) {
+        synchronized (bulkLock) {
+            gsmBulkActive = true;
+            gsmTotal = total;
+            gsmDone = 0;
+            gsmSuccess = 0;
+        }
+        notifyProgress(0, total, 0, "GSM");
+    }
+
+    @Override
+    public void endGsmBulkSessionIfDone() {
+        boolean finished;
+        int total, success;
+
+        synchronized (bulkLock) {
+            finished = gsmBulkActive && gsmDone >= gsmTotal;
+            total = gsmTotal;
+            success = gsmSuccess;
+
+            if (finished) {
+                gsmBulkActive = false;
+                gsmTotal = 0;
+                gsmDone = 0;
+                gsmSuccess = 0;
+            }
+        }
+
+        if (finished) notifyFinished(total, success, "GSM");
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.ionres.respondph.sendsms;
 
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.common.interfaces.BulkProgressListener;
 import com.ionres.respondph.common.services.NewsGeneratorService;
+import com.ionres.respondph.main.MainFrameController;
 import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
 import com.ionres.respondph.util.*;
 import javafx.application.Platform;
@@ -14,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.concurrent.Task;
 
 import java.net.URI;
 import java.net.URL;
@@ -940,16 +943,66 @@ public class SendSMSController implements Initializable {
     private void sendSMSToRecipients(List<BeneficiaryModel> recipients, String message, String method) {
         setSmsLoading(true);
 
-        new Thread(() -> {
-            int successCount = smsService.sendBulkSMS(recipients, message, method);
+        MainFrameController main = MainFrameController.getInstance();
+        int total = recipients.size();
 
-            Platform.runLater(() -> {
-                setSmsLoading(false);
-                AlertDialogManager.showSuccess("Send Complete",
-                        successCount + " of " + recipients.size() + " messages sent.");
-                loadSMSLogs();
+        if (main != null) {
+            main.showSmsProgress("Sending SMS (" + method + ")", total);
+            main.setSmsCount(0, total);
+        }
+
+        SmsServiceImpl impl = (smsService instanceof SmsServiceImpl) ? (SmsServiceImpl) smsService : null;
+
+        if (impl != null) {
+            impl.setBulkProgressListener(new BulkProgressListener() {
+                @Override
+                public void onProgress(int done, int total, int successCount, String m) {
+                    Platform.runLater(() -> {
+                        MainFrameController mf = MainFrameController.getInstance();
+                        if (mf != null) mf.setSmsCount(done, total);
+                    });
+                }
+
+                @Override
+                public void onFinished(int total, int successCount, String m) {
+                    Platform.runLater(() -> {
+                        setSmsLoading(false);
+
+                        MainFrameController mf = MainFrameController.getInstance();
+                        if (mf != null) mf.hideSmsProgress();
+
+                        AlertDialogManager.showSuccess(
+                                "Send Complete",
+                                successCount + " of " + total + " messages sent. (" + m + ")"
+                        );
+                        loadSMSLogs();
+                    });
+                }
             });
-        }).start();
+        }
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                smsService.sendBulkSMS(recipients, message, method);
+                return null;
+            }
+        };
+
+        task.setOnFailed(ev -> Platform.runLater(() -> {
+            setSmsLoading(false);
+
+            MainFrameController mf = MainFrameController.getInstance();
+            if (mf != null) mf.hideSmsProgress();
+
+            Throwable ex = task.getException();
+            AlertDialogManager.showError("Send Failed", ex != null ? ex.getMessage() : "Unknown error");
+            loadSMSLogs();
+        }));
+
+        Thread t = new Thread(task, "SMS-Bulk-Thread");
+        t.setDaemon(true);
+        t.start();
     }
 
     private void updateSendButtonState() {

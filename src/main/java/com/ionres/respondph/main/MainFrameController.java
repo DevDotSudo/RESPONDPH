@@ -3,11 +3,16 @@ package com.ionres.respondph.main;
 import com.ionres.respondph.util.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.animation.RotateTransition;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -15,10 +20,26 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class MainFrameController {
-
+    private static MainFrameController INSTANCE;
+    public static MainFrameController getInstance() { return INSTANCE; }
     @FXML private VBox contentArea;
+    @FXML private VBox smsProgressToast;
+    @FXML private VBox smsToastBody;
+    @FXML private Label smsProgressTitle;
+    @FXML private Label smsProgressMessage;
+    @FXML private ProgressBar smsProgressBar;
+    @FXML private Button smsMinimizeBtn;
+    @FXML private Button smsCloseBtn;
 
-    // Section headers (some may be absent depending on FXML)
+    // Footer (NEW)
+    @FXML private HBox footerBar;
+    @FXML private Label footerStatusLabel;
+    @FXML private Button btnShowProgress;
+
+    private boolean smsMinimized = false;
+    private Task<?> currentSmsTask;
+
+    // ====== Existing section headers ======
     @FXML private Button managementSectionBtn;
     @FXML private Button disasterSectionBtn;
     @FXML private Button aidsSectionBtn;
@@ -64,8 +85,29 @@ public class MainFrameController {
 
     @FXML
     public void initialize() {
+        INSTANCE = this;
+        if (smsMinimizeBtn != null) {
+            smsMinimizeBtn.setOnAction(e -> minimizeSmsToastToFooter());
+        }
+        if (smsCloseBtn != null) {
+            smsCloseBtn.setOnAction(e -> {
+                if (currentSmsTask != null) currentSmsTask.cancel();
+                hideSmsProgress();
+            });
+        }
+        if (btnShowProgress != null) {
+            btnShowProgress.setOnAction(e -> showSmsProgressFromFooter());
+        }
 
-        // Only wires sections that exist in your FXML (prevents NPE)
+        if (smsProgressToast != null) {
+            smsProgressToast.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            smsProgressToast.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        }
+
+        if (smsToastBody != null) {
+            smsToastBody.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        }
+
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn, disasterSectionContent, disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn, aidsSectionContent, aidsSectionIcon);
@@ -98,7 +140,144 @@ public class MainFrameController {
         if (sendSmsBtn != null) sendSmsBtn.setOnAction(handlers);
         if (settingsBtn != null) settingsBtn.setOnAction(handlers);
         if (logoutBtn != null) logoutBtn.setOnAction(handlers);
+
+        // hide footer initially
+        hideFooter();
+        hideSmsProgress();
     }
+
+    // =========================
+    // SMS Progress API (CALL THIS FROM SendSMS)
+    // =========================
+
+    /** Call once before starting sending. */
+    public void showSmsProgress(String title, int total) {
+        Platform.runLater(() -> {
+            smsMinimized = false;
+
+            if (smsProgressTitle != null) smsProgressTitle.setText(title == null ? "Sending SMS" : title);
+            setSmsCount(0, total);
+
+            if (smsToastBody != null) {
+                smsToastBody.setVisible(true);
+                smsToastBody.setManaged(true);
+            }
+            if (smsMinimizeBtn != null) {
+                smsMinimizeBtn.setVisible(true);
+                smsMinimizeBtn.setManaged(true);
+            }
+
+            // show toast
+            if (smsProgressToast != null) {
+                smsProgressToast.setVisible(true);
+                smsProgressToast.setManaged(true);
+            }
+            // hide footer while toast is visible
+            hideFooter();
+        });
+    }
+
+    /** Update UI: "Sending 1 of 200" and progress bar value. */
+    public void setSmsCount(int sent, int total) {
+        Platform.runLater(() -> {
+            String msg = "Sending " + sent + " of " + total;
+
+            if (smsProgressMessage != null) smsProgressMessage.setText(msg);
+            if (smsProgressBar != null) {
+                double p = (total <= 0) ? 0 : (sent * 1.0 / total);
+                smsProgressBar.setProgress(p);
+            }
+
+            // If minimized, keep footer updated
+            if (smsMinimized) {
+                showFooter(msg);
+            } else {
+                if (footerStatusLabel != null) footerStatusLabel.setText(msg);
+            }
+        });
+    }
+
+    /** Optional: bind to a Task so it auto-hides on finish/fail/cancel. */
+    public void bindSmsTask(Task<?> task) {
+        Platform.runLater(() -> {
+            currentSmsTask = task;
+            if (task == null) return;
+
+            task.setOnSucceeded(e -> hideSmsProgress());
+            task.setOnFailed(e -> hideSmsProgress());
+            task.setOnCancelled(e -> hideSmsProgress());
+        });
+    }
+
+    /** Hide everything (toast + footer). */
+    public void hideSmsProgress() {
+        Platform.runLater(() -> {
+            smsMinimized = false;
+            currentSmsTask = null;
+
+            if (smsProgressToast != null) {
+                smsProgressToast.setVisible(false);
+                smsProgressToast.setManaged(false);
+            }
+            hideFooter();
+        });
+    }
+
+    private void minimizeSmsToastToFooter() {
+        if (smsMinimized) return;
+        smsMinimized = true;
+
+        // hide toast body
+        if (smsToastBody != null) {
+            smsToastBody.setVisible(false);
+            smsToastBody.setManaged(false);
+        }
+        // hide toast itself (so footer is the handle)
+        if (smsProgressToast != null) {
+            smsProgressToast.setVisible(false);
+            smsProgressToast.setManaged(false);
+        }
+
+        // show footer with latest message
+        String msg = (smsProgressMessage != null) ? smsProgressMessage.getText() : "Sending...";
+        showFooter(msg);
+    }
+
+    private void showSmsProgressFromFooter() {
+        if (!smsMinimized) return; // only relevant when minimized
+
+        smsMinimized = false;
+
+        if (smsToastBody != null) {
+            smsToastBody.setVisible(true);
+            smsToastBody.setManaged(true);
+        }
+        if (smsProgressToast != null) {
+            smsProgressToast.setVisible(true);
+            smsProgressToast.setManaged(true);
+        }
+
+        hideFooter();
+    }
+
+    private void showFooter(String text) {
+        if (footerStatusLabel != null) footerStatusLabel.setText(text == null ? "SMS sending..." : text);
+        if (footerBar != null) {
+            footerBar.setVisible(true);
+            footerBar.setManaged(true);
+        }
+    }
+
+    private void hideFooter() {
+        if (footerBar != null) {
+            footerBar.setVisible(false);
+            footerBar.setManaged(false);
+        }
+    }
+
+    // =========================
+    // Existing navigation/section code
+    // =========================
 
     private void collapseAllSections() {
         collapseSection(managementSectionContent, managementSectionIcon);
@@ -115,7 +294,6 @@ public class MainFrameController {
     }
 
     private void setupSectionToggle(Button sectionBtn, VBox sectionContent, FontAwesomeIconView chevronIcon) {
-        // This is the actual fix for your NullPointerException
         if (sectionBtn == null || sectionContent == null || chevronIcon == null) return;
         sectionBtn.setOnAction(e -> toggleSectionExclusive(sectionContent, chevronIcon));
     }
@@ -123,7 +301,6 @@ public class MainFrameController {
     private void toggleSectionExclusive(VBox sectionContent, FontAwesomeIconView chevronIcon) {
         boolean willOpen = !sectionContent.isVisible();
 
-        // Collapse only those that exist
         collapseAllSections();
 
         if (willOpen) {
@@ -186,7 +363,6 @@ public class MainFrameController {
         } else if (src == logoutBtn) {
             handleLogout();
         }
-        // Aids/Evac child buttons will work once you add them in FXML
         else if (src == aidBtn) {
             ensureSectionOpen(aidsSectionContent, aidsSectionIcon);
             handleAid();
@@ -289,7 +465,6 @@ public class MainFrameController {
         SceneManager.SceneEntry<?> entry = SceneManager.load(fxml);
         Parent root = entry.getRoot();
 
-        // Java 11 compatible instanceof
         if (root instanceof Region) {
             Region region = (Region) root;
             region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);

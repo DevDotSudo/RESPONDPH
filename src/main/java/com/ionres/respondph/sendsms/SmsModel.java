@@ -99,4 +99,5 @@ public class SmsModel {
     public void setSendMethod(String sendMethod) {
         this.sendMethod = sendMethod;
     }
+
 }

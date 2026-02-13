@@ -239,3 +239,110 @@
     -fx-background-color: #0b1220;
     -fx-padding: 16px;
 }
+/* ========== SMALL BOTTOM-RIGHT SMS TOAST ========== */
+
+.sms-toast {
+    -fx-pref-width: 320px;
+    -fx-max-width: 320px;
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 18, 0, 0, 4);
+    -fx-translate-x: -18px;
+    -fx-translate-y: -18px;
+}
+/* Header like dialog-header */
+.sms-toast-header {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-radius: 8px 8px 0 0;
+
+    -fx-padding: 12px 12px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Title like dialog-title (slightly smaller) */
+.sms-toast-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 14.5px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 1);
+}
+
+/* Subtitle like dialog-subtitle */
+.sms-toast-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+}
+
+/* Body padding */
+.sms-toast-body {
+    -fx-padding: 10px 12px 12px 12px;
+}
+/* ===== Flat Icon Buttons ===== */
+
+.sms-icon-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+
+    -fx-min-width: 28px;
+    -fx-min-height: 22px;
+
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
+
+    -fx-text-fill: rgba(226,232,240,0.85);
+    -fx-cursor: hand;
+}
+
+.sms-icon-btn:hover {
+    -fx-text-fill: rgba(249,115,22,0.95);
+}
+
+.sms-icon-btn:pressed {
+    -fx-text-fill: rgba(239,68,68,0.95);
+}
+.sms-toast-progress {
+    -fx-pref-height: 6px;
+    -fx-min-height: 6px;
+    -fx-max-height: 6px;
+}
+
+.sms-toast .progress-bar {
+    -fx-accent: rgba(249,115,22,0.92);
+}
+
+.sms-toast .progress-bar .track {
+    -fx-background-color: rgba(148,163,184,0.18);
+    -fx-background-radius: 999px;
+}
+
+.sms-toast .progress-bar .bar {
+    -fx-background-radius: 999px;
+}
+/* footer */
+.main-footer {
+    -fx-padding: 8 14;
+    -fx-background-color: rgba(20, 22, 26, 0.92);
+    -fx-border-color: rgba(255,255,255,0.08);
+    -fx-border-width: 1 0 0 0;
+}
+
+.footer-text {
+    -fx-text-fill: rgba(255,255,255,0.85);
+    -fx-font-size: 12px;
+}
+
+.footer-link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: orange;
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.footer-link-button:hover { -fx-text-fill: #ffd199; }

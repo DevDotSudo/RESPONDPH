@@ -17,11 +17,27 @@
         <HBox alignment="CENTER_LEFT" styleClass="dashboard-topbar">
             <Label styleClass="dashboard-topbar-title"
                    text="Dashboard - Beneficiaries Mapping"/>
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <VBox alignment="CENTER_RIGHT" spacing="2" style="-fx-padding: 0 16 0 0;">
+                <Label text="Admin"
+                       styleClass="admin-role-label"/>
+                <Label fx:id="adminNameLabel"
+                       styleClass="admin-name-label"/>
+            </VBox>
+
+            <VBox alignment="CENTER_RIGHT" styleClass="clock-box">
+                <Label fx:id="currentTimeLabel"
+                       styleClass="clock-time"/>
+                <Label fx:id="currentDateLabel"
+                       styleClass="clock-date"/>
+            </VBox>
         </HBox>
 
         <GridPane hgap="16" vgap="16" styleClass="cards-grid">
 
             <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS"/>
                 <ColumnConstraints hgrow="ALWAYS"/>
                 <ColumnConstraints hgrow="ALWAYS"/>
                 <ColumnConstraints hgrow="ALWAYS"/>
@@ -85,6 +101,26 @@
 
                 </HBox>
             </StackPane>
+
+            <StackPane styleClass="flat-card-yellow" GridPane.columnIndex="3">
+                <HBox spacing="14" alignment="CENTER_LEFT" styleClass="flat-card-content">
+
+                    <StackPane styleClass="flat-icon">
+                        <FontAwesomeIconView glyphName="HOME"
+                                             styleClass="flat-icon-symbol"/>
+                    </StackPane>
+
+                    <VBox spacing="2">
+                        <Label fx:id="totalEvacutaionSiteLabel"
+                               styleClass="flat-value"
+                               text="0"/>
+                        <Label text="Evacuation Site"
+                               styleClass="flat-label"/>
+                    </VBox>
+
+                </HBox>
+            </StackPane>
+
 
         </GridPane>
 

@@ -3,6 +3,7 @@ package com.ionres.respondph.dashboard;
 import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.common.model.DisasterCircleEncrypted;
+import com.ionres.respondph.common.model.EvacSiteMarker;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.CryptographyManager;
@@ -34,6 +35,9 @@ public class DashBoardServiceImpl implements DashBoardService {
     public int fetchTotalAids() {
         return dashBoardDAO.getTotalAids();
     }
+
+    @Override
+    public int fetchTotalEvacuationSites() { return dashBoardDAO.getTotalEvacutaionSites(); }
 
     @Override
     public List<DisasterCircleInfo> getCircles() {
@@ -68,6 +72,30 @@ public class DashBoardServiceImpl implements DashBoardService {
 
             } catch (Exception ex) {
                 LOGGER.log(Level.WARNING, "Error decrypting beneficiary (ID: " + b.getId() + ")", ex);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<EvacSiteMarker> getEvacSites() {
+        List<EvacSiteMarker> result = new ArrayList<>();
+
+        for (EvacSiteMappingModel e : dashBoardDAO.fetchAllEvacSites()) {
+            try {
+                // Evac sites store coordinates as plain doubles in the database (not encrypted)
+                double lat = Double.parseDouble(e.getLat());
+                double lon = Double.parseDouble(e.getLng());
+
+                // Decrypt the name if it's encrypted
+                String name = CRYPTO.decryptWithOneParameter(e.getName());
+                int capacity = Integer.parseInt(e.getCapacity());
+
+                result.add(new EvacSiteMarker(e.getEvacId(), lat, lon, name, capacity));
+
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error processing evac site (ID: " + e.getEvacId() + ")", ex);
             }
         }
 

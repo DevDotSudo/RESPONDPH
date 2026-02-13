@@ -85,6 +85,7 @@ public class LoginController {
                         System.out.println("Closing login stage...");
                         loginStage.close();
 
+
                         System.out.println("Opening main screen...");
                         SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
                         System.out.println("Auto-login completed successfully!");

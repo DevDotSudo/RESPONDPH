@@ -111,3 +111,57 @@
     -fx-border-width: 1px;
 }
 
+/* Yellow */
+.flat-card-yellow {
+    -fx-background-color: rgba(234,179,8,0.08);
+    -fx-border-color: rgba(234,179,8,0.22);
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+    -fx-padding: 0;
+}
+.flat-card-yellow .flat-icon {
+    -fx-background-color: rgba(234,179,8,0.55);
+}
+.flat-card-yellow:hover {
+    -fx-border-color: rgba(255,255,255,0.20);
+    -fx-background-color: rgba(255,255,255,0.02);
+}
+
+.clock-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d0d7de;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 6 16 6 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);
+}
+
+.clock-time {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a2e;
+    -fx-font-family: "Segoe UI";
+}
+
+.clock-date {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6e7781;
+    -fx-font-family: "Segoe UI";
+}
+
+.admin-name-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-font-family: "Segoe UI";
+}
+
+.admin-role-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Segoe UI";
+}
+

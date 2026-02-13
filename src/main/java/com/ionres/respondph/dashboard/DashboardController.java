@@ -1,18 +1,25 @@
 package com.ionres.respondph.dashboard;
 
+import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.common.model.BeneficiaryMarker;
+import com.ionres.respondph.common.model.EvacSiteMarker;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.Mapping;
+import com.ionres.respondph.util.SessionManager;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +31,20 @@ public class DashboardController {
     @FXML private Label totalBeneficiaryLabel;
     @FXML private Label totalDisastersLabel;
     @FXML private Label totalAidsLabel;
+    @FXML private Label currentDateLabel;
+    @FXML private Label currentTimeLabel;
+    @FXML private Label totalEvacutaionSiteLabel;
+    @FXML private Label adminNameLabel;
     private Image personMarker;
     private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
     private static final double MARKER_WIDTH = 32;
     private static final double MARKER_HEIGHT = 32;
     private static final double MARKER_OFFSET_Y = MARKER_HEIGHT;
+    private final List<EvacSiteMarker> evacSites = new ArrayList<>();
+    private Image evacSiteMarker;
+    private static final double EVAC_MARKER_WIDTH = 32;
+    private static final double EVAC_MARKER_HEIGHT = 32;
+    private static final double EVAC_MARKER_OFFSET_Y = EVAC_MARKER_HEIGHT;
 
     private final double[][] boundary = {
             {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
@@ -44,13 +60,28 @@ public class DashboardController {
     };
 
     public void initialize() {
+        AdminModel admin1 = SessionManager.getInstance().getCurrentAdmin();
+        System.out.println("=== DashboardController.initialize() ===");
+        System.out.println("Admin from session: " + admin1);
+        if (admin1 != null) {
+            System.out.println("ID: " + admin1.getId());
+            System.out.println("Username: " + admin1.getUsername());
+            System.out.println("Firstname: " + admin1.getFirstname());
+            System.out.println("Lastname: " + admin1.getLastname());
+        }
+
         Platform.runLater(() -> {
-            // Load the marker image
             try {
                 personMarker = new Image(getClass().getResourceAsStream("/images/person_marker.png"));
                 if (personMarker.isError()) {
                     System.err.println("Failed to load marker image: " + personMarker.getException().getMessage());
                     personMarker = null;
+                }
+                // Load evacuation site marker
+                evacSiteMarker = new Image(getClass().getResourceAsStream("/images/location-pin.png"));
+                if (evacSiteMarker.isError()) {
+                    System.err.println("Failed to load evac site marker image: " + evacSiteMarker.getException().getMessage());
+                    evacSiteMarker = null;
                 }
             } catch (Exception e) {
                 System.err.println("Error loading marker image: " + e.getMessage());
@@ -60,11 +91,38 @@ public class DashboardController {
             mapping.init(mapContainer);
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
+                drawEvacSites();
                 drawBeneficiaries();
             });
             DashboardRefresher.register(this);
             loadDashBoardData();
             loadBeneficiariesFromDb();
+            loadEvacSitesFromDb();
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
+
+            Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
+                LocalDateTime now = LocalDateTime.now();
+                currentTimeLabel.setText(now.format(timeFormatter));
+                currentDateLabel.setText(now.format(dateFormatter));
+            }), new KeyFrame(Duration.seconds(1)));
+
+            clock.setCycleCount(Timeline.INDEFINITE);
+            clock.play();
+
+            AdminModel currentAdmin = SessionManager.getInstance().getCurrentAdmin();
+            System.out.println("Admin inside runLater: " + currentAdmin);
+
+            SessionManager.getInstance().setOnSessionChanged(() -> {
+                AdminModel admin = SessionManager.getInstance().getCurrentAdmin();
+                if (admin != null) {
+                    String display = (admin.getFirstname() != null && !admin.getFirstname().isEmpty())
+                            ? admin.getFirstname() + " " + admin.getLastname()
+                            : admin.getUsername();
+                    adminNameLabel.setText("Loggen in : " + display);
+                }
+            });
         });
     }
 
@@ -188,9 +246,74 @@ public class DashboardController {
         gc.stroke();
     }
 
+    private void drawEvacSites() {
+        if (!mapping.isInitialized() || evacSites.isEmpty()) return;
+
+        GraphicsContext gc = mapping.getGc();
+        double canvasWidth = mapping.getCanvas().getWidth();
+        double canvasHeight = mapping.getCanvas().getHeight();
+
+        double padding = 60;
+        double minX = -padding, maxX = canvasWidth + padding;
+        double minY = -padding, maxY = canvasHeight + padding;
+
+        boolean useMarkerImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
+
+        double dotRadius = 4; // same size as beneficiaries
+        Color dotFill = Color.rgb(234, 179, 8, 0.85);   // bright green fill
+        Color dotStroke = Color.rgb(234, 179, 8, 0.85);
+
+        for (EvacSiteMarker site : evacSites) {
+            if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
+
+            // keep polygon filtering
+            if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
+
+            try {
+                Mapping.Point p = mapping.latLonToScreen(site.lat, site.lon);
+
+                if (p.x < 0 || p.y < 0) continue;
+
+                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
+
+                if (useMarkerImage && evacSiteMarker != null) {
+                    double markerX = p.x - (EVAC_MARKER_WIDTH / 2);
+                    double markerY = p.y - EVAC_MARKER_OFFSET_Y;
+                    gc.drawImage(evacSiteMarker, markerX, markerY, EVAC_MARKER_WIDTH, EVAC_MARKER_HEIGHT);
+
+                } else if (useMarkerImage) {
+                    // Fallback: use GREEN color instead of red
+                    gc.setFill(Color.rgb(234, 179, 8, 0.85));
+                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
+                    gc.setStroke(Color.rgb(234, 179, 8, 0.85));
+                    gc.setLineWidth(1.5);
+                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
+
+                } else {
+                    gc.setFill(dotFill);
+                    gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+
+                    gc.setStroke(dotStroke);
+                    gc.setLineWidth(1.2);
+                    gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+                }
+
+            } catch (Exception ignored) {
+                // keep rendering others even if one fails
+            }
+        }
+    }
+    public void loadEvacSitesFromDb() {
+        evacSites.clear();
+        evacSites.addAll(dashBoardService.getEvacSites());
+        mapping.redraw();
+    }
+
     public void loadDashBoardData() {
         totalBeneficiaryLabel.setText(String.valueOf(dashBoardService.fetchTotalBeneficiary()));
         totalDisastersLabel.setText(String.valueOf(dashBoardService.fetchTotalDisasters()));
         totalAidsLabel.setText(String.valueOf(dashBoardService.fetchTotalAids()));
+        totalEvacutaionSiteLabel.setText(String.valueOf(dashBoardService.fetchTotalEvacuationSites()));
+        loadEvacSitesFromDb();
     }
 }

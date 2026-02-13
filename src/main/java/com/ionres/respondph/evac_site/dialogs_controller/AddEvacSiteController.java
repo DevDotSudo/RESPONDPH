@@ -91,6 +91,7 @@ public class AddEvacSiteController {
                 AlertDialogManager.showSuccess("Success", "Evacuation site has been successfully added.");
                 evacSiteController.loadTable();
                 clearFields();
+                DashboardRefresher.refresh();
                 DashboardRefresher.refreshEvacSiteMap();
             } else {
                 AlertDialogManager.showError("Error", "Failed to add evacuation site. Please try again.");

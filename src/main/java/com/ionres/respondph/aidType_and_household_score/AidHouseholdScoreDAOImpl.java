@@ -318,27 +318,27 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
         // Calculate combined scores WITH PROPER ROUNDING
         Double combinedAgeScore = null;
         if (household.ageScore != null && weights.ageWeight != null) {
-            combinedAgeScore = roundToFourDecimals(household.ageScore * weights.ageWeight);
+            combinedAgeScore = household.ageScore * weights.ageWeight;
         }
 
-        double combinedGenderScore = roundToFourDecimals(household.genderScore * weights.genderWeight);
-        double combinedMaritalScore = roundToFourDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
-        double combinedSoloParentScore = roundToFourDecimals(household.soloParentScore * weights.soloParentWeight);
-        double combinedDisabilityScore = roundToFourDecimals(household.disabilityScore * weights.disabilityWeight);
-        double combinedHealthScore = roundToFourDecimals(household.healthConditionScore * weights.healthConditionWeight);
-        double combinedWaterScore = roundToFourDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
-        double combinedSanitationScore = roundToFourDecimals(household.sanitationScore * weights.sanitationWeight);
-        double combinedHouseScore = roundToFourDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
-        double combinedOwnershipScore = roundToFourDecimals(household.ownershipScore * weights.ownershipWeight);
-        double combinedDamageScore = roundToFourDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
-        double combinedEmploymentScore = roundToFourDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
-        double combinedIncomeScore = roundToFourDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
-        double combinedEducationScore = roundToFourDecimals(household.educationLevelScore * weights.educationLevelWeight);
-        double combinedDigitalScore = roundToFourDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
+        double combinedGenderScore = household.genderScore * weights.genderWeight;
+        double combinedMaritalScore = household.maritalStatusScore * weights.maritalStatusWeight;
+        double combinedSoloParentScore = household.soloParentScore * weights.soloParentWeight;
+        double combinedDisabilityScore =household.disabilityScore * weights.disabilityWeight;
+        double combinedHealthScore = household.healthConditionScore * weights.healthConditionWeight;
+        double combinedWaterScore = household.cleanWaterScore * weights.cleanWaterWeight;
+        double combinedSanitationScore = household.sanitationScore * weights.sanitationWeight;
+        double combinedHouseScore = household.houseConstructionScore * weights.houseConstructionWeight;
+        double combinedOwnershipScore = household.ownershipScore * weights.ownershipWeight;
+        double combinedDamageScore = household.damageSeverityScore * weights.damageSeverityWeight;
+        double combinedEmploymentScore = household.employmentStatusScore * weights.employmentStatusWeight;
+        double combinedIncomeScore = household.monthlyIncomeScore * weights.monthlyIncomeWeight;
+        double combinedEducationScore = household.educationLevelScore * weights.educationLevelWeight;
+        double combinedDigitalScore = household.digitalAccessScore * weights.digitalAccessWeight;
 
         Double combinedDependencyScore = null;
         if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
-            combinedDependencyScore = roundToFourDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
+            combinedDependencyScore = household.dependencyRatioScore * weights.dependencyRatioWeight;
         }
 
         // ✅ IMPROVED: Check for existing record - first try with specific disaster_id, then with NULL
@@ -491,27 +491,27 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
         // Calculate combined scores WITH PROPER ROUNDING
         Double combinedAgeScore = null;
         if (household.ageScore != null && weights.ageWeight != null) {
-            combinedAgeScore = roundToFourDecimals(household.ageScore * weights.ageWeight);
+            combinedAgeScore = household.ageScore * weights.ageWeight;
         }
 
-        double combinedGenderScore = roundToFourDecimals(household.genderScore * weights.genderWeight);
-        double combinedMaritalScore = roundToFourDecimals(household.maritalStatusScore * weights.maritalStatusWeight);
-        double combinedSoloParentScore = roundToFourDecimals(household.soloParentScore * weights.soloParentWeight);
-        double combinedDisabilityScore = roundToFourDecimals(household.disabilityScore * weights.disabilityWeight);
-        double combinedHealthScore = roundToFourDecimals(household.healthConditionScore * weights.healthConditionWeight);
-        double combinedWaterScore = roundToFourDecimals(household.cleanWaterScore * weights.cleanWaterWeight);
-        double combinedSanitationScore = roundToFourDecimals(household.sanitationScore * weights.sanitationWeight);
-        double combinedHouseScore = roundToFourDecimals(household.houseConstructionScore * weights.houseConstructionWeight);
-        double combinedOwnershipScore = roundToFourDecimals(household.ownershipScore * weights.ownershipWeight);
-        double combinedDamageScore = roundToFourDecimals(household.damageSeverityScore * weights.damageSeverityWeight);
-        double combinedEmploymentScore = roundToFourDecimals(household.employmentStatusScore * weights.employmentStatusWeight);
-        double combinedIncomeScore = roundToFourDecimals(household.monthlyIncomeScore * weights.monthlyIncomeWeight);
-        double combinedEducationScore = roundToFourDecimals(household.educationLevelScore * weights.educationLevelWeight);
-        double combinedDigitalScore = roundToFourDecimals(household.digitalAccessScore * weights.digitalAccessWeight);
+        double combinedGenderScore = household.genderScore * weights.genderWeight;
+        double combinedMaritalScore = household.maritalStatusScore * weights.maritalStatusWeight;
+        double combinedSoloParentScore = household.soloParentScore * weights.soloParentWeight;
+        double combinedDisabilityScore = household.disabilityScore * weights.disabilityWeight;
+        double combinedHealthScore = household.healthConditionScore * weights.healthConditionWeight;
+        double combinedWaterScore = household.cleanWaterScore * weights.cleanWaterWeight;
+        double combinedSanitationScore = household.sanitationScore * weights.sanitationWeight;
+        double combinedHouseScore = household.houseConstructionScore * weights.houseConstructionWeight;
+        double combinedOwnershipScore = household.ownershipScore * weights.ownershipWeight;
+        double combinedDamageScore = household.damageSeverityScore * weights.damageSeverityWeight;
+        double combinedEmploymentScore = household.employmentStatusScore * weights.employmentStatusWeight;
+        double combinedIncomeScore = household.monthlyIncomeScore * weights.monthlyIncomeWeight;
+        double combinedEducationScore = household.educationLevelScore * weights.educationLevelWeight;
+        double combinedDigitalScore = household.digitalAccessScore * weights.digitalAccessWeight;
 
         Double combinedDependencyScore = null;
         if (household.dependencyRatioScore != null && weights.dependencyRatioWeight != null) {
-            combinedDependencyScore = roundToFourDecimals(household.dependencyRatioScore * weights.dependencyRatioWeight);
+            combinedDependencyScore = household.dependencyRatioScore * weights.dependencyRatioWeight;
         }
 
         String checkSql = "SELECT beneficiary_family_score_id FROM aid_and_household_score " +
@@ -635,9 +635,9 @@ public class AidHouseholdScoreDAOImpl implements AidHouseholdScoreDAO {
     }
 
 
-    private double roundToFourDecimals(double value) {
-        return Math.round(value * 10000.0) / 10000.0;
-    }
+//    private double roundToFourDecimals(double value) {
+//        return Math.round(value * 10000.0) / 10000.0;
+//    }
 
 
     private void closeConnection() {

@@ -21,7 +21,6 @@ public class BeneficiarySelectionDialogController {
     @FXML private TableColumn<BeneficiarySelectionItem, String> colName;
     @FXML private TableColumn<BeneficiarySelectionItem, String> colBarangay;
     @FXML private TableColumn<BeneficiarySelectionItem, String> colPhone;
-    @FXML private TableColumn<BeneficiarySelectionItem, String> colAddress;
     @FXML private TableColumn<BeneficiarySelectionItem, Integer> colId;
     @FXML private TextField txtSearch;
     @FXML private Label lblSelectedCount;
@@ -50,24 +49,20 @@ public class BeneficiarySelectionDialogController {
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colBarangay.setCellValueFactory(new PropertyValueFactory<>("barangay"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("mobileNumber"));
-        colAddress.setCellValueFactory(new PropertyValueFactory<>("coordinates"));
 
 
         tblBeneficiaries.setEditable(true);
         tblBeneficiaries.setItems(filteredItems);
 
-        // Setup search
         txtSearch.textProperty().addListener((observable, oldValue, newValue) -> filterBeneficiaries(newValue));
 
         updateCountLabels();
 
-        // Cancel button triggers by ESC
         if (btnCancel != null) {
             btnCancel.setCancelButton(true);
         }
     }
 
-    /**  Used by SendSMSController to avoid wiping selections on reopen */
     public boolean isLoaded() {
         return allItems != null && !allItems.isEmpty();
     }
@@ -78,7 +73,6 @@ public class BeneficiarySelectionDialogController {
         for (BeneficiaryModel beneficiary : beneficiaries) {
             BeneficiarySelectionItem item = new BeneficiarySelectionItem(beneficiary);
 
-            // Listen for selection changes
             item.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateCountLabels());
 
             allItems.add(item);
@@ -178,7 +172,6 @@ public class BeneficiarySelectionDialogController {
         updateCountLabels();
     }
 
-    /**  Reset dialog behavior WITHOUT clearing checkboxes */
     public void resetState() {
         okClicked = false;
         isClosing = false;
@@ -186,11 +179,9 @@ public class BeneficiarySelectionDialogController {
         if (btnOk != null) btnOk.setDisable(false);
         if (btnCancel != null) btnCancel.setDisable(false);
 
-        // clear only the returned result list (NOT the checkbox states)
         if (selectedBeneficiaries != null) selectedBeneficiaries.clear();
         selectedBeneficiaries = null;
 
-        // reset search to show all items, keep checks
         if (txtSearch != null) txtSearch.clear();
         if (filteredItems != null) filteredItems.setPredicate(p -> true);
 

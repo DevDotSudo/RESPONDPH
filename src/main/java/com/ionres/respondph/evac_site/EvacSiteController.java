@@ -125,6 +125,7 @@ public class EvacSiteController {
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Evacuation site has been successfully deleted.");
                     DashboardRefresher.refreshEvacSiteMap();
+                    DashboardRefresher.refresh();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete evacuation site. Please try again.");

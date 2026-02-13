@@ -2,8 +2,8 @@ package com.ionres.respondph.common.model;
 
 public class EvacSiteMarker {
     private int evacId;
-    private double lat;
-    private double lon;
+    public double lat;
+    public double lon;
     private String name;
     private int capacity;
     private String notes;
@@ -18,6 +18,14 @@ public class EvacSiteMarker {
         this.name = name;
         this.capacity = capacity;
         this.notes = notes;
+    }
+
+    public EvacSiteMarker(int evacId, double lat, double lon, String name, int capacity){
+        this.evacId = evacId;
+        this.lat = lat;
+        this.lon = lon;
+        this.name = name;
+        this.capacity = capacity;
     }
 
     public int getEvacId() {

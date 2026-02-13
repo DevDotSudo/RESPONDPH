@@ -73,9 +73,6 @@
             <TableColumn fx:id="colPhone"
                          text="Mobile Number"
                          prefWidth="140"/>
-            <TableColumn fx:id="colAddress"
-                         text="Coordinates"
-                         prefWidth="140"/>
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

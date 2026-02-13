@@ -1,11 +1,13 @@
 package com.ionres.respondph.util;
 
 import com.ionres.respondph.admin.AdminModel;
+import javafx.application.Platform;
 
 
 public class SessionManager {
     private static SessionManager instance;
     private AdminModel currentAdmin;
+    private Runnable onSessionChanged;
 
     private SessionManager() {}
 
@@ -15,9 +17,17 @@ public class SessionManager {
         }
         return instance;
     }
+    public void setOnSessionChanged(Runnable callback) {
+        this.onSessionChanged = callback;
+    }
+
+
 
     public void setCurrentAdmin(AdminModel admin) {
         this.currentAdmin = admin;
+        if (onSessionChanged != null) {          // ✅ ADD THIS
+            Platform.runLater(onSessionChanged); //    notify listeners
+        }
     }
 
     public AdminModel getCurrentAdmin() {

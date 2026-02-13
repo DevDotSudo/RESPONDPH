@@ -9,7 +9,9 @@ public interface DashBoardDAO {
     int getTotalBeneficiaries();
     int getTotalDisasters();
     int getTotalAids();
+    int getTotalEvacutaionSites();
     int getCount(String sql);
     List<DisasterCircleEncrypted> fetchAllEncrypted();
     List<BeneficiariesMappingModel> fetchAllBeneficiaries();
+    List<EvacSiteMappingModel> fetchAllEvacSites();
 }

@@ -1,7 +1,9 @@
 package com.ionres.respondph.evacuation_plan;
 
 import com.ionres.respondph.database.DBConnection;
+import com.ionres.respondph.evacuation_plan.dialog_controller.EvacuationPlanPrintingController;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
@@ -29,7 +31,6 @@ public class EvacuationPlanController {
     @FXML private Button searchBtn;
     @FXML private Button refreshBtn;
     @FXML private Button printBtn;  // NEW
-
     @FXML private TableView<EvacuationPlanModel> planTable;
     @FXML private TableColumn<EvacuationPlanModel, Integer> idColumn;
     @FXML private TableColumn<EvacuationPlanModel, String> beneficiaryColumn;
@@ -106,45 +107,46 @@ public class EvacuationPlanController {
     }
 
     private void deleteEvacPlan(EvacuationPlanModel plan) {
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Confirm Deletion");
-        confirmAlert.setHeaderText("Delete Evacuation Plan");
-        confirmAlert.setContentText("Are you sure you want to delete the evacuation plan for " +
-                plan.getBeneficiaryName() + "?\n\n" +
-                "Evacuation Site: " + plan.getEvacSiteName() + "\n" +
-                "Disaster: " + plan.getDisasterName());
+        boolean confirmed = AlertDialogManager.showConfirmation(
+                "Confirm Deletion",
+                "Delete evacuation plan for " + plan.getBeneficiaryName() + "?\n\n"
+                        + "Evacuation Site: " + plan.getEvacSiteName() + "\n"
+                        + "Disaster: " + plan.getDisasterName(),
+                ButtonType.OK,
+                ButtonType.CANCEL
+        );
 
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                Task<Boolean> task = new Task<>() {
-                    @Override
-                    protected Boolean call() throws Exception {
-                        return service.deleteEvacuationPlan(plan.getPlanId());
-                    }
+        if (!confirmed) {
+            return;
+        }
 
-                    @Override
-                    protected void succeeded() {
-                        if (getValue()) {
-                            AlertDialogManager.showConfirmation("Success",
-                                    "Evacuation plan deleted successfully.\nAvailable capacity updated automatically.");
-                            loadTable();
-                        } else {
-                            AlertDialogManager.showError("Error", "Failed to delete evacuation plan.");
-                        }
-                    }
-
-                    @Override
-                    protected void failed() {
-                        Throwable exception = getException();
-                        exception.printStackTrace();
-                        AlertDialogManager.showError("Error",
-                                "Failed to delete evacuation plan: " + exception.getMessage());
-                    }
-                };
-
-                new Thread(task).start();
+        Task<Boolean> task = new Task<>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return service.deleteEvacuationPlan(plan.getPlanId());
             }
-        });
+
+            @Override
+            protected void succeeded() {
+                if (getValue()) {
+                    AlertDialogManager.showSuccess("Success",
+                            "Evacuation plan deleted successfully.\nAvailable capacity updated automatically.");
+                    loadTable();
+                } else {
+                    AlertDialogManager.showError("Error", "Failed to delete evacuation plan.");
+                }
+            }
+
+            @Override
+            protected void failed() {
+                Throwable exception = getException();
+                exception.printStackTrace();
+                AlertDialogManager.showError("Error",
+                        "Failed to delete evacuation plan: " + exception.getMessage());
+            }
+        };
+
+        new Thread(task).start();
     }
 
     private void setupHandlers() {
@@ -211,95 +213,99 @@ public class EvacuationPlanController {
 
 
     private void showDisasterSelectionDialog(List<String> disasters) {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Select Disaster");
-        dialog.setHeaderText("Choose which disaster to print:");
+//        Dialog<String> dialog = new Dialog<>();
+//        dialog.setTitle("Select Disaster");
+//        dialog.setHeaderText("Choose which disaster to print:");
+//
+//        VBox content = new VBox(15);
+//        content.setPadding(new Insets(20));
+//
+//        Label instruction = new Label("Select a disaster event:");
+//        instruction.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+//
+//        ComboBox<String> disasterComboBox = new ComboBox<>();
+//        disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
+//        disasterComboBox.setPromptText("Select disaster...");
+//        disasterComboBox.setPrefWidth(300);
+//
+//        if (!disasters.isEmpty()) {
+//            disasterComboBox.getSelectionModel().selectFirst();
+//        }
+//
+//        Label previewLabel = new Label("");
+//        previewLabel.setFont(Font.font("Arial", 11));
+//        previewLabel.setStyle("-fx-text-fill: #7f8c8d;");
+//
+//        disasterComboBox.setOnAction(e -> {
+//            String selectedDisaster = disasterComboBox.getValue();
+//            if (selectedDisaster != null) {
+//                long count = data.stream()
+//                        .filter(plan -> plan.getDisasterName().equals(selectedDisaster))
+//                        .count();
+//
+//                Map<String, Long> evacSiteCounts = data.stream()
+//                        .filter(plan -> plan.getDisasterName().equals(selectedDisaster))
+//                        .collect(Collectors.groupingBy(
+//                                EvacuationPlanModel::getEvacSiteName,
+//                                Collectors.counting()
+//                        ));
+//
+//                previewLabel.setText(String.format(
+//                        "Total Beneficiaries: %d | Evacuation Sites: %d",
+//                        count,
+//                        evacSiteCounts.size()
+//                ));
+//            }
+//        });
+//
+//        if (!disasters.isEmpty()) {
+//            String firstDisaster = disasters.get(0);
+//            long count = data.stream()
+//                    .filter(plan -> plan.getDisasterName().equals(firstDisaster))
+//                    .count();
+//
+//            Map<String, Long> evacSiteCounts = data.stream()
+//                    .filter(plan -> plan.getDisasterName().equals(firstDisaster))
+//                    .collect(Collectors.groupingBy(
+//                            EvacuationPlanModel::getEvacSiteName,
+//                            Collectors.counting()
+//                    ));
+//
+//            previewLabel.setText(String.format(
+//                    "Total Beneficiaries: %d | Evacuation Sites: %d",
+//                    count,
+//                    evacSiteCounts.size()
+//            ));
+//        }
+//
+//        content.getChildren().addAll(instruction, disasterComboBox, previewLabel);
+//
+//        dialog.getDialogPane().setContent(content);
+//        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+//        AlertDialogManager.styleDialog(dialog, AlertDialogManager.AlertType.INFO);
+//
+//        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+//        okButton.setDisable(disasterComboBox.getValue() == null);
+//
+//        disasterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+//            okButton.setDisable(newVal == null);
+//        });
+//
+//        dialog.setResultConverter(dialogButton -> {
+//            if (dialogButton == ButtonType.OK) {
+//                return disasterComboBox.getValue();
+//            }
+//            return null;
+//        });
+//
+//        dialog.showAndWait().ifPresent(selectedDisaster -> {
+//            if (selectedDisaster != null) {
+//                printSelectedDisaster(selectedDisaster);
+//            }
+//        });
 
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
-
-        Label instruction = new Label("Select a disaster event:");
-        instruction.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-
-        ComboBox<String> disasterComboBox = new ComboBox<>();
-        disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
-        disasterComboBox.setPromptText("Select disaster...");
-        disasterComboBox.setPrefWidth(300);
-
-        if (!disasters.isEmpty()) {
-            disasterComboBox.getSelectionModel().selectFirst();
-        }
-
-        Label previewLabel = new Label("");
-        previewLabel.setFont(Font.font("Arial", 11));
-        previewLabel.setStyle("-fx-text-fill: #7f8c8d;");
-
-        disasterComboBox.setOnAction(e -> {
-            String selectedDisaster = disasterComboBox.getValue();
-            if (selectedDisaster != null) {
-                long count = data.stream()
-                        .filter(plan -> plan.getDisasterName().equals(selectedDisaster))
-                        .count();
-
-                Map<String, Long> evacSiteCounts = data.stream()
-                        .filter(plan -> plan.getDisasterName().equals(selectedDisaster))
-                        .collect(Collectors.groupingBy(
-                                EvacuationPlanModel::getEvacSiteName,
-                                Collectors.counting()
-                        ));
-
-                previewLabel.setText(String.format(
-                        "Total Beneficiaries: %d | Evacuation Sites: %d",
-                        count,
-                        evacSiteCounts.size()
-                ));
-            }
-        });
-
-        if (!disasters.isEmpty()) {
-            String firstDisaster = disasters.get(0);
-            long count = data.stream()
-                    .filter(plan -> plan.getDisasterName().equals(firstDisaster))
-                    .count();
-
-            Map<String, Long> evacSiteCounts = data.stream()
-                    .filter(plan -> plan.getDisasterName().equals(firstDisaster))
-                    .collect(Collectors.groupingBy(
-                            EvacuationPlanModel::getEvacSiteName,
-                            Collectors.counting()
-                    ));
-
-            previewLabel.setText(String.format(
-                    "Total Beneficiaries: %d | Evacuation Sites: %d",
-                    count,
-                    evacSiteCounts.size()
-            ));
-        }
-
-        content.getChildren().addAll(instruction, disasterComboBox, previewLabel);
-
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
-        okButton.setDisable(disasterComboBox.getValue() == null);
-
-        disasterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            okButton.setDisable(newVal == null);
-        });
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == ButtonType.OK) {
-                return disasterComboBox.getValue();
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(selectedDisaster -> {
-            if (selectedDisaster != null) {
-                printSelectedDisaster(selectedDisaster);
-            }
-        });
+        EvacuationPlanPrintingController controller = DialogManager.getController("evac_printing", EvacuationPlanPrintingController.class);
+        DialogManager.show("evac_printing");
     }
 
 

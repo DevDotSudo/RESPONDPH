@@ -586,6 +586,7 @@ public class EvacuationPlanDAOImpl implements EvacuationPlanDAO {
                 return evacSiteId;
             }
 
+            // ADD LOGGING TO DEBUG
             System.out.println("DEBUG: No assignment found for beneficiary " + beneficiaryId + ", disaster " + disasterId);
 
             rs.close();

@@ -1,0 +1,354 @@
+/* ===== EVACUATION PRINT DIALOG - SIMPLIFIED ===== */
+.dialog-root {
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0.0, 0, 4);
+}
+
+/* ===== HEADER ===== */
+.dialog-header {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-radius: 8px 8px 0 0;
+}
+
+.header-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+}
+
+.dialog-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 20px;
+    -fx-font-weight: 900;
+}
+
+.dialog-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+/* ===== CLOSE BUTTON ===== */
+.dialog-close {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 14px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+}
+.dialog-close:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+}
+.dialog-close:pressed {
+    -fx-background-color: rgba(239,68,68,0.18);
+}
+
+.close-icon {
+    -fx-fill: rgba(248,250,252,0.95);
+}
+
+/* ===== SCROLLPANE ===== */
+.dialog-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.dialog-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Simple scrollbars */
+.dialog-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(249,115,22,0.40);
+    -fx-background-radius: 5px;
+}
+.dialog-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(249,115,22,0.60);
+}
+.dialog-scroll .scroll-bar .track {
+    -fx-background-color: rgba(148,163,184,0.08);
+    -fx-background-radius: 5px;
+}
+.dialog-scroll .increment-button,
+.dialog-scroll .decrement-button {
+    -fx-padding: 0;
+}
+
+/* ===== BODY ===== */
+.dialog-body {
+    -fx-background-color: transparent;
+}
+
+/* ===== FORM SECTION ===== */
+.form-section {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 16px;
+}
+
+.section-header {
+    -fx-padding: 0 0 8px 0;
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.section-icon {
+    -fx-fill: rgba(249,115,22,0.90);
+}
+
+.section-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+/* ===== FIELD LABELS ===== */
+.field-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+/* ===== FLAT INPUT ===== */
+.flat-input {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 0 12px;
+    -fx-min-height: 40px;
+    -fx-pref-height: 40px;
+}
+.flat-input:hover {
+    -fx-border-color: rgba(249,115,22,0.40);
+}
+
+.field-icon {
+    -fx-fill: rgba(226,232,240,0.70);
+}
+
+/* ===== COMBO BOX ===== */
+.field-combo {
+    -fx-background-color: transparent;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+}
+.field-combo > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 0;
+}
+.field-combo .list-cell:empty {
+    -fx-text-fill: rgba(148,163,184,0.60);
+}
+.field-combo .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8px;
+}
+.field-combo .arrow {
+    -fx-background-color: rgba(226,232,240,0.65);
+}
+.field-combo:hover .arrow {
+    -fx-background-color: rgba(249,115,22,0.75);
+}
+
+/* Combo Box Popup */
+.combo-box-popup .list-view {
+    -fx-background-color: #0f172a;
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 6px;
+}
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 8px 10px;
+    -fx-background-radius: 4px;
+}
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(249,115,22,0.15);
+}
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: rgba(249,115,22,0.25);
+    -fx-text-fill: white;
+}
+
+/* ===== SPINNER ===== */
+.field-spinner {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+}
+.field-spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+.field-spinner .increment-arrow-button,
+.field-spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+}
+.field-spinner .increment-arrow-button:hover,
+.field-spinner .decrement-arrow-button:hover {
+    -fx-background-color: rgba(249,115,22,0.15);
+}
+
+/* ===== CHECKBOX ===== */
+.field-checkbox {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+.field-checkbox .box {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.3);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+.field-checkbox:selected .box {
+    -fx-background-color: rgba(249,115,22,0.85);
+    -fx-border-color: rgba(249,115,22,0.9);
+}
+.field-checkbox:selected .box .mark {
+    -fx-background-color: white;
+}
+
+/* ===== RADIO BUTTON ===== */
+.radio-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+.radio-label .radio {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.3);
+}
+.radio-label:selected .radio {
+    -fx-background-color: rgba(249,115,22,0.85);
+    -fx-border-color: rgba(249,115,22,0.9);
+}
+.radio-label:selected .radio .dot {
+    -fx-background-color: white;
+}
+
+/* ===== INFO BOX ===== */
+.info-box {
+    -fx-background-color: rgba(59,130,246,0.08);
+    -fx-border-color: rgba(59,130,246,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+}
+.info-icon {
+    -fx-fill: rgba(96,165,250,0.95);
+}
+.info-text {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+}
+
+/* ===== FOOTER ===== */
+.dialog-footer {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px 0 0 0;
+    -fx-background-radius: 0 0 8px 8px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+    -fx-background-color: rgba(249,115,22,0.92);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+}
+.btn-primary:hover {
+    -fx-background-color: rgba(249,115,22,1.00);
+}
+.btn-primary:pressed {
+    -fx-background-color: rgba(234,88,12,1.00);
+}
+
+.btn-secondary {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #cbd5e1;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 18px;
+    -fx-min-height: 42px;
+    -fx-cursor: hand;
+}
+.btn-secondary:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(249,115,22,0.50);
+}
+
+.btn-secondary-alt {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #ef4444;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 18px;
+    -fx-min-height: 42px;
+    -fx-cursor: hand;
+}
+.btn-secondary-alt:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+}
+
+.btn-icon {
+    -fx-fill: rgba(255,255,255,0.98);
+}
+.btn-text {
+    -fx-text-fill: rgba(255,255,255,0.98);
+    -fx-font-weight: 700;
+}
+
+/* ===== REMOVE FOCUS HIGHLIGHTS ===== */
+.button:focused,
+.combo-box:focused,
+.spinner:focused,
+.check-box:focused,
+.radio-button:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}

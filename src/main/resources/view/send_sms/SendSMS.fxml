@@ -176,7 +176,7 @@
                             </HBox>
 
                             <Region HBox.hgrow="ALWAYS" />
-                            <Label fx:id="charCount" styleClass="char-count" text="0/160 characters" />
+                            <Label fx:id="charCount" styleClass="char-count" text="0/320 characters" />
                         </HBox>
 
                         <!-- Action Buttons -->

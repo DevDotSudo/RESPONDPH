@@ -19,8 +19,8 @@ public class NewsGeneratorService {
     private static final String ENV_API_KEY = "GEMINI_API_KEY";
     private static final String MODEL_ID = "gemini-3-pro-preview";
 
-    private static final int MIN_LEN = 140;
-    private static final int MAX_LEN = 160;
+    private static final int MIN_LEN = 300;
+    private static final int MAX_LEN = 320;
 
     private final Client client;
 
@@ -55,7 +55,7 @@ public class NewsGeneratorService {
                             "Isa lang ka linya kada item.\n\n" +
 
                             "FORMAT EXACTLY:\n" +
-                            "1. <Hiligaynon SMS text 140-160 characters lang> (Source: FULL ARTICLE URL)\n\n" +
+                            "1. <Hiligaynon SMS text 300-320 characters lang> (Source: FULL ARTICLE URL)\n\n" +
 
                             "HARD RULES:\n" +
                             "- Hiligaynon lang ang SMS text, likawan ang English words kon indi kinahanglan.\n" +

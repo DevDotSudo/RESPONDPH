@@ -285,6 +285,7 @@ public class PrintAidDialogController {
         preview.append("Higher scores indicate higher priority for aid distribution.\n");
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        AlertDialogManager.styleAlert(alert, AlertDialogManager.AlertType.INFO);
         alert.setTitle("Distribution Preview");
         alert.setHeaderText(isGeneralAid ? "General Aid Distribution" : "Disaster Aid Distribution");
 
@@ -297,6 +298,7 @@ public class PrintAidDialogController {
 
         alert.getDialogPane().setContent(textArea);
         alert.getDialogPane().setPrefWidth(700);
+        alert.getDialogPane().setPrefHeight(560);
         alert.showAndWait();
     }
 

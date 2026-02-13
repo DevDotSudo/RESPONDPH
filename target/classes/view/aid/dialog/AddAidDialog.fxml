@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="750.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid/dialog/addaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.AddAidController">
+<VBox fx:id="root" prefHeight="750.0" prefWidth="1100.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid/dialog/addaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.AddAidController">
 
     <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -30,14 +30,6 @@
         </Button>
     </HBox>
 
-    <!-- ==================== ERROR CONTAINER ==================== -->
-    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
-        <padding>
-            <Insets bottom="12" left="24" right="24" top="10" />
-        </padding>
-        <Label fx:id="errorLabel" styleClass="error-text" />
-    </VBox>
-
     <!-- ==================== INFO BANNER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-banner">
         <padding>
@@ -47,16 +39,13 @@
         <Label fx:id="infoLabel" styleClass="banner-text" text="Select aid type and disaster to begin distribution" />
     </HBox>
 
-    <!-- ==================== MAIN FORM CONTAINER ==================== -->
     <ScrollPane fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
         <VBox spacing="24" styleClass="dialog-body">
             <padding>
                 <Insets bottom="24" left="24" right="24" top="20" />
             </padding>
 
-            <!-- ==================== SECTION 1: DISTRIBUTION CONTEXT ==================== -->
             <VBox spacing="18" styleClass="form-section">
-                <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Distribution Context" />
@@ -64,15 +53,12 @@
                     <Label styleClass="section-subtitle" text="Step 1 of 4" />
                 </HBox>
 
-                <!-- Aid Type and Disaster Fields -->
                 <GridPane hgap="16" vgap="14">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
                     </columnConstraints>
 
-                    <!-- Aid Type -->
                     <VBox spacing="8" GridPane.columnIndex="0">
                         <Label styleClass="field-label" text="Aid Type *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
@@ -82,7 +68,6 @@
                         <Label styleClass="field-helper-text" text="Choose the type of aid to distribute" />
                     </VBox>
 
-                    <!-- Disaster Event -->
                     <VBox spacing="8" GridPane.columnIndex="1">
                         <Label styleClass="field-label" text="Disaster Event *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
@@ -91,21 +76,19 @@
                         </HBox>
                         <Label styleClass="field-helper-text" text="Select the disaster event for distribution" />
                     </VBox>
-
-                    <!-- General Aid Toggle (as a field) -->
-                    <VBox spacing="8" GridPane.columnIndex="2">
-                        <Label styleClass="field-label" text="Distribution Mode" />
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="field-icon" />
-                            <CheckBox fx:id="generalAidCheckbox" styleClass="field-checkbox" text="General Aid (No Disaster)" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
                     <rowConstraints>
                         <RowConstraints />
                     </rowConstraints>
                 </GridPane>
 
-                <!-- Distribution Mode Info Box -->
+                 <VBox spacing="8">
+                     <Label styleClass="field-label" text="Distribution Mode" />
+                     <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                         <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="field-icon" />
+                         <CheckBox fx:id="generalAidCheckbox" styleClass="field-checkbox" text="General Aid (No Disaster)" HBox.hgrow="ALWAYS" />
+                     </HBox>
+                 </VBox>
+
                 <VBox spacing="12" styleClass="info-box">
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <FontAwesomeIconView glyphName="INFO_CIRCLE" size="16" styleClass="info-icon" />
@@ -117,7 +100,6 @@
 
             <Separator />
 
-            <!-- ==================== SECTION 2: BARANGAY FILTER ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
@@ -160,9 +142,9 @@
                                     <ComboBox fx:id="barangayComboBox" maxWidth="1.7976931348623157E308" promptText="Select Barangay" styleClass="field-combo" HBox.hgrow="ALWAYS" />
                                 </HBox>
                             </VBox>
-                     <rowConstraints>
-                        <RowConstraints />
-                     </rowConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                            </rowConstraints>
                         </GridPane>
                     </VBox>
                 </VBox>
@@ -258,14 +240,15 @@
                         </HBox>
                         <Label styleClass="field-helper-text" text="How many units each beneficiary receives" />
                     </VBox>
-               <rowConstraints>
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
             </VBox>
 
             <Separator />
 
+            <!-- ==================== SECTION 4: DISTRIBUTION METHOD ==================== -->
             <!-- ==================== SECTION 4: DISTRIBUTION METHOD ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
@@ -276,23 +259,35 @@
                     <Label styleClass="section-subtitle" text="Step 4 of 4" />
                 </HBox>
 
-                <!-- K-means Toggle -->
+                <!-- ── ALGORITHM RADIO BUTTONS ── -->
                 <VBox spacing="12">
+
+                    <!-- K-Means Radio -->
                     <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
                         <padding>
                             <Insets left="14" right="14" />
                         </padding>
                         <FontAwesomeIconView glyphName="CLUSTER" size="14" styleClass="field-icon" />
-                        <CheckBox fx:id="useKMeansCheckbox" selected="true" styleClass="field-checkbox" text="Use K-Means Clustering Algorithm (3 Clusters)" HBox.hgrow="ALWAYS" />
+                        <RadioButton fx:id="useKMeansRadio" selected="true" styleClass="field-checkbox" text="K-Means Clustering Algorithm (3 Clusters)" HBox.hgrow="ALWAYS" />
                         <Region HBox.hgrow="ALWAYS" />
                         <Label styleClass="badge-recommended">RECOMMENDED</Label>
                     </HBox>
 
-                    <Label styleClass="field-description" text="K-means ensures fair distribution across 3 vulnerability levels by grouping beneficiaries based on their scores and prioritizing those with highest needs." wrapText="true" />
+                    <!-- FCM Radio -->
+                    <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
+                        <padding>
+                            <Insets left="14" right="14" />
+                        </padding>
+                        <FontAwesomeIconView glyphName="SHARE_ALT" size="14" styleClass="field-icon" />
+                        <RadioButton fx:id="useFCMRadio" styleClass="field-checkbox" text="Fuzzy C-Means (FCM) Clustering Algorithm (3 Clusters)" HBox.hgrow="ALWAYS" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="badge-new">NEW</Label>
+                    </HBox>
+
                 </VBox>
 
-                <!-- Distribution Info Box -->
-                <VBox spacing="12" styleClass="info-box">
+                <!-- K-Means Info Box (shown when K-Means is selected) -->
+                <VBox fx:id="kmeansInfoBox" spacing="12" styleClass="info-box">
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="16" styleClass="info-icon" />
                         <Label styleClass="info-title" text="How 3-Cluster K-Means Works" />
@@ -300,7 +295,16 @@
                     <Label styleClass="info-text" text="• Groups beneficiaries into 3 clusters based on vulnerability scores (0.0 to 1.0)&#10;• Distributes aid starting from highest priority cluster first&#10;• Ensures balanced distribution across different need levels&#10;• Works seamlessly with barangay filtering" wrapText="true" />
                 </VBox>
 
-                <!-- Simple Distribution Warning -->
+                <!-- FCM Info Box (shown when FCM is selected) -->
+                <VBox fx:id="fcmInfoBox" managed="false" spacing="12" styleClass="info-box" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="16" styleClass="info-icon" />
+                        <Label styleClass="info-title" text="How 3-Cluster Fuzzy C-Means Works" />
+                    </HBox>
+                    <Label styleClass="info-text" text="• Assigns each beneficiary a MEMBERSHIP DEGREE (0–1) in every cluster (soft assignment)&#10;• Uses fuzziness exponent m=2 to control how gradual cluster boundaries are&#10;• Iterates until the membership matrix converges (change &lt; 0.00001)&#10;• Beneficiary is assigned to the cluster with their highest membership value&#10;• Priority is then determined by the cluster's average vulnerability score&#10;• More nuanced than K-Means for borderline beneficiaries" wrapText="true" />
+                </VBox>
+
+                <!-- Simple Distribution Warning (shown when neither algorithm is selected – future use) -->
                 <HBox fx:id="simpleDistributionWarning" managed="false" spacing="12" styleClass="warning-box" visible="false">
                     <padding>
                         <Insets bottom="12" left="16" right="16" top="12" />

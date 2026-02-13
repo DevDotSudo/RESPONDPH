@@ -5,17 +5,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="rootPane"
-            styleClass="root-pane"
-            stylesheets="@/styles/evac_plan/evacuation_plan.css"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.ionres.respondph.evacuation_plan.EvacuationPlanController">
+<AnchorPane fx:id="rootPane" styleClass="root-pane" stylesheets="@/styles/evac_plan/evacuation_plan.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evacuation_plan.EvacuationPlanController">
 
-    <VBox AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0"
-          AnchorPane.rightAnchor="0.0"
-          AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <!-- HEADER -->
         <VBox styleClass="header-section" VBox.vgrow="NEVER">
@@ -29,15 +21,10 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                     <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="search-icon" />
-                    <TextField fx:id="searchField"
-                               promptText="Search by beneficiary, site, disaster, date"
-                               styleClass="search-field"
-                               HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="searchField" promptText="Search by beneficiary, site, disaster, date" styleClass="search-field" HBox.hgrow="ALWAYS" />
                 </HBox>
 
-                <Button fx:id="searchBtn"
-                        mnemonicParsing="false"
-                        styleClass="primary-button">
+                <Button fx:id="searchBtn" mnemonicParsing="false" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="SEARCH" size="14" styleClass="button-icon" />
@@ -49,7 +36,7 @@
                 <Region HBox.hgrow="ALWAYS" />
 
                 <!-- NEW: Print Button -->
-                <Button fx:id="printBtn" styleClass="secondary-button">
+                <Button fx:id="printBtn" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="PRINT" size="14" styleClass="button-icon" />

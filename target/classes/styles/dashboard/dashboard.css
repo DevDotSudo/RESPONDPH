@@ -5,27 +5,8 @@
 
 /* Remove extra wrapper padding */
 .dashboard-wrapper {
-    -fx-padding: 0;  /* ✅ removed padding */
+    -fx-padding: 0;
     -fx-background-color: #0b1220;
-}
-
-.dashboard-topbar {
-    -fx-background-color: transparent;
-
-    /* spacing */
-    -fx-padding: 16px 0 14px 0;
-
-    /* bottom divider line */
-    -fx-border-color: rgba(148, 163, 184, 0.18);
-    -fx-border-width: 0 0 1px 0;
-}
-
-/* Title */
-.dashboard-topbar-title {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 22px;
-    -fx-font-weight: 800;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
 
 .cards-grid {
@@ -34,7 +15,8 @@
 
 .flat-card-blue,
 .flat-card-red,
-.flat-card-green {
+.flat-card-green,
+.flat-card-yellow {
     -fx-background-radius: 5px;
     -fx-border-radius: 5px;
     -fx-border-width: 1px;
@@ -96,9 +78,19 @@
     -fx-background-color: rgba(16,185,129,0.55);
 }
 
+/* Yellow */
+.flat-card-yellow {
+    -fx-background-color: rgba(245,158,11,0.08);
+    -fx-border-color: rgba(245,158,11,0.22);
+}
+.flat-card-yellow .flat-icon {
+    -fx-background-color: rgba(245,158,11,0.55);
+}
+
 .flat-card-blue:hover,
 .flat-card-red:hover,
-.flat-card-green:hover {
+.flat-card-green:hover,
+.flat-card-yellow:hover {
     -fx-border-color: rgba(255,255,255,0.20);
     -fx-background-color: rgba(255,255,255,0.02);
 }
@@ -111,3 +103,105 @@
     -fx-border-width: 1px;
 }
 
+.dashboard-topbar {
+    -fx-background-color: transparent;
+    -fx-padding: 0px 0 8px 0;
+    -fx-border-color: rgba(148, 163, 184, 0.18);
+    -fx-border-width: 0 0 1px 0;
+    -fx-alignment: center-left;
+}
+
+/* Dashboard Mapping - Left */
+.dashboard-topbar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* Clock - Center (No container background) */
+.clock-container {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.clock-icon-container {
+    -fx-background-color: rgba(148, 163, 184, 0.15);
+    -fx-background-radius: 5px;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-width: 36px;
+    -fx-max-height: 36px;
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.clock-icon {
+    -fx-fill: #94a3b8;
+    -glyph-size: 20px;
+}
+
+.clock-time {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Inter", "Segoe UI", monospace;
+    -fx-alignment: center;
+    -fx-padding: 2px 0 0 0;
+}
+
+.clock-date {
+    -fx-text-fill: rgba(148, 163, 184, 0.9);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-alignment: center;
+    -fx-padding: 0;
+}/* ===== ADMIN PROFILE - ICON INSIDE LABEL CONTAINER ===== */
+.admin-name-label {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.22) transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-style: solid;
+    -fx-spacing: 8px;
+    -fx-alignment: center;
+}
+
+/* Admin icon styling */
+.admin-icon-inside {
+    -fx-fill: rgba(255, 255, 255, 0.9);
+    -glyph-size: 24px;
+}
+
+/* Admin name label - remove default label background */
+.admin-name-label .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-padding: 0;
+}
+
+/* HOVER STATE - bottom border only */
+.admin-name-label:hover {
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.5) transparent;
+    -fx-border-width: 0 0 2px 0;  /* Slightly thicker on hover */
+}
+
+.admin-name-label:hover .admin-icon-inside {
+    -fx-fill: rgba(59, 130, 246, 1);
+}
+
+/* PRESSED STATE */
+.admin-name-label:pressed {
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.7) transparent;
+    -fx-border-width: 0 0 2px 0;
+    -fx-translate-y: 1px;
+}
+
+/* FOCUSED STATE */
+.admin-name-label:focused {
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.6) transparent;
+    -fx-border-width: 0 0 2px 0;
+}

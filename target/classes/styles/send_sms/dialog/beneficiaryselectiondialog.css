@@ -1,343 +1,297 @@
-.dialog-root {
-    -fx-background-color: #0b1220;
-    -fx-border-color: rgba(148,163,184,0.18);
+/* ===== BENEFICIARY SELECTION DIALOG - SIDEBAR THEME ===== */
+.dialog-container {
+    -fx-background-color: #0f172a;  /* Same as sidebar background */
+    -fx-border-color: rgba(148, 163, 184, 0.14);
     -fx-border-width: 1px;
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 20, 0.0, 0, 4);
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 18, 0.2, 0, 6);
 }
 
-/* ---------- HEADER ---------- */
-.dialog-header {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 0 0 1px 0;
-    -fx-background-radius: 8px 8px 0 0;
-}
-
-.header-icon {
-    -fx-fill: rgba(249,115,22,0.95);
-    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.40), 8, 0.0, 0, 0);
-}
-
+/* ===== DIALOG TITLE ===== */
 .dialog-title {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 20px;
-    -fx-font-weight: 900;
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-.dialog-subtitle {
-    -fx-text-fill: rgba(148,163,184,0.80);
+/* ===== LABELS ===== */
+.selection-count-label,
+.total-count-label {
+    -fx-text-fill: rgba(249, 115, 22, 0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(249, 115, 22, 0.08);
+    -fx-background-radius: 5px;
+    -fx-padding: 6px 14px;
+    -fx-border-color: rgba(249, 115, 22, 0.22);
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+}
+
+.total-count-label {
+    -fx-text-fill: #94a3b8;
+    -fx-background-color: rgba(148, 163, 184, 0.08);
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+}
+
+.input-label {
+    -fx-text-fill: rgba(226, 232, 240, 0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-min-width: 60px;
+}
+
+/* ===== SEARCH FIELD ===== */
+.search-field {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148, 163, 184, 0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 8px 14px;
+    -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-size: 13px;
     -fx-font-weight: 600;
+    -fx-prompt-text-fill: rgba(148, 163, 184, 0.60);
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
 }
 
-.dialog-close {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148,163,184,0.20);
-    -fx-border-width: 1px;
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-background-radius: 6px;
-    -fx-font-weight: 800;
-    -fx-border-radius: 6px;
-    -fx-cursor: hand;
-}
-.dialog-close:hover {
-    -fx-background-color: rgba(239,68,68,0.12);
-    -fx-border-color: rgba(239,68,68,0.50);
-}
-.dialog-close:pressed {
-    -fx-background-color: rgba(239,68,68,0.18);
+.search-field:hover {
+    -fx-border-color: rgba(249, 115, 22, 0.40);
+    -fx-background-color: rgba(255,255,255,0.05);
 }
 
-/* ---------- BODY ---------- */
-.dialog-body {
-    -fx-background-color: transparent;
+.search-field:focused {
+    -fx-border-color: rgba(249, 115, 22, 0.75);
+    -fx-background-color: rgba(249, 115, 22, 0.08);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.25), 8, 0.0, 0, 0);
 }
 
-/* ---------- FOOTER ---------- */
-.dialog-footer {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 1px 0 0 0;
-    -fx-background-radius: 0 0 8px 8px;
+/* ===== SEPARATOR ===== */
+.separator {
+    -fx-padding: 5px 0;
 }
 
-/* ---------- SEPARATOR ---------- */
 .separator .line {
-    -fx-background-color: rgba(148,163,184,0.12);
+    -fx-background-color: rgba(148, 163, 184, 0.12);
+    -fx-border-color: transparent;
+    -fx-pref-height: 1px;
 }
 
-/* =========================================================
-   SECTION CARD (form-section)
-   ========================================================= */
-.form-section {
-    -fx-background-color: rgba(255,255,255,0.025);
-    -fx-border-color: rgba(148,163,184,0.14);
+/* ===== BUTTONS ===== */
+.primary-button {
+    -fx-background-color: rgba(249, 115, 22, 0.18);
+    -fx-border-color: rgba(249, 115, 22, 0.55);
     -fx-border-width: 1px;
-    -fx-background-radius: 7px;
-    -fx-border-radius: 7px;
-    -fx-padding: 18px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 8px 16px;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-min-width: 100px;
+    -fx-pref-width: 100px;
+    -fx-cursor: hand;
+    -fx-content-display: center;
 }
 
-/* Section Header */
-.section-header {
-    -fx-padding: 0 0 10px 0;
-    -fx-border-color: rgba(148,163,184,0.08);
+.primary-button:hover {
+    -fx-background-color: rgba(249, 115, 22, 0.25);
+    -fx-border-color: rgba(249, 115, 22, 0.70);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.2), 6, 0.0, 0, 2);
+}
+
+.primary-button:pressed {
+    -fx-background-color: rgba(249, 115, 22, 0.30);
+    -fx-translate-y: 1px;
+}
+
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(148, 163, 184, 0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-text-fill: #cbd5e1;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 8px 16px;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-cursor: hand;
+    -fx-content-display: center;
+}
+
+.secondary-button:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.10);
+    -fx-border-color: rgba(148, 163, 184, 0.40);
+    -fx-text-fill: #e2e8f0;
+}
+
+.secondary-button:pressed {
+    -fx-background-color: rgba(148, 163, 184, 0.16);
+    -fx-translate-y: 1px;
+}
+
+/* ===== TABLE VIEW ===== */
+.beneficiary-table {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(148, 163, 184, 0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 0;
+}
+
+/* Table header */
+.beneficiary-table .column-header-background {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-border-color: rgba(148, 163, 184, 0.12);
     -fx-border-width: 0 0 1px 0;
 }
 
-.section-icon {
-    -fx-fill: rgba(249,115,22,0.90);
+.beneficiary-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 12px 8px;
 }
 
-.section-title {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 16px;
-    -fx-font-weight: 900;
-}
-
-.section-subtitle {
-    -fx-text-fill: rgba(148,163,184,0.75);
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-background-color: rgba(249,115,22,0.10);
-    -fx-background-radius: 12px;
-    -fx-padding: 4px 12px;
-}
-
-/* Helper text */
-.field-helper-text {
-    -fx-text-fill: rgba(148,163,184,0.75);
-    -fx-font-size: 12px;
-    -fx-font-style: italic;
-}
-
-/* =========================================================
-   INPUT FIELD SYSTEM (flat-input)
-   ========================================================= */
-.field-label {
-    -fx-text-fill: rgba(226,232,240,0.95);
+.beneficiary-table .column-header .label {
+    -fx-text-fill: #e2e8f0;
     -fx-font-size: 13px;
-    -fx-font-weight: 800;
-}
-
-/* Flat Input Container */
-.flat-input {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-padding: 0 14px;
-    -fx-min-height: 44px;
+    -fx-font-weight: 700;
     -fx-alignment: center-left;
 }
 
-.flat-input:hover {
-    -fx-border-color: rgba(249,115,22,0.40);
-    -fx-background-color: rgba(255,255,255,0.05);
-}
-
-.field-icon {
-    -fx-fill: rgba(226,232,240,0.70);
-}
-
-/* TextField inside */
-.field-input {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-padding: 0;
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-prompt-text-fill: rgba(148,163,184,0.60);
-}
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-
-/* Primary */
-.btn-primary {
-    -fx-background-color: rgba(249,115,22,0.92);
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: 900;
-    -fx-padding: 11px 20px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-cursor: hand;
-}
-.btn-primary:hover {
-    -fx-background-color: rgba(249,115,22,1.00);
-}
-.btn-primary:pressed {
-    -fx-background-color: rgba(234,88,12,1.00);
-}
-
-/* Secondary */
-.btn-secondary {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-weight: 900;
-    -fx-padding: 11px 18px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-cursor: hand;
-}
-.btn-secondary:hover {
-    -fx-border-color: rgba(249,115,22,0.60);
-    -fx-background-color: rgba(255,255,255,0.08);
-}
-
-.selection-count-label {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 12px;
-    -fx-font-weight: 900;
-    -fx-background-color: rgba(249,115,22,0.12);
-    -fx-border-color: rgba(249,115,22,0.35);
-    -fx-border-width: 1px;
-    -fx-background-radius: 999px;
-    -fx-border-radius: 999px;
-    -fx-padding: 6px 14px;
-    -fx-effect: dropshadow(gaussian,
-    rgba(249,115,22,0.25),
-    10, 0.0, 0, 0);
-}
-
-.beneficiary-table.table-view {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148,163,184,0.14);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-
-    /* IMPORTANT: inner (white area) */
-    -fx-control-inner-background: rgba(15,23,42,0.95);      /* dark */
-    -fx-control-inner-background-alt: rgba(15,23,42,0.80);  /* alt dark */
-
-    -fx-table-cell-border-color: rgba(148,163,184,0.10);
-}
-
-/* remove the default white sheet */
-.beneficiary-table.table-view .virtual-flow,
-.beneficiary-table.table-view .virtual-flow .clipped-container,
-.beneficiary-table.table-view .virtual-flow .sheet,
-.beneficiary-table.table-view .virtual-flow .corner {
-    -fx-background-color: transparent;
-}
-
-/* header background */
-.beneficiary-table.table-view .column-header-background {
-    -fx-background-color: rgba(255,255,255,0.05);
-    -fx-background-radius: 6px 6px 0 0;
-}
-
-/* header cells + filler */
-.beneficiary-table.table-view .column-header,
-.beneficiary-table.table-view .filler {
-    -fx-background-color: transparent;
-    -fx-border-color: rgba(148,163,184,0.10);
-    -fx-border-width: 0 1px 1px 0;
-    -fx-size: 42px;
-}
-
-.beneficiary-table.table-view .column-header .label {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-weight: 900;
-    -fx-font-size: 13.5px;
-}
-
-/* rows */
-.beneficiary-table.table-view .table-row-cell {
-    -fx-background-color: transparent;
-    -fx-border-color: rgba(148,163,184,0.08);
+/* Table cells */
+.beneficiary-table .table-cell {
+    -fx-text-fill: rgba(226, 232, 240, 0.86);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 8px;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent transparent rgba(148, 163, 184, 0.08) transparent;
     -fx-border-width: 0 0 1px 0;
 }
 
-/* zebra */
-.beneficiary-table.table-view .table-row-cell:odd {
-    -fx-background-color: rgba(255,255,255,0.00);
-}
-.beneficiary-table.table-view .table-row-cell:even {
-    -fx-background-color: rgba(255,255,255,0.015);
+/* Checkbox column - center alignment */
+.beneficiary-table .table-column.colCheckbox .table-cell {
+    -fx-alignment: center;
 }
 
-/* hover */
-.beneficiary-table.table-view .table-row-cell:hover {
-    -fx-background-color: rgba(148,163,184,0.08);
-}
-
-/* selected (orange) */
-.beneficiary-table.table-view .table-row-cell:selected {
-    -fx-background-color: rgba(249,115,22,0.14);
-    -fx-border-color: rgba(249,115,22,0.75);
-    -fx-border-width: 0 0 0 3px;
-}
-
-/* cells */
-.beneficiary-table.table-view .table-cell {
-    -fx-background-color: transparent;
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-padding: 12px 14px;
-    -fx-alignment: CENTER_LEFT;
-}
-
-/* checkbox column center */
-.beneficiary-table.table-view .table-cell.check-box-table-cell {
-    -fx-alignment: CENTER;
-}
-
-/* corner block */
-.beneficiary-table.table-view .corner {
-    -fx-background-color: rgba(255,255,255,0.04);
-}
-
-/* scrollbars */
-.beneficiary-table.table-view .scroll-bar:vertical,
-.beneficiary-table.table-view .scroll-bar:horizontal {
+/* Table rows */
+.beneficiary-table .table-row-cell {
     -fx-background-color: transparent;
 }
-.beneficiary-table.table-view .scroll-bar .track {
-    -fx-background-color: rgba(148,163,184,0.08);
-    -fx-background-radius: 8px;
-}
-.beneficiary-table.table-view .scroll-bar .thumb {
-    -fx-background-color: rgba(148,163,184,0.25);
-    -fx-background-radius: 8px;
-}
-.beneficiary-table.table-view .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148,163,184,0.40);
+
+.beneficiary-table .table-row-cell:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.08);
 }
 
-/* =========================================================
-   FIX: Checkbox style (so it doesn't look white/flat)
-   ========================================================= */
+.beneficiary-table .table-row-cell:selected {
+    -fx-background-color: rgba(249, 115, 22, 0.12);
+    -fx-border-color: rgba(249, 115, 22, 0.3);
+    -fx-border-width: 1px 0;
+}
+
+.beneficiary-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: #ffffff;
+}
+
+/* Checkbox styling */
+.beneficiary-table .check-box {
+    -fx-text-fill: transparent;
+}
+
 .beneficiary-table .check-box .box {
-    -fx-background-color: rgba(255,255,255,0.06);
-    -fx-border-color: rgba(148,163,184,0.28);
-    -fx-border-width: 1px;
-    -fx-background-radius: 4px;
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148, 163, 184, 0.3);
     -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-min-width: 18px;
+    -fx-pref-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-height: 18px;
 }
+
 .beneficiary-table .check-box:selected .box {
-    -fx-background-color: rgba(249,115,22,0.90);
-    -fx-border-color: rgba(249,115,22,0.55);
+    -fx-background-color: rgba(249, 115, 22, 0.85);
+    -fx-border-color: rgba(249, 115, 22, 0.9);
 }
-.beneficiary-table .check-box:selected .mark {
+
+.beneficiary-table .check-box:selected .box .mark {
     -fx-background-color: white;
 }
 
-/* Checkbox */
-.check-box:selected .box {
-    -fx-background-color: rgba(249,115,22,0.90);
+/* ===== TABLE SCROLLBARS ===== */
+.beneficiary-table .scroll-bar:vertical,
+.beneficiary-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
 }
-.check-box:selected .mark {
-    -fx-background-color: white;
+
+.beneficiary-table .scroll-bar .track {
+    -fx-background-color: rgba(148,163,184,0.08);
+    -fx-background-radius: 6px;
+}
+
+.beneficiary-table .scroll-bar .thumb {
+    -fx-background-color: rgba(249,115,22,0.30);
+    -fx-background-radius: 6px;
+}
+
+.beneficiary-table .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(249,115,22,0.50);
+}
+
+.beneficiary-table .scroll-bar .thumb:pressed {
+    -fx-background-color: rgba(249,115,22,0.70);
+}
+
+.beneficiary-table .increment-button,
+.beneficiary-table .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.beneficiary-table .corner {
+    -fx-background-color: transparent;
+}
+
+/* ===== TABLE PLACEHOLDER (when no data) ===== */
+.beneficiary-table .placeholder {
+    -fx-background-color: transparent;
+}
+
+.beneficiary-table .placeholder .label {
+    -fx-text-fill: rgba(148, 163, 184, 0.6);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+/* ===== FOCUS STATES ===== */
+.button:focused,
+.text-field:focused,
+.table-view:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 600px) {
+    .dialog-container {
+        -fx-pref-width: 95%;
+    }
+
+    .beneficiary-table .column-header .label,
+    .beneficiary-table .table-cell {
+        -fx-font-size: 12px;
+    }
 }

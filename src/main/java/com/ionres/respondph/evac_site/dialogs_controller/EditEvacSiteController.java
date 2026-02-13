@@ -103,7 +103,7 @@ public class EditEvacSiteController {
                 AlertDialogManager.showSuccess("Success", "Evacuation site has been successfully updated.");
                 evacSiteController.loadTable();
                 DashboardRefresher.refreshEvacSiteMap();
-                closeDialog();
+                DashboardRefresher.refresh();
             } else {
                 AlertDialogManager.showError("Error", "Failed to update evacuation site. Please try again.");
             }

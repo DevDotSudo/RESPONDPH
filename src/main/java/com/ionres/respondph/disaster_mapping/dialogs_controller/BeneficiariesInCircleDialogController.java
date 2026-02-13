@@ -27,7 +27,6 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     private static final int INVALID_DISASTER_ID = -1;
 
     @FXML private Label titleLabel;
-    @FXML private Label infoLabel;
     @FXML private TableView<BeneficiaryMarker> beneficiariesTable;
     @FXML private TableColumn<BeneficiaryMarker, Integer> idColumn;
     @FXML private TableColumn<BeneficiaryMarker, String> nameColumn;
@@ -187,12 +186,6 @@ public class BeneficiariesInCircleDialogController implements Initializable {
         LOGGER.info("Disaster: " + (circle != null ? circle.disasterType + " - " + circle.disasterName : "null"));
         LOGGER.info("Beneficiary count: " + (beneficiaries != null ? beneficiaries.size() : 0));
 
-        if (circle != null) {
-            String disasterInfo = String.format("%s - %s",
-                    circle.disasterType != null ? circle.disasterType : "Unknown Type",
-                    circle.disasterName != null ? circle.disasterName : "Unknown Disaster");
-            infoLabel.setText("Disaster: " + disasterInfo);
-        }
 
         titleLabel.setText("Beneficiaries in Disaster Area");
 

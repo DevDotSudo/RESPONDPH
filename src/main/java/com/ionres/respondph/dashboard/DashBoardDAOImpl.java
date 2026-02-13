@@ -1,6 +1,7 @@
 package com.ionres.respondph.dashboard;
 
 import com.ionres.respondph.common.model.DisasterCircleEncrypted;
+import com.ionres.respondph.common.model.EvacSiteMappingModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.ResourceUtils;
 import java.sql.Connection;
@@ -33,6 +34,10 @@ public class DashBoardDAOImpl implements DashBoardDAO {
     public int getTotalAids() {
         return getCount("SELECT COUNT(*) FROM aid_type");
     }
+
+    @Override
+    public int getTotalEvacutaionSites() {
+        return getCount("SELECT COUNT(*) FROM evac_site");}
 
     @Override
     public int getCount(String sql) {
@@ -130,6 +135,44 @@ public class DashBoardDAOImpl implements DashBoardDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching beneficiaries", e);
+        } finally {
+            ResourceUtils.closeResources(rs, ps);
+        }
+        return list;
+    }
+
+    @Override
+    public List<EvacSiteMappingModel> fetchAllEvacSites() {
+        List<EvacSiteMappingModel> list = new ArrayList<>();
+        String sql = "SELECT evac_id, name, lat, `long`, capacity " +
+                "FROM evac_site " +
+                "WHERE lat IS NOT NULL AND `long` IS NOT NULL";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = connection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                try {
+                    int evacId = rs.getInt("evac_id");
+                    String name = rs.getString("name");
+                    String lat = String.valueOf(rs.getDouble("lat"));
+                    String lng = String.valueOf(rs.getDouble("long"));
+                    String capacity = String.valueOf(rs.getInt("capacity"));
+
+                    list.add(new EvacSiteMappingModel(evacId, name, lat, lng, capacity));
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error processing evac site row", e);
+                }
+            }
+
+            LOGGER.info("Fetched " + list.size() + " evacuation sites from database");
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching evacuation sites", e);
         } finally {
             ResourceUtils.closeResources(rs, ps);
         }

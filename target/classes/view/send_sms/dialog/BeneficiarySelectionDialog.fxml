@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/17.0.12"
       xmlns:fx="http://javafx.com/fxml/1"
-      stylesheets="@/styles/send_sms/sendsms.css"
+      stylesheets="@/styles/send_sms/dialog/beneficiaryselectiondialog.css"
       fx:controller="com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController"
       spacing="15"
       prefWidth="750"
@@ -72,9 +72,6 @@
                          prefWidth="140"/>
             <TableColumn fx:id="colPhone"
                          text="Mobile Number"
-                         prefWidth="140"/>
-            <TableColumn fx:id="colAddress"
-                         text="Coordinates"
                          prefWidth="140"/>
         </columns>
         <columnResizePolicy>

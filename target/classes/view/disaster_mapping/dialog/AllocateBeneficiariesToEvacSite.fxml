@@ -45,6 +45,15 @@
                 <Insets bottom="24" left="24" right="24" top="20" />
             </padding>
 
+             <!-- Allocation Info -->
+             <VBox spacing="8" styleClass="info-box">
+                 <HBox alignment="CENTER_LEFT" spacing="10">
+                     <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="16" styleClass="info-icon" />
+                     <Label styleClass="info-title" text="About Allocation" />
+                 </HBox>
+                 <Label styleClass="info-text" text="• Beneficiaries are automatically allocated to the nearest evacuation site based on geographic distance.&#10;• Priority is given to beneficiaries with higher vulnerability scores.&#10;• Allocation respects the maximum capacity of each evacuation site.&#10;• Unassigned beneficiaries may be outside the coverage radius or all nearby sites may be at capacity." wrapText="true" />
+             </VBox>
+
             <!-- ==================== SECTION 1: EVACUATION SITE INFORMATION ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
@@ -73,29 +82,21 @@
                         <!-- Capacity -->
                         <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="0">
                             <FontAwesomeIconView glyphName="EXPAND" size="14" styleClass="field-icon" />
-                            <Label styleClass="info-text" text="Capacity:" />
-                            <Label fx:id="capacityLabel" styleClass="info-value" text="-" />
                         </HBox>
 
                         <!-- Occupied -->
                         <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <Label styleClass="info-text" text="Occupied:" />
-                            <Label fx:id="occupiedLabel" styleClass="info-value" text="-" />
                         </HBox>
 
                         <!-- Remaining -->
                         <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="2">
                             <FontAwesomeIconView glyphName="DASHBOARD" size="14" styleClass="field-icon" />
-                            <Label styleClass="info-text" text="Remaining:" />
-                            <Label fx:id="remainingLabel" styleClass="info-value" text="-" />
                         </HBox>
    
                        <!-- Disaster Info -->
                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="3">
                            <FontAwesomeIconView glyphName="FIRE" size="14" styleClass="field-icon" />
-                           <Label styleClass="info-text" text="Disaster:" />
-                           <Label fx:id="disasterLabel" styleClass="info-value" text="-" />
                        </HBox>
                   <rowConstraints>
                      <RowConstraints />
@@ -111,15 +112,6 @@
 
             <!-- ==================== SECTION 2: BENEFICIARY ALLOCATION ==================== -->
             <VBox spacing="18" styleClass="form-section">
-
-                <!-- Allocation Info -->
-                <VBox spacing="8" styleClass="info-box">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="16" styleClass="info-icon" />
-                        <Label styleClass="info-title" text="About Allocation" />
-                    </HBox>
-                    <Label styleClass="info-text" text="• Beneficiaries are automatically allocated to the nearest evacuation site based on geographic distance.&#10;• Priority is given to beneficiaries with higher vulnerability scores.&#10;• Allocation respects the maximum capacity of each evacuation site.&#10;• Unassigned beneficiaries may be outside the coverage radius or all nearby sites may be at capacity." wrapText="true" />
-                </VBox>
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="TABLE" size="18" styleClass="section-icon" />
@@ -163,18 +155,6 @@
                             </VBox>
                         </placeholder>
                     </TableView>
-
-                    <!-- Table Status Bar -->
-                    <HBox alignment="CENTER_RIGHT" spacing="8" styleClass="table-status-bar">
-                        <padding>
-                            <Insets bottom="6" left="12" right="12" top="6" />
-                        </padding>
-                        <Label styleClass="status-text" text="Showing" />
-                        <Label fx:id="showingCountLabel" styleClass="status-value" text="0" />
-                        <Label styleClass="status-text" text="of" />
-                        <Label fx:id="totalCountLabel" styleClass="status-value" text="0" />
-                        <Label styleClass="status-text" text="beneficiaries" />
-                    </HBox>
                 </VBox>
 
                 <!-- Allocation Summary -->
@@ -185,23 +165,6 @@
 
                     <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
                         <FontAwesomeIconView glyphName="CHECK_CIRCLE" size="20" styleClass="success-icon" />
-                        <VBox spacing="2">
-                            <Label styleClass="summary-title" text="Allocation Summary" />
-                            <HBox spacing="16">
-                                <HBox alignment="CENTER_LEFT" spacing="6">
-                                    <Label styleClass="summary-label" text="Assigned:" />
-                                    <Label fx:id="assignedCountLabel" styleClass="summary-value-assigned" text="0" />
-                                </HBox>
-                                <HBox alignment="CENTER_LEFT" spacing="6">
-                                    <Label styleClass="summary-label" text="Unassigned:" />
-                                    <Label fx:id="unassignedCountLabel" styleClass="summary-value-unassigned" text="0" />
-                                </HBox>
-                                <HBox alignment="CENTER_LEFT" spacing="6">
-                                    <Label styleClass="summary-label" text="Nearby:" />
-                                    <Label fx:id="nearbyCountLabel" styleClass="summary-value-nearby" text="0" />
-                                </HBox>
-                            </HBox>
-                        </VBox>
                     </HBox>
 
                     <Button fx:id="refreshBtn" styleClass="btn-icon-only">

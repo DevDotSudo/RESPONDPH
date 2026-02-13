@@ -1,94 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.*?>
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane styleClass="dashboard-root" stylesheets="@/styles/dashboard/dashboard.css"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.ionres.respondph.dashboard.DashboardController">
+<AnchorPane styleClass="dashboard-root" stylesheets="@/styles/dashboard/dashboard.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.dashboard.DashboardController">
 
-    <VBox spacing="15.0" AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-          styleClass="dashboard-wrapper">
+    <VBox spacing="15.0" styleClass="dashboard-wrapper" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <HBox alignment="CENTER_LEFT" styleClass="dashboard-topbar">
-            <Label styleClass="dashboard-topbar-title"
-                   text="Dashboard - Beneficiaries Mapping"/>
+            <!-- Dashboard Mapping - Left -->
+            <Label styleClass="dashboard-topbar-title" text="Dashboard Mapping" />
+
+            <!-- Spacer pushes time to center -->
+            <Region HBox.hgrow="ALWAYS" />
+
+            <!-- Clock - Center (No container, icon on top of time) -->
+            <VBox alignment="CENTER" spacing="4" styleClass="clock-container">
+
+                <!-- Time and Date -->
+                <Label fx:id="currentTimeLabel" styleClass="clock-time" />
+                <Label fx:id="currentDateLabel" styleClass="clock-date" />
+            </VBox>
+
+            <!-- Spacer pushes admin to right -->
+            <Region HBox.hgrow="ALWAYS" />
+
+            <!-- Admin Profile - Right (Icon inside label container) -->
+            <HBox alignment="CENTER_RIGHT" spacing="8" styleClass="admin-name-label">
+                <!-- Admin Icon inside the label container -->
+                <FontAwesomeIconView glyphName="USER_CIRCLE" styleClass="admin-icon-inside" />
+
+                <!-- Admin Name -->
+                <Label fx:id="adminNameLabel" text="Admin Name" />
+            </HBox>
         </HBox>
 
-        <GridPane hgap="16" vgap="16" styleClass="cards-grid">
-
+        <GridPane hgap="16" styleClass="cards-grid" vgap="16">
             <columnConstraints>
-                <ColumnConstraints hgrow="ALWAYS"/>
-                <ColumnConstraints hgrow="ALWAYS"/>
-                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
             </columnConstraints>
 
             <StackPane styleClass="flat-card-blue" GridPane.columnIndex="0">
-                <HBox spacing="14" alignment="CENTER_LEFT" styleClass="flat-card-content">
-
+                <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
-                        <FontAwesomeIconView glyphName="USERS" styleClass="flat-icon-symbol"/>
+                        <FontAwesomeIconView glyphName="USERS" styleClass="flat-icon-symbol" />
                     </StackPane>
-
                     <VBox spacing="2">
-                        <Label fx:id="totalBeneficiaryLabel"
-                               styleClass="flat-value"
-                               text="0"/>
-
-                        <Label text="Beneficiaries"
-                               styleClass="flat-label"/>
+                        <Label fx:id="totalBeneficiaryLabel" styleClass="flat-value" text="0" />
+                        <Label styleClass="flat-label" text="Beneficiaries" />
                     </VBox>
-
                 </HBox>
             </StackPane>
 
             <StackPane styleClass="flat-card-red" GridPane.columnIndex="1">
-                <HBox spacing="14" alignment="CENTER_LEFT" styleClass="flat-card-content">
-
+                <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
-                        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE"
-                                             styleClass="flat-icon-symbol"/>
+                        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="flat-icon-symbol" />
                     </StackPane>
-
                     <VBox spacing="2">
-                        <Label fx:id="totalDisastersLabel"
-                               styleClass="flat-value"
-                               text="0"/>
-
-                        <Label text="Disasters"
-                               styleClass="flat-label"/>
+                        <Label fx:id="totalDisastersLabel" styleClass="flat-value" text="0" />
+                        <Label styleClass="flat-label" text="Disasters" />
                     </VBox>
-
                 </HBox>
             </StackPane>
 
             <StackPane styleClass="flat-card-green" GridPane.columnIndex="2">
-                <HBox spacing="14" alignment="CENTER_LEFT" styleClass="flat-card-content">
-
+                <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
-                        <FontAwesomeIconView glyphName="MEDKIT"
-                                             styleClass="flat-icon-symbol"/>
+                        <FontAwesomeIconView glyphName="MEDKIT" styleClass="flat-icon-symbol" />
                     </StackPane>
-
                     <VBox spacing="2">
-                        <Label fx:id="totalAidsLabel"
-                               styleClass="flat-value"
-                               text="0"/>
-
-                        <Label text="Aids"
-                               styleClass="flat-label"/>
+                        <Label fx:id="totalAidsLabel" styleClass="flat-value" text="0" />
+                        <Label styleClass="flat-label" text="Aids" />
                     </VBox>
-
                 </HBox>
             </StackPane>
 
+            <StackPane styleClass="flat-card-yellow" GridPane.columnIndex="3">
+                <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
+                    <StackPane styleClass="flat-icon">
+                        <FontAwesomeIconView glyphName="HOME" styleClass="flat-icon-symbol" />
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label fx:id="totalEvacutaionSiteLabel" styleClass="flat-value" text="0" />
+                        <Label styleClass="flat-label" text="Evacuation Site" />
+                    </VBox>
+                </HBox>
+            </StackPane>
+         <rowConstraints>
+            <RowConstraints />
+         </rowConstraints>
         </GridPane>
 
         <Pane fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
     </VBox>
 </AnchorPane>
-

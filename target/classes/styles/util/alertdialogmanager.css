@@ -1,11 +1,13 @@
+/* ===== CUSTOM ALERT DIALOG - SIDEBAR THEME ===== */
 .dialog-pane.custom-alert {
-    -fx-background-color: #1e293b;
-    -fx-border-color: #475569;
+    -fx-background-color: #0f172a;  /* Same as sidebar background */
+    -fx-border-color: rgba(148, 163, 184, 0.14);
     -fx-border-width: 1px;
-    -fx-border-radius: 12px;
-    -fx-background-radius: 12px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 20, 0.15, 0, 8);
-    -fx-padding: 24 28 0 28;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 18, 0.2, 0, 6);
+    -fx-padding: 24px 28px 0 28px;
     -fx-min-width: 420px;
     -fx-min-height: 160px;
     -fx-pref-width: 450px;
@@ -16,128 +18,31 @@
     -fx-background-color: transparent;
 }
 
+/* ===== HEADER PANEL ===== */
 .dialog-pane.custom-alert .header-panel {
     -fx-background-color: transparent;
-    -fx-padding: 0;
+    -fx-padding: 0 0 16px 0;
     -fx-spacing: 16;
     -fx-alignment: center-left;
+    -fx-border-color: rgba(148, 163, 184, 0.14);
+    -fx-border-width: 0 0 1px 0;
 }
 
 .dialog-pane.custom-alert .graphic-container {
     -fx-padding: 0;
     -fx-alignment: top-left;
-    -fx-min-width: 40px;
-    -fx-pref-width: 40px;
+    -fx-min-width: 44px;
+    -fx-pref-width: 44px;
 }
 
 .custom-alert-icon {
-    -fx-font-size: 32px;
-    -fx-opacity: 0.95;
+    -fx-font-size: 36px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 12, 0.2, 0, 4);
 }
 
-.dialog-pane.custom-alert .header-panel .label {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", "Arial";
-    -fx-font-size: 17px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #f8fafc;
-    -fx-wrap-text: true;
-    -fx-text-alignment: left;
-    -fx-alignment: center-left;
-}
-
-.dialog-pane.custom-alert .content {
-    -fx-background-color: transparent;
-    -fx-padding: 12 0 0 0;
-    -fx-alignment: top-left;
-}
-
-.dialog-pane.custom-alert .content.label {
-    -fx-font-family: "Segoe UI", "Arial";
-    -fx-font-size: 14px;
-    -fx-font-weight: 400;
-    -fx-text-fill: #94a3b8;
-    -fx-wrap-text: true;
-    -fx-line-spacing: 3px;
-    -fx-text-alignment: left;
-    -fx-alignment: top-left;
-}
-
-.dialog-pane.custom-alert .button-bar {
-    -fx-background-color: transparent;
-    -fx-border-color: #334155;
-    -fx-border-width: 1px 0 0 0;
-    -fx-padding: 20px 0;
-    -fx-spacing: 12px;
-    -fx-alignment: center-right;
-}
-
-.dialog-pane.custom-alert .button-bar .container {
-    -fx-spacing: 12px;
-}
-
-.dialog-pane.custom-alert .alert-button {
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", "Arial";
-    -fx-font-size: 13px;
-    -fx-font-weight: 600;
-    -fx-padding: 8px 20px;
-    -fx-min-height: 34px;
-    -fx-min-width: 80px;
-    -fx-cursor: hand;
-    -fx-content-display: left;
-    -fx-graphic-text-gap: 6px;
-}
-
-.dialog-pane.custom-alert .alert-button .glyph-icon {
-    -fx-font-size: 12px;
-}
-
-.dialog-pane.custom-alert .alert-button.secondary-button {
-    -fx-background-color: #475569;
-    -fx-border-color: #64748b;
-    -fx-border-width: 1px;
-    -fx-text-fill: #e2e8f0;
-}
-
-.dialog-pane.custom-alert .alert-button.secondary-button:hover {
-    -fx-background-color: #5a6b7f;
-    -fx-border-color: #94a3b8;
-}
-
-.dialog-pane.custom-alert .alert-button.secondary-button:pressed {
-    -fx-background-color: #3d4d5f;
-}
-
-.dialog-pane.custom-alert .alert-button.secondary-button .glyph-icon {
-    -fx-fill: #cbd5e1;
-}
-
-.dialog-pane.custom-alert .alert-button.primary-button {
-    -fx-background-color: #f97316;
-    -fx-text-fill: white;
-    -fx-border-width: 0;
-}
-
-.dialog-pane.custom-alert .alert-button.primary-button:hover {
-    -fx-background-color: #fb923c;
-}
-
-.dialog-pane.custom-alert .alert-button.primary-button:pressed {
-    -fx-background-color: #ea580c;
-}
-
-.dialog-pane.custom-alert .alert-button.primary-button .glyph-icon {
-    -fx-fill: white;
-}
-
-.dialog-pane.custom-alert .alert-button:focused {
-    -fx-border-color: #60a5fa;
-    -fx-border-width: 2px;
-}
-
+/* Alert icon colors - matching theme */
 .success-alert .custom-alert-icon {
-    -fx-fill: #ea580c;
+    -fx-fill: #10b981;
 }
 
 .error-alert .custom-alert-icon {
@@ -150,9 +55,158 @@
 
 .info-alert .custom-alert-icon,
 .confirmation-alert .custom-alert-icon {
-    -fx-fill: #3b82f6;
+    -fx-fill: rgba(249, 115, 22, 0.95);  /* Orange accent */
 }
 
+.dialog-pane.custom-alert .header-panel .label {
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #e2e8f0;
+    -fx-wrap-text: true;
+    -fx-text-alignment: left;
+    -fx-alignment: center-left;
+}
+
+/* ===== CONTENT ===== */
+.dialog-pane.custom-alert .content {
+    -fx-background-color: transparent;
+    -fx-padding: 16px 0 0 0;
+    -fx-alignment: top-left;
+}
+
+.dialog-pane.custom-alert .content.label {
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-text-fill: rgba(226, 232, 240, 0.86);  /* Same as nav-text */
+    -fx-wrap-text: true;
+    -fx-line-spacing: 4px;
+    -fx-text-alignment: left;
+    -fx-alignment: top-left;
+}
+
+/* ===== BUTTON BAR ===== */
+.dialog-pane.custom-alert .button-bar {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(148, 163, 184, 0.14);
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 20px 0;
+    -fx-spacing: 12px;
+    -fx-alignment: center-right;
+}
+
+.dialog-pane.custom-alert .button-bar .container {
+    -fx-spacing: 12px;
+}
+
+.dialog-pane.custom-alert .alert-button {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-focus-traversable: false;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -fx-font-size: 13px;  /* Same font size as content */
+    -fx-font-weight: 600;
+    -fx-padding: 10px;
+    -fx-min-height: -1;
+    -fx-pref-height: -1;
+    -fx-min-width: -1;
+    -fx-pref-width: -1;
+    -fx-cursor: hand;
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 6px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.dialog-pane.custom-alert .alert-button .glyph-icon {
+    -fx-font-size: 12px;
+}
+
+/* ===== SECONDARY BUTTON ===== */
+.dialog-pane.custom-alert .alert-button.secondary-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(148, 163, 184, 0.25);
+    -fx-border-width: 1px;
+    -fx-text-fill: #cbd5e1;  /* Same as nav-button text */
+}
+
+.dialog-pane.custom-alert .alert-button.secondary-button:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.10);  /* Same as nav-button hover */
+    -fx-border-color: rgba(148, 163, 184, 0.40);
+}
+
+.dialog-pane.custom-alert .alert-button.secondary-button:pressed {
+    -fx-background-color: rgba(148, 163, 184, 0.16);  /* Same as nav-button pressed */
+}
+
+.dialog-pane.custom-alert .alert-button.secondary-button .glyph-icon {
+    -fx-fill: rgba(148, 163, 184, 0.85);  /* Same as nav-icon */
+}
+
+.dialog-pane.custom-alert .alert-button.secondary-button:hover .glyph-icon {
+    -fx-fill: #e2e8f0;  /* Same as nav-button hover icon */
+}
+
+/* ===== PRIMARY BUTTON ===== */
+.dialog-pane.custom-alert .alert-button.primary-button {
+    -fx-background-color: rgba(249, 115, 22, 0.18);  /* Same as nav-button-active */
+    -fx-border-color: rgba(249, 115, 22, 0.55);      /* Same as nav-button-active border */
+    -fx-border-width: 1px;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+}
+
+.dialog-pane.custom-alert .alert-button.primary-button:hover {
+    -fx-background-color: rgba(249, 115, 22, 0.25);
+    -fx-border-color: rgba(249, 115, 22, 0.70);
+}
+
+.dialog-pane.custom-alert .alert-button.primary-button:pressed {
+    -fx-background-color: rgba(249, 115, 22, 0.30);
+}
+
+.dialog-pane.custom-alert .alert-button.primary-button .glyph-icon {
+    -fx-fill: #ffffff;
+}
+
+/* ===== CANCEL/DANGER BUTTON ===== */
+.dialog-pane.custom-alert .alert-button.cancel-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(220, 38, 38, 0.55);  /* Same as logout-button border */
+    -fx-border-width: 1px;
+    -fx-text-fill: #ef4444;  /* Same as logout-text */
+    -fx-font-weight: 700;
+}
+
+.dialog-pane.custom-alert .alert-button.cancel-button:hover {
+    -fx-background-color: rgba(220, 38, 38, 0.14);  /* Same as logout-button hover */
+    -fx-border-color: rgba(220, 38, 38, 0.70);
+}
+
+.dialog-pane.custom-alert .alert-button.cancel-button:pressed {
+    -fx-background-color: rgba(220, 38, 38, 0.20);
+}
+
+.dialog-pane.custom-alert .alert-button.cancel-button .glyph-icon {
+    -fx-fill: #ef4444;  /* Same as logout-icon */
+}
+
+/* ===== FOCUS STATE ===== */
+.dialog-pane.custom-alert .alert-button:focused {
+    -fx-border-color: rgba(249, 115, 22, 0.75);
+    -fx-border-width: 1px;
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}
+
+.dialog-pane.custom-alert .alert-button.primary-button:focused {
+    -fx-border-color: rgba(249, 115, 22, 0.90);
+}
+
+/* ===== CURSOR STYLES ===== */
 .dialog-pane.custom-alert,
 .dialog-pane.custom-alert .header-panel,
 .dialog-pane.custom-alert .content,
@@ -162,4 +216,11 @@
 
 .dialog-pane.custom-alert .alert-button {
     -fx-cursor: hand;
+}
+
+/* ===== REMOVE FOCUS HIGHLIGHTS ===== */
+.dialog-pane.custom-alert .button:focused,
+.dialog-pane.custom-alert .alert-button:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
 }

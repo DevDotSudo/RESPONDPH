@@ -1,94 +1,155 @@
-/* ========== SEND SMS ROOT - MATCHING DISASTER DIALOG THEME ========== */
-.send-sms-root {
+/* ===== ADD AID DIALOG - COMPLETE DESIGN ===== */
+.dialog-root {
     -fx-background-color: #0b1220;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
     -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 0;
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0.0, 0, 4);
 }
 
-/* ========== HEADER SECTION ========== */
-.header-section {
+/* ===== HEADER SECTION ===== */
+.dialog-header {
     -fx-background-color: rgba(255,255,255,0.02);
     -fx-border-color: rgba(148,163,184,0.12);
     -fx-border-width: 0 0 1px 0;
-    -fx-background-radius: 0;
+    -fx-background-radius: 8px 8px 0 0;
 }
 
-.page-title {
+.header-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.4), 8, 0.0, 0, 0);
+}
+
+.dialog-title {
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 24px;
+    -fx-font-size: 21px;
     -fx-font-weight: 900;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 1);
 }
 
-.page-subtitle {
+.dialog-subtitle {
     -fx-text-fill: rgba(148,163,184,0.85);
     -fx-font-size: 13px;
     -fx-font-weight: 600;
 }
 
-.network-status-label {
-    -fx-text-fill: rgba(148,163,184,0.90);
-    -fx-font-size: 13px;
-    -fx-font-weight: 700;
+/* ===== CLOSE BUTTON ===== */
+.dialog-close {
     -fx-background-color: rgba(255,255,255,0.03);
-    -fx-background-radius: 6px;
-    -fx-padding: 8px 14px;
-    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-color: rgba(148,163,184,0.20);
     -fx-border-width: 1px;
+    -fx-background-radius: 6px;
     -fx-border-radius: 6px;
+    -fx-padding: 10px 14px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+.dialog-close:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+.dialog-close:pressed {
+    -fx-background-color: rgba(239,68,68,0.18);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
 
-/* ========== SCROLLPANE ========== */
-.content-scroll {
+.close-icon {
+    -fx-fill: rgba(248,250,252,0.95);
+}
+
+/* ===== ERROR CONTAINER ===== */
+.error-box {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.25);
+    -fx-border-width: 1px 0;
+}
+.error-text {
+    -fx-text-fill: rgba(248,113,113,0.98);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+/* ===== INFO BANNER ===== */
+.info-banner {
+    -fx-background-color: rgba(249,115,22,0.08);
+    -fx-border-color: rgba(249,115,22,0.22);
+    -fx-border-width: 1px 0;
+}
+.banner-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+}
+.banner-text {
+    -fx-text-fill: rgba(251,191,36,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 700;
+}
+
+/* ===== SCROLLPANE ===== */
+.dialog-scroll {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-padding: 0;
 }
-
-.content-scroll .viewport {
+.dialog-scroll .viewport {
+    -fx-background-color: transparent;
+}
+.dialog-scroll .corner {
     -fx-background-color: transparent;
 }
 
-.content-scroll .corner {
-    -fx-background-color: transparent;
-}
-
-.content-scroll .scroll-bar:vertical,
-.content-scroll .scroll-bar:horizontal {
+/* Scrollbars - Orange accent */
+.dialog-scroll .scroll-bar:vertical,
+.dialog-scroll .scroll-bar:horizontal {
     -fx-background-color: transparent;
     -fx-padding: 2px;
 }
-
-.content-scroll .scroll-bar .track {
+.dialog-scroll .scroll-bar .track {
     -fx-background-color: rgba(148,163,184,0.08);
     -fx-background-radius: 6px;
 }
-
-.content-scroll .scroll-bar .thumb {
+.dialog-scroll .scroll-bar .thumb {
     -fx-background-color: rgba(249,115,22,0.30);
     -fx-background-radius: 6px;
 }
-
-.content-scroll .scroll-bar .thumb:hover {
+.dialog-scroll .scroll-bar .thumb:hover {
     -fx-background-color: rgba(249,115,22,0.50);
 }
-
-.content-scroll .scroll-bar .thumb:pressed {
+.dialog-scroll .scroll-bar .thumb:pressed {
     -fx-background-color: rgba(249,115,22,0.70);
 }
-
-.content-container {
+.dialog-scroll .increment-button,
+.dialog-scroll .decrement-button {
     -fx-background-color: transparent;
-    -fx-padding: 20 30 30 30;
-    -fx-spacing: 24;
+    -fx-padding: 0;
+}
+.dialog-scroll .increment-arrow,
+.dialog-scroll .decrement-arrow {
+    -fx-background-color: rgba(148,163,184,0.4);
 }
 
-/* ========== SECTION CARDS - MATCHING FORM-SECTION ========== */
-.news-section,
-.custom-message-section,
-.message-section {
+/* ===== BODY ===== */
+.dialog-body {
+    -fx-background-color: transparent;
+}
+
+/* ===== SEPARATOR ===== */
+.separator {
+    -fx-padding: 0;
+}
+.separator .line {
+    -fx-background-color: rgba(148,163,184,0.12);
+    -fx-border-color: transparent;
+}
+
+/* ===== FORM SECTION ===== */
+.form-section {
     -fx-background-color: rgba(255,255,255,0.025);
     -fx-border-color: rgba(148,163,184,0.14);
     -fx-border-width: 1px;
@@ -98,24 +159,155 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
 }
 
-.section-title {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 16.5px;
-    -fx-font-weight: 900;
+/* Section Header */
+.section-header {
     -fx-padding: 0 0 12px 0;
     -fx-border-color: rgba(148,163,184,0.08);
     -fx-border-width: 0 0 1px 0;
 }
 
-/* ========== INPUT LABELS - MATCHING FIELD-LABEL ========== */
-.input-label {
+.section-icon {
+    -fx-fill: rgba(249,115,22,0.90);
+}
+.section-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 16.5px;
+    -fx-font-weight: 900;
+}
+.section-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.75);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(249,115,22,0.10);
+    -fx-background-radius: 12px;
+    -fx-padding: 4px 12px;
+}
+
+/* ===== INFO BOX ===== */
+.info-box {
+    -fx-background-color: rgba(59,130,246,0.08);
+    -fx-border-color: rgba(59,130,246,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 14px 16px;
+}
+.info-icon {
+    -fx-fill: rgba(96,165,250,0.95);
+}
+.info-title {
+    -fx-text-fill: rgba(147,197,253,0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+.info-text {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+    -fx-padding: 0 0 0 22px;
+}
+
+/* ===== SUCCESS BOX ===== */
+.success-box {
+    -fx-background-color: rgba(16,185,129,0.08);
+    -fx-border-color: rgba(16,185,129,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+.success-icon {
+    -fx-fill: rgba(16,185,129,0.95);
+}
+.success-title {
+    -fx-text-fill: rgba(52,211,153,0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+.success-text {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+}
+
+/* ===== WARNING BOX ===== */
+.warning-box {
+    -fx-background-color: rgba(245,158,11,0.08);
+    -fx-border-color: rgba(245,158,11,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+.warning-icon {
+    -fx-fill: rgba(245,158,11,0.95);
+}
+.warning-title {
+    -fx-text-fill: rgba(251,191,36,0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+.warning-text {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+}
+
+/* ===== FIELD LABELS ===== */
+.field-label {
     -fx-text-fill: rgba(226,232,240,0.95);
     -fx-font-size: 13.5px;
     -fx-font-weight: 800;
 }
+.field-helper-text {
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+    -fx-font-style: italic;
+}
 
-/* ========== COMBOBOX - MATCHING FIELD-COMBO ========== */
-.recipient-combo {
+/* ===== FLAT INPUT ===== */
+.flat-input {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 0 14px;
+    -fx-alignment: center-left;
+    -fx-min-height: 44px;
+    -fx-pref-height: 44px;
+}
+.flat-input:hover {
+    -fx-border-color: rgba(249,115,22,0.40);
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+
+.field-icon {
+    -fx-fill: rgba(226,232,240,0.70);
+}
+
+/* ===== TEXT FIELD ===== */
+.field-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60);
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+    -fx-alignment: CENTER_LEFT;
+}
+.text-field.field-input {
+    -fx-highlight-fill: rgba(249,115,22,0.30);
+    -fx-highlight-text-fill: white;
+    -fx-caret-color: rgba(249,115,22,0.95);
+}
+
+/* ===== COMBO BOX ===== */
+.field-combo {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0;
@@ -123,49 +315,35 @@
     -fx-pref-height: 38px;
     -fx-max-height: 38px;
 }
-
-.recipient-combo > .list-cell {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
+.field-combo > .list-cell {
+    -fx-background-color: transparent;
     -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-size: 14px;
     -fx-font-weight: 700;
-    -fx-padding: 0 14px;
+    -fx-padding: 0;
     -fx-min-height: 38px;
     -fx-pref-height: 38px;
     -fx-max-height: 38px;
     -fx-alignment: CENTER_LEFT;
 }
-
-.recipient-combo > .list-cell:hover {
-    -fx-border-color: rgba(249,115,22,0.40);
-    -fx-background-color: rgba(255,255,255,0.05);
+.field-combo .list-cell:empty {
+    -fx-text-fill: rgba(148,163,184,0.60);
 }
-
-.recipient-combo .arrow-button {
+.field-combo .arrow-button {
     -fx-background-color: transparent;
     -fx-padding: 0 10px 0 12px;
     -fx-min-height: 38px;
     -fx-pref-height: 38px;
     -fx-max-height: 38px;
 }
-
-.recipient-combo .arrow {
+.field-combo .arrow {
     -fx-background-color: rgba(226,232,240,0.65);
 }
-
-.recipient-combo:hover .arrow {
+.field-combo:hover .arrow {
     -fx-background-color: rgba(249,115,22,0.75);
 }
 
-.recipient-combo .list-cell:empty {
-    -fx-text-fill: rgba(148,163,184,0.60);
-}
-
-/* Combo box dropdown popup */
+/* Combo Box Popup */
 .combo-box-popup .list-view {
     -fx-background-color: #0f172a;
     -fx-border-color: rgba(148,163,184,0.25);
@@ -175,7 +353,6 @@
     -fx-padding: 8px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 16, 0.0, 0, 4);
 }
-
 .combo-box-popup .list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: rgba(226,232,240,0.95);
@@ -184,52 +361,98 @@
     -fx-padding: 11px 12px;
     -fx-background-radius: 5px;
 }
-
 .combo-box-popup .list-view .list-cell:hover {
     -fx-background-color: rgba(249,115,22,0.12);
     -fx-text-fill: rgba(248,250,252,0.98);
 }
-
 .combo-box-popup .list-view .list-cell:selected {
     -fx-background-color: rgba(249,115,22,0.22);
     -fx-text-fill: rgba(248,250,252,0.98);
     -fx-font-weight: 800;
 }
 
-/* ========== BUTTONS - MATCHING DIALOG THEME ========== */
-.generate-button,
-.secondary-button {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148,163,184,0.25);
+/* ===== CHECKBOX ===== */
+.field-checkbox {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+.field-checkbox .box {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.3);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+.field-checkbox:selected .box {
+    -fx-background-color: rgba(249,115,22,0.85);
+    -fx-border-color: rgba(249,115,22,0.9);
+}
+.field-checkbox:selected .box .mark {
+    -fx-background-color: white;
+}
+
+/* ===== RADIO BUTTON ===== */
+.radio-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+.radio-label .radio {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.3);
+}
+.radio-label:selected .radio {
+    -fx-background-color: rgba(249,115,22,0.85);
+    -fx-border-color: rgba(249,115,22,0.9);
+}
+.radio-label:selected .radio .dot {
+    -fx-background-color: white;
+}
+
+/* ===== SUBSECTION CONTAINER ===== */
+.subsection-container {
+    -fx-background-color: rgba(255,255,255,0.01);
+    -fx-border-color: rgba(148,163,184,0.08);
     -fx-border-width: 1px;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
-    -fx-padding: 11px 18px;
-    -fx-cursor: hand;
-    -fx-min-height: 42px;
-    -fx-pref-height: 42px;
-    -fx-max-height: 42px;
-    -fx-text-fill: rgba(248,250,252,0.95);
+    -fx-padding: 14px;
+}
+
+/* ===== BADGES ===== */
+.badge-recommended {
+    -fx-background-color: rgba(16,185,129,0.15);
+    -fx-text-fill: #10b981;
+    -fx-font-size: 11px;
     -fx-font-weight: 800;
-    -fx-font-size: 13.5px;
+    -fx-padding: 4px 10px;
+    -fx-background-radius: 30px;
+    -fx-border-color: rgba(16,185,129,0.3);
+    -fx-border-radius: 30px;
+    -fx-border-width: 1px;
+}
+.badge-new {
+    -fx-background-color: rgba(59,130,246,0.15);
+    -fx-text-fill: #3b82f6;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 4px 10px;
+    -fx-background-radius: 30px;
+    -fx-border-color: rgba(59,130,246,0.3);
+    -fx-border-radius: 30px;
+    -fx-border-width: 1px;
 }
 
-.generate-button:hover,
-.secondary-button:hover {
-    -fx-background-color: rgba(255,255,255,0.08);
-    -fx-border-color: rgba(249,115,22,0.50);
-    -fx-scale-x: 1.02;
-    -fx-scale-y: 1.02;
+/* ===== FOOTER ===== */
+.dialog-footer {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px 0 0 0;
+    -fx-background-radius: 0 0 8px 8px;
 }
 
-.generate-button:pressed,
-.secondary-button:pressed {
-    -fx-background-color: rgba(255,255,255,0.12);
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
-}
-
-.primary-button {
+/* ===== BUTTONS ===== */
+.btn-primary {
     -fx-background-color: rgba(249,115,22,0.92);
     -fx-text-fill: rgba(255,255,255,0.98);
     -fx-font-size: 14.5px;
@@ -245,346 +468,118 @@
     -fx-border-width: 1px;
     -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 10, 0.0, 0, 3);
 }
-
-.primary-button:hover {
+.btn-primary:hover {
     -fx-background-color: rgba(249,115,22,1.00);
     -fx-scale-x: 1.02;
     -fx-scale-y: 1.02;
     -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.45), 14, 0.0, 0, 4);
 }
-
-.primary-button:pressed {
+.btn-primary:pressed {
     -fx-background-color: rgba(234,88,12,1.00);
     -fx-scale-x: 0.98;
     -fx-scale-y: 0.98;
 }
 
-#btnRefreshNetwork {
+.btn-secondary {
     -fx-background-color: rgba(255,255,255,0.03);
     -fx-border-color: rgba(148,163,184,0.25);
-    -fx-min-height: 42px;
-    -fx-pref-height: 42px;
-}
-
-/* ========== CUSTOM EVACUATION MESSAGE SECTION ========== */
-.custom-message-section > VBox {
-    -fx-background-color: rgba(255,255,255,0.02) !important;
-    -fx-border-color: rgba(148,163,184,0.12) !important;
-    -fx-border-width: 1px !important;
-    -fx-border-radius: 6px !important;
-    -fx-background-radius: 6px !important;
-    -fx-padding: 16px !important;
-}
-
-.custom-message-section .input-label {
-    -fx-text-fill: rgba(226,232,240,0.95) !important;
-    -fx-font-size: 13px !important;
-}
-
-/* TextArea - matching flat-input */
-.custom-message-section .message-textarea {
-    -fx-background-color: rgba(255,255,255,0.04) !important;
-    -fx-border-color: rgba(148,163,184,0.18) !important;
-    -fx-border-width: 1px !important;
-    -fx-background-radius: 6px !important;
-    -fx-border-radius: 6px !important;
-    -fx-text-fill: rgba(248,250,252,0.98) !important;
-    -fx-font-size: 13px !important;
-    -fx-font-weight: 600 !important;
-    -fx-prompt-text-fill: rgba(148,163,184,0.60) !important;
-    -fx-padding: 8px 14px !important;
-}
-
-.custom-message-section .message-textarea .content {
-    -fx-background-color: transparent !important;
-}
-
-.custom-message-section .message-textarea:hover {
-    -fx-border-color: rgba(249,115,22,0.40) !important;
-    -fx-background-color: rgba(255,255,255,0.05) !important;
-}
-
-.custom-message-section .message-textarea:focused {
-    -fx-border-color: rgba(249,115,22,0.60) !important;
-}
-
-/* Save Button - matching btn-primary but with green */
-.custom-message-section #btnSaveEvacMessage {
-    -fx-background-color: rgba(34,197,94,0.85) !important;
-    -fx-border-color: rgba(34,197,94,0.30) !important;
-    -fx-border-width: 1px !important;
-    -fx-background-radius: 6px !important;
-    -fx-border-radius: 6px !important;
-    -fx-text-fill: white !important;
-    -fx-font-size: 13.5px !important;
-    -fx-font-weight: 800 !important;
-    -fx-padding: 11px 20px !important;
-    -fx-min-height: 42px;
-    -fx-pref-height: 42px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.20), 10, 0.0, 0, 3);
-    -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>');
-    -fx-graphic-text-gap: 8;
-    -fx-content-display: left;
-}
-
-.custom-message-section #btnSaveEvacMessage:hover {
-    -fx-background-color: rgba(34,197,94,0.95) !important;
-    -fx-border-color: rgba(34,197,94,0.50) !important;
-    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.35), 14, 0.0, 0, 4);
-    -fx-scale-x: 1.02;
-    -fx-scale-y: 1.02;
-}
-
-.custom-message-section #btnSaveEvacMessage:pressed {
-    -fx-background-color: rgba(22,163,74,0.95) !important;
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
-}
-
-/* Status Label */
-.custom-message-section #lblMessageStatus {
-    -fx-text-fill: rgba(148,163,184,0.85) !important;
-    -fx-font-size: 12px !important;
-    -fx-font-style: italic !important;
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-radius: 20px;
-    -fx-padding: 6px 16px !important;
-    -fx-border-color: rgba(148,163,184,0.12);
     -fx-border-width: 1px;
-    -fx-border-radius: 20px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 11px 18px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+.btn-secondary:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(249,115,22,0.50);
+    -fx-scale-x: 1.01;
+    -fx-scale-y: 1.01;
+}
+.btn-secondary:pressed {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
 }
 
-/* ========== TEXTAREA ========== */
-.message-textarea {
+.btn-secondary-alt {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 11px 18px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+.btn-secondary-alt:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+    -fx-scale-x: 1.01;
+    -fx-scale-y: 1.01;
+}
+.btn-secondary-alt:pressed {
+    -fx-background-color: rgba(239,68,68,0.15);
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
+}
+
+.btn-icon {
+    -fx-fill: rgba(255,255,255,0.98);
+}
+.btn-text {
+    -fx-text-fill: rgba(255,255,255,0.98);
+    -fx-font-weight: 900;
+}
+
+/* ===== TEXTAREA ===== */
+.flat-input-textarea {
     -fx-background-color: rgba(255,255,255,0.04);
     -fx-border-color: rgba(148,163,184,0.18);
     -fx-border-width: 1px;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-prompt-text-fill: rgba(148,163,184,0.60);
-    -fx-padding: 8px 14px;
+    -fx-padding: 0;
 }
-
-.message-textarea .content {
-    -fx-background-color: transparent;
-}
-
-.message-textarea:hover {
+.flat-input-textarea:hover {
     -fx-border-color: rgba(249,115,22,0.40);
     -fx-background-color: rgba(255,255,255,0.05);
 }
 
-.message-textarea:focused {
-    -fx-border-color: rgba(249,115,22,0.60);
-}
-
-/* ========== AI RESPONSE PANE ========== */
-.ai-response-pane {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(249,115,22,0.20);
-    -fx-border-width: 1px;
-    -fx-background-radius: 7px;
-    -fx-border-radius: 7px;
-    -fx-padding: 16px;
-}
-
-.ai-response-label {
-    -fx-text-fill: rgba(249,115,22,0.95);
-    -fx-font-size: 14px;
-    -fx-font-weight: 900;
-    -fx-padding: 0 0 10px 0;
-    -fx-border-color: rgba(249,115,22,0.15);
-    -fx-border-width: 0 0 1px 0;
-}
-
-.ai-news-slot {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 13.5px;
-    -fx-font-weight: 600;
-    -fx-padding: 10px 14px;
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-radius: 6px;
-    -fx-border-color: transparent;
-    -fx-border-width: 1px;
-    -fx-border-radius: 6px;
-}
-
-.ai-news-slot:hover {
-    -fx-background-color: rgba(249,115,22,0.08);
-    -fx-border-color: rgba(249,115,22,0.30);
-}
-
-.ai-news-slot:selected {
-    -fx-background-color: rgba(249,115,22,0.15);
-    -fx-border-color: rgba(249,115,22,0.60);
-}
-
-/* ========== RADIO BUTTONS ========== */
-.radio-button {
-    -fx-text-fill: rgba(226,232,240,0.95);
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-}
-
-.radio-button .radio {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-border-color: rgba(148,163,184,0.30);
-    -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-padding: 4px;
-}
-
-.radio-button:selected .radio {
-    -fx-background-color: rgba(249,115,22,0.85);
-    -fx-border-color: rgba(249,115,22,0.90);
-}
-
-.radio-button .dot {
-    -fx-background-color: white;
-    -fx-background-radius: 10px;
-}
-
-/* ========== CONNECTION STATUS ========== */
-.connection-status {
-    -fx-text-fill: rgba(248,113,113,0.95);
-    -fx-font-size: 13px;
-    -fx-font-weight: 800;
-    -fx-background-color: rgba(239,68,68,0.08);
-    -fx-background-radius: 20px;
-    -fx-padding: 6px 16px;
-    -fx-border-color: rgba(239,68,68,0.25);
-    -fx-border-width: 1px;
-    -fx-border-radius: 20px;
-}
-
-/* ========== CHAR COUNT ========== */
-.char-count {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-radius: 16px;
-    -fx-padding: 6px 14px;
-}
-
-/* ========== TABLEVIEW ========== */
-.logs-table {
-    -fx-background-color: transparent;
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 1px;
-    -fx-background-radius: 7px;
-    -fx-border-radius: 7px;
-}
-
-.logs-table .column-header-background {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-radius: 7px 7px 0 0;
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 0 0 1px 0;
-}
-
-.logs-table .column-header {
+.field-textarea {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-}
-
-.logs-table .column-header .label {
+    -fx-border-width: 0;
+    -fx-padding: 11px 14px;
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 13px;
-    -fx-font-weight: 900;
-    -fx-padding: 14px 8px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-prompt-text-fill: rgba(148,163,184,0.60);
+    -fx-background-radius: 6px;
 }
-
-.logs-table .table-cell {
-    -fx-text-fill: rgba(226,232,240,0.90);
-    -fx-font-size: 13px;
-    -fx-font-weight: 600;
-    -fx-padding: 12px 8px;
-    -fx-border-color: rgba(148,163,184,0.06);
-    -fx-border-width: 0 0 1px 0;
+.field-textarea .content {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
 }
-
-.logs-table .table-row-cell {
+.field-textarea .scroll-pane {
+    -fx-background-color: transparent;
+}
+.field-textarea .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
 
-.logs-table .table-row-cell:odd {
-    -fx-background-color: rgba(255,255,255,0.01);
-}
-
-.logs-table .table-row-cell:hover {
-    -fx-background-color: rgba(249,115,22,0.08);
-}
-
-.logs-table .table-row-cell:selected {
-    -fx-background-color: rgba(249,115,22,0.15);
-}
-
-.logs-count {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-background-color: rgba(249,115,22,0.10);
-    -fx-background-radius: 16px;
-    -fx-padding: 6px 16px;
-    -fx-border-color: rgba(249,115,22,0.20);
-    -fx-border-width: 1px;
-    -fx-border-radius: 16px;
-}
-
-/* ========== LOADING INDICATORS ========== */
-#aiLoadingBox,
-#smsLoadingBox {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-radius: 7px;
-    -fx-padding: 14px 18px;
-    -fx-border-color: rgba(249,115,22,0.20);
-    -fx-border-width: 1px;
-    -fx-border-radius: 7px;
-}
-
-.progress-indicator {
-    -fx-progress-color: rgba(249,115,22,0.95);
-}
-
-/* ========== BARANGAY/DISASTER SELECTION BOXES ========== */
-#barangaySelectionBox,
-#disasterSelectionBox {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-radius: 6px;
-    -fx-padding: 16px;
-    -fx-border-color: rgba(148,163,184,0.10);
-    -fx-border-width: 1px;
-    -fx-border-radius: 6px;
-}
-
-/* ========== ACTION BUTTONS CONTAINER ========== */
-.action-buttons-container {
-    -fx-padding: 16px 0 0 0;
-    -fx-border-color: rgba(148,163,184,0.08);
-    -fx-border-width: 1px 0 0 0;
-}
-
-/* ========== REMOVE FOCUS INDICATORS ========== */
+/* ===== REMOVE FOCUS HIGHLIGHTS ===== */
 .button:focused,
 .combo-box:focused,
-.radio-button:focused,
+.date-picker:focused,
+.text-field:focused,
 .text-area:focused,
-.table-view:focused {
+.check-box:focused,
+.radio-button:focused {
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
-}
-
-/* ========== ANIMATIONS ========== */
-.primary-button,
-.secondary-button,
-.generate-button,
-.recipient-combo > .list-cell,
-.message-textarea,
-#btnSaveEvacMessage {
-    -fx-transition: all 0.2s ease;
 }

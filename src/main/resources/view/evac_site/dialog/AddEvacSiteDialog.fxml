@@ -5,9 +5,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="760.0" prefWidth="1100.0" spacing="0" styleClass="evacuation-dialog-container" stylesheets="@/styles/evac_site/dialog/addevacsitedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evac_site.dialogs_controller.AddEvacSiteController">
+<VBox fx:id="root" prefHeight="760.0" prefWidth="1100.0" styleClass="evacuation-dialog-container" stylesheets="@/styles/evac_site/dialog/addevacsitedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.evac_site.dialogs_controller.AddEvacSiteController">
 
-    <!-- ==================== HEADER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="evacuation-dialog-header">
         <padding>
             <Insets bottom="18" left="24" right="24" top="18" />

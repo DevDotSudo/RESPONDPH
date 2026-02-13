@@ -25,7 +25,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Region;
@@ -546,14 +545,15 @@ public class SendSMSController implements Initializable {
 
         // Validate that placeholders are present
         if (!message.contains("{name}") && !message.contains("{evacSite}") && !message.contains("{site}")) {
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Missing Placeholders");
-            confirm.setHeaderText("Your message doesn't contain placeholders");
-            confirm.setContentText("Recommended placeholders: {name}, {evacSite}\n\n" +
-                    "Continue saving anyway?");
-
-            Optional<ButtonType> result = confirm.showAndWait();
-            if (result.isEmpty() || result.get() != ButtonType.OK) {
+            boolean proceed = AlertDialogManager.showConfirmation(
+                    "Missing Placeholders",
+                    "Your message doesn't contain placeholders\n\n"
+                            + "Recommended placeholders: {name}, {evacSite}\n\n"
+                            + "Continue saving anyway?",
+                    ButtonType.OK,
+                    ButtonType.CANCEL
+            );
+            if (!proceed) {
                 return;
             }
         }
@@ -754,10 +754,6 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    // ────────────────────────────────────────────────
-    // AI News Generation
-    // ────────────────────────────────────────────────
-
     @FXML
     private void onGenerateNews() {
         if (cbNewsTopic == null || btnGenerateNews == null) return;
@@ -780,9 +776,6 @@ public class SendSMSController implements Initializable {
             AlertDialogManager.showWarning("Topic Required", "Please select a news topic.");
             return;
         }
-
-        // ✅ if topic is Weather, force current day
-        boolean forceToday = topic.toLowerCase().contains("weather");
 
         storedNewsItems.clear();
         clearNewsSlots();
@@ -899,16 +892,16 @@ public class SendSMSController implements Initializable {
 
         String msgPreview = txtMessage.getText().substring(0, Math.min(50, txtMessage.getText().length())) + "...";
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirm Send");
-        confirm.setHeaderText("Send to " + recipients.size() + " recipient(s)?");
-        confirm.setContentText("Method: " + method + "\nMessage: " + msgPreview);
+        boolean confirmed = AlertDialogManager.showConfirmation(
+                "Confirm Send",
+                "Send to " + recipients.size() + " recipient(s)?",
+                ButtonType.OK,
+                ButtonType.CANCEL
+        );
 
-        confirm.showAndWait().ifPresent(resp -> {
-            if (resp == ButtonType.OK) {
-                sendSMSToRecipients(recipients, txtMessage.getText(), method);
-            }
-        });
+        if (confirmed) {
+            sendSMSToRecipients(recipients, txtMessage.getText(), method);
+        }
     }
 
     private List<BeneficiaryModel> getRecipients(String group) {
@@ -932,7 +925,6 @@ public class SendSMSController implements Initializable {
                 return (d != null) ? beneficiaryDAO.getBeneficiariesByDisaster(d.getDisasterId()) : List.of();
 
             default:
-                // ✅ handle "Selected Beneficiaries (N selected)" safely
                 if (base.startsWith("Selected Beneficiaries")) {
                     return new ArrayList<>(selectedBeneficiariesList);
                 }

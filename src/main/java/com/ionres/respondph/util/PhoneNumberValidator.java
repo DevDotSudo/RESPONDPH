@@ -100,13 +100,11 @@ public class PhoneNumberValidator {
         return null;
     }
 
-
     public static void setupInputFilter(TextField textField) {
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.isEmpty()) {
                 return;
             }
-
 
             StringBuilder validText = new StringBuilder();
             for (int i = 0; i < newValue.length(); i++) {

@@ -120,7 +120,7 @@ public class DashboardController {
                     String display = (admin.getFirstname() != null && !admin.getFirstname().isEmpty())
                             ? admin.getFirstname() + " " + admin.getLastname()
                             : admin.getUsername();
-                    adminNameLabel.setText("Loggen in : " + display);
+                    adminNameLabel.setText("Admin : " + display);
                 }
             });
         });

@@ -164,21 +164,17 @@ public class NewsGeneratorService {
         if (text == null) text = "";
         text = text.replaceAll("\\s+", " ").trim();
 
-        // Remove any ellipsis or multiple dots from AI response
         text = text.replaceAll("\\.{2,}", "").trim();
 
-        // If text is too long, truncate it at a natural break point
         if (text.length() > MAX_LEN) {
             String cut = text.substring(0, MAX_LEN).trim();
 
-            // Try to cut at last sentence boundary
             int lastPeriod = cut.lastIndexOf('.');
             int lastQuestion = cut.lastIndexOf('?');
             int lastExclaim = cut.lastIndexOf('!');
             int lastBreak = Math.max(lastPeriod, Math.max(lastQuestion, lastExclaim));
 
             if (lastBreak > MIN_LEN) {
-                // Cut at sentence boundary if it's still above minimum
                 cut = text.substring(0, lastBreak + 1).trim();
             } else {
                 // Otherwise cut at last space
@@ -188,10 +184,8 @@ public class NewsGeneratorService {
                 }
             }
 
-            // Remove trailing punctuation except periods
             cut = cut.replaceAll("[,;:\\-–—]+$", "").trim();
 
-            // Ensure it ends with a period if it doesn't have ending punctuation
             if (!cut.matches(".*[.!?]$")) {
                 cut = cut + ".";
             }
@@ -199,9 +193,7 @@ public class NewsGeneratorService {
             return cut;
         }
 
-        // If text is too short, add filler
         if (text.length() < MIN_LEN) {
-            // Ensure proper ending before adding filler
             if (!text.matches(".*[.!?]$")) {
                 text = text + ".";
             }
@@ -212,17 +204,14 @@ public class NewsGeneratorService {
                     .replaceAll("\\s+", " ")
                     .trim();
 
-            // Truncate if combined is too long
             if (combined.length() > MAX_LEN) {
                 combined = combined.substring(0, MAX_LEN).trim();
 
-                // Cut at last space
                 int lastSpace = combined.lastIndexOf(' ');
                 if (lastSpace > 0) {
                     combined = combined.substring(0, lastSpace).trim();
                 }
 
-                // Ensure it ends properly
                 if (!combined.matches(".*[.!?]$")) {
                     combined = combined + ".";
                 }
@@ -231,8 +220,6 @@ public class NewsGeneratorService {
             return combined;
         }
 
-        // Text is within acceptable range, just clean it up
-        // Ensure proper ending
         if (!text.matches(".*[.!?]$")) {
             text = text + ".";
         }

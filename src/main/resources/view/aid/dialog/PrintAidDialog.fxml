@@ -5,223 +5,276 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <VBox fx:id="root" prefHeight="750.0" prefWidth="1100.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid/dialog/printaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController">
 
-    <!-- ==================== HEADER SECTION ==================== -->
+
+    <!-- ==================== HEADER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
-        <padding>
-            <Insets bottom="18" left="24" right="24" top="18" />
-        </padding>
-
-        <FontAwesomeIconView glyphName="PRINT" size="22" styleClass="header-icon" />
+        <padding><Insets bottom="18" left="24" right="24" top="18"/></padding>
+        <FontAwesomeIconView glyphName="PRINT" size="22" styleClass="header-icon"/>
         <VBox spacing="2">
-            <Label styleClass="dialog-title" text="Print Aid Distribution Report" />
-            <Label styleClass="dialog-subtitle" text="Select aid type, disaster, and optional barangay filter" />
+            <Label styleClass="dialog-title"    text="Print Aid Distribution Report"/>
+            <Label styleClass="dialog-subtitle" text="Generate and print aid distribution reports."/>
         </VBox>
-
-        <Region HBox.hgrow="ALWAYS" />
-
+        <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="closeBtn" styleClass="dialog-close">
             <graphic>
                 <HBox alignment="CENTER" spacing="8">
-                    <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon" />
+                    <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon"/>
                 </HBox>
             </graphic>
         </Button>
     </HBox>
 
-    <!-- ==================== ERROR CONTAINER ==================== -->
-    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
-        <padding>
-            <Insets bottom="12" left="24" right="24" top="10" />
-        </padding>
-        <Label fx:id="errorLabel" styleClass="error-text" />
-    </VBox>
-
-    <!-- ==================== MAIN FORM CONTAINER ==================== -->
+    <!-- ==================== SCROLLPANE ==================== -->
     <ScrollPane fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
-        <VBox spacing="24" styleClass="dialog-body">
-            <padding>
-                <Insets bottom="24" left="24" right="24" top="20" />
-            </padding>
+        <VBox spacing="20" styleClass="dialog-body">
+            <padding><Insets bottom="24" left="24" right="24" top="20"/></padding>
 
-            <!-- ==================== SECTION 1: REPORT CONFIGURATION ==================== -->
-            <VBox spacing="18" styleClass="form-section">
-                <!-- Section Header -->
+            <!-- ==================== SECTION 1: AID & DISASTER SELECTION ==================== -->
+            <VBox spacing="12" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="COG" size="18" styleClass="section-icon" />
-                    <Label styleClass="section-title" text="Report Configuration" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="section-subtitle" text="Step 1 of 3" />
+                    <FontAwesomeIconView glyphName="TAG" size="16" styleClass="section-icon"/>
+                    <Label styleClass="section-title" text="1. Select Aid &amp; Disaster"/>
                 </HBox>
 
-                <!-- Selection Fields -->
-                <GridPane hgap="16" vgap="14">
+                <GridPane hgap="16" vgap="8">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
                     </columnConstraints>
 
                     <!-- Aid Name -->
-                    <VBox spacing="8" GridPane.columnIndex="0">
-                        <Label styleClass="field-label" text="Aid Name *" />
+                    <VBox spacing="6" GridPane.columnIndex="0">
+                        <Label styleClass="field-label" text="Aid Name *"/>
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="TAG" size="14" styleClass="field-icon" />
-                            <ComboBox fx:id="aidNameComboBox" maxWidth="1.7976931348623157E308" promptText="Select aid name" styleClass="field-combo" HBox.hgrow="ALWAYS" />
+                            <FontAwesomeIconView glyphName="TAG" size="14" styleClass="field-icon"/>
+                            <ComboBox fx:id="aidNameComboBox"
+                                      maxWidth="1.7976931348623157E308"
+                                      promptText="Select aid name"
+                                      styleClass="field-combo"
+                                      HBox.hgrow="ALWAYS"/>
                         </HBox>
                     </VBox>
 
-                    <!-- Disaster Selection -->
-                    <VBox spacing="8" GridPane.columnIndex="1">
-                        <Label styleClass="field-label" text="Disaster Event" />
+                    <!-- Disaster Event -->
+                    <VBox spacing="6" GridPane.columnIndex="1">
+                        <Label styleClass="field-label" text="Disaster Event"/>
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="FIRE" size="14" styleClass="field-icon" />
-                            <ComboBox fx:id="disasterComboBox" maxWidth="1.7976931348623157E308" promptText="Select disaster event" styleClass="field-combo" HBox.hgrow="ALWAYS" />
+                            <FontAwesomeIconView glyphName="FIRE" size="14" styleClass="field-icon"/>
+                            <ComboBox fx:id="disasterComboBox"
+                                      maxWidth="1.7976931348623157E308"
+                                      promptText="Select disaster event"
+                                      styleClass="field-combo"
+                                      HBox.hgrow="ALWAYS"/>
                         </HBox>
                     </VBox>
-                    <rowConstraints>
-                        <RowConstraints />
-                    </rowConstraints>
+
+                    <rowConstraints><RowConstraints/></rowConstraints>
                 </GridPane>
 
                 <!-- General Aid Option -->
-                <VBox spacing="12" styleClass="info-box">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="16" styleClass="info-icon" />
-                        <Label styleClass="info-title" text="Distribution Mode" />
-                    </HBox>
-
-                    <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
-                        <padding>
-                            <Insets left="14" right="14" />
-                        </padding>
-                        <FontAwesomeIconView glyphName="HEART" size="14" styleClass="field-icon" />
-                        <CheckBox fx:id="generalAidCheckBox" styleClass="field-checkbox" text="General Aid Distribution (No Specific Disaster)" HBox.hgrow="ALWAYS" />
-                    </HBox>
-
-                    <Label styleClass="field-helper-text" text="Check this to print general aid distribution not tied to a specific disaster event." wrapText="true" />
-                </VBox>
+                <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
+                    <padding><Insets left="14" right="14"/></padding>
+                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="field-icon"/>
+                    <CheckBox fx:id="generalAidCheckBox"
+                              styleClass="field-checkbox"
+                              text="General Aid Distribution (No Specific Disaster)"
+                              HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <Label styleClass="field-helper-text"
+                       text="Check this to print general aid distribution not tied to a specific disaster event."
+                       wrapText="true"/>
             </VBox>
-
-            <Separator />
 
             <!-- ==================== SECTION 2: BARANGAY FILTER ==================== -->
-            <VBox spacing="18" styleClass="form-section">
-                <!-- Section Header -->
+            <VBox spacing="12" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="MAP_MARKER" size="18" styleClass="section-icon" />
-                    <Label styleClass="section-title" text="Location Filter" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="section-subtitle" text="Step 2 of 3" />
+                    <FontAwesomeIconView glyphName="MAP_MARKER" size="16" styleClass="section-icon"/>
+                    <Label styleClass="section-title" text="2. Location Filter"/>
                 </HBox>
 
-                <!-- Barangay Filter Checkbox -->
                 <VBox spacing="12">
                     <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="10" styleClass="flat-input">
-                        <padding>
-                            <Insets left="14" right="14" />
-                        </padding>
-                        <FontAwesomeIconView glyphName="FILTER" size="14" styleClass="field-icon" />
-                        <CheckBox fx:id="useBarangayFilterCheckBox" styleClass="field-checkbox" text="Filter by specific barangay" HBox.hgrow="ALWAYS" />
+                        <padding><Insets left="14" right="14"/></padding>
+                        <FontAwesomeIconView glyphName="FILTER" size="14" styleClass="field-icon"/>
+                        <CheckBox fx:id="useBarangayFilterCheckBox"
+                                  styleClass="field-checkbox"
+                                  text="Filter by specific barangay"
+                                  HBox.hgrow="ALWAYS"/>
                     </HBox>
 
-                    <VBox spacing="8">
-                        <Label styleClass="field-label" text="Barangay" />
+                    <VBox spacing="6">
+                        <Label styleClass="field-label" text="Barangay"/>
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="MAP_MARKER" size="14" styleClass="field-icon" />
-                            <ComboBox fx:id="barangayComboBox" maxWidth="1.7976931348623157E308" promptText="Select Barangay" styleClass="field-combo" HBox.hgrow="ALWAYS" />
+                            <FontAwesomeIconView glyphName="MAP_MARKER" size="14" styleClass="field-icon"/>
+                            <ComboBox fx:id="barangayComboBox"
+                                      maxWidth="1.7976931348623157E308"
+                                      promptText="Select Barangay"
+                                      styleClass="field-combo"
+                                      HBox.hgrow="ALWAYS"/>
                         </HBox>
-                        <Label styleClass="field-helper-text" text="Leave unchecked to include all barangays" />
+                        <Label styleClass="field-helper-text"
+                               text="Leave unchecked to include all barangays"/>
                     </VBox>
                 </VBox>
             </VBox>
 
-            <Separator />
-
-            <!-- ==================== SECTION 3: REPORT SUMMARY ==================== -->
-            <VBox spacing="18" styleClass="form-section">
-                <!-- Section Header -->
+            <!-- ==================== SECTION 3: REPORT TYPE ==================== -->
+            <VBox spacing="12" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="FILE_ALT" size="18" styleClass="section-icon" />
-                    <Label styleClass="section-title" text="Report Summary" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="section-subtitle" text="Step 3 of 3" />
+                    <FontAwesomeIconView glyphName="FILE_ALT" size="16" styleClass="section-icon"/>
+                    <Label styleClass="section-title" text="3. Report Type"/>
                 </HBox>
 
-                <!-- Beneficiary Info -->
-                <VBox spacing="12" styleClass="info-box">
-                    <HBox alignment="CENTER_LEFT" spacing="12">
-                        <FontAwesomeIconView glyphName="USERS" size="20" styleClass="info-icon" />
-                        <Label fx:id="beneficiaryCountLabel" styleClass="info-title" text="Beneficiaries: 0" />
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <RadioButton fx:id="beneficiaryListRadio"    selected="true"
+                                 styleClass="radio-label" text="Beneficiary List"/>
+                    <RadioButton fx:id="distributionSummaryRadio"
+                                 styleClass="radio-label" text="Distribution Summary"/>
+                </HBox>
+            </VBox>
+
+            <!-- ==================== SECTION 4: PRINT SETTINGS ==================== -->
+            <VBox spacing="12" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="COG" size="16" styleClass="section-icon"/>
+                    <Label styleClass="section-title" text="4. Print Settings"/>
+                </HBox>
+
+                <GridPane hgap="16" vgap="12">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <!-- Paper Size -->
+                    <Label text="Paper Size:" styleClass="field-label"
+                           GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input"
+                          GridPane.columnIndex="1" GridPane.rowIndex="0" HBox.hgrow="ALWAYS">
+                        <FontAwesomeIconView glyphName="FILE" size="14" styleClass="field-icon"/>
+                        <ComboBox fx:id="bondPaperSizeComboBox"
+                                  maxWidth="1.7976931348623157E308"
+                                  promptText="Select paper size"
+                                  styleClass="field-combo"
+                                  HBox.hgrow="ALWAYS">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="A4 (210mm x 297mm)"/>
+                                    <String fx:value="Letter (8.5&quot; x 11&quot;)"/>
+                                    <String fx:value="Legal (8.5&quot; x 14&quot;)"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
                     </HBox>
 
-                    <GridPane hgap="16" vgap="8">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
-                        </columnConstraints>
+                    <!-- Orientation -->
+                    <Label text="Orientation:" styleClass="field-label"
+                           GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <HBox spacing="20" alignment="CENTER_LEFT"
+                          GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <RadioButton fx:id="portraitRadio"  selected="true"
+                                     styleClass="radio-label" text="Portrait"/>
+                        <RadioButton fx:id="landscapeRadio"
+                                     styleClass="radio-label" text="Landscape"/>
+                    </HBox>
 
-                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="0">
-                            <FontAwesomeIconView glyphName="SORT_AMOUNT_DESC" size="12" styleClass="field-icon" />
-                            <Label styleClass="info-text" text="Sorted by K-Means priority score" />
-                        </HBox>
+                    <!-- Copies -->
+                    <Label text="Copies:" styleClass="field-label"
+                           GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT"
+                          GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Spinner fx:id="copiesSpinner"
+                                 initialValue="1" min="1" max="10"
+                                 editable="true" prefWidth="80"
+                                 styleClass="field-spinner"/>
+                    </HBox>
 
-                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1">
-                            <FontAwesomeIconView glyphName="FILE" size="12" styleClass="field-icon" />
-                            <Label styleClass="info-text" text="Letter size (8.5&quot; x 11&quot;)" />
-                        </HBox>
-                  <rowConstraints>
-                     <RowConstraints />
-                  </rowConstraints>
-                    </GridPane>
-                </VBox>
+                    <!-- Include Options -->
+                    <Label text="Include:" styleClass="field-label"
+                           GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <HBox spacing="20" alignment="CENTER_LEFT"
+                          GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <CheckBox fx:id="includeHeaderCheckbox"      selected="true"
+                                  styleClass="field-checkbox" text="Header"/>
+                        <CheckBox fx:id="includeFooterCheckbox"      selected="true"
+                                  styleClass="field-checkbox" text="Footer"/>
+                        <CheckBox fx:id="includePageNumbersCheckbox" selected="true"
+                                  styleClass="field-checkbox" text="Page Numbers"/>
+                    </HBox>
 
-                <!-- Print Preview Info -->
+                    <rowConstraints>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <!-- ==================== SECTION 5: SUMMARY ==================== -->
+            <VBox spacing="12" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="BAR_CHART" size="16" styleClass="section-icon"/>
+                    <Label styleClass="section-title" text="5. Report Summary"/>
+                </HBox>
+
+                <!-- Aid summary strip (hidden until aid + disaster selected) -->
+                <HBox fx:id="aidSummary" managed="false" spacing="10"
+                      styleClass="info-box" visible="false">
+                    <padding><Insets bottom="10" left="12" right="12" top="10"/></padding>
+                    <FontAwesomeIconView glyphName="USERS" size="14" styleClass="info-icon"/>
+                    <Label fx:id="beneficiaryCountLabel"
+                           text="Beneficiaries: 0" styleClass="info-text"/>
+                </HBox>
+
                 <HBox spacing="12" styleClass="warning-box">
-                    <padding>
-                        <Insets bottom="12" left="16" right="16" top="12" />
-                    </padding>
-                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="20" styleClass="info-icon" />
+                    <padding><Insets bottom="12" left="16" right="16" top="12"/></padding>
+                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="20" styleClass="info-icon"/>
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label styleClass="info-title" text="Print Format" />
-                        <Label styleClass="info-text" text="Report will be formatted with: Header section, Beneficiary list table, Summary statistics, QR code for verification, and Printed date/time." wrapText="true" />
+                        <Label styleClass="info-title" text="Print Format"/>
+                        <Label styleClass="info-text"
+                               text="Report will include: Header, beneficiary table sorted by K-Means priority score, total cost summary, and printed date/time."
+                               wrapText="true"/>
                     </VBox>
                 </HBox>
             </VBox>
+
         </VBox>
     </ScrollPane>
 
-    <!-- ==================== FOOTER SECTION ==================== -->
+    <!-- ==================== FOOTER ==================== -->
     <HBox alignment="CENTER_RIGHT" spacing="14" styleClass="dialog-footer">
-        <padding>
-            <Insets bottom="20" left="24" right="24" top="20" />
-        </padding>
+        <padding><Insets bottom="20" left="24" right="24" top="20"/></padding>
 
-        <Button fx:id="previewButton" disable="true" prefHeight="42.0" styleClass="btn-secondary">
+        <Button fx:id="previewBtn" styleClass="btn-secondary">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
-                    <FontAwesomeIconView glyphName="EYE" size="16" styleClass="btn-icon" />
-                    <Label styleClass="btn-text" text="Preview" />
+                    <FontAwesomeIconView glyphName="EYE" size="16" styleClass="btn-icon"/>
+                    <Label styleClass="btn-text" text="Preview"/>
                 </HBox>
             </graphic>
         </Button>
 
-        <Button fx:id="printButton" disable="true" prefHeight="42.0" prefWidth="120.0" styleClass="btn-primary">
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="cancelBtn" styleClass="btn-secondary-alt">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
-                    <FontAwesomeIconView glyphName="PRINT" size="16" styleClass="btn-icon" />
-                    <Label styleClass="btn-text" text="Print" />
+                    <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="btn-icon"/>
+                    <Label styleClass="btn-text" text="Cancel"/>
                 </HBox>
             </graphic>
         </Button>
 
-        <Region HBox.hgrow="ALWAYS" />
-
-        <Button fx:id="cancelButton" prefHeight="42.0" styleClass="btn-secondary-alt">
+        <Button fx:id="printBtn" prefWidth="120.0" styleClass="btn-primary">
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
-                    <FontAwesomeIconView glyphName="TIMES" size="16" styleClass="btn-icon" />
-                    <Label styleClass="btn-text" text="Cancel" />
+                    <FontAwesomeIconView glyphName="PRINT" size="16" styleClass="btn-icon"/>
+                    <Label styleClass="btn-text" text="Print"/>
                 </HBox>
             </graphic>
         </Button>

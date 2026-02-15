@@ -1,4 +1,3 @@
-
 package com.ionres.respondph.aid.dialogs_controller;
 
 import com.ionres.respondph.aid.*;
@@ -695,6 +694,7 @@ public class AddAidController {
             }
 
             DashboardRefresher.refresh();
+            DashboardRefresher.refreshComboBoxOfDNAndAN();
 
         } catch (NumberFormatException e) {
             AlertDialogManager.showError("Invalid Input",

@@ -213,15 +213,7 @@ public class AidServiceImpl implements AidService {
         return kMeans.getPrioritizedBeneficiaries(beneficiaries, maxBeneficiaries, numberOfClusters);
     }
 
-    // =========================================================================
-    //  NEW FCM METHODS
-    // =========================================================================
 
-    /**
-     * Distributes aid to all barangays using Fuzzy C-Means clustering.
-     *
-     * @return number of beneficiaries successfully served
-     */
     @Override
     public int distributeAidWithFCM(String aidName, int aidTypeId, int disasterId,
                                     int availableQuantity, int quantityPerBeneficiary,

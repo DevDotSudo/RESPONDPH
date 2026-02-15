@@ -6,6 +6,7 @@ import com.ionres.respondph.util.Cryptography;
 import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class AidDAOImpl implements AidDAO {
@@ -893,26 +894,29 @@ public class AidDAOImpl implements AidDAO {
     @Override
     public List<String> getDistinctAidNames() {
         List<String> aidNames = new ArrayList<>();
-        String sql = "SELECT DISTINCT name FROM aid WHERE name IS NOT NULL ORDER BY name";
+
+        String sql = "SELECT name FROM aid WHERE name IS NOT NULL";
 
         try {
             conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
+            LinkedHashSet<String> seen = new LinkedHashSet<>(); // preserves order, no duplicates
+
             while (rs.next()) {
                 String encryptedName = rs.getString("name");
-
                 try {
-                    // Decrypt the aid name
                     String aidName = cs.decryptWithOneParameter(encryptedName);
                     if (aidName != null && !aidName.trim().isEmpty()) {
-                        aidNames.add(aidName);
+                        seen.add(aidName.trim()); // duplicates silently ignored by Set
                     }
                 } catch (Exception e) {
                     System.err.println("Error decrypting aid name: " + e.getMessage());
                 }
             }
+
+            aidNames.addAll(seen);
 
             rs.close();
             ps.close();
@@ -928,7 +932,6 @@ public class AidDAOImpl implements AidDAO {
 
         return aidNames;
     }
-
 
 
     private void closeConnection() {

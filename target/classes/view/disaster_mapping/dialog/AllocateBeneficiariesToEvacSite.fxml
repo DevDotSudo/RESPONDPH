@@ -82,21 +82,25 @@
                         <!-- Capacity -->
                         <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="0">
                             <FontAwesomeIconView glyphName="EXPAND" size="14" styleClass="field-icon" />
+                     <Label fx:id="capacityLabel" text="capacityLabel" />
                         </HBox>
 
                         <!-- Occupied -->
                         <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
+                     <Label fx:id="occupiedLabel" text="occupiedLabel" />
                         </HBox>
 
                         <!-- Remaining -->
                         <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="2">
                             <FontAwesomeIconView glyphName="DASHBOARD" size="14" styleClass="field-icon" />
+                     <Label fx:id="remainingLabel" text="remainingLabel" />
                         </HBox>
    
                        <!-- Disaster Info -->
                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="3">
                            <FontAwesomeIconView glyphName="FIRE" size="14" styleClass="field-icon" />
+                     <Label fx:id="disasterLabel" text="disasterLabel" />
                        </HBox>
                   <rowConstraints>
                      <RowConstraints />
@@ -156,23 +160,6 @@
                         </placeholder>
                     </TableView>
                 </VBox>
-
-                <!-- Allocation Summary -->
-                <HBox spacing="16" styleClass="summary-box">
-                    <padding>
-                        <Insets bottom="12" left="16" right="16" top="12" />
-                    </padding>
-
-                    <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
-                        <FontAwesomeIconView glyphName="CHECK_CIRCLE" size="20" styleClass="success-icon" />
-                    </HBox>
-
-                    <Button fx:id="refreshBtn" styleClass="btn-icon-only">
-                        <graphic>
-                            <FontAwesomeIconView glyphName="REFRESH" size="14" styleClass="btn-icon" />
-                        </graphic>
-                    </Button>
-                </HBox>
             </VBox>
         </VBox>
     </ScrollPane>

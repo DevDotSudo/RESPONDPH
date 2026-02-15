@@ -75,9 +75,11 @@ public class BeneficiariesInCircleDialogController implements Initializable {
         if (closeBtn != null) {
             closeBtn.setOnAction(e -> closeDialog());
         }
+
         if (evacuateBtn != null) {
             evacuateBtn.setOnAction(e -> handleEvacuateNow());
         }
+
         if (designatedSiteBtn != null){
             designatedSiteBtn.setOnAction(e -> handleDesignatedSite() );
         }

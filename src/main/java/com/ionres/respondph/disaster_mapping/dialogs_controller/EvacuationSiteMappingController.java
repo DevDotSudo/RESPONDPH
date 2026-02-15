@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 public class EvacuationSiteMappingController {
     private static final Logger LOGGER = Logger.getLogger(EvacuationSiteMappingController.class.getName());
     private static final int INVALID_DISASTER_ID = -1;
-    private static final double MIN_ZOOM_FOR_MARKERS = 18.0;
+    private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
 
     private final EvacSiteMappingService evacSiteMappingService = AppContext.evacSiteMappingService;
     private final EvacSiteService evacSiteService;
@@ -169,14 +169,10 @@ public class EvacuationSiteMappingController {
             return;
         }
 
-        if (mapping.getZoom() < MIN_ZOOM_FOR_MARKERS) {
-            return;
-        }
-
-
         GraphicsContext gc = mapping.getGc();
         double canvasWidth = mapping.getCanvas().getWidth();
         double canvasHeight = mapping.getCanvas().getHeight();
+        double currentZoom = mapping.getZoom();
 
         double padding = 100;
         double minX = -padding;
@@ -193,35 +189,44 @@ public class EvacuationSiteMappingController {
                 Mapping.Point p = mapping.latLonToScreen(site.getLat(), site.getLon());
 
                 if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) {
-                    if (markerImage != null && !markerImage.isError()) {
-                        double w = markerImage.getWidth();
-                        double h = markerImage.getHeight();
-                        if (w > 0 && h > 0) {
-                            gc.drawImage(markerImage, p.x - w/2, p.y - h, w, h);
-                        }
-                    } else {
-                        gc.setFill(Color.rgb(16, 185, 129));
-                        gc.fillOval(p.x - 8, p.y - 8, 16, 16);
 
-                        gc.setStroke(Color.WHITE);
-                        gc.setLineWidth(2);
-                        gc.strokeOval(p.x - 8, p.y - 8, 16, 16);
+                    // Below zoom 16: show only small yellow circles
+                    if (currentZoom < MIN_ZOOM_FOR_MARKERS) {
+                        gc.setFill(Color.rgb(255, 215, 0)); // Yellow color
+                        gc.fillOval(p.x - 4, p.y - 4, 8, 8);
                     }
+                    // Zoom 16 and above: show full markers with labels
+                    else {
+                        if (markerImage != null && !markerImage.isError()) {
+                            double w = markerImage.getWidth();
+                            double h = markerImage.getHeight();
+                            if (w > 0 && h > 0) {
+                                gc.drawImage(markerImage, p.x - w/2, p.y - h, w, h);
+                            }
+                        } else {
+                            gc.setFill(Color.rgb(16, 185, 129));
+                            gc.fillOval(p.x - 8, p.y - 8, 16, 16);
 
-                    if (site.getName() != null && !site.getName().isEmpty()) {
-                        String label = site.getName();
-                        if (site.getCapacity() > 0) {
-                            label += " (Cap: " + site.getCapacity() + ")";
+                            gc.setStroke(Color.WHITE);
+                            gc.setLineWidth(2);
+                            gc.strokeOval(p.x - 8, p.y - 8, 16, 16);
                         }
 
-                        gc.setFont(Font.font("Segoe UI", 10));
-                        double labelWidth = textWidth(label, gc);
+                        if (site.getName() != null && !site.getName().isEmpty()) {
+                            String label = site.getName();
+                            if (site.getCapacity() > 0) {
+                                label += " (Cap: " + site.getCapacity() + ")";
+                            }
 
-                        gc.setFill(Color.rgb(255, 255, 255, 0.95));
-                        gc.fillRect(p.x - labelWidth / 2 - 4, p.y + 5, labelWidth + 8, 16);
+                            gc.setFont(Font.font("Segoe UI", 10));
+                            double labelWidth = textWidth(label, gc);
 
-                        gc.setFill(Color.rgb(45, 55, 72));
-                        gc.fillText(label, p.x - labelWidth / 2, p.y + 17);
+                            gc.setFill(Color.rgb(255, 255, 255, 0.95));
+                            gc.fillRect(p.x - labelWidth / 2 - 4, p.y + 5, labelWidth + 8, 16);
+
+                            gc.setFill(Color.rgb(45, 55, 72));
+                            gc.fillText(label, p.x - labelWidth / 2, p.y + 17);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -260,12 +265,6 @@ public class EvacuationSiteMappingController {
         return t.getLayoutBounds().getWidth();
     }
 
-    /**
-     * Handle mouse clicks on the map to detect evacuation site clicks
-     */
-    /**
-     * Handle mouse clicks on the map to detect evacuation site clicks
-     */
     private void handleMapClick(MouseEvent event) {
         if (event.getClickCount() != 2) {
             return; // Only handle double-clicks
@@ -284,7 +283,6 @@ public class EvacuationSiteMappingController {
         double clickX = event.getX();
         double clickY = event.getY();
 
-        // Check if click is near any evacuation site
         final double CLICK_THRESHOLD_PIXELS = 25.0; // Increased threshold
 
         for (EvacSiteMarker evacSite : evacSites) {
@@ -294,7 +292,6 @@ public class EvacuationSiteMappingController {
 
             Mapping.Point sitePoint = mapping.latLonToScreen(evacSite.getLat(), evacSite.getLon());
 
-            // Calculate the bounds of the marker icon
             double markerWidth, markerHeight, markerLeft, markerTop;
 
             if (markerImage != null && !markerImage.isError()) {

@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="800.0" prefWidth="1200.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/evacuationallocationdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationAllocationDialogController">
+<VBox fx:id="root" prefHeight="900.0" prefWidth="1400.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/evacuationallocationdialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationAllocationDialogController">
 
     <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -60,16 +60,7 @@
                     <FontAwesomeIconView glyphName="FIRE" size="24" styleClass="info-icon" />
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
                         <Label fx:id="disasterInfoLabel" styleClass="info-title" text="Disaster: " />
-                        <HBox spacing="16">
-                            <HBox alignment="CENTER_LEFT" spacing="6">
-                                <FontAwesomeIconView glyphName="CALENDAR" size="12" styleClass="field-icon" />
-                                <Label styleClass="info-text" text="March 15, 2024" />
-                            </HBox>
-                            <HBox alignment="CENTER_LEFT" spacing="6">
-                                <FontAwesomeIconView glyphName="MAP_MARKER" size="12" styleClass="field-icon" />
-                                <Label styleClass="info-text" text="Affected Area: Region I" />
-                            </HBox>
-                        </HBox>
+                        <HBox spacing="16" />
                     </VBox>
                     <Label styleClass="badge-active">ACTIVE</Label>
                 </HBox>

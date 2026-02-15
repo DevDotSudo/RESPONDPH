@@ -5,34 +5,27 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="evacMappingRoot"
-      prefHeight="900.0" prefWidth="1200.0"
-      styleClass="dialog-root"
-      stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css"
-      xmlns="http://javafx.com/javafx/17.0.12"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController">
+<VBox fx:id="evacMappingRoot" prefHeight="900.0" prefWidth="1400.0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController">
 
     <!-- ==================== HEADER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
         <padding>
-            <Insets top="18" right="24" bottom="18" left="24"/>
+            <Insets bottom="18" left="24" right="24" top="18" />
         </padding>
 
-        <FontAwesomeIconView glyphName="HOME" size="22" styleClass="header-icon"/>
+        <FontAwesomeIconView glyphName="HOME" size="22" styleClass="header-icon" />
         <VBox spacing="2">
-            <Label styleClass="dialog-title" text="Evacuation Site Mapping"/>
-            <Label styleClass="dialog-subtitle"
-                   text="Review disaster area and nearby evacuation sites on the map."/>
+            <Label styleClass="dialog-title" text="Evacuation Site Mapping" />
+            <Label styleClass="dialog-subtitle" text="Review disaster area and nearby evacuation sites on the map." />
         </VBox>
 
-        <Region HBox.hgrow="ALWAYS"/>
+        <Region HBox.hgrow="ALWAYS" />
 
-        <Label fx:id="statusChip" text="No disaster selected" styleClass="chip"/>
+        <Label fx:id="statusChip" styleClass="chip" text="No disaster selected" />
 
         <Button fx:id="closeButton" styleClass="dialog-close">
             <graphic>
-                <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon"/>
+                <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon" />
             </graphic>
         </Button>
     </HBox>
@@ -40,39 +33,37 @@
     <!-- ==================== BODY ==================== -->
     <VBox spacing="16" styleClass="dialog-body" VBox.vgrow="ALWAYS">
         <padding>
-            <Insets top="18" right="24" bottom="18" left="24"/>
+            <Insets bottom="18" left="24" right="24" top="18" />
         </padding>
 
         <!-- Info Card (replaces old bar) -->
         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-card">
-            <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="18" styleClass="info-card-icon"/>
+            <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="18" styleClass="info-card-icon" />
             <VBox spacing="2" HBox.hgrow="ALWAYS">
-                <Label text="Selected Disaster" styleClass="info-card-title"/>
-                <Label fx:id="disasterInfoLabel" text="No disaster selected"
-                       styleClass="info-card-text" wrapText="true"/>
+                <Label styleClass="info-card-title" text="Selected Disaster" />
+                <Label fx:id="disasterInfoLabel" styleClass="info-card-text" text="No disaster selected" wrapText="true" />
             </VBox>
 
-            <Label text="Mapping Mode" styleClass="pill"/>
+            <Label styleClass="pill" text="Mapping Mode" />
         </HBox>
 
         <!-- Map Card -->
         <VBox spacing="12" styleClass="form-section" VBox.vgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                <FontAwesomeIconView glyphName="MAP" size="18" styleClass="section-icon"/>
-                <Label text="Map View" styleClass="section-title"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label text="Zoom • Drag • Click markers" styleClass="section-subtitle"/>
+                <FontAwesomeIconView glyphName="MAP" size="18" styleClass="section-icon" />
+                <Label styleClass="section-title" text="Map View" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label styleClass="section-subtitle" text="Zoom • Drag • Click markers" />
             </HBox>
 
             <!-- BIG map surface -->
-            <Pane fx:id="mappingContainer" styleClass="map-surface" VBox.vgrow="ALWAYS"/>
+            <Pane fx:id="mappingContainer" styleClass="map-surface" VBox.vgrow="ALWAYS" />
         </VBox>
 
         <!-- Error card (optional) -->
-        <HBox fx:id="errorBox" alignment="CENTER_LEFT" spacing="10"
-              managed="false" visible="false" styleClass="error-box">
-            <FontAwesomeIconView glyphName="EXCLAMATION_CIRCLE" size="16" styleClass="error-icon"/>
-            <Label fx:id="errorLabel" text="Error" styleClass="error-text" wrapText="true"/>
+        <HBox fx:id="errorBox" alignment="CENTER_LEFT" managed="false" spacing="10" styleClass="error-box" visible="false">
+            <FontAwesomeIconView glyphName="EXCLAMATION_CIRCLE" size="16" styleClass="error-icon" />
+            <Label fx:id="errorLabel" styleClass="error-text" text="Error" wrapText="true" />
         </HBox>
 
     </VBox>

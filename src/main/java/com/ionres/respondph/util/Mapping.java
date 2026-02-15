@@ -315,17 +315,6 @@ public class Mapping {
         lastY = e.getY();
     }
 
-    /**
-     * ADD THIS METHOD TO YOUR Mapping.java CLASS
-     * Place it after the setZoom() method
-     */
-
-    /**
-     * Centers the map on specific coordinates with a given zoom level
-     * @param lat Latitude coordinate
-     * @param lon Longitude coordinate
-     * @param newZoom Zoom level (between MIN_ZOOM and MAX_ZOOM)
-     */
     public void setCenter(double lat, double lon, double newZoom) {
         if (!isValidCoordinate(lat, lon)) {
             LOGGER.warning("Invalid coordinates for setCenter: " + lat + ", " + lon);
@@ -339,38 +328,26 @@ public class Mapping {
             LOGGER.warning("Zoom value out of range, using current zoom: " + newZoom);
         }
 
-        // Wait for canvas to be ready if needed
         if (!isInitialized()) {
-            LOGGER.warning("Cannot center map: not initialized");
-            // Schedule retry
             javafx.application.Platform.runLater(() -> setCenter(lat, lon, newZoom));
             return;
         }
 
         if (canvas.getWidth() <= 0 || canvas.getHeight() <= 0) {
-            LOGGER.warning("Cannot center map: invalid canvas size, will retry");
-            // Schedule retry when canvas is ready
             javafx.application.Platform.runLater(() -> setCenter(lat, lon, newZoom));
             return;
         }
 
         try {
-            // Calculate pixel position for the target coordinates
             int baseZoom = (int) Math.floor(zoom);
             double scale = Math.pow(2, zoom - baseZoom);
             Point p = latLonToPixel(lat, lon, baseZoom);
 
-            // Center the map on these coordinates
             offsetX = canvas.getWidth() / 2 - p.x * scale;
             offsetY = canvas.getHeight() / 2 - p.y * scale;
 
-            // Mark as centered to prevent auto-centering from interfering
             centered = true;
-
-            // Apply bounds clamping
             clamp();
-
-            // Redraw the map
             redraw();
 
             LOGGER.info("Map centered on: " + lat + ", " + lon + " at zoom " + zoom);
@@ -407,14 +384,11 @@ public class Mapping {
 
         if (zoom == oldZoom) return;
 
-        // Calculate how much the map scaled
         double scale = Math.pow(2, zoom - oldZoom);
 
-        // Adjust offsets so the zoom stays centered on the mouse cursor
         offsetX = e.getX() - (e.getX() - offsetX) * scale;
         offsetY = e.getY() - (e.getY() - offsetY) * scale;
 
-        // Crucial: snap to bounds immediately so no "dead space" is shown
         clamp();
         redraw();
     }

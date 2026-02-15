@@ -95,7 +95,7 @@
                         <padding>
                             <Insets left="14" right="14" />
                         </padding>
-                        <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="14" styleClass="field-icon" />
+                        <FontAwesomeIconView glyphName="HEART" size="14" styleClass="field-icon" />
                         <CheckBox fx:id="generalAidCheckBox" styleClass="field-checkbox" text="General Aid Distribution (No Specific Disaster)" HBox.hgrow="ALWAYS" />
                     </HBox>
 

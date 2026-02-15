@@ -153,7 +153,6 @@ public class SendSMSController implements Initializable {
 
             slot.getStyleClass().add("ai-news-slot");
 
-            // ✅ WRAP + GROW HEIGHT
             slot.setWrapText(true);
             slot.setAlignment(Pos.TOP_LEFT);
             slot.setTextOverrun(OverrunStyle.CLIP);   // (or ELLIPSIS if you want)
@@ -461,7 +460,7 @@ public class SendSMSController implements Initializable {
         if (txtMessage != null) {
             txtMessage.textProperty().addListener((obs, old, newVal) -> {
                 int len = (newVal != null) ? newVal.length() : 0;
-                if (charCount != null) charCount.setText(len + "/160 characters");
+                if (charCount != null) charCount.setText(len + "/320 characters");
             });
         }
         if (btnRefreshPorts != null) btnRefreshPorts.setOnAction(e -> populateAvailablePorts());
@@ -536,10 +535,9 @@ public class SendSMSController implements Initializable {
             return;
         }
 
-        // Validate message length (typical SMS is 160 characters)
-        if (message.length() > 160) {
+        if (message.length() > 320) {
             AlertDialogManager.showWarning("Message Too Long",
-                    "Message is " + message.length() + " characters. SMS messages are typically limited to 160 characters.\n\n" +
+                    "Message is " + message.length() + " characters. SMS messages are typically limited to 320 characters.\n\n" +
                             "Your message may be split into multiple SMS or truncated.");
         }
 

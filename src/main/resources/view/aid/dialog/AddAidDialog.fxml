@@ -13,7 +13,7 @@
             <Insets bottom="18" left="24" right="24" top="18" />
         </padding>
 
-        <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="22" styleClass="header-icon" />
+        <FontAwesomeIconView glyphName="HEART" size="22" styleClass="header-icon" />
         <VBox spacing="2">
             <Label styleClass="dialog-title" text="Distribute Aid" />
             <Label styleClass="dialog-subtitle" text="Fields marked with * are required. Record a new aid distribution." />
@@ -47,7 +47,7 @@
 
             <VBox spacing="18" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="18" styleClass="section-icon" />
+                    <FontAwesomeIconView glyphName="HEART" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Distribution Context" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="section-subtitle" text="Step 1 of 4" />
@@ -267,7 +267,7 @@
                         <padding>
                             <Insets left="14" right="14" />
                         </padding>
-                        <FontAwesomeIconView glyphName="CLUSTER" size="14" styleClass="field-icon" />
+                        <FontAwesomeIconView glyphName="SITEMAP" size="14" styleClass="field-icon" />
                         <RadioButton fx:id="useKMeansRadio" selected="true" styleClass="field-checkbox" text="K-Means Clustering Algorithm (3 Clusters)" HBox.hgrow="ALWAYS" />
                         <Region HBox.hgrow="ALWAYS" />
                         <Label styleClass="badge-recommended">RECOMMENDED</Label>

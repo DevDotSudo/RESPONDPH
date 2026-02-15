@@ -55,14 +55,16 @@ public class NewsGeneratorService {
                             "Isa lang ka linya kada item.\n\n" +
 
                             "FORMAT EXACTLY:\n" +
-                            "1. <Hiligaynon SMS text 300-320 characters lang> (Source: FULL ARTICLE URL)\n\n" +
+                            "1. <Hiligaynon SMS text 300-320 characters - KOMPLETONG SENTENCES, WALA SANG DOTS/ELLIPSIS> (Source: FULL ARTICLE URL)\n\n" +
 
                             "HARD RULES:\n" +
                             "- Hiligaynon lang ang SMS text, likawan ang English words kon indi kinahanglan.\n" +
+                            "- KOMPLETONG balita, indi putol-putol. Wala sang '...' o ellipsis.\n" +
                             "- Indi pagbutang ang URL sa sulod sang SMS text.\n" +
                             "- Ang Source link dapat FULL article URL (may path), indi homepage.\n" +
                             "- Indi maghatag sang peke nga links.\n" +
-                            "- Wala sang extra commentary ukon blank lines.\n";
+                            "- Wala sang extra commentary ukon blank lines.\n" +
+                            "- Kada news item dapat klaro kag kompleto ang mensahe.\n";
 
             GenerateContentResponse response =
                     client.models.generateContent(MODEL_ID, prompt, config);
@@ -162,32 +164,77 @@ public class NewsGeneratorService {
         if (text == null) text = "";
         text = text.replaceAll("\\s+", " ").trim();
 
+        // Remove any ellipsis or multiple dots from AI response
+        text = text.replaceAll("\\.{2,}", "").trim();
+
+        // If text is too long, truncate it at a natural break point
         if (text.length() > MAX_LEN) {
             String cut = text.substring(0, MAX_LEN).trim();
+
+            // Try to cut at last sentence boundary
+            int lastPeriod = cut.lastIndexOf('.');
+            int lastQuestion = cut.lastIndexOf('?');
+            int lastExclaim = cut.lastIndexOf('!');
+            int lastBreak = Math.max(lastPeriod, Math.max(lastQuestion, lastExclaim));
+
+            if (lastBreak > MIN_LEN) {
+                // Cut at sentence boundary if it's still above minimum
+                cut = text.substring(0, lastBreak + 1).trim();
+            } else {
+                // Otherwise cut at last space
+                int lastSpace = cut.lastIndexOf(' ');
+                if (lastSpace > 0) {
+                    cut = cut.substring(0, lastSpace).trim();
+                }
+            }
+
+            // Remove trailing punctuation except periods
             cut = cut.replaceAll("[,;:\\-–—]+$", "").trim();
+
+            // Ensure it ends with a period if it doesn't have ending punctuation
+            if (!cut.matches(".*[.!?]$")) {
+                cut = cut + ".";
+            }
+
             return cut;
         }
 
+        // If text is too short, add filler
         if (text.length() < MIN_LEN) {
+            // Ensure proper ending before adding filler
+            if (!text.matches(".*[.!?]$")) {
+                text = text + ".";
+            }
 
-            String filler =
-                    " Padayon nga bantayan ang opisyal nga pahibalo sang LGU para sa seguridad.";
+            String filler = " Padayon nga bantayan ang opisyal nga pahibalo sang LGU para sa seguridad.";
 
-            String combined = (text + " " + filler)
+            String combined = (text + filler)
                     .replaceAll("\\s+", " ")
                     .trim();
 
+            // Truncate if combined is too long
             if (combined.length() > MAX_LEN) {
                 combined = combined.substring(0, MAX_LEN).trim();
-                combined = combined.replaceAll("[,;:\\-–—]+$", "").trim();
-            }
 
-            while (combined.length() < MIN_LEN) {
-                combined = (combined + ".").trim();
-                if (combined.length() > MAX_LEN) break;
+                // Cut at last space
+                int lastSpace = combined.lastIndexOf(' ');
+                if (lastSpace > 0) {
+                    combined = combined.substring(0, lastSpace).trim();
+                }
+
+                // Ensure it ends properly
+                if (!combined.matches(".*[.!?]$")) {
+                    combined = combined + ".";
+                }
             }
 
             return combined;
+        }
+
+        // Text is within acceptable range, just clean it up
+        // Ensure proper ending
+        if (!text.matches(".*[.!?]$")) {
+            text = text + ".";
         }
 
         return text;

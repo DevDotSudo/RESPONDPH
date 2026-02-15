@@ -21,7 +21,7 @@
         <VBox styleClass="header-section" VBox.vgrow="NEVER">
 
             <HBox alignment="CENTER_LEFT" spacing="16">
-                <FontAwesomeIconView glyphName="HAND_HOLDING_HEART" size="24" styleClass="page-icon"/>
+                <FontAwesomeIconView glyphName="HEART" size="24" styleClass="page-icon"/>
                 <Label text="Manage Aid" styleClass="page-title"/>
             </HBox>
 

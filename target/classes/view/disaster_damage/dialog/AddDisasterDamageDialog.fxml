@@ -142,7 +142,7 @@
                         <Label styleClass="field-label" text="Assessment Date *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="CALENDAR" size="14" styleClass="field-icon" />
-                            <DatePicker fx:id="assessmentDatePicker" promptText="Select date" styleClass="field-date" HBox.hgrow="ALWAYS" />
+                            <DatePicker fx:id="assessmentDatePicker" maxWidth="1.7976931348623157E308" promptText="Select date" styleClass="field-date" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 

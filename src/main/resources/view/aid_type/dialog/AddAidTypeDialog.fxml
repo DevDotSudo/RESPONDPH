@@ -225,7 +225,7 @@
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                    <FontAwesomeIconView glyphName="CHART_LINE" size="18" styleClass="section-icon" />
+                    <FontAwesomeIconView glyphName="LINE_CHART" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Economic &amp; Additional Factors" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="section-subtitle" text="Step 4 of 4" />

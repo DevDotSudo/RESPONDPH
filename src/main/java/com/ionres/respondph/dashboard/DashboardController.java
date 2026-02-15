@@ -94,10 +94,18 @@ public class DashboardController {
                 drawEvacSites();
                 drawBeneficiaries();
             });
+
             DashboardRefresher.register(this);
             loadDashBoardData();
             loadBeneficiariesFromDb();
             loadEvacSitesFromDb();
+
+            // Delay centering to ensure canvas is fully initialized
+            Timeline centerDelay = new Timeline(new KeyFrame(Duration.millis(100), e -> {
+                centerMapOnBoundary();
+            }));
+            centerDelay.setCycleCount(1);
+            centerDelay.play();
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
@@ -123,6 +131,51 @@ public class DashboardController {
                     adminNameLabel.setText("Admin : " + display);
                 }
             });
+        });
+    }
+
+    /**
+     * Centers the map on the boundary polygon by calculating its centroid
+     * and setting to minimum zoom level
+     */
+    private void centerMapOnBoundary() {
+        if (boundary == null || boundary.length == 0) {
+            return;
+        }
+
+        // Calculate the bounds of the polygon
+        double minLat = Double.MAX_VALUE;
+        double maxLat = Double.MIN_VALUE;
+        double minLon = Double.MAX_VALUE;
+        double maxLon = Double.MIN_VALUE;
+
+        for (double[] point : boundary) {
+            double lat = point[0];
+            double lon = point[1];
+
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lon < minLon) minLon = lon;
+            if (lon > maxLon) maxLon = lon;
+        }
+
+        // Calculate the center point (centroid approximation)
+        double centerLat = (minLat + maxLat) / 2.0;
+        double centerLon = (minLon + maxLon) / 2.0;
+
+        // Use minimum zoom level (13.0)
+        double zoom = 13.0;
+
+        System.out.println("=== Auto-centering map ===");
+        System.out.println("Boundary center: (" + centerLat + ", " + centerLon + ")");
+        System.out.println("Setting zoom level: " + zoom + " (MIN_ZOOM)");
+
+        // Center the map on the calculated coordinates with minimum zoom
+        mapping.setCenter(centerLat, centerLon, zoom);
+
+        // Force additional redraw to ensure centering is applied
+        Platform.runLater(() -> {
+            mapping.redraw();
         });
     }
 
@@ -302,6 +355,7 @@ public class DashboardController {
             }
         }
     }
+
     public void loadEvacSitesFromDb() {
         evacSites.clear();
         evacSites.addAll(dashBoardService.getEvacSites());

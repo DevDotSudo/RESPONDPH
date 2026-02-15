@@ -8,7 +8,9 @@ import com.ionres.respondph.util.GeographicUtils;
 import com.ionres.respondph.util.Mapping;
 import com.ionres.respondph.util.NameDecryptionUtils;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,16 +56,18 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
     @Override
     public List<String> getDisasterTypes() {
         List<String> types = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();  // preserves insertion order, no duplicates
 
         for (String encryptedType : dao.getDisasterTypes()) {
             try {
                 String decryptedType = CRYPTO.decryptWithOneParameter(encryptedType);
-                types.add(decryptedType);
+                seen.add(decryptedType);  // Set ignores duplicates automatically
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error decrypting disaster type", e);
             }
         }
 
+        types.addAll(seen);
         return types;
     }
 

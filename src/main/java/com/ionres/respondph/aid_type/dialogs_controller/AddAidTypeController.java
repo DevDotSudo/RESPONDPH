@@ -226,7 +226,6 @@ public class AddAidTypeController {
             System.out.println("Aid Type ID: " + aidTypeId);
             System.out.println("Admin ID: " + adminId);
 
-            // ✅ NEW: Get all beneficiary-disaster pairs that have household scores
             List<BeneficiaryDisasterPair> beneficiaryDisasterPairs =
                     getAllBeneficiaryDisasterPairsWithHouseholdScores();
 
@@ -239,12 +238,27 @@ public class AddAidTypeController {
 
             for (BeneficiaryDisasterPair pair : beneficiaryDisasterPairs) {
                 try {
-                    boolean success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
-                            pair.beneficiaryId,
-                            aidTypeId,
-                            adminId,
-                            pair.disasterId  // ✅ NEW
-                    );
+                    boolean success;
+
+                    if (pair.disasterId != null) {
+                        // ✅ Has a real disaster — use disaster-aware calculation
+                        System.out.println("→ With disaster (ID: " + pair.disasterId +
+                                ") for beneficiary ID: " + pair.beneficiaryId);
+                        success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
+                                pair.beneficiaryId,
+                                aidTypeId,
+                                adminId,
+                                pair.disasterId
+                        );
+                    } else {
+                        // ✅ No disaster (NULL) — use non-disaster calculation
+                        System.out.println("→ No disaster (NULL) for beneficiary ID: " + pair.beneficiaryId);
+                        success = calculator.calculateAndSaveAidHouseholdScore(
+                                pair.beneficiaryId,
+                                aidTypeId,
+                                adminId
+                        );
+                    }
 
                     if (success) {
                         successCount++;
@@ -252,13 +266,13 @@ public class AddAidTypeController {
                                 pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
                     } else {
                         failCount++;
-                        System.err.println("✗ Failed to calculate aid-household score for beneficiary ID: " +
+                        System.err.println("✗ Failed for beneficiary ID: " +
                                 pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
                     }
                 } catch (Exception e) {
                     failCount++;
-                    System.err.println("✗ Error calculating aid-household score for beneficiary ID " +
-                            pair.beneficiaryId + ", disaster ID " + pair.disasterId + ": " + e.getMessage());
+                    System.err.println("✗ Error for beneficiary ID " + pair.beneficiaryId +
+                            ", disaster ID " + pair.disasterId + ": " + e.getMessage());
                 }
             }
 
@@ -266,7 +280,6 @@ public class AddAidTypeController {
             System.out.println("Successfully calculated: " + successCount + " out of " +
                     beneficiaryDisasterPairs.size());
             System.out.println("Failed: " + failCount);
-
 
         } catch (Exception e) {
             System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());
@@ -279,9 +292,9 @@ public class AddAidTypeController {
 
     private static class BeneficiaryDisasterPair {
         int beneficiaryId;
-        int disasterId;
+        Integer disasterId;
 
-        BeneficiaryDisasterPair(int beneficiaryId, int disasterId) {
+        BeneficiaryDisasterPair(int beneficiaryId, Integer disasterId) {
             this.beneficiaryId = beneficiaryId;
             this.disasterId = disasterId;
         }
@@ -299,7 +312,11 @@ public class AddAidTypeController {
 
             while (rs.next()) {
                 int beneficiaryId = rs.getInt("beneficiary_id");
-                int disasterId = rs.getInt("disaster_id");
+
+                // ✅ getObject returns null for SQL NULL; getInt() returns 0 — that was the bug
+                Object disasterObj = rs.getObject("disaster_id");
+                Integer disasterId = (disasterObj != null) ? ((Number) disasterObj).intValue() : null;
+
                 pairs.add(new BeneficiaryDisasterPair(beneficiaryId, disasterId));
             }
 
@@ -311,9 +328,7 @@ public class AddAidTypeController {
             e.printStackTrace();
         } finally {
             try {
-                if (conn != null && !conn.isClosed()) {
-                    conn.close();
-                }
+                if (conn != null && !conn.isClosed()) conn.close();
             } catch (java.sql.SQLException e) {
                 System.err.println("Error closing connection: " + e.getMessage());
             }

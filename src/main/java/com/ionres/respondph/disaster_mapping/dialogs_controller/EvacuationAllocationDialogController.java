@@ -5,6 +5,7 @@ import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.evacuation_plan.*;
 import com.ionres.respondph.evac_site.EvacSiteService;
+import com.ionres.respondph.main.MainFrameController;
 import com.ionres.respondph.sendsms.SmsService;
 import com.ionres.respondph.sendsms.SmsServiceImpl;
 import com.ionres.respondph.util.*;
@@ -45,11 +46,6 @@ public class EvacuationAllocationDialogController implements Initializable {
     @FXML private ComboBox<String> cbGsmPort;
     @FXML private Button btnRefreshPorts;
     @FXML private Label lblConnectionStatus;
-
-    @FXML private VBox progressBox;
-    @FXML private Label progressLabel;
-    @FXML private ProgressBar progressBar;
-    @FXML private Label progressStatusLabel;
 
     private Stage dialogStage;
     private DisasterCircleInfo disaster;
@@ -636,12 +632,6 @@ public class EvacuationAllocationDialogController implements Initializable {
         saveAllocationBtn.setDisable(true);
         cancelBtn.setDisable(true);
 
-        int totalAllocations = siteAllocations.values().stream()
-                .mapToInt(List::size)
-                .sum();
-
-        showProgress(true, "Saving allocations...", 0, totalAllocations);
-
         Task<AllocationResult> task = new Task<>() {
             @Override
             protected AllocationResult call() {
@@ -652,8 +642,6 @@ public class EvacuationAllocationDialogController implements Initializable {
                 Map<Integer, String> siteNames = new HashMap<>();
                 List<BeneficiaryWithEvacSite> allAllocatedBeneficiaries = new ArrayList<>();
                 String sendMethod = (rbApi != null && rbApi.isSelected()) ? "API" : "GSM";
-
-                int processed = 0;
 
                 for (Map.Entry<Integer, List<RankedBeneficiaryWithLocation>> entry : siteAllocations.entrySet()) {
                     int evacSiteId = entry.getKey();
@@ -673,13 +661,6 @@ public class EvacuationAllocationDialogController implements Initializable {
                     final String siteName = evacSiteName;
 
                     for (RankedBeneficiaryWithLocation beneficiary : beneficiaries) {
-                        processed++;
-                        final int currentProgress = processed;
-
-                        Platform.runLater(() ->
-                                updateProgressUI("Saving allocations...", currentProgress, totalAllocations)
-                        );
-
                         if (evacPlanDAO.isAlreadyAssignedToDisaster(beneficiary.getBeneficiaryId(), disasterId)) {
                             LOGGER.info("Beneficiary " + beneficiary.getBeneficiaryId() + " already assigned - skipping");
                             continue;
@@ -722,18 +703,17 @@ public class EvacuationAllocationDialogController implements Initializable {
                 }
 
                 if (!allAllocatedBeneficiaries.isEmpty()) {
-                    Platform.runLater(() ->
-                            updateProgressUI("Sending SMS messages...", 0, allAllocatedBeneficiaries.size())
-                    );
+                    Platform.runLater(() -> showMainFrameSmsProgress(
+                            "Sending SMS (" + sendMethod + ")",
+                            allAllocatedBeneficiaries.size()
+                    ));
 
                     int smsIndex = 0;
                     for (BeneficiaryWithEvacSite beneficiaryWithSite : allAllocatedBeneficiaries) {
                         smsIndex++;
                         final int currentSms = smsIndex;
 
-                        Platform.runLater(() ->
-                                updateProgressUI("Sending SMS...", currentSms, allAllocatedBeneficiaries.size())
-                        );
+                        Platform.runLater(() -> updateProgressUI("Sending SMS...", currentSms, allAllocatedBeneficiaries.size()));
 
                         BeneficiaryModel beneficiary = beneficiaryWithSite.beneficiary;
                         String evacSiteName = beneficiaryWithSite.evacSiteName;
@@ -769,7 +749,7 @@ public class EvacuationAllocationDialogController implements Initializable {
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             AllocationResult result = task.getValue();
-            showProgress(false, "", 0, 0);
+            hideMainFrameSmsProgress();
             saveAllocationBtn.setDisable(false);
             cancelBtn.setDisable(false);
 
@@ -817,7 +797,7 @@ public class EvacuationAllocationDialogController implements Initializable {
         }));
 
         task.setOnFailed(e -> Platform.runLater(() -> {
-            showProgress(false, "", 0, 0);
+            hideMainFrameSmsProgress();
             saveAllocationBtn.setDisable(false);
             cancelBtn.setDisable(false);
 
@@ -830,25 +810,28 @@ public class EvacuationAllocationDialogController implements Initializable {
     }
 
     private void updateProgressUI(String label, int current, int total) {
-        if (progressLabel != null) {
-            progressLabel.setText(label);
-        }
-        if (progressBar != null) {
-            double progress = total > 0 ? (double) current / total : 0;
-            progressBar.setProgress(progress);
-        }
-        if (progressStatusLabel != null) {
-            progressStatusLabel.setText(String.format("%d / %d sent", current, total));
+        setMainFrameSmsCount(current, total);
+    }
+
+    private void showMainFrameSmsProgress(String title, int total) {
+        MainFrameController main = MainFrameController.getInstance();
+        if (main != null) {
+            main.showSmsProgress(title, total);
+            main.setSmsCount(0, total);
         }
     }
 
-    private void showProgress(boolean show, String label, int current, int total) {
-        if (progressBox != null) {
-            progressBox.setVisible(show);
-            progressBox.setManaged(show);
+    private void setMainFrameSmsCount(int sent, int total) {
+        MainFrameController main = MainFrameController.getInstance();
+        if (main != null) {
+            main.setSmsCount(sent, total);
         }
-        if (show) {
-            updateProgressUI(label, current, total);
+    }
+
+    private void hideMainFrameSmsProgress() {
+        MainFrameController main = MainFrameController.getInstance();
+        if (main != null) {
+            main.hideSmsProgress();
         }
     }
 
@@ -903,7 +886,6 @@ public class EvacuationAllocationDialogController implements Initializable {
             this.siteNames = siteNames;
         }
     }
-
 
     private static class BeneficiaryWithEvacSite {
         final BeneficiaryModel beneficiary;

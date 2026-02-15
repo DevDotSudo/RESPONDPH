@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="750.0" prefWidth="1100.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/beneficiariesincircledialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.BeneficiariesInCircleDialogController">
+<VBox fx:id="root" prefHeight="750.0" prefWidth="1200.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/beneficiariesincircledialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.BeneficiariesInCircleDialogController">
 
     <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -65,6 +65,15 @@
                     <Label styleClass="badge-active">ACTIVE</Label>
                 </HBox>
             </VBox>
+
+             <!-- Quick Actions Info -->
+             <HBox spacing="12" styleClass="info-box">
+                 <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="18" styleClass="info-icon" />
+                 <VBox spacing="4" HBox.hgrow="ALWAYS">
+                     <Label styleClass="info-title" text="Quick Actions" />
+                     <Label styleClass="info-text" text="• Click 'Designated Site' to view the nearest evacuation site for these beneficiaries.&#10;• Click 'Evacuate Now' to allocate beneficiaries to the nearest available evacuation site." wrapText="true" />
+                 </VBox>
+             </HBox>
 
             <Separator />
 
@@ -143,15 +152,6 @@
                         <Label styleClass="status-text" text="beneficiaries" />
                     </HBox>
                 </VBox>
-
-                <!-- Quick Actions Info -->
-                <HBox spacing="12" styleClass="info-box">
-                    <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="18" styleClass="info-icon" />
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label styleClass="info-title" text="Quick Actions" />
-                        <Label styleClass="info-text" text="• Click 'Designated Site' to view the nearest evacuation site for these beneficiaries.&#10;• Click 'Evacuate Now' to allocate beneficiaries to the nearest available evacuation site." wrapText="true" />
-                    </VBox>
-                </HBox>
             </VBox>
         </VBox>
     </ScrollPane>

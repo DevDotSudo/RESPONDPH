@@ -169,19 +169,6 @@
                     </VBox>
                 </VBox>
 
-                <!-- Progress Section (initially hidden) -->
-                <VBox fx:id="progressBox" managed="false" spacing="12" styleClass="progress-container" visible="false">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <FontAwesomeIconView glyphName="SPINNER" size="16" styleClass="progress-icon" />
-                        <Label fx:id="progressLabel" styleClass="progress-title" text="Sending SMS Notifications" />
-                    </HBox>
-
-                    <ProgressBar fx:id="progressBar" prefWidth="Infinity" progress="0" styleClass="custom-progress" />
-
-                    <HBox alignment="CENTER_RIGHT" spacing="6">
-                        <Label fx:id="progressStatusLabel" styleClass="progress-text" text="0 / 0 sent" />
-                    </HBox>
-                </VBox>
             </VBox>
         </VBox>
     </ScrollPane>

@@ -34,6 +34,7 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     @FXML private Button evacuateBtn;
     @FXML private Button designatedSiteBtn;
     @FXML private VBox root;
+    @FXML private Label infoLabel;
 
     private Stage dialogStage;
     private double yOffset = 0;
@@ -179,15 +180,22 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     }
 
 
-    public void setData(DisasterCircleInfo circle, List<BeneficiaryMarker> beneficiaries, int disasterId) {
-        this.currentDisaster = circle;
+    public void setData(DisasterCircleInfo disaster, List<BeneficiaryMarker> beneficiaries, int disasterId) {
+        this.currentDisaster = disaster;
         this.currentDisasterId = disasterId;
 
         LOGGER.info("=== SETTING BENEFICIARIES DIALOG DATA ===");
         LOGGER.info("Disaster ID: " + disasterId);
-        LOGGER.info("Disaster: " + (circle != null ? circle.disasterType + " - " + circle.disasterName : "null"));
+        LOGGER.info("Disaster: " + (disaster != null ? disaster.disasterType + " - " + disaster.disasterName : "null"));
         LOGGER.info("Beneficiary count: " + (beneficiaries != null ? beneficiaries.size() : 0));
 
+
+        if (disaster != null) {
+            String disasterInfo = String.format("Disaster: %s - %s",
+                    disaster.disasterType != null ? disaster.disasterType : "Unknown Type",
+                    disaster.disasterName != null ? disaster.disasterName : "Unknown Disaster");
+            infoLabel.setText(disasterInfo);
+        }
 
         titleLabel.setText("Beneficiaries in Disaster Area");
 

@@ -96,6 +96,15 @@
                     <Label styleClass="section-subtitle" text="Step 3 of 3" />
                 </HBox>
 
+                <!-- SMS Info Box -->
+                <HBox spacing="12" styleClass="info-box">
+                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="info-icon" />
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label styleClass="info-title" text="SMS Notification Details" />
+                        <Label styleClass="info-text" text="• Beneficiaries will receive SMS with evacuation site name, address, and capacity information.&#10;• API method requires active internet connection. GSM module requires connected hardware.&#10;• Messages are queued and sent sequentially to ensure delivery." wrapText="true" />
+                    </VBox>
+                </HBox>
+
                 <!-- SMS Method Selection -->
                 <VBox spacing="16" styleClass="sms-container">
                     <!-- SMS Method Card -->
@@ -106,14 +115,14 @@
                         </HBox>
 
                         <HBox spacing="24" styleClass="method-options">
-                            <RadioButton fx:id="rbGsm" styleClass="custom-radio" text="GSM Module (Hardware)">
+                            <RadioButton fx:id="rbGsm" styleClass="custom-radio" text="GSM Module">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="6">
                                         <FontAwesomeIconView glyphName="MICROCHIP" size="14" styleClass="radio-icon" />
                                     </HBox>
                                 </graphic>
                             </RadioButton>
-                            <RadioButton fx:id="rbApi" selected="true" styleClass="custom-radio" text="SMS API (Semaphore/Chikka)">
+                            <RadioButton fx:id="rbApi" selected="true" styleClass="custom-radio" text="SMS API">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="6">
                                         <FontAwesomeIconView glyphName="CLOUD" size="14" styleClass="radio-icon" />
@@ -173,15 +182,6 @@
                         <Label fx:id="progressStatusLabel" styleClass="progress-text" text="0 / 0 sent" />
                     </HBox>
                 </VBox>
-
-                <!-- SMS Info Box -->
-                <HBox spacing="12" styleClass="info-box">
-                    <FontAwesomeIconView glyphName="INFO_CIRCLE" size="18" styleClass="info-icon" />
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label styleClass="info-title" text="SMS Notification Details" />
-                        <Label styleClass="info-text" text="• Beneficiaries will receive SMS with evacuation site name, address, and capacity information.&#10;• API method requires active internet connection. GSM module requires connected hardware.&#10;• Messages are queued and sent sequentially to ensure delivery." wrapText="true" />
-                    </VBox>
-                </HBox>
             </VBox>
         </VBox>
     </ScrollPane>

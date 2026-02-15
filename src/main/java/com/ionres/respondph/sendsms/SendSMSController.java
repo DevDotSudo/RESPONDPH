@@ -118,7 +118,7 @@ public class SendSMSController implements Initializable {
         evacMessageManager = CustomEvacMessageManager.getInstance();
 
         if (charCount != null) {
-            charCount.setText("0/160 characters");
+            charCount.setText("0/320 characters");
         }
 
         updateConnectionStatus();

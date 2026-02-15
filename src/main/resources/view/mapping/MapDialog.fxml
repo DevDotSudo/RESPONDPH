@@ -7,7 +7,6 @@
 
 <VBox fx:id="mappingDialogRoot"
       prefHeight="900.0" prefWidth="1200.0"
-      spacing="0"
       styleClass="dialog-root"
       stylesheets="@/styles/mapping/mapdialog.css"
       xmlns="http://javafx.com/javafx/17.0.12"

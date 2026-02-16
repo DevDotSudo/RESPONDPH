@@ -482,11 +482,6 @@ public class EditAidTypeController {
             return false;
         }
 
-        if (notesFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Notes are required.");
-            notesFld.requestFocus();
-            return false;
-        }
 
         return true;
     }

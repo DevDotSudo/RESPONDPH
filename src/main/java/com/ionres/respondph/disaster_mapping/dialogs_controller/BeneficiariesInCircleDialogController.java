@@ -8,12 +8,14 @@ import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DialogManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.net.URL;
@@ -27,6 +29,11 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     private static final int INVALID_DISASTER_ID = -1;
 
     @FXML private Label titleLabel;
+    @FXML private Label infoLabel;
+    @FXML private Label totalBeneficiariesLabel;
+    @FXML private Label showingCountLabel;
+    @FXML private Label totalCountLabel;
+    @FXML private TextField searchField;
     @FXML private TableView<BeneficiaryMarker> beneficiariesTable;
     @FXML private TableColumn<BeneficiaryMarker, Integer> idColumn;
     @FXML private TableColumn<BeneficiaryMarker, String> nameColumn;
@@ -34,12 +41,12 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     @FXML private Button evacuateBtn;
     @FXML private Button designatedSiteBtn;
     @FXML private VBox root;
-    @FXML private Label infoLabel;
 
     private Stage dialogStage;
     private double yOffset = 0;
     private double xOffset = 0;
     private ObservableList<BeneficiaryMarker> beneficiariesList = FXCollections.observableArrayList();
+    private FilteredList<BeneficiaryMarker> filteredList;
     private DisasterCircleInfo currentDisaster;
     private int currentDisasterId = INVALID_DISASTER_ID;
     private DisasterMappingController parentController;
@@ -47,6 +54,7 @@ public class BeneficiariesInCircleDialogController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupTable();
+        setupSearch();
         setupButtons();
         makeDraggable();
     }
@@ -69,20 +77,82 @@ public class BeneficiariesInCircleDialogController implements Initializable {
             return new javafx.beans.property.SimpleStringProperty(marker.name);
         });
 
-        beneficiariesTable.setItems(beneficiariesList);
+        // Wrap the master list in a FilteredList (shows all items initially)
+        filteredList = new FilteredList<>(beneficiariesList, p -> true);
+        beneficiariesTable.setItems(filteredList);
+    }
+
+    private void setupSearch() {
+        if (searchField == null) return;
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredList.setPredicate(beneficiary -> {
+                // When search field is empty, show all beneficiaries
+                if (newValue == null || newValue.trim().isEmpty()) {
+                    updateCountLabels(beneficiariesList.size(), beneficiariesList.size());
+                    return true;
+                }
+
+                String lowerCaseFilter = newValue.trim().toLowerCase();
+
+                // Match against ID (as string) or name
+                boolean matchesId = String.valueOf(beneficiary.id).contains(lowerCaseFilter);
+                boolean matchesName = beneficiary.name != null
+                        && beneficiary.name.toLowerCase().contains(lowerCaseFilter);
+
+                return matchesId || matchesName;
+            });
+
+            // Update the "Showing X of Y" status bar after filter is applied
+            updateCountLabels(filteredList.size(), beneficiariesList.size());
+        });
     }
 
     private void setupButtons() {
         if (closeBtn != null) {
             closeBtn.setOnAction(e -> closeDialog());
         }
-
         if (evacuateBtn != null) {
             evacuateBtn.setOnAction(e -> handleEvacuateNow());
         }
+        if (designatedSiteBtn != null) {
+            designatedSiteBtn.setOnAction(e -> handleDesignatedSite());
+        }
+    }
 
-        if (designatedSiteBtn != null){
-            designatedSiteBtn.setOnAction(e -> handleDesignatedSite() );
+    /**
+     * Updates all count-related labels: the badge in the section header
+     * and the status bar at the bottom of the table.
+     */
+    private void updateCountLabels(int showing, int total) {
+        if (totalBeneficiariesLabel != null) {
+            totalBeneficiariesLabel.setText("Total: " + total);
+        }
+        if (showingCountLabel != null) {
+            showingCountLabel.setText(String.valueOf(showing));
+        }
+        if (totalCountLabel != null) {
+            totalCountLabel.setText(String.valueOf(total));
+        }
+    }
+
+    /**
+     * Updates the disaster info card in Section 1 with the disaster name and type.
+     */
+    private void updateDisasterInfoLabels() {
+        if (infoLabel == null || currentDisaster == null) return;
+
+        String type = currentDisaster.disasterType != null ? currentDisaster.disasterType : "";
+        String name = currentDisaster.disasterName != null ? currentDisaster.disasterName : "";
+
+        if (!type.isEmpty() && !name.isEmpty()) {
+            infoLabel.setText("Disaster: " + type + " — " + name);
+        } else if (!name.isEmpty()) {
+            infoLabel.setText("Disaster: " + name);
+        } else if (!type.isEmpty()) {
+            infoLabel.setText("Disaster Type: " + type);
+        } else {
+            infoLabel.setText("Disaster: —");
         }
     }
 
@@ -179,34 +249,33 @@ public class BeneficiariesInCircleDialogController implements Initializable {
         }
     }
 
-
-    public void setData(DisasterCircleInfo disaster, List<BeneficiaryMarker> beneficiaries, int disasterId) {
-        this.currentDisaster = disaster;
+    public void setData(DisasterCircleInfo circle, List<BeneficiaryMarker> beneficiaries, int disasterId) {
+        this.currentDisaster = circle;
         this.currentDisasterId = disasterId;
 
         LOGGER.info("=== SETTING BENEFICIARIES DIALOG DATA ===");
         LOGGER.info("Disaster ID: " + disasterId);
-        LOGGER.info("Disaster: " + (disaster != null ? disaster.disasterType + " - " + disaster.disasterName : "null"));
+        LOGGER.info("Disaster: " + (circle != null ? circle.disasterType + " - " + circle.disasterName : "null"));
         LOGGER.info("Beneficiary count: " + (beneficiaries != null ? beneficiaries.size() : 0));
 
-
-        if (disaster != null) {
-            String disasterInfo = String.format("Disaster: %s - %s",
-                    disaster.disasterType != null ? disaster.disasterType : "Unknown Type",
-                    disaster.disasterName != null ? disaster.disasterName : "Unknown Disaster");
-            infoLabel.setText(disasterInfo);
-        }
-
         titleLabel.setText("Beneficiaries in Disaster Area");
+
+        // Clear search field and reset filter whenever new data is loaded
+        if (searchField != null) {
+            searchField.clear();
+        }
 
         beneficiariesList.clear();
         if (beneficiaries != null && !beneficiaries.isEmpty()) {
             beneficiariesList.addAll(beneficiaries);
         }
 
+        int total = beneficiariesList.size();
+        updateCountLabels(total, total);
+        updateDisasterInfoLabels();
+
         LOGGER.info("Dialog data set successfully");
     }
-
 
     @Deprecated
     public void setData(DisasterCircleInfo circle, List<BeneficiaryMarker> beneficiaries) {

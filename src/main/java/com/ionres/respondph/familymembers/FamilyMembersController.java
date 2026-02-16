@@ -2,7 +2,6 @@ package com.ionres.respondph.familymembers;
 
 import com.ionres.respondph.familymembers.dialogs_controller.AddFamilyController;
 import com.ionres.respondph.familymembers.dialogs_controller.EditFamilyController;
-import com.ionres.respondph.household_score.HouseholdScoreCalculate;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.UpdateTrigger;
@@ -42,9 +41,8 @@ public class FamilyMembersController {
     @FXML private Button searchBtn;
     @FXML private Button addButton;
     @FXML private Button refreshButton;
-
     private final FamilyMemberService familyMembersService = AppContext.familyMemberService;
-    private ObservableList<FamilyMembersModel> familyMembersList;
+    private ObservableList<FamilyMembersModel> familyMembersList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -106,16 +104,15 @@ public class FamilyMembersController {
     public void loadTable() {
         try {
             List<FamilyMembersModel> familyMembers = familyMembersService.getAllFamilyMembers();
-            familyMembersList = FXCollections.observableArrayList(familyMembers);
-            familyTable.setItems(familyMembersList);
+            familyMembersList.setAll(familyMembers);
+            familyTable.setItems(familyMembersList); // only needed once but harmless here
 
             if (familyMembers.isEmpty()) {
                 familyTable.setPlaceholder(new Label("No family members found"));
             }
         } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError("Load Error",
-                    "Failed to load family members: " + e.getMessage());
+            AlertDialogManager.showError("Load Error", "Failed to load family members: " + e.getMessage());
         }
     }
 

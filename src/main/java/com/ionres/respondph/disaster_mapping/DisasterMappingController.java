@@ -418,7 +418,12 @@ public class DisasterMappingController {
             );
 
             if (controller != null) {
-                controller.setData(circle, beneficiaries);
+                // Pass the currently selected disaster ID so evacuation actions work correctly
+                int disasterId = (disasterComboBox.getValue() != null)
+                        ? disasterComboBox.getValue().getDisasterId()
+                        : AppContext.currentDisasterId;
+
+                controller.setData(circle, beneficiaries, disasterId);
                 DialogManager.show("beneficiariesInCircle");
             }
         } catch (Exception e) {

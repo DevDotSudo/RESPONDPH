@@ -3,6 +3,7 @@ import com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController;
 import com.ionres.respondph.dashboard.DashboardController;
 import com.ionres.respondph.disaster_mapping.DisasterMappingController;
 import com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController;
+import com.ionres.respondph.evacuation_plan.EvacuationPlanController;
 import com.ionres.respondph.sendsms.SendSMSController;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorController;
 import javafx.application.Platform;
@@ -15,6 +16,7 @@ public final class DashboardRefresher {
     private static SendSMSController sendSMSController;
     private static DisasterMappingController disasterMappingController;
     private static EvacuationSiteMappingController evacuationSiteMappingController;
+    private static EvacuationPlanController evacuationPlanController;
 
     private DashboardRefresher() {}
 
@@ -40,6 +42,11 @@ public final class DashboardRefresher {
 
     public static void registerEvacSiteInMap(EvacuationSiteMappingController controller){
         evacuationSiteMappingController = controller;
+    }
+
+    public static void registerEvacuationPlanController(EvacuationPlanController controller){
+        evacuationPlanController = controller;
+
     }
 
 
@@ -88,12 +95,15 @@ public final class DashboardRefresher {
         }
     }
 
-
     public static  void refreshEvacSiteMap(){
         if (evacuationSiteMappingController != null){
             Platform.runLater(evacuationSiteMappingController::loadEvacSitesFromDb);
         }
     }
 
-
+    public static void refreshEvacuationPlanController(){
+        if (evacuationPlanController != null){
+            Platform.runLater(evacuationPlanController::loadTable);
+        }
+    }
 }

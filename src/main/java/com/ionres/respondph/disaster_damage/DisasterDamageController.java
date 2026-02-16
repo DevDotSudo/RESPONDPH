@@ -2,10 +2,7 @@ package com.ionres.respondph.disaster_damage;
 
 import com.ionres.respondph.disaster_damage.dialogs_controller.AddDisasterDamageDialogController;
 import com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamageDialogController;
-import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.DialogManager;
-import com.ionres.respondph.util.UpdateTrigger;
+import com.ionres.respondph.util.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.beans.property.SimpleStringProperty;
@@ -143,8 +140,16 @@ public class DisasterDamageController {
                 if (success) {
 
                     int beneficiaryId = disasterDamage.getBeneficiaryId();
-                    UpdateTrigger updateTrigger = new UpdateTrigger();
-                    boolean cascadeSuccess = updateTrigger.triggerCascadeUpdate(beneficiaryId);
+                    int adminId = SessionManager.getInstance().getCurrentAdminId();
+
+                    UpdateTrigger trigger = new UpdateTrigger();
+                    boolean cascadeSuccess = trigger.triggerCascadeUpdateAfterDisasterDamageDelete(
+                            beneficiaryId, disasterDamage.getDisasterId()
+                    );
+//
+//                    int beneficiaryId = disasterDamage.getBeneficiaryId();
+//                    UpdateTrigger updateTrigger = new UpdateTrigger();
+//                    boolean cascadeSuccess = updateTrigger.triggerCascadeUpdate(beneficiaryId);
 
                     if (cascadeSuccess) {
                         AlertDialogManager.showSuccess("Success",

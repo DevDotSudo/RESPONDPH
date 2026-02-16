@@ -155,6 +155,7 @@ public class HouseholdScoreCalculate {
 
     private double calculateAverageAgeScore(BeneficiaryModel beneficiary,
                                             List<FamilyMembersModel> familyMembers) {
+
         double totalAgeScore = beneficiary.getAgeScore();
         int totalMembers = 1 + familyMembers.size();
 
@@ -168,11 +169,14 @@ public class HouseholdScoreCalculate {
         }
 
         double avgAgeScore = totalAgeScore / totalMembers;
+
         debug("Total Age Score (sum)", totalAgeScore);
         debug("Average Age Score", avgAgeScore);
 
-        return Math.round(avgAgeScore * 100.0) / 100.0;
+        // ✅ No rounding
+        return avgAgeScore;
     }
+
 
 
 
@@ -447,21 +451,21 @@ public class HouseholdScoreCalculate {
             double avgEmploymentScore = totalEmploymentScore / totalMembers;
             double avgEducationScore = totalEducationScore / totalMembers;
 
-            result.setGenderScore(Math.round(avgGenderScore * 100.0) / 100.0);
-            result.setMaritalStatusScore(Math.round(avgMaritalScore * 100.0) / 100.0);
-            result.setDisabilityScore(Math.round(avgDisabilityScore * 100.0) / 100.0);
-            result.setHealthConditionScore(Math.round(avgHealthScore * 100.0) / 100.0);
-            result.setEmploymentStatusScore(Math.round(avgEmploymentScore * 100.0) / 100.0);
-            result.setEducationLevelScore(Math.round(avgEducationScore * 100.0) / 100.0);
+            result.setGenderScore(avgGenderScore);
+            result.setMaritalStatusScore(avgMaritalScore);
+            result.setDisabilityScore(avgDisabilityScore);
+            result.setHealthConditionScore(avgHealthScore);
+            result.setEmploymentStatusScore(avgEmploymentScore);
+            result.setEducationLevelScore(avgEducationScore);
 
-            result.setSoloParentScore(Math.round(beneSoloParentScore * 100.0) / 100.0);
-            result.setAccessToCleanWaterScore(Math.round(beneCleanWaterScore * 100.0) / 100.0);
-            result.setSanitationFacilitiesScore(Math.round(beneSanitationScore * 100.0) / 100.0);
-            result.setHouseConstructionTypeScore(Math.round(beneHouseTypeScore * 100.0) / 100.0);
-            result.setOwnershipScore(Math.round(beneOwnershipScore * 100.0) / 100.0);
-            result.setMonthlyIncomeScore(Math.round(beneIncomeScore * 100.0) / 100.0);
-            result.setDigitalAccessScore(Math.round(beneDigitalScore * 100.0) / 100.0);
-            result.setDamageSeverityScore(Math.round(beneDisasterDamageScore * 100.0) / 100.0);
+            result.setSoloParentScore(beneSoloParentScore);
+            result.setAccessToCleanWaterScore(beneCleanWaterScore);
+            result.setSanitationFacilitiesScore(beneSanitationScore);
+            result.setHouseConstructionTypeScore(beneHouseTypeScore);
+            result.setOwnershipScore(beneOwnershipScore);
+            result.setMonthlyIncomeScore(beneIncomeScore);
+            result.setDigitalAccessScore(beneDigitalScore);
+            result.setDamageSeverityScore(beneDisasterDamageScore);
 
             double dependencyRatioScore = calculateDependencyRatioScore(beneficiary, familyMembers);
             result.setDependencyRatioScore(dependencyRatioScore);
@@ -579,21 +583,21 @@ public class HouseholdScoreCalculate {
             double avgEmploymentScore = totalEmploymentScore / totalMembers;
             double avgEducationScore = totalEducationScore / totalMembers;
 
-            result.setGenderScore(Math.round(avgGenderScore * 100.0) / 100.0);
-            result.setMaritalStatusScore(Math.round(avgMaritalScore * 100.0) / 100.0);
-            result.setDisabilityScore(Math.round(avgDisabilityScore * 100.0) / 100.0);
-            result.setHealthConditionScore(Math.round(avgHealthScore * 100.0) / 100.0);
-            result.setEmploymentStatusScore(Math.round(avgEmploymentScore * 100.0) / 100.0);
-            result.setEducationLevelScore(Math.round(avgEducationScore * 100.0) / 100.0);
+            result.setGenderScore(avgGenderScore);
+            result.setMaritalStatusScore(avgMaritalScore);
+            result.setDisabilityScore(avgDisabilityScore);
+            result.setHealthConditionScore(avgHealthScore);
+            result.setEmploymentStatusScore(avgEmploymentScore);
+            result.setEducationLevelScore(avgEducationScore);
 
-            result.setSoloParentScore(Math.round(beneSoloParentScore * 100.0) / 100.0);
-            result.setAccessToCleanWaterScore(Math.round(beneCleanWaterScore * 100.0) / 100.0);
-            result.setSanitationFacilitiesScore(Math.round(beneSanitationScore * 100.0) / 100.0);
-            result.setHouseConstructionTypeScore(Math.round(beneHouseTypeScore * 100.0) / 100.0);
-            result.setOwnershipScore(Math.round(beneOwnershipScore * 100.0) / 100.0);
-            result.setMonthlyIncomeScore(Math.round(beneIncomeScore * 100.0) / 100.0);
-            result.setDigitalAccessScore(Math.round(beneDigitalScore * 100.0) / 100.0);
-            result.setDamageSeverityScore(Math.round(beneDisasterDamageScore * 100.0) / 100.0);
+            result.setSoloParentScore(beneSoloParentScore);
+            result.setAccessToCleanWaterScore(beneCleanWaterScore);
+            result.setSanitationFacilitiesScore(beneSanitationScore);
+            result.setHouseConstructionTypeScore(beneHouseTypeScore);
+            result.setOwnershipScore(beneOwnershipScore);
+            result.setMonthlyIncomeScore(beneIncomeScore);
+            result.setDigitalAccessScore(beneDigitalScore);
+            result.setDamageSeverityScore(beneDisasterDamageScore);
 
             double dependencyRatioScore = calculateDependencyRatioScore(beneficiary, familyMembers);
             result.setDependencyRatioScore(dependencyRatioScore);

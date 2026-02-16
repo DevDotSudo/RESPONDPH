@@ -23,6 +23,14 @@
 
         <Region HBox.hgrow="ALWAYS" />
 
+<!--        <Button fx:id="importExcelBtn"-->
+<!--                prefHeight="42.0"-->
+<!--                prefWidth="180.0"-->
+<!--                styleClass="dialog-close"-->
+<!--                onAction="#onImportExcel">-->
+<!--            <text>Import Excel</text>-->
+<!--        </Button>-->
+
         <Button fx:id="exitBtn" styleClass="dialog-close">
             <graphic>
                 <HBox alignment="CENTER" spacing="8">
@@ -31,14 +39,6 @@
             </graphic>
         </Button>
     </HBox>
-
-    <!-- Error Container -->
-    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
-        <padding>
-            <Insets bottom="12" left="24" right="24" top="10" />
-        </padding>
-        <Label fx:id="errorLabel" styleClass="error-text" />
-    </VBox>
 
     <!-- Main Form Container -->
     <ScrollPane fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
@@ -109,7 +109,7 @@
                         <Label styleClass="field-label" text="Date of Birth *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="CALENDAR" size="14" styleClass="field-icon" />
-                            <DatePicker fx:id="birthDatePicker" maxWidth="1.7976931348623157E308" promptText="Select date" styleClass="field-date" HBox.hgrow="ALWAYS" />
+                            <DatePicker fx:id="birthDatePicker" maxWidth="1.7976931348623157E308" promptText="Month/Day/Year" styleClass="field-date" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -490,8 +490,9 @@
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="Less than 12,030 PHP (Poor)" />
                                         <String fx:value="12,030 to 24,060 PHP (Low Income)" />
-                                        <String fx:value="24,061 to 84,210 PHP (Middle Class)" />
-                                        <String fx:value="84,211 to 144,360 PHP (Upper Middle Income)" />
+                                        <String fx:value="24,061 to 48,120 PHP (Lower Middle Income)" />
+                                        <String fx:value="48,121 to 84,210 PHP (Middle Class)" />
+                                        <String fx:value="84,211 to 144,360 PHP (Upper Middle Class)" />
                                         <String fx:value="144,361 to 240,600 PHP (Upper Income)" />
                                         <String fx:value="At least 244,350 (Rich)" />
                                     </FXCollections>

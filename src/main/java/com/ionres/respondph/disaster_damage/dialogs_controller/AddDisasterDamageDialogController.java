@@ -49,7 +49,6 @@ public class AddDisasterDamageDialogController {
 
     @FXML
     private void initialize() {
-        initializeDamageSeverityDropdown();
         setupKeyHandlers();
         EventHandler<ActionEvent> handler = this::handleActions;
         saveBtn.setOnAction(handler);
@@ -77,15 +76,6 @@ public class AddDisasterDamageDialogController {
         root.requestFocus();
     }
 
-    private void initializeDamageSeverityDropdown() {
-        damageSeverityFld.getItems().addAll(
-                "No visible damage",
-                "Minor damage (non-structural)",
-                "Moderate damage (partially unusable)",
-                "Severe damage (unsafe for use)",
-                "Destruction or collapse"
-        );
-    }
 
     private void closeDialog() {
         Stage stage = (Stage) exitBtn.getScene().getWindow();
@@ -407,11 +397,6 @@ public class AddDisasterDamageDialogController {
             return false;
         }
 
-        if (notesFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Notes are required.");
-            notesFld.requestFocus();
-            return false;
-        }
         return true;
     }
 

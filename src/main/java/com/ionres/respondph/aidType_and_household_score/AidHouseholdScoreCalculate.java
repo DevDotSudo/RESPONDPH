@@ -205,7 +205,7 @@ public class AidHouseholdScoreCalculate {
         if (finalScore >= 0.67) {
             return "High Priority";
         } else if (finalScore >= 0.34) {
-            return "Medium Priority";
+            return "Moderate Priority";
         } else {
             return "Low Priority";
         }

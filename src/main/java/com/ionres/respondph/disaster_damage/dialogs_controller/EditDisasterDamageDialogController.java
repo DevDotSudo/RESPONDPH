@@ -6,6 +6,7 @@ import com.ionres.respondph.disaster_damage.DisasterDamageController;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.SessionManager;
 import com.ionres.respondph.util.UpdateTrigger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -69,7 +70,6 @@ public class EditDisasterDamageDialogController {
 
     @FXML
     private void initialize() {
-        initializeDamageSeverityDropdown();
         setupEventHandlers();
         setupKeyHandlers();
     }
@@ -97,15 +97,7 @@ public class EditDisasterDamageDialogController {
         closeDialog();
     }
 
-    private void initializeDamageSeverityDropdown() {
-        damageSeverityFld.getItems().addAll(
-                "No visible damage",
-                "Minor damage (non-structural)",
-                "Moderate damage (partially unusable)",
-                "Severe damage (unsafe for use)",
-                "Destruction or collapse"
-        );
-    }
+
 
     private void loadBeneficiaries() {
         try {
@@ -396,6 +388,13 @@ public class EditDisasterDamageDialogController {
 
             boolean success = disasterDamageService.updateDisasterDamage(updatedDisasterDamage);
 
+            int beneficiaryId = beneficiary.getBeneficiaryId();
+            int adminId = SessionManager.getInstance().getCurrentAdminId();
+
+            UpdateTrigger trigger = new UpdateTrigger();
+
+            boolean cascadeSuccess = trigger.triggerCascadeUpdateWithDisaster(beneficiaryId, disaster.getDisasterId());
+
             if (success) {
 
                 AlertDialogManager.showSuccess("Update Successful",
@@ -448,11 +447,6 @@ public class EditDisasterDamageDialogController {
             return false;
         }
 
-        if (notesFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Notes are required.");
-            notesFld.requestFocus();
-            return false;
-        }
 
         return true;
     }

@@ -122,7 +122,7 @@ public class SendSMSController implements Initializable {
         }
 
         updateConnectionStatus();
-
+        loadExistingEvacMessage();
         System.out.println("SendSMSController initialized successfully");
     }
 
@@ -516,13 +516,33 @@ public class SendSMSController implements Initializable {
     }
 
     private void loadExistingEvacMessage() {
-        if (evacMessageManager.hasCustomMessage()) {
-            String savedMessage = evacMessageManager.getCustomEvacuationMessage();
-            if (txtCustomEvacMessage != null) {
-                txtCustomEvacMessage.setText(savedMessage);
-            }
-            updateEvacMessageStatus(true, savedMessage.length());
+        System.out.println("=== Loading Custom Evacuation Message ===");
+
+        if (txtCustomEvacMessage == null) {
+            System.out.println("❌ txtCustomEvacMessage is NULL!");
+            return;
         }
+
+        boolean hasMessage = evacMessageManager.hasCustomMessage();
+        System.out.println("Database has custom message: " + hasMessage);
+
+        if (hasMessage) {
+            String savedMessage = evacMessageManager.getCustomEvacuationMessage();
+            System.out.println("Message from DB: " + savedMessage.substring(0, Math.min(50, savedMessage.length())) + "...");
+            System.out.println("Message length: " + savedMessage.length());
+
+            txtCustomEvacMessage.setText(savedMessage);
+            updateEvacMessageStatus(true, savedMessage.length());
+
+            System.out.println("✓ Custom message loaded successfully");
+        } else {
+            txtCustomEvacMessage.clear();
+            updateEvacMessageStatus(false, 0);
+
+            System.out.println("ℹ No custom message - using default");
+        }
+
+        System.out.println("==========================================");
     }
 
     @FXML

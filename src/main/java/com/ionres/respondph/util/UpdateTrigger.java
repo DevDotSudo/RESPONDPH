@@ -394,6 +394,108 @@ public class UpdateTrigger {
         }
     }
 
+    // In UpdateTrigger.java — add this new method
+    public boolean triggerCascadeUpdateAfterDisasterDamageDelete(int beneficiaryId, int disasterId) {
+        try {
+            System.out.println("========== CASCADE UPDATE AFTER DELETE ==========");
+            System.out.println("Beneficiary ID: " + beneficiaryId);
+            System.out.println("Disaster ID: " + disasterId);
+
+            // Step 1: Recalculate household score (damage is already deleted, so score updates)
+            HouseholdScoreCalculate householdCalc = new HouseholdScoreCalculate();
+            boolean householdUpdated = householdCalc.calculateAndSaveHouseholdScore(beneficiaryId, disasterId);
+
+            if (!householdUpdated) {
+                System.err.println("Failed to update household score after delete");
+                return false;
+            }
+            System.out.println("✓ Household score recalculated successfully");
+
+            // Step 2: Get existing aid scores that have THIS specific disaster_id (not NULL)
+            List<AidTypeScoreRecord> existingRecords = getAidTypesWithDisasterId(beneficiaryId, disasterId);
+
+            if (existingRecords.isEmpty()) {
+                System.out.println("No existing aid-household scores found for disaster ID: " + disasterId);
+                return true;
+            }
+
+            System.out.println("Found " + existingRecords.size() + " record(s) to recalculate");
+
+            // Step 3: Recalculate each one — damage score will now be 0 since record was deleted
+            AidHouseholdScoreCalculate aidCalc = new AidHouseholdScoreCalculate();
+            int successCount = 0;
+            int failCount = 0;
+
+            for (AidTypeScoreRecord record : existingRecords) {
+                try {
+                    boolean success = aidCalc.calculateAndSaveAidHouseholdScoreWithDisaster(
+                            beneficiaryId,
+                            record.aidTypeId,
+                            record.adminId,
+                            disasterId
+                    );
+
+                    if (success) {
+                        successCount++;
+                        System.out.println("✓ Recalculated score for aid type ID: " + record.aidTypeId);
+                    } else {
+                        failCount++;
+                        System.err.println("✗ Failed to recalculate for aid type ID: " + record.aidTypeId);
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                    e.printStackTrace();
+                }
+            }
+
+            System.out.println("========== CASCADE UPDATE AFTER DELETE COMPLETE ==========");
+            System.out.println("Success: " + successCount + " | Failed: " + failCount);
+            return failCount == 0;
+
+        } catch (Exception e) {
+            System.err.println("Error in cascade update after delete: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<AidTypeScoreRecord> getAidTypesWithDisasterId(int beneficiaryId, int disasterId) {
+        List<AidTypeScoreRecord> records = new ArrayList<>();
+        String sql = "SELECT aid_type_id, admin_id FROM aid_and_household_score " +
+                "WHERE beneficiary_id = ? AND disaster_id = ?";
+
+        Connection conn = null;
+        try {
+            conn = com.ionres.respondph.database.DBConnection.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, beneficiaryId);
+            ps.setInt(2, disasterId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                records.add(new AidTypeScoreRecord(
+                        rs.getInt("aid_type_id"),
+                        rs.getInt("admin_id")
+                ));
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching aid scores for disaster: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null && !conn.isClosed()) conn.close();
+            } catch (SQLException e) {
+                System.err.println("Error closing connection: " + e.getMessage());
+            }
+        }
+
+        return records;
+    }
+
     private static class AidTypeScoreRecord {
         int aidTypeId;
         int adminId;

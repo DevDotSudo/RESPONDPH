@@ -56,9 +56,13 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
 
         List<FamilyMembersModel> list = new ArrayList<>();
 
+        // NEW
         String sql = "SELECT fm.familymember_id, fm.beneficiary_id, fm.first_name, fm.middle_name, fm.last_name, " +
                 "fm.relationshiptobene, fm.birthdate, fm.gender, fm.marital_status, " +
-                "fm.notes, fm.reg_date, b.first_name AS beneficiary_firstname " +
+                "fm.notes, fm.reg_date, " +
+                "b.first_name AS beneficiary_firstname, " +
+                "b.middle_name AS beneficiary_middlename, " +
+                "b.last_name AS beneficiary_lastname " +
                 "FROM family_member fm " +
                 "INNER JOIN beneficiary b " +
                 "ON fm.beneficiary_id = b.beneficiary_id";
@@ -83,7 +87,10 @@ public class FamilyMemberDAOImpl implements FamilyMemberDAO {
                 fm.setMaritalStatus(rs.getString("marital_status"));
                 fm.setNotes(rs.getString("notes"));
                 fm.setRegDate(rs.getString("reg_date"));
-                fm.setBeneficiaryName(rs.getString("beneficiary_firstname"));
+                String bFirst  = rs.getString("beneficiary_firstname");
+                String bMiddle = rs.getString("beneficiary_middlename");
+                String bLast   = rs.getString("beneficiary_lastname");
+                fm.setBeneficiaryName(bFirst + "|" + bMiddle + "|" + bLast);
 
                 list.add(fm);
             }

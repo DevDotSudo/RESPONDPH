@@ -22,6 +22,11 @@
 
         <Region HBox.hgrow="ALWAYS" />
 
+
+<!--        <Button fx:id="importExcelBtn"-->
+<!--                text="Import Excel (Sheet 2)"-->
+<!--                onAction="#onImportFamilyExcel" />-->
+
         <Button fx:id="exitBtn" styleClass="dialog-close">
             <graphic>
                 <HBox alignment="CENTER" spacing="8">
@@ -133,7 +138,7 @@
                         <Label styleClass="field-label" text="Date of Birth *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="CALENDAR" size="14" styleClass="field-icon" />
-                            <DatePicker fx:id="birthDatePicker" promptText="Select date" styleClass="field-date" HBox.hgrow="ALWAYS" />
+                            <DatePicker fx:id="birthDatePicker" promptText="Month/Day/Year" styleClass="field-date" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -183,16 +188,29 @@
                                         <String fx:value="Niece" />
                                         <String fx:value="Nephew" />
                                         <String fx:value="Brother" />
+                                        <String fx:value="Brother in Law" />
+                                        <String fx:value="Sister in Law" />
                                         <String fx:value="Sister" />
                                         <String fx:value="Uncle" />
                                         <String fx:value="Auntie" />
                                         <String fx:value="Wife" />
                                         <String fx:value="Husband" />
                                         <String fx:value="Common Law" />
+                                        <String fx:value="Father" />
+                                        <String fx:value="Father in Law" />
+                                        <String fx:value="Mother" />
+                                        <String fx:value="Mother in Law" />
+                                        <String fx:value="Step Sister" />
+                                        <String fx:value="Step Brother" />
                                         <String fx:value="Step Father" />
                                         <String fx:value="Step Mother" />
+                                        <String fx:value="Step GrandMother" />
+                                        <String fx:value="Step GrandFather" />
                                         <String fx:value="Grandmother" />
                                         <String fx:value="Grandfather" />
+                                        <String fx:value="Great GrandFather" />
+                                        <String fx:value="Great GrandMother" />
+                                        <String fx:value="Relative" />
                                         <String fx:value="Other relative" />
                                     </FXCollections>
                                 </items>

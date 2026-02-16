@@ -28,6 +28,12 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
 
             for (FamilyMembersModel fm : encryptedList) {
 
+                // Split the pipe-delimited beneficiary name parts back into 3 separate encrypted tokens
+                String[] beneficiaryNameParts = fm.getBeneficiaryName().split("\\|");
+                String encBeneficiaryFirst  = beneficiaryNameParts.length > 0 ? beneficiaryNameParts[0] : "";
+                String encBeneficiaryMiddle = beneficiaryNameParts.length > 1 ? beneficiaryNameParts[1] : "";
+                String encBeneficiaryLast   = beneficiaryNameParts.length > 2 ? beneficiaryNameParts[2] : "";
+
                 List<String> encrypted = List.of(
                         fm.getFirstName(),
                         fm.getMiddleName(),
@@ -38,15 +44,15 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
                         fm.getMaritalStatus(),
                         fm.getNotes(),
                         fm.getRegDate(),
-                        fm.getBeneficiaryName()
+                        encBeneficiaryFirst,   // index 9
+                        encBeneficiaryMiddle,  // index 10
+                        encBeneficiaryLast     // index 11
                 );
 
                 List<String> decrypted = cs.decrypt(encrypted);
 
                 FamilyMembersModel d = new FamilyMembersModel();
                 d.setFamilyId(fm.getFamilyId());
-
-                // ✅ FIX: ADD THIS LINE - Preserve the beneficiaryId
                 d.setBeneficiaryId(fm.getBeneficiaryId());
 
                 d.setFirstName(decrypted.get(0));
@@ -59,7 +65,12 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
                 d.setMaritalStatus(decrypted.get(6));
                 d.setNotes(decrypted.get(7));
                 d.setRegDate(decrypted.get(8));
-                d.setBeneficiaryName(decrypted.get(9));
+
+                // Assemble full name after decryption, collapsing any extra spaces from empty middle name
+                String fullName = (decrypted.get(9) + " " + decrypted.get(10) + " " + decrypted.get(11))
+                        .replaceAll("\\s+", " ")
+                        .trim();
+                d.setBeneficiaryName(fullName);
 
                 decryptedList.add(d);
             }
@@ -71,7 +82,6 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
             return List.of();
         }
     }
-
 
     @Override
     public boolean createfamilyMember(FamilyMembersModel fm) {

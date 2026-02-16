@@ -49,8 +49,6 @@ public final class DashboardRefresher {
 
     }
 
-
-
     public static void refreshComboBoxOfDNAndAN(){
         if (printAidDialogController != null){
             Platform.runLater(printAidDialogController::refreshComboBoxes);

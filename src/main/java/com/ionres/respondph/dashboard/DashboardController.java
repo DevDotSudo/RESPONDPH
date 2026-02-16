@@ -237,14 +237,8 @@ public class DashboardController {
                     double markerY = p.y - MARKER_OFFSET_Y;
                     gc.drawImage(personMarker, markerX, markerY, MARKER_WIDTH, MARKER_HEIGHT);
 
-                } else if (useMarkerImage) {
-                    gc.setFill(Color.RED);
-                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
-                    gc.setStroke(Color.DARKRED);
-                    gc.setLineWidth(1.5);
-                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
-
-                } else {
+                }
+                else {
                     gc.setFill(dotFill);
                     gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
 

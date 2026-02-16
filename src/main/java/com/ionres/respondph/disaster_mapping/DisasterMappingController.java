@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -17,8 +18,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.StringConverter;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DisasterMappingController {
     private final DisasterMappingService disasterMappingService = AppContext.disasterMappingService;
@@ -29,6 +32,14 @@ public class DisasterMappingController {
     @FXML private Pane mapContainer;
     @FXML private ComboBox<DisasterModel> disasterComboBox;
     @FXML private ComboBox<String> disasterTypeComboBox;
+
+    // ===================== Marker switching settings =====================
+    private static final double MIN_ZOOM_FOR_PERSON_MARKER = 16.0;
+    private Image personMarker;
+
+    // You can tweak these sizes
+    private static final double PERSON_MARKER_W = 28;
+    private static final double PERSON_MARKER_H = 28;
 
     private final double[][] boundary = {
             {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
@@ -51,6 +62,19 @@ public class DisasterMappingController {
 
         Platform.runLater(() -> {
             mapping.init(mapContainer);
+
+            // Load person marker once
+            try {
+                personMarker = new Image(
+                        Objects.requireNonNull(getClass().getResourceAsStream("/images/person_marker.png"))
+                );
+            } catch (Exception e) {
+                personMarker = null;
+                java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
+                        .log(java.util.logging.Level.WARNING,
+                                "Missing marker resource: /images/person_marker.png", e);
+            }
+
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
                 drawDisasterCircles();
@@ -65,12 +89,10 @@ public class DisasterMappingController {
     }
 
     private void setupDisasterComboBox() {
-        disasterComboBox.setConverter(new StringConverter<DisasterModel>() {
+        disasterComboBox.setConverter(new StringConverter<>() {
             @Override
             public String toString(DisasterModel disaster) {
-                if (disaster == null) {
-                    return "";
-                }
+                if (disaster == null) return "";
                 String name = disaster.getDisasterName();
                 return name != null ? name : "";
             }
@@ -81,29 +103,21 @@ public class DisasterMappingController {
             }
         });
 
-        disasterComboBox.setCellFactory(cb -> new ListCell<DisasterModel>() {
+        disasterComboBox.setCellFactory(cb -> new ListCell<>() {
             @Override
             protected void updateItem(DisasterModel item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("");
-                } else {
-                    String name = item.getDisasterName();
-                    setText(name != null ? name : "");
-                }
+                if (empty || item == null) setText("");
+                else setText(item.getDisasterName() != null ? item.getDisasterName() : "");
             }
         });
 
-        disasterComboBox.setButtonCell(new ListCell<DisasterModel>() {
+        disasterComboBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(DisasterModel item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("");
-                } else {
-                    String name = item.getDisasterName();
-                    setText(name != null ? name : "");
-                }
+                if (empty || item == null) setText("");
+                else setText(item.getDisasterName() != null ? item.getDisasterName() : "");
             }
         });
     }
@@ -206,6 +220,21 @@ public class DisasterMappingController {
         mapping.redraw();
     }
 
+    // ===================== ZOOM helper (works even if Mapping method differs) =====================
+    private double getZoomSafe() {
+        // Try common method names from your Mapping class
+        String[] candidates = {"getZoom", "getZoomLevel", "getCurrentZoom", "zoom"};
+        for (String name : candidates) {
+            try {
+                Method m = mapping.getClass().getMethod(name);
+                Object val = m.invoke(mapping);
+                if (val instanceof Number) return ((Number) val).doubleValue();
+            } catch (Exception ignored) {}
+        }
+        // If Mapping has no zoom getter, default to a value that shows dots
+        return 0.0;
+    }
+
     private void drawBeneficiaries() {
         if (!mapping.isInitialized() || disasterCircles.isEmpty() || beneficiaries.isEmpty()) {
             return;
@@ -221,11 +250,14 @@ public class DisasterMappingController {
         double minY = -padding;
         double maxY = canvasHeight + padding;
 
+        double zoom = getZoomSafe();
+        boolean usePersonMarker = zoom >= MIN_ZOOM_FOR_PERSON_MARKER && personMarker != null;
+
+        Color dotFill   = Color.rgb(0, 120, 255, 0.85);
+        Color dotStroke = Color.rgb(0, 70, 180, 0.95);
+
         for (BeneficiaryMarker b : beneficiaries) {
-            // Validate beneficiary coordinates
-            if (!Mapping.isValidCoordinate(b.lat, b.lon)) {
-                continue;
-            }
+            if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
 
             boolean isInsideDisaster = false;
             for (DisasterCircleInfo c : disasterCircles) {
@@ -234,28 +266,34 @@ public class DisasterMappingController {
                     break;
                 }
             }
+            if (!isInsideDisaster) continue;
 
-            if (isInsideDisaster) {
-                try {
-                    Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
+            try {
+                Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
 
-                    if (p.x < 0 || p.y < 0) {
-                        continue;
-                    }
+                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
 
-                    if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) {
-                        gc.setFill(Color.RED);
-                        gc.fillOval(p.x - 5, p.y - 5, 10, 10);
+                if (usePersonMarker) {
+                    // Person marker (zoom >= 16)
+                    gc.drawImage(
+                            personMarker,
+                            p.x - (PERSON_MARKER_W / 2.0),
+                            p.y - (PERSON_MARKER_H / 2.0),
+                            PERSON_MARKER_W,
+                            PERSON_MARKER_H
+                    );
+                } else {
+                    // Blue dot (zoom < 16)
+                    gc.setFill(dotFill);
+                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
 
-                        gc.setStroke(Color.DARKRED);
-                        gc.setLineWidth(1.5);
-                        gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
-                    }
-                } catch (Exception e) {
-                    java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
-                            .log(java.util.logging.Level.FINE, "Error drawing beneficiary marker", e);
-                    continue;
+                    gc.setStroke(dotStroke);
+                    gc.setLineWidth(1.5);
+                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
                 }
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
+                        .log(java.util.logging.Level.FINE, "Error drawing beneficiary marker", e);
             }
         }
     }
@@ -283,18 +321,14 @@ public class DisasterMappingController {
                 }
 
                 Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
-
-                if (center.x < 0 || center.y < 0) {
-                    continue;
-                }
+                if (center.x < 0 || center.y < 0) continue;
 
                 double px = c.radius / mapping.metersPerPixel(c.lat);
 
-                if (center.x < minX || center.x > maxX ||
-                        center.y < minY || center.y > maxY) {
+                if (center.x < minX || center.x > maxX || center.y < minY || center.y > maxY) {
                     if (center.x + px < minX || center.x - px > maxX ||
                             center.y + px < minY || center.y - px > maxY) {
-                        continue; // Circle is completely outside viewport
+                        continue;
                     }
                 }
 
@@ -324,7 +358,6 @@ public class DisasterMappingController {
             } catch (Exception e) {
                 java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
                         .log(java.util.logging.Level.FINE, "Error drawing disaster circle", e);
-                continue;
             }
         }
     }
@@ -333,7 +366,7 @@ public class DisasterMappingController {
         GraphicsContext gc = mapping.getGc();
 
         gc.setStroke(Color.rgb(120, 0, 0, 0.35));
-        gc.setLineWidth(6); // thicker shadow
+        gc.setLineWidth(6);
         gc.beginPath();
 
         boolean first = true;
@@ -349,9 +382,8 @@ public class DisasterMappingController {
         gc.closePath();
         gc.stroke();
 
-
         gc.setStroke(Color.rgb(255, 50, 50, 0.9));
-        gc.setLineWidth(2.5); // normal line thickness
+        gc.setLineWidth(2.5);
         gc.beginPath();
 
         first = true;
@@ -367,6 +399,7 @@ public class DisasterMappingController {
         gc.closePath();
         gc.stroke();
     }
+
     private double textWidth(String s, GraphicsContext gc) {
         Text t = new Text(s);
         t.setFont(gc.getFont());
@@ -374,13 +407,8 @@ public class DisasterMappingController {
     }
 
     private void handleMapClick(MouseEvent event) {
-        if (event.getClickCount() != 2) {
-            return;
-        }
-
-        if (disasterCircles.isEmpty()) {
-            return;
-        }
+        if (event.getClickCount() != 2) return;
+        if (disasterCircles.isEmpty()) return;
 
         double clickX = event.getX();
         double clickY = event.getY();
@@ -418,7 +446,6 @@ public class DisasterMappingController {
             );
 
             if (controller != null) {
-                // Pass the currently selected disaster ID so evacuation actions work correctly
                 int disasterId = (disasterComboBox.getValue() != null)
                         ? disasterComboBox.getValue().getDisasterId()
                         : AppContext.currentDisasterId;

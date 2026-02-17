@@ -241,108 +241,141 @@
 }
 /* ========== SMALL BOTTOM-RIGHT SMS TOAST ========== */
 
+.sms-toast-progress-news {
+    -fx-accent:                    #F97316;   /* Vivid orange */
+    -fx-control-inner-background:  rgba(249, 115, 22, 0.12);
+    -fx-background-color:          rgba(249, 115, 22, 0.12);
+    -fx-background-radius:         6px;
+    -fx-border-radius:             6px;
+    -fx-pref-height:               8px;
+    -fx-min-height:                8px;
+    -fx-max-height:                8px;
+}
+
+/* The filled track sub-region */
+.sms-toast-progress-news .bar {
+    -fx-background-color: linear-gradient(
+            to right,
+            #F97316 0%,
+            #FB923C 50%,
+            #FDBA74 100%
+    );
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.55), 6, 0.4, 0, 0);
+}
+
+/* The track (unfilled background) */
+.sms-toast-progress-news .track {
+    -fx-background-color: rgba(249, 115, 22, 0.12);
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0;
+}
+
 .sms-toast {
-    -fx-pref-width: 320px;
-    -fx-max-width: 320px;
-    -fx-background-color: #0b1220;
-    -fx-border-color: rgba(148,163,184,0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 18, 0, 0, 4);
-    -fx-translate-x: -18px;
-    -fx-translate-y: -18px;
+    -fx-background-color:   rgba(15, 17, 23, 0.97);
+    -fx-background-radius:  14px;
+    -fx-border-color:       rgba(255, 255, 255, 0.08);
+    -fx-border-radius:      14px;
+    -fx-border-width:       1px;
+    -fx-padding:            0;
+    -fx-effect:             dropshadow(gaussian, rgba(0,0,0,0.55), 20, 0.25, 0, 6);
+    -fx-pref-width:         340px;
+    -fx-max-width:          340px;
+    -fx-translate-x:        -14px;
+    -fx-translate-y:        -14px;
 }
-/* Header like dialog-header */
+
 .sms-toast-header {
-    -fx-background-color: rgba(255,255,255,0.02);
-    -fx-border-color: rgba(148,163,184,0.12);
-    -fx-border-width: 0 0 1px 0;
-    -fx-background-radius: 8px 8px 0 0;
-
-    -fx-padding: 12px 12px;
-    -fx-alignment: CENTER_LEFT;
+    -fx-padding:            12px 14px 10px 16px;
+    -fx-background-color:   rgba(255, 255, 255, 0.04);
+    -fx-background-radius:  14px 14px 0 0;
+    -fx-border-color:       transparent transparent rgba(255,255,255,0.07) transparent;
+    -fx-border-width:       0 0 1px 0;
+    -fx-spacing:            8px;
 }
 
-/* Title like dialog-title (slightly smaller) */
 .sms-toast-title {
-    -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 14.5px;
-    -fx-font-weight: 900;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 1);
+    -fx-font-family:        "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size:          12px;
+    -fx-font-weight:        bold;
+    -fx-text-fill:          #F4F4F5;
+    -fx-letter-spacing:     0.5px;
 }
 
-/* Subtitle like dialog-subtitle */
-.sms-toast-subtitle {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-}
-
-/* Body padding */
 .sms-toast-body {
-    -fx-padding: 10px 12px 12px 12px;
+    -fx-padding:            12px 16px 14px 16px;
+    -fx-spacing:            8px;
 }
-/* ===== Flat Icon Buttons ===== */
+
+.sms-toast-subtitle {
+    -fx-font-family:        "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size:          10.5px;
+    -fx-text-fill:          #A1A1AA;
+    -fx-wrap-text:          true;
+    -fx-line-spacing:       2px;
+}
 
 .sms-icon-btn {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-padding: 0;
-
-    -fx-min-width: 28px;
-    -fx-min-height: 22px;
-
-    -fx-font-size: 15px;
-    -fx-font-weight: 900;
-
-    -fx-text-fill: rgba(226,232,240,0.85);
-    -fx-cursor: hand;
+    -fx-background-color:   transparent;
+    -fx-text-fill:          #71717A;
+    -fx-font-size:          13px;
+    -fx-cursor:             hand;
+    -fx-padding:            2px 6px;
+    -fx-background-radius:  4px;
 }
 
 .sms-icon-btn:hover {
-    -fx-text-fill: rgba(249,115,22,0.95);
+    -fx-background-color:   rgba(255, 255, 255, 0.08);
+    -fx-text-fill:          #F4F4F5;
 }
 
-.sms-icon-btn:pressed {
-    -fx-text-fill: rgba(239,68,68,0.95);
-}
+/* Default SMS progress bar (bulk send — keep blue/neutral) */
 .sms-toast-progress {
-    -fx-pref-height: 6px;
-    -fx-min-height: 6px;
-    -fx-max-height: 6px;
+    -fx-pref-width:         100%;
+    -fx-max-width:          1.7976931348623157E308;
+    -fx-pref-height:        8px;
+    -fx-min-height:         8px;
+    -fx-max-height:         8px;
+    -fx-background-radius:  6px;
+    -fx-border-radius:      6px;
 }
 
-.sms-toast .progress-bar {
-    -fx-accent: rgba(249,115,22,0.92);
+.sms-toast-progress .bar {
+    -fx-background-color:   linear-gradient(to right, #3B82F6, #60A5FA);
+    -fx-background-radius:  6px;
+    -fx-background-insets:  0;
 }
 
-.sms-toast .progress-bar .track {
-    -fx-background-color: rgba(148,163,184,0.18);
-    -fx-background-radius: 999px;
+.sms-toast-progress .track {
+    -fx-background-color:   rgba(59, 130, 246, 0.12);
+    -fx-background-radius:  6px;
+    -fx-background-insets:  0;
 }
 
-.sms-toast .progress-bar .bar {
-    -fx-background-radius: 999px;
-}
-/* footer */
+/* Footer bar */
 .main-footer {
-    -fx-padding: 8 14;
-    -fx-background-color: rgba(20, 22, 26, 0.92);
-    -fx-border-color: rgba(255,255,255,0.08);
-    -fx-border-width: 1 0 0 0;
+    -fx-background-color:   rgba(15, 17, 23, 0.95);
+    -fx-padding:            8px 16px;
+    -fx-border-color:       rgba(255,255,255,0.07) transparent transparent transparent;
+    -fx-border-width:       1px 0 0 0;
 }
 
 .footer-text {
-    -fx-text-fill: rgba(255,255,255,0.85);
-    -fx-font-size: 12px;
+    -fx-font-family:        "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size:          11px;
+    -fx-text-fill:          #A1A1AA;
 }
 
 .footer-link-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: orange;
-    -fx-underline: true;
-    -fx-cursor: hand;
-    -fx-padding: 0;
+    -fx-background-color:   transparent;
+    -fx-text-fill:          #F97316;
+    -fx-font-size:          11px;
+    -fx-cursor:             hand;
+    -fx-underline:          true;
+    -fx-padding:            0;
 }
-.footer-link-button:hover { -fx-text-fill: #ffd199; }
+
+.footer-link-button:hover {
+    -fx-text-fill:          #FB923C;
+}

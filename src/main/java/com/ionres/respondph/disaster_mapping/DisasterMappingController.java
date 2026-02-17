@@ -33,11 +33,9 @@ public class DisasterMappingController {
     @FXML private ComboBox<DisasterModel> disasterComboBox;
     @FXML private ComboBox<String> disasterTypeComboBox;
 
-    // ===================== Marker switching settings =====================
     private static final double MIN_ZOOM_FOR_PERSON_MARKER = 16.0;
     private Image personMarker;
 
-    // You can tweak these sizes
     private static final double PERSON_MARKER_W = 28;
     private static final double PERSON_MARKER_H = 28;
 
@@ -155,7 +153,9 @@ public class DisasterMappingController {
         List<DisasterModel> disastersToShow;
         if ("All Types".equals(type)) {
             disastersToShow = disasterMappingService.getDisasters();
-        } else {
+        }
+
+        else {
             disastersToShow = disasterMappingService.getDisastersByType(type);
         }
 
@@ -266,6 +266,7 @@ public class DisasterMappingController {
                     break;
                 }
             }
+
             if (!isInsideDisaster) continue;
 
             try {
@@ -274,7 +275,6 @@ public class DisasterMappingController {
                 if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
 
                 if (usePersonMarker) {
-                    // Person marker (zoom >= 16)
                     gc.drawImage(
                             personMarker,
                             p.x - (PERSON_MARKER_W / 2.0),
@@ -283,7 +283,6 @@ public class DisasterMappingController {
                             PERSON_MARKER_H
                     );
                 } else {
-                    // Blue dot (zoom < 16)
                     gc.setFill(dotFill);
                     gc.fillOval(p.x - 5, p.y - 5, 10, 10);
 

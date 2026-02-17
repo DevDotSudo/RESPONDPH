@@ -3,6 +3,7 @@ package com.ionres.respondph.sendsms;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.common.interfaces.BulkProgressListener;
 import com.ionres.respondph.common.services.NewsGeneratorService;
+import com.ionres.respondph.common.services.NewsItem;
 import com.ionres.respondph.main.MainFrameController;
 import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
 import com.ionres.respondph.util.*;
@@ -10,14 +11,17 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.concurrent.Task;
 
+import java.awt.Desktop;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -26,10 +30,11 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.geometry.Pos;
-import javafx.scene.layout.Region;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 
 public class SendSMSController implements Initializable {
+
     @FXML private ComboBox<String> cbSelectBeneficiary;
     @FXML private ComboBox<String> cbSelectPorts;
     @FXML private ComboBox<String> cbSelectBarangay;
@@ -37,6 +42,7 @@ public class SendSMSController implements Initializable {
     @FXML private TextArea txtMessage;
     @FXML private Label charCount;
     @FXML private Button btnSendSMS;
+
     @FXML private TableView<SmsModel> adminTable;
     @FXML private TableColumn<SmsModel, String> dateSentColumn;
     @FXML private TableColumn<SmsModel, String> fullNameColumn;
@@ -44,12 +50,15 @@ public class SendSMSController implements Initializable {
     @FXML private TableColumn<SmsModel, String> statusColumn;
     @FXML private TableColumn<SmsModel, String> phoneColumn;
     @FXML private TableColumn<SmsModel, Void> actionsColumn;
+
     @FXML private RadioButton rbGsm;
     @FXML private RadioButton rbApi;
     @FXML private Label connectionStatusLabel;
     @FXML private Button btnRefreshPorts;
+
     @FXML private HBox disasterSelectionBox;
     @FXML private ComboBox<DisasterModel> cbSelectDisaster;
+
     @FXML private ComboBox<String> cbNewsTopic;
     @FXML private Button btnGenerateNews;
     @FXML private VBox aiResponseContainer;
@@ -57,25 +66,32 @@ public class SendSMSController implements Initializable {
     @FXML private HBox aiResponseActions;
     @FXML private Button btnUseSelectedNews;
     @FXML private ToggleGroup newsAiResponse;
+
     @FXML private Label lblNetworkStatus;
     @FXML private Button btnRefreshNetwork;
+
     @FXML private VBox aiLoadingBox;
     @FXML private ProgressIndicator piAi;
+
     @FXML private HBox smsLoadingBox;
     @FXML private ProgressIndicator piSms;
+
     @FXML private RadioButton rbNewsSlot1;
     @FXML private RadioButton rbNewsSlot2;
     @FXML private RadioButton rbNewsSlot3;
     @FXML private RadioButton rbNewsSlot4;
     @FXML private RadioButton rbNewsSlot5;
+
     @FXML private TextArea txtCustomEvacMessage;
     @FXML private Button btnSaveEvacMessage;
     @FXML private Label lblMessageStatus;
 
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
-    private final List<String> storedNewsItems = new ArrayList<>();
+    private final List<NewsItem> storedNewsItems = new ArrayList<>();
     private RadioButton[] newsSlots;
+
     private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
+
     private CustomEvacMessageManager evacMessageManager;
     private SmsService smsService;
     private SMSSender smsSender;
@@ -85,6 +101,14 @@ public class SendSMSController implements Initializable {
 
     private boolean isOpeningDialog = false;
     private boolean isUpdatingComboBox = false;
+
+    private final javafx.beans.value.ChangeListener<String> portChangeListener =
+            (obs, oldPort, newPort) -> {
+                if (newPort != null && !newPort.equals(oldPort) && rbGsm != null && rbGsm.isSelected()) {
+                    connectToSelectedPort(newPort);
+                }
+                updateSendButtonState();
+            };
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -129,14 +153,16 @@ public class SendSMSController implements Initializable {
     private void bindAiSlotWidths() {
         if (aiResponseContainer == null) return;
 
-        aiResponseContainer.setFillWidth(true); // ✅ important
+        aiResponseContainer.setFillWidth(true);
 
-        double paddingLR = 32;
+        double paddingLR = 40;
 
         for (RadioButton rb : newsSlots) {
             if (rb == null) continue;
+
             rb.setMaxWidth(Double.MAX_VALUE);
             rb.setMinWidth(0);
+
             rb.prefWidthProperty().bind(aiResponseContainer.widthProperty().subtract(paddingLR));
         }
     }
@@ -155,13 +181,14 @@ public class SendSMSController implements Initializable {
 
             slot.setWrapText(true);
             slot.setAlignment(Pos.TOP_LEFT);
-            slot.setTextOverrun(OverrunStyle.CLIP);   // (or ELLIPSIS if you want)
+            slot.setTextOverrun(OverrunStyle.CLIP);
             slot.setMinHeight(Region.USE_PREF_SIZE);
             slot.setPrefHeight(Region.USE_COMPUTED_SIZE);
             slot.setMaxHeight(Double.MAX_VALUE);
 
             slot.setDisable(true);
 
+            // When selected, load SMS text only (no url) into message box
             slot.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
                 if (isSelected && index < storedNewsItems.size()) {
                     loadNewsToMessage(index);
@@ -170,36 +197,53 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    private void loadNewsToMessage(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= storedNewsItems.size() || txtMessage == null) return;
-
-        String newsText = storedNewsItems.get(slotIndex);
-        if (newsText == null) return;
-
-        String cleaned = newsText
-                .replaceAll("(?i)\\s*\\(\\s*Source\\s*:\\s*https?://[^\\s)]+\\s*\\)\\s*$", "")
-                .trim();
-
-        txtMessage.setText(cleaned);
-    }
-
-    private void updateNewsSlot(int slotIndex, String newsText) {
+    private void updateNewsSlot(int slotIndex, NewsItem item) {
         if (slotIndex < 0 || slotIndex >= newsSlots.length) return;
         RadioButton slot = newsSlots[slotIndex];
-        if (slot == null) return;
+        if (slot == null || item == null) return;
 
-        String displayText = (newsText != null) ? newsText.trim() : "";
+        // ✅ compute a wrapping width based on the RB width
+        // (some extra space for the radio circle + padding)
+        double leftIndent = 38;
 
-        slot.setText(displayText);
+        // SMS text label
+        Label sms = new Label(item.smsText());
+        sms.setWrapText(true);
+        sms.setMaxWidth(Double.MAX_VALUE);
+
+        Hyperlink link = new Hyperlink(item.url());
+        link.setWrapText(true);
+        link.setMaxWidth(Double.MAX_VALUE);
+        link.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                openInBrowser(item.url());
+            }
+        });
+
+        VBox box = new VBox(6, sms, link);
+        box.setFillWidth(true);
+        box.setMaxWidth(Double.MAX_VALUE);
+
+        box.prefWidthProperty().bind(slot.widthProperty().subtract(leftIndent));
+        sms.prefWidthProperty().bind(box.prefWidthProperty());
+        link.prefWidthProperty().bind(box.prefWidthProperty());
+
+        slot.setText(""); // ✅ prevent RB text from affecting layout
+        slot.setGraphic(box);
+        slot.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         slot.setDisable(false);
 
         if (slotIndex == 0) slot.setSelected(true);
     }
 
+
+
     private void clearNewsSlots() {
         for (int i = 0; i < newsSlots.length; i++) {
             RadioButton slot = newsSlots[i];
             if (slot != null) {
+                slot.setGraphic(null);
+                slot.setContentDisplay(ContentDisplay.LEFT);
                 slot.setText("Slot " + (i + 1) + " (Empty)");
                 slot.setDisable(true);
                 slot.setSelected(false);
@@ -207,6 +251,32 @@ public class SendSMSController implements Initializable {
         }
     }
 
+
+    private void loadNewsToMessage(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= storedNewsItems.size() || txtMessage == null) return;
+        String smsText = storedNewsItems.get(slotIndex).smsText();
+        if (smsText == null) return;
+        txtMessage.setText(smsText.trim());
+    }
+
+    private void openInBrowser(String url) {
+        if (url == null || url.isBlank()) return;
+
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI.create(url));
+            } else {
+                AlertDialogManager.showWarning("Not Supported", "Cannot open browser on this system.");
+            }
+        } catch (Exception e) {
+            AlertDialogManager.showError("Open Link Failed",
+                    "Could not open link:\n" + url + "\n\n" + e.getMessage());
+        }
+    }
+
+    // =======================================================
+    // RADIO BUTTONS / CONNECTION
+    // =======================================================
     private void setupRadioButtons() {
         if (rbApi != null) {
             rbApi.selectedProperty().addListener((obs, old, selected) -> {
@@ -257,7 +327,6 @@ public class SendSMSController implements Initializable {
                         updateConnectionLabel("Disconnected", "orange");
                     }
 
-                    // Re-attach listener (safe even if already attached)
                     cbSelectPorts.getSelectionModel().selectedItemProperty().addListener(portChangeListener);
                 }
             } catch (Exception e) {
@@ -269,14 +338,6 @@ public class SendSMSController implements Initializable {
             }
         });
     }
-
-    private final javafx.beans.value.ChangeListener<String> portChangeListener =
-            (obs, oldPort, newPort) -> {
-                if (newPort != null && !newPort.equals(oldPort) && rbGsm != null && rbGsm.isSelected()) {
-                    connectToSelectedPort(newPort);
-                }
-                updateSendButtonState();
-            };
 
     private void connectToSelectedPort(String portName) {
         if (portName == null || portName.isEmpty() || portName.contains("No") || portName.contains("Error")) {
@@ -325,6 +386,9 @@ public class SendSMSController implements Initializable {
         }
     }
 
+    // =======================================================
+    // TABLE / LOGS
+    // =======================================================
     private void loadSMSLogs() {
         try {
             List<SmsModel> logs = smsService.getAllSMSLogs();
@@ -369,7 +433,7 @@ public class SendSMSController implements Initializable {
             cbNewsTopic.setDisable(!aiEnabled);
         }
 
-        if(btnSaveEvacMessage != null) {
+        if (btnSaveEvacMessage != null) {
             btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
         }
 
@@ -400,7 +464,7 @@ public class SendSMSController implements Initializable {
         }
 
         if (actionsColumn != null) {
-            actionsColumn.setCellFactory(col -> new TableCell<SmsModel, Void>() {
+            actionsColumn.setCellFactory(col -> new TableCell<>() {
                 private final Button resendBtn = new Button("Resend");
 
                 {
@@ -411,7 +475,7 @@ public class SendSMSController implements Initializable {
                         resendBtn.setDisable(true);
                         String method = (rbApi != null && rbApi.isSelected()) ? "API" : "GSM";
 
-                        javafx.concurrent.Task<Boolean> task = new javafx.concurrent.Task<>() {
+                        Task<Boolean> task = new Task<>() {
                             @Override
                             protected Boolean call() {
                                 return smsService.resendSMS(row, method);
@@ -470,7 +534,7 @@ public class SendSMSController implements Initializable {
     private void checkNetworkStatus() {
         if (lblNetworkStatus == null) return;
 
-        javafx.concurrent.Task<Boolean> task = new javafx.concurrent.Task<>() {
+        Task<Boolean> task = new Task<>() {
             @Override
             protected Boolean call() throws Exception {
                 HttpClient client = HttpClient.newBuilder()
@@ -515,6 +579,9 @@ public class SendSMSController implements Initializable {
         }
     }
 
+    // =======================================================
+    // CUSTOM EVAC MESSAGE
+    // =======================================================
     private void loadExistingEvacMessage() {
         System.out.println("=== Loading Custom Evacuation Message ===");
 
@@ -538,7 +605,6 @@ public class SendSMSController implements Initializable {
         } else {
             txtCustomEvacMessage.clear();
             updateEvacMessageStatus(false, 0);
-
             System.out.println("ℹ No custom message - using default");
         }
 
@@ -561,7 +627,6 @@ public class SendSMSController implements Initializable {
                             "Your message may be split into multiple SMS or truncated.");
         }
 
-        // Validate that placeholders are present
         if (!message.contains("{name}") && !message.contains("{evacSite}") && !message.contains("{site}")) {
             boolean proceed = AlertDialogManager.showConfirmation(
                     "Missing Placeholders",
@@ -571,15 +636,10 @@ public class SendSMSController implements Initializable {
                     ButtonType.OK,
                     ButtonType.CANCEL
             );
-            if (!proceed) {
-                return;
-            }
+            if (!proceed) return;
         }
 
-        // Save the custom message to the singleton manager
         evacMessageManager.setCustomEvacuationMessage(message.trim());
-
-        // Update status label
         updateEvacMessageStatus(true, message.trim().length());
 
         System.out.println("Custom evacuation SMS message saved: " + message.trim());
@@ -588,6 +648,21 @@ public class SendSMSController implements Initializable {
                         "This message will be used when allocating beneficiaries to evacuation sites.");
     }
 
+    private void updateEvacMessageStatus(boolean saved, int length) {
+        if (lblMessageStatus != null) {
+            if (saved) {
+                lblMessageStatus.setText("✓ Custom evacuation message saved (" + length + " characters)");
+                lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+            } else {
+                lblMessageStatus.setText("No custom evacuation message set (using default format)");
+                lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
+            }
+        }
+    }
+
+    // =======================================================
+    // RECIPIENT GROUP CHANGES
+    // =======================================================
     private void onRecipientGroupChanged() {
         if (isUpdatingComboBox || isOpeningDialog) return;
 
@@ -625,18 +700,6 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    private void updateEvacMessageStatus(boolean saved, int length) {
-        if (lblMessageStatus != null) {
-            if (saved) {
-                lblMessageStatus.setText("✓ Custom evacuation message saved (" + length + " characters)");
-                lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-            } else {
-                lblMessageStatus.setText("No custom evacuation message set (using default format)");
-                lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
-            }
-        }
-    }
-
     private void showDisasterSelection(boolean show) {
         if (disasterSelectionBox != null) {
             disasterSelectionBox.setVisible(show);
@@ -647,9 +710,7 @@ public class SendSMSController implements Initializable {
     public void loadDisasters() {
         try {
             List<DisasterModel> disasters = disasterDAO.getAllDisasters();
-            if (cbSelectDisaster != null) {
-                cbSelectDisaster.getItems().setAll(disasters);
-            }
+            if (cbSelectDisaster != null) cbSelectDisaster.getItems().setAll(disasters);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -675,10 +736,9 @@ public class SendSMSController implements Initializable {
         }, "LoadBarangayThread").start();
     }
 
-    // ────────────────────────────────────────────────
-    // Beneficiary Selection Dialog
-    // ────────────────────────────────────────────────
-
+    // =======================================================
+    // BENEFICIARY SELECTION DIALOG
+    // =======================================================
     private void openBeneficiarySelectionDialog() {
         if (isOpeningDialog) return;
         isOpeningDialog = true;
@@ -777,10 +837,8 @@ public class SendSMSController implements Initializable {
         if (cbNewsTopic == null || btnGenerateNews == null) return;
 
         if (newsGeneratorService == null) {
-            AlertDialogManager.showError(
-                    "AI Disabled",
-                    "Missing GEMINI_API_KEY environment variable.\nSet GEMINI_API_KEY then restart the app."
-            );
+            AlertDialogManager.showError("AI Disabled",
+                    "Missing GEMINI_API_KEY.\nSet GEMINI_API_KEY then restart.");
             return;
         }
 
@@ -798,35 +856,63 @@ public class SendSMSController implements Initializable {
         storedNewsItems.clear();
         clearNewsSlots();
         updateAiResponseVisibility(false);
-        setAiLoading(true);
 
-        newsGeneratorService.generateNewsHeadlines(topic, 5)
+        btnGenerateNews.setDisable(true);
+        cbNewsTopic.setDisable(true);
+
+        MainFrameController main = MainFrameController.getInstance();
+        if (main != null) main.showNewsProgress(topic);
+
+        // Bar moves ONLY when a complete item line lands in the stream.
+        // setNewsProgress has its own FX thread guard so this is safe.
+        BiConsumer<Double, String> onProgress = (progress, status) ->
+                Platform.runLater(() -> {
+                    if (main != null) main.setNewsProgress(progress, status);
+                });
+
+        // Single call — no count param, service hardcodes TARGET = 5
+        newsGeneratorService
+                .generateNewsHeadlines(topic, onProgress)
                 .whenComplete((result, ex) -> Platform.runLater(() -> {
-                    setAiLoading(false);
+
+                    btnGenerateNews.setDisable(false);
+                    cbNewsTopic.setDisable(false);
+
+                    if (main != null) main.hideNewsProgress();
 
                     if (ex != null) {
                         ex.printStackTrace();
-                        AlertDialogManager.showError("AI Error", "News generation failed: " + ex.getMessage());
+                        AlertDialogManager.showError("AI Error",
+                                "News generation failed:\n" + ex.getMessage());
                         return;
                     }
 
                     if (result == null || result.isEmpty()) {
-                        AlertDialogManager.showWarning("No News", "No headlines generated.");
+                        AlertDialogManager.showWarning("No News",
+                                "No valid headlines generated. Try a different topic.");
                         return;
                     }
 
                     storedNewsItems.clear();
                     storedNewsItems.addAll(result);
 
-                    for (int i = 0; i < Math.min(storedNewsItems.size(), newsSlots.length); i++) {
-                        updateNewsSlot(i, storedNewsItems.get(i));
-                    }
+                    int n = Math.min(storedNewsItems.size(), newsSlots.length);
+                    for (int i = 0; i < n; i++) updateNewsSlot(i, storedNewsItems.get(i));
 
                     updateAiResponseVisibility(true);
-
                     AlertDialogManager.showSuccess("Success",
-                            storedNewsItems.size() + " news headline(s) generated.");
+                            "Generated " + n + " of 5 news items.");
                 }));
+    }
+
+
+    private String getProgressStatusText(int progress) {
+        if (progress == 0) return "Initializing";
+        if (progress <= 10) return "Connecting to AI";
+        if (progress < 70) return "Searching news sources";
+        if (progress < 85) return "Processing results";
+        if (progress < 100) return "Validating news items";
+        return "Complete";
     }
 
     @FXML
@@ -874,6 +960,9 @@ public class SendSMSController implements Initializable {
         }
     }
 
+    // =======================================================
+    // SMS LOADING UI
+    // =======================================================
     private void setSmsLoading(boolean loading) {
         if (smsLoadingBox != null) {
             smsLoadingBox.setVisible(loading);
@@ -883,10 +972,9 @@ public class SendSMSController implements Initializable {
         if (txtMessage != null) txtMessage.setDisable(loading);
     }
 
-    // ────────────────────────────────────────────────
-    // Send SMS Logic
-    // ────────────────────────────────────────────────
-
+    // =======================================================
+    // SEND SMS LOGIC
+    // =======================================================
     @FXML
     private void onSendSMS() {
         if (txtMessage == null || txtMessage.getText().trim().isEmpty()) {
@@ -907,8 +995,6 @@ public class SendSMSController implements Initializable {
             AlertDialogManager.showError("No Recipients", "No valid recipients found for this selection.");
             return;
         }
-
-        String msgPreview = txtMessage.getText().substring(0, Math.min(50, txtMessage.getText().length())) + "...";
 
         boolean confirmed = AlertDialogManager.showConfirmation(
                 "Confirm Send",
@@ -1026,9 +1112,7 @@ public class SendSMSController implements Initializable {
             enabled = validPort && smsSender.isConnected();
         }
 
-        if (btnSendSMS != null) {
-            btnSendSMS.setDisable(!enabled);
-        }
+        if (btnSendSMS != null) btnSendSMS.setDisable(!enabled);
     }
 
     @FXML

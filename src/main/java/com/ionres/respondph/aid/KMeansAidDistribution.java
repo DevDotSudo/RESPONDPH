@@ -3,7 +3,6 @@ package com.ionres.respondph.aid;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 public class KMeansAidDistribution {
 
 
@@ -297,7 +296,6 @@ public class KMeansAidDistribution {
 
         return newCentroids;
     }
-
 
     private boolean hasConverged(double[] oldCentroids, double[] newCentroids) {
         for (int i = 0; i < oldCentroids.length; i++) {

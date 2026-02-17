@@ -5,12 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="824.0" prefWidth="321.0"
-            styleClass="dashboard-root"
-            stylesheets="@/styles/main/mainframe.css"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.ionres.respondph.main.MainFrameController">
+<BorderPane prefHeight="824.0" prefWidth="321.0" styleClass="dashboard-root" stylesheets="@/styles/main/mainframe.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.main.MainFrameController">
 
     <left>
         <VBox styleClass="sidebar">
@@ -18,21 +13,20 @@
             <VBox alignment="CENTER" styleClass="logo-section">
                 <StackPane prefHeight="110.0" prefWidth="240.0" styleClass="logo-container">
                     <padding>
-                        <Insets bottom="14.0" left="18.0" right="18.0" top="18.0"/>
+                        <Insets bottom="14.0" left="18.0" right="18.0" top="18.0" />
                     </padding>
                 </StackPane>
-                <Label text="Disaster Response System" styleClass="brand-subtitle"/>
+                <Label styleClass="brand-subtitle" text="Disaster Response System" />
             </VBox>
 
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                        styleClass="nav-scroll-pane" VBox.vgrow="ALWAYS">
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="nav-scroll-pane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
                 <VBox styleClass="nav-menu">
 
                     <Button fx:id="dashboardBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                         <graphic>
                             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                <FontAwesomeIconView glyphName="HOME" styleClass="nav-icon"/>
-                                <Label styleClass="nav-text" text="Dashboard"/>
+                                <FontAwesomeIconView glyphName="HOME" styleClass="nav-icon" />
+                                <Label styleClass="nav-text" text="Dashboard" />
                             </HBox>
                         </graphic>
                     </Button>
@@ -42,18 +36,18 @@
                         <Button fx:id="managementSectionBtn" maxWidth="1.7976931348623157E308" styleClass="tree-section-header">
                             <graphic>
                                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="nav-row">
-                                    <FontAwesomeIconView fx:id="managementSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron"/>
-                                    <Label styleClass="tree-section-title" text="Management"/>
+                                    <FontAwesomeIconView fx:id="managementSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron" />
+                                    <Label styleClass="tree-section-title" text="Management" />
                                 </HBox>
                             </graphic>
                         </Button>
 
-                        <VBox fx:id="managementSectionContent" managed="false" visible="false" styleClass="tree-section-content">
+                        <VBox fx:id="managementSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="manageAdminBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="USER" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Manage Admins"/>
+                                        <FontAwesomeIconView glyphName="USER" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Manage Admins" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -61,8 +55,8 @@
                             <Button fx:id="manageBeneficiariesBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="USERS" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Manage Beneficiaries"/>
+                                        <FontAwesomeIconView glyphName="USERS" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Manage Beneficiaries" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -70,8 +64,8 @@
                             <Button fx:id="familyMembersBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="USER_PLUS" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Family Members"/>
+                                        <FontAwesomeIconView glyphName="USER_PLUS" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Family Members" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -83,18 +77,18 @@
                         <Button fx:id="disasterSectionBtn" maxWidth="1.7976931348623157E308" styleClass="tree-section-header">
                             <graphic>
                                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="nav-row">
-                                    <FontAwesomeIconView fx:id="disasterSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron"/>
-                                    <Label styleClass="tree-section-title" text="Disaster Management"/>
+                                    <FontAwesomeIconView fx:id="disasterSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron" />
+                                    <Label styleClass="tree-section-title" text="Disaster Management" />
                                 </HBox>
                             </graphic>
                         </Button>
 
-                        <VBox fx:id="disasterSectionContent" managed="false" visible="false" styleClass="tree-section-content">
+                        <VBox fx:id="disasterSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="disasterBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Disaster"/>
+                                        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Disaster" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -102,8 +96,8 @@
                             <Button fx:id="disasterMappingBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="MAP_MARKER" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Disaster Mapping"/>
+                                        <FontAwesomeIconView glyphName="MAP_MARKER" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Disaster Mapping" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -111,8 +105,8 @@
                             <Button fx:id="disasterDamageBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="FIRE" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Disaster Damage"/>
+                                        <FontAwesomeIconView glyphName="FIRE" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Disaster Damage" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -124,18 +118,18 @@
                         <Button fx:id="aidsSectionBtn" maxWidth="1.7976931348623157E308" styleClass="tree-section-header">
                             <graphic>
                                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="nav-row">
-                                    <FontAwesomeIconView fx:id="aidsSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron"/>
-                                    <Label styleClass="tree-section-title" text="Aids Management"/>
+                                    <FontAwesomeIconView fx:id="aidsSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron" />
+                                    <Label styleClass="tree-section-title" text="Aids Management" />
                                 </HBox>
                             </graphic>
                         </Button>
 
-                        <VBox fx:id="aidsSectionContent" managed="false" visible="false" styleClass="tree-section-content">
+                        <VBox fx:id="aidsSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="aidBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="MEDKIT" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Aid"/>
+                                        <FontAwesomeIconView glyphName="MEDKIT" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Aid" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -143,8 +137,8 @@
                             <Button fx:id="aidTypeBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="CUTLERY" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Aid Type"/>
+                                        <FontAwesomeIconView glyphName="CUTLERY" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Aid Type" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -156,18 +150,18 @@
                         <Button fx:id="evacSectionBtn" maxWidth="1.7976931348623157E308" styleClass="tree-section-header">
                             <graphic>
                                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="nav-row">
-                                    <FontAwesomeIconView fx:id="evacSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron"/>
-                                    <Label styleClass="tree-section-title" text="Evacuation Site Management"/>
+                                    <FontAwesomeIconView fx:id="evacSectionIcon" glyphName="CHEVRON_RIGHT" styleClass="tree-chevron" />
+                                    <Label styleClass="tree-section-title" text="Evacuation Site Management" />
                                 </HBox>
                             </graphic>
                         </Button>
 
-                        <VBox fx:id="evacSectionContent" managed="false" visible="false" styleClass="tree-section-content">
+                        <VBox fx:id="evacSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="evacBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="BUILDING" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Evacuation Site"/>
+                                        <FontAwesomeIconView glyphName="BUILDING" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Evacuation Site" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -175,8 +169,8 @@
                             <Button fx:id="evacPlanBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                        <FontAwesomeIconView glyphName="MAP" styleClass="nav-icon-sm"/>
-                                        <Label styleClass="nav-text" text="Evacuation Plan"/>
+                                        <FontAwesomeIconView glyphName="MAP" styleClass="nav-icon-sm" />
+                                        <Label styleClass="nav-text" text="Evacuation Plan" />
                                     </HBox>
                                 </graphic>
                             </Button>
@@ -187,8 +181,8 @@
                     <Button fx:id="vulnerabilityBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                         <graphic>
                             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                <FontAwesomeIconView glyphName="SHIELD" styleClass="nav-icon"/>
-                                <Label styleClass="nav-text" text="Vulnerability Indicator"/>
+                                <FontAwesomeIconView glyphName="SHIELD" styleClass="nav-icon" />
+                                <Label styleClass="nav-text" text="Vulnerability Indicator" />
                             </HBox>
                         </graphic>
                     </Button>
@@ -196,8 +190,8 @@
                     <Button fx:id="sendSmsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                         <graphic>
                             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                <FontAwesomeIconView glyphName="PAPER_PLANE" styleClass="nav-icon"/>
-                                <Label styleClass="nav-text" text="Send SMS"/>
+                                <FontAwesomeIconView glyphName="PAPER_PLANE" styleClass="nav-icon" />
+                                <Label styleClass="nav-text" text="Send SMS" />
                             </HBox>
                         </graphic>
                     </Button>
@@ -205,8 +199,8 @@
                     <Button fx:id="settingsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
                         <graphic>
                             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                <FontAwesomeIconView glyphName="GEAR" styleClass="nav-icon"/>
-                                <Label styleClass="nav-text" text="Settings"/>
+                                <FontAwesomeIconView glyphName="GEAR" styleClass="nav-icon" />
+                                <Label styleClass="nav-text" text="Settings" />
                             </HBox>
                         </graphic>
                     </Button>
@@ -219,8 +213,8 @@
                 <Button fx:id="logoutBtn" maxWidth="1.7976931348623157E308" styleClass="logout-button">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                            <FontAwesomeIconView glyphName="SIGN_OUT" styleClass="logout-icon"/>
-                            <Label styleClass="logout-text" text="Logout"/>
+                            <FontAwesomeIconView glyphName="SIGN_OUT" styleClass="logout-icon" />
+                            <Label styleClass="logout-text" text="Logout" />
                         </HBox>
                     </graphic>
                 </Button>
@@ -231,68 +225,67 @@
 
     <center>
         <StackPane fx:id="contentShell" styleClass="content-shell">
-            <VBox fx:id="contentArea" styleClass="content-area"/>
+            <VBox fx:id="contentArea" styleClass="content-area" />
 
             <VBox fx:id="smsProgressToast"
-                  visible="false" managed="false"
-                  spacing="8"
+                  managed="false"
+                  visible="true"
+                  spacing="0"
+                  fillWidth="true"
                   styleClass="sms-toast"
+                  maxWidth="-1"
+                  maxHeight="-1"
                   StackPane.alignment="BOTTOM_RIGHT">
 
                 <!-- HEADER -->
-                <HBox alignment="CENTER_LEFT" styleClass="sms-toast-header">
+                <HBox fx:id="smsToastHeader"
+                      alignment="CENTER_LEFT"
+                      spacing="8"
+                      maxWidth="-1"
+                      styleClass="sms-toast-header">
 
                     <Label fx:id="smsProgressTitle"
                            text="Sending SMS (API)"
                            styleClass="sms-toast-title"
-                           HBox.hgrow="ALWAYS"/>
+                           maxWidth="1.7976931348623157E308"
+                           HBox.hgrow="ALWAYS" />
 
-                    <!-- Flat Icons Top Right -->
                     <HBox alignment="CENTER_RIGHT" spacing="6">
-
-                        <Button fx:id="smsMinimizeBtn"
-                                text="–"
-                                styleClass="sms-icon-btn"/>
-
-                        <Button fx:id="smsCloseBtn"
-                                text="✕"
-                                styleClass="sms-icon-btn"/>
-
+                        <Button fx:id="smsMinimizeBtn" styleClass="sms-icon-btn" text="–" />
+                        <Button fx:id="smsCloseBtn" styleClass="sms-icon-btn" text="✕" />
                     </HBox>
                 </HBox>
 
                 <!-- BODY -->
                 <VBox fx:id="smsToastBody"
                       spacing="6"
+                      fillWidth="true"
+                      maxWidth="-1"
+                      maxHeight="-1"
                       styleClass="sms-toast-body">
 
                     <Label fx:id="smsProgressMessage"
                            text="Sending 1 of 200"
-                           styleClass="sms-toast-subtitle"/>
+                           styleClass="sms-toast-subtitle"
+                           wrapText="true"
+                           maxWidth="1.7976931348623157E308" />
 
                     <ProgressBar fx:id="smsProgressBar"
-                                 prefWidth="260"
-                                 styleClass="sms-toast-progress"/>
+                                 styleClass="sms-toast-progress"
+                                 maxWidth="1.7976931348623157E308" />
                 </VBox>
 
             </VBox>
+
         </StackPane>
     </center>
 
     <bottom>
-        <HBox fx:id="footerBar"
-              visible="false" managed="false"
-              alignment="CENTER_RIGHT"
-              spacing="10"
-              styleClass="main-footer">
+        <HBox fx:id="footerBar" alignment="CENTER_RIGHT" managed="false" spacing="10" styleClass="main-footer" visible="false">
 
-            <Label fx:id="footerStatusLabel"
-                   text="SMS sending in background..."
-                   styleClass="footer-text"/>
+            <Label fx:id="footerStatusLabel" styleClass="footer-text" text="SMS sending in background..." />
 
-            <Button fx:id="btnShowProgress"
-                    text="Show progress"
-                    styleClass="footer-link-button"/>
+            <Button fx:id="btnShowProgress" styleClass="footer-link-button" text="Show progress" />
         </HBox>
     </bottom>
 

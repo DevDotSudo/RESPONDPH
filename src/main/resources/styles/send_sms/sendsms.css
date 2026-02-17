@@ -522,7 +522,6 @@
     -fx-font-style: italic;
 }
 
-/* Success Button Style */
 .btn-success {
     -fx-background-color: rgba(249,115,22,0.95);
     -fx-border-color: rgba(249,115,22,0.60);

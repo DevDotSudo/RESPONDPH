@@ -54,6 +54,7 @@ package com.ionres.respondph.aid;
 
 import com.ionres.respondph.aid.KMeansAidDistribution.BeneficiaryCluster;
 import java.util.List;
+import java.util.Map;
 
 
 public interface AidDAO {
@@ -106,4 +107,6 @@ public interface AidDAO {
 
 
     List<String> getDistinctAidNames();
+
+    Map<Integer, String> getBeneficiaryNames(List<Integer> beneficiaryIds);
 }

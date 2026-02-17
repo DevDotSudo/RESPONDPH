@@ -1,513 +1,4 @@
-//package com.ionres.respondph.aid.dialogs_controller;
-//
-//import com.ionres.respondph.aid.AidDAO;
-//import com.ionres.respondph.aid.AidDAOImpl;
-//import com.ionres.respondph.aid.AidModel;
-//import com.ionres.respondph.aid.AidPrintService;
-//import com.ionres.respondph.database.DBConnection;
-//import com.ionres.respondph.disaster.DisasterDAO;
-//import com.ionres.respondph.disaster.DisasterDAOImpl;
-//import com.ionres.respondph.disaster.DisasterModelComboBox;
-//import com.ionres.respondph.util.AlertDialogManager;
-//import com.ionres.respondph.util.Cryptography;
-//import com.ionres.respondph.util.DashboardRefresher;
-//import javafx.collections.FXCollections;
-//import javafx.fxml.FXML;
-//import javafx.scene.control.*;
-//import javafx.stage.Stage;
-//
-//import java.sql.Connection;
-//import java.sql.PreparedStatement;
-//import java.sql.ResultSet;
-//import java.util.*;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
-//import java.util.stream.Collectors;
-//
-//public class PrintAidDialogController {
-//
-//    @FXML private ComboBox<DisasterModelComboBox> disasterComboBox;
-//    @FXML private ComboBox<String> aidNameComboBox;
-//    @FXML private ComboBox<String> barangayComboBox;
-//    @FXML private CheckBox useBarangayFilterCheckBox;
-//    @FXML private CheckBox generalAidCheckBox;
-//    @FXML private Label beneficiaryCountLabel;
-//    @FXML private Button printButton;
-//    @FXML private Button cancelButton;
-//    @FXML private Button previewButton;
-//
-//    private DisasterDAO disasterDAO;
-//    private AidDAO aidDAO;
-//    private AidPrintService printService;
-//    private Cryptography cs;
-//
-//    private static final String ALL_BARANGAYS = "All Barangays";
-//
-//    @FXML
-//    private void initialize() {
-//        disasterDAO = new DisasterDAOImpl(DBConnection.getInstance());
-//        aidDAO = new AidDAOImpl(DBConnection.getInstance());
-//        printService = new AidPrintService();
-//        cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
-//
-//        DashboardRefresher.registerDisasterNameAndAidtypeName(this);
-//
-//        setupComboBoxes();
-//        setupGeneralAidOption();
-//        setupListeners();
-//        setupButtons();
-//        setupBarangayFilter();
-//    }
-//
-//    private void setupComboBoxes() {
-//        List<DisasterModelComboBox> disasters = disasterDAO.findAll();
-//        disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
-//
-//        List<String> aidNames = aidDAO.getDistinctAidNames();
-//        aidNameComboBox.setItems(FXCollections.observableArrayList(aidNames));
-//
-//        disasterComboBox.setPromptText("Select Disaster");
-//        aidNameComboBox.setPromptText("Select Aid Name");
-//        if (barangayComboBox != null) {
-//            barangayComboBox.setPromptText("Select Barangay");
-//        }
-//    }
-//
-//    private void setupGeneralAidOption() {
-//        if (generalAidCheckBox != null) {
-//            generalAidCheckBox.setSelected(false);
-//
-//            generalAidCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-//                if (newVal) {
-//                    disasterComboBox.setValue(null);
-//                    disasterComboBox.setDisable(true);
-//                } else {
-//                    disasterComboBox.setDisable(false);
-//                }
-//                loadBarangays();
-//                updateBeneficiaryCount();
-//            });
-//        }
-//    }
-//
-//    private void setupBarangayFilter() {
-//        if (barangayComboBox != null && useBarangayFilterCheckBox != null) {
-//            barangayComboBox.setDisable(true);
-//            useBarangayFilterCheckBox.setSelected(false);
-//
-//            useBarangayFilterCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-//                barangayComboBox.setDisable(!newVal);
-//                if (!newVal) {
-//                    barangayComboBox.setValue(ALL_BARANGAYS);
-//                }
-//                updateBeneficiaryCount();
-//            });
-//        }
-//    }
-//
-//    private void setupListeners() {
-//        disasterComboBox.setOnAction(e -> {
-//            if (disasterComboBox.getValue() != null && generalAidCheckBox != null) {
-//                generalAidCheckBox.setSelected(false);
-//            }
-//            loadBarangays();
-//            updateBeneficiaryCount();
-//        });
-//
-//        aidNameComboBox.setOnAction(e -> {
-//            updateBeneficiaryCount();
-//            loadBarangays();
-//        });
-//
-//        if (barangayComboBox != null) {
-//            barangayComboBox.setOnAction(e -> updateBeneficiaryCount());
-//        }
-//    }
-//
-//    private void setupButtons() {
-//        printButton.setOnAction(e -> handlePrint());
-//        cancelButton.setOnAction(e -> handleCancel());
-//        previewButton.setOnAction(e -> handlePreview());
-//    }
-//
-//    private void loadBarangays() {
-//        if (barangayComboBox == null) return;
-//
-//        int disasterId = getSelectedDisasterId();
-//        String selectedAidName = aidNameComboBox.getValue();
-//
-//        if (disasterId < 0) {
-//            barangayComboBox.setItems(FXCollections.observableArrayList(ALL_BARANGAYS));
-//            barangayComboBox.setValue(ALL_BARANGAYS);
-//            return;
-//        }
-//
-//        List<String> barangays;
-//        if (selectedAidName != null && !selectedAidName.trim().isEmpty()) {
-//            barangays = aidDAO.getBarangaysByAidNameAndDisaster(disasterId, selectedAidName);
-//        } else {
-//            barangays = aidDAO.getBarangaysByDisaster(disasterId, 0);
-//        }
-//
-//        barangays.add(0, ALL_BARANGAYS);
-//
-//        barangayComboBox.setItems(FXCollections.observableArrayList(barangays));
-//        barangayComboBox.setValue(ALL_BARANGAYS);
-//
-//        System.out.println("Loaded " + (barangays.size() - 1) + " unique barangays");
-//    }
-//
-//    private int getSelectedDisasterId() {
-//        if (generalAidCheckBox != null && generalAidCheckBox.isSelected()) {
-//            return 0; // General aid
-//        }
-//
-//        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-//        return selectedDisaster != null ? selectedDisaster.getDisasterId() : -1;
-//    }
-//
-//    private void updateBeneficiaryCount() {
-//        String selectedAidName = aidNameComboBox.getValue();
-//        int disasterId = getSelectedDisasterId();
-//
-//        if (selectedAidName == null || selectedAidName.trim().isEmpty() || disasterId < 0) {
-//            beneficiaryCountLabel.setText("Beneficiaries: 0");
-//            printButton.setDisable(true);
-//            previewButton.setDisable(true);
-//            return;
-//        }
-//
-//        List<AidModel> aidRecords = getFilteredAndSortedAidRecords(
-//                disasterId,
-//                selectedAidName
-//        );
-//
-//        String contextInfo = getContextInfoText();
-//        String barangayInfo = getBarangayInfoText();
-//        beneficiaryCountLabel.setText("Beneficiaries: " + aidRecords.size() + contextInfo + barangayInfo);
-//        printButton.setDisable(aidRecords.isEmpty());
-//        previewButton.setDisable(aidRecords.isEmpty());
-//    }
-//
-//    private String getContextInfoText() {
-//        boolean isGeneralAid = generalAidCheckBox != null && generalAidCheckBox.isSelected();
-//        return isGeneralAid ? " (General Aid)" : "";
-//    }
-//
-//    private String getBarangayInfoText() {
-//        if (!isBarangayFilterActive()) {
-//            return "";
-//        }
-//        return " | Barangay: " + barangayComboBox.getValue();
-//    }
-//
-//    private void handlePrint() {
-//        String selectedAidName = aidNameComboBox.getValue();
-//        int disasterId = getSelectedDisasterId();
-//
-//        if (selectedAidName == null || selectedAidName.trim().isEmpty() || disasterId < 0) {
-//            AlertDialogManager.showWarning("Selection Required",
-//                    "Please select an Aid Name and either a Disaster or check General Aid option.");
-//            return;
-//        }
-//
-//        List<AidModel> aidRecords = getFilteredAndSortedAidRecords(
-//                disasterId,
-//                selectedAidName
-//        );
-//
-//        if (aidRecords.isEmpty()) {
-//            AlertDialogManager.showWarning("No Data",
-//                    "No beneficiaries found for the selected criteria.");
-//            return;
-//        }
-//
-//        String reportTitle = buildReportTitle(selectedAidName);
-//
-//        boolean success = printService.printSpecificReport(
-//                reportTitle,
-//                selectedAidName,
-//                aidRecords
-//        );
-//
-//        if (success) {
-//            closeDialog();
-//        }
-//    }
-//
-//    private void handlePreview() {
-//        String selectedAidName = aidNameComboBox.getValue();
-//        int disasterId = getSelectedDisasterId();
-//
-//        if (selectedAidName == null || selectedAidName.trim().isEmpty() || disasterId < 0) {
-//            AlertDialogManager.showWarning("Selection Required",
-//                    "Please select an Aid Name and either a Disaster or check General Aid option.");
-//            return;
-//        }
-//
-//        List<AidModel> aidRecords = getFilteredAndSortedAidRecords(
-//                disasterId,
-//                selectedAidName
-//        );
-//
-//        if (aidRecords.isEmpty()) {
-//            AlertDialogManager.showWarning("No Data", "No beneficiaries found.");
-//            return;
-//        }
-//
-//        StringBuilder preview = new StringBuilder();
-//        preview.append("═".repeat(60)).append("\n");
-//        preview.append("          AID DISTRIBUTION PREVIEW          \n");
-//        preview.append("═".repeat(60)).append("\n\n");
-//
-//        boolean isGeneralAid = generalAidCheckBox != null && generalAidCheckBox.isSelected();
-//        if (isGeneralAid) {
-//            preview.append("Distribution Type: General Aid (No Disaster)\n");
-//        } else {
-//            DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-//            preview.append("Disaster: ").append(selectedDisaster.getDisasterName()).append("\n");
-//        }
-//
-//        preview.append("Aid Name: ").append(selectedAidName).append("\n");
-//
-//        if (isBarangayFilterActive()) {
-//            preview.append("Barangay: ").append(barangayComboBox.getValue()).append("\n");
-//        } else {
-//            preview.append("Barangay: All Barangays\n");
-//        }
-//
-//        preview.append("Total Beneficiaries: ").append(aidRecords.size()).append("\n");
-//        preview.append("Sorting: K-Means Priority (High to Low)\n");
-//        preview.append("\n").append("─".repeat(60)).append("\n");
-//        preview.append(String.format("%-4s %-35s %s\n", "No.", "Beneficiary Name", "Priority Score"));
-//        preview.append("─".repeat(60)).append("\n");
-//
-//        int counter = 1;
-//        for (AidModel aid : aidRecords) {
-//            String scoreInfo = extractScoreInfo(aid.getNotes());
-//            preview.append(String.format("%-4d %-35s %s\n",
-//                    counter++,
-//                    truncateName(aid.getBeneficiaryName(), 35),
-//                    scoreInfo
-//            ));
-//        }
-//
-//        preview.append("─".repeat(60)).append("\n");
-//        preview.append("\nNote: Beneficiaries are sorted by K-Means priority score.\n");
-//        preview.append("Higher scores indicate higher priority for aid distribution.\n");
-//
-//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//        alert.setTitle("Distribution Preview");
-//        alert.setHeaderText(isGeneralAid ? "General Aid Distribution" : "Disaster Aid Distribution");
-//
-//        TextArea textArea = new TextArea(preview.toString());
-//        textArea.setEditable(false);
-//        textArea.setWrapText(false);
-//        textArea.setPrefRowCount(25);
-//        textArea.setPrefColumnCount(65);
-//        textArea.setStyle("-fx-font-family: 'Courier New', monospace; -fx-font-size: 11px;");
-//
-//        alert.getDialogPane().setContent(textArea);
-//        alert.getDialogPane().setPrefWidth(700);
-//        alert.showAndWait();
-//    }
-//
-//    private void handleCancel() {
-//        closeDialog();
-//    }
-//
-//    private List<AidModel> getFilteredAndSortedAidRecords(int disasterId, String aidName) {
-//        List<AidModel> allAid = aidDAO.getAllAidForTable();
-//
-//        List<AidModel> filtered = allAid.stream()
-//                .filter(aid -> {
-//                    boolean disasterMatch = (disasterId == 0 && aid.getDisasterId() == 0) ||
-//                            (disasterId > 0 && aid.getDisasterId() == disasterId);
-//
-//                    boolean aidNameMatch = aid.getName() != null &&
-//                            aid.getName().equals(aidName);
-//
-//                    return disasterMatch && aidNameMatch;
-//                })
-//                .collect(Collectors.toList());
-//
-//        if (isBarangayFilterActive()) {
-//            String selectedBarangay = barangayComboBox.getValue();
-//            filtered = filterByBarangay(filtered, selectedBarangay);
-//        }
-//
-//        filtered = sortByKMeansScore(filtered);
-//
-//        return filtered;
-//    }
-//
-//    private boolean isBarangayFilterActive() {
-//        return useBarangayFilterCheckBox != null &&
-//                useBarangayFilterCheckBox.isSelected() &&
-//                barangayComboBox != null &&
-//                barangayComboBox.getValue() != null &&
-//                !barangayComboBox.getValue().equals(ALL_BARANGAYS);
-//    }
-//
-//    private List<AidModel> filterByBarangay(List<AidModel> aidRecords, String barangay) {
-//        Set<Integer> barangayBeneficiaryIds = getBeneficiaryIdsByBarangay(barangay);
-//
-//        return aidRecords.stream()
-//                .filter(aid -> barangayBeneficiaryIds.contains(aid.getBeneficiaryId()))
-//                .collect(Collectors.toList());
-//    }
-//
-//    private Set<Integer> getBeneficiaryIdsByBarangay(String barangay) {
-//        Set<Integer> beneficiaryIds = new HashSet<>();
-//
-//        String sql = "SELECT beneficiary_id, barangay FROM beneficiary WHERE barangay IS NOT NULL";
-//
-//        try {
-//            Connection conn = DBConnection.getInstance().getConnection();
-//            PreparedStatement ps = conn.prepareStatement(sql);
-//            ResultSet rs = ps.executeQuery();
-//
-//            while (rs.next()) {
-//                String encryptedBarangay = rs.getString("barangay");
-//                try {
-//                    String decryptedBarangay = cs.decryptWithOneParameter(encryptedBarangay);
-//                    if (decryptedBarangay != null && decryptedBarangay.equals(barangay)) {
-//                        beneficiaryIds.add(rs.getInt("beneficiary_id"));
-//                    }
-//                } catch (Exception e) {
-//                    System.err.println("Error decrypting barangay: " + e.getMessage());
-//                }
-//            }
-//
-//            rs.close();
-//            ps.close();
-//            conn.close();
-//
-//        } catch (Exception e) {
-//            System.err.println("Error fetching beneficiary IDs by barangay: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-//
-//        return beneficiaryIds;
-//    }
-//
-//    private List<AidModel> sortByKMeansScore(List<AidModel> aidRecords) {
-//        return aidRecords.stream()
-//                .sorted((aid1, aid2) -> {
-//                    double score1 = extractScore(aid1.getNotes());
-//                    double score2 = extractScore(aid2.getNotes());
-//                    return Double.compare(score2, score1);
-//                })
-//                .collect(Collectors.toList());
-//    }
-//
-//    private double extractScore(String notes) {
-//        if (notes == null || notes.isEmpty()) {
-//            return 0.0;
-//        }
-//
-//        try {
-//            Pattern pattern = Pattern.compile("Score:\\s*([0-9]+\\.?[0-9]*)");
-//            Matcher matcher = pattern.matcher(notes);
-//
-//            if (matcher.find()) {
-//                return Double.parseDouble(matcher.group(1));
-//            }
-//        } catch (Exception e) {
-//            System.err.println("Error extracting score from notes: " + e.getMessage());
-//        }
-//
-//        return 0.0;
-//    }
-//
-//    private String extractScoreInfo(String notes) {
-//        if (notes == null || notes.isEmpty()) {
-//            return "N/A";
-//        }
-//
-//        try {
-//            Pattern scorePattern = Pattern.compile("Score:\\s*([0-9]+\\.?[0-9]*)");
-//            Matcher scoreMatcher = scorePattern.matcher(notes);
-//
-//            Pattern clusterPattern = Pattern.compile("Cluster:\\s*([0-9]+)");
-//            Matcher clusterMatcher = clusterPattern.matcher(notes);
-//
-//            Pattern priorityPattern = Pattern.compile("Priority:\\s*([A-Za-z]+)");
-//            Matcher priorityMatcher = priorityPattern.matcher(notes);
-//
-//            String score = scoreMatcher.find() ? scoreMatcher.group(1) : "N/A";
-//            String cluster = clusterMatcher.find() ? clusterMatcher.group(1) : "N/A";
-//            String priority = priorityMatcher.find() ? priorityMatcher.group(1) : "N/A";
-//
-//            return String.format("%s (C%s) - %s", score, cluster, priority);
-//        } catch (Exception e) {
-//            return "N/A";
-//        }
-//    }
-//
-//    private String buildReportTitle(String aidName) {
-//        boolean isGeneralAid = generalAidCheckBox != null && generalAidCheckBox.isSelected();
-//
-//        StringBuilder title = new StringBuilder();
-//
-//        if (isGeneralAid) {
-//            title.append("General Aid Distribution");
-//        } else {
-//            DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-//            title.append(selectedDisaster.getDisasterName());
-//        }
-//
-//        if (isBarangayFilterActive()) {
-//            title.append(" - Barangay ").append(barangayComboBox.getValue());
-//        }
-//
-//        return title.toString();
-//    }
-//
-//    private String truncateName(String name, int maxLength) {
-//        if (name == null) return "";
-//        if (name.length() <= maxLength) return name;
-//        return name.substring(0, maxLength - 3) + "...";
-//    }
-//
-//    private void closeDialog() {
-//        Stage stage = (Stage) cancelButton.getScene().getWindow();
-//        stage.close();
-//    }
-//
-//    private void loadDisasters() {
-//        DisasterModelComboBox selectedDisaster = disasterComboBox.getValue();
-//        List<DisasterModelComboBox> disasters = disasterDAO.findAll();
-//        disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
-//
-//        if (selectedDisaster != null) {
-//            disasterComboBox.getItems().stream()
-//                    .filter(d -> d.getDisasterId() == selectedDisaster.getDisasterId())
-//                    .findFirst()
-//                    .ifPresent(disasterComboBox::setValue);
-//        }
-//    }
-//
-//    private void loadAidNames() {
-//        String selectedAidName = aidNameComboBox.getValue();
-//        List<String> aidNames = aidDAO.getDistinctAidNames();
-//        aidNameComboBox.setItems(FXCollections.observableArrayList(aidNames));
-//
-//        if (selectedAidName != null) {
-//            aidNameComboBox.setValue(selectedAidName);
-//        }
-//    }
-//
-//    public void refreshComboBoxes() {
-//        loadDisasters();
-//        loadAidNames();
-//        loadBarangays();
-//        updateBeneficiaryCount();
-//    }
-//}
-
 package com.ionres.respondph.aid.dialogs_controller;
-
 import com.ionres.respondph.aid.AidDAO;
 import com.ionres.respondph.aid.AidDAOImpl;
 import com.ionres.respondph.aid.AidModel;
@@ -519,8 +10,27 @@ import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.SolidBorder;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.properties.VerticalAlignment;
+
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -530,9 +40,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Callback;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -547,7 +62,7 @@ public class PrintAidDialogController {
 
     // ── Disaster & Aid selection ─────────────────────────────────────────────
     @FXML private ComboBox<DisasterModelComboBox> disasterComboBox;
-    @FXML private ComboBox<String>                aidNameComboBox;
+    @FXML private ComboBox<String> aidNameComboBox;
 
     // ── Barangay filter ──────────────────────────────────────────────────────
     @FXML private CheckBox         useBarangayFilterCheckBox;
@@ -580,22 +95,40 @@ public class PrintAidDialogController {
     @FXML private Button closeBtn;
 
     // ── Services / DAOs ──────────────────────────────────────────────────────
-    private final DisasterDAO    disasterDAO  = new DisasterDAOImpl(DBConnection.getInstance());
-    private final AidDAO         aidDAO       = new AidDAOImpl(DBConnection.getInstance());
+    private final DisasterDAO     disasterDAO  = new DisasterDAOImpl(DBConnection.getInstance());
+    private final AidDAO          aidDAO       = new AidDAOImpl(DBConnection.getInstance());
     private final AidPrintService printService = new AidPrintService();
-    private final Cryptography   cs           = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
+    private final Cryptography    cs           = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
     // ── State ────────────────────────────────────────────────────────────────
     private List<AidModel> allAidRecords = new ArrayList<>();
 
     private static final String ALL_BARANGAYS = "All Barangays";
 
+    private Stage progressStage;
+    private ProgressBar progressBar;
+    private Label progressLabel;
+
+    private static class PrintDialogData {
+        List<AidModel> filteredRecords;
+        String disasterName;
+        String aidName;
+    }
+
     private final ToggleGroup reportTypeGroup  = new ToggleGroup();
     private final ToggleGroup orientationGroup = new ToggleGroup();
 
-    // ────────────────────────────────────────────────────────────────────────
+    // ── PDF color palette (mirrors AddAidController) ─────────────────────────
+    private static final DeviceRgb PDF_HEADER_BG = new DeviceRgb(44,  62,  80);
+    private static final DeviceRgb PDF_WHITE     = new DeviceRgb(255, 255, 255);
+    private static final DeviceRgb PDF_HIGH      = new DeviceRgb(41,  128, 185);
+    private static final DeviceRgb PDF_MODERATE  = new DeviceRgb(243, 156,  18);
+    private static final DeviceRgb PDF_LOW       = new DeviceRgb(149, 165, 166);
+    private static final DeviceRgb PDF_ROW_ALT   = new DeviceRgb(248, 249, 250);
+
+    // =========================================================================
     //  INIT
-    // ────────────────────────────────────────────────────────────────────────
+    // =========================================================================
 
     @FXML
     public void initialize() {
@@ -611,7 +144,6 @@ public class PrintAidDialogController {
     private void wireToggleGroups() {
         beneficiaryListRadio   .setToggleGroup(reportTypeGroup);
         distributionSummaryRadio.setToggleGroup(reportTypeGroup);
-
         portraitRadio .setToggleGroup(orientationGroup);
         landscapeRadio.setToggleGroup(orientationGroup);
     }
@@ -628,7 +160,6 @@ public class PrintAidDialogController {
     }
 
     private void wireComboListeners() {
-        // General-aid toggle
         generalAidCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
             disasterComboBox.setDisable(newVal);
             if (newVal) disasterComboBox.setValue(null);
@@ -636,7 +167,6 @@ public class PrintAidDialogController {
             updateAidSummary();
         });
 
-        // Disaster selection
         disasterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && generalAidCheckBox.isSelected())
                 generalAidCheckBox.setSelected(false);
@@ -644,23 +174,19 @@ public class PrintAidDialogController {
             updateAidSummary();
         });
 
-        // Aid name selection
         aidNameComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             loadBarangays();
             updateAidSummary();
         });
 
-        // Barangay filter checkbox
         useBarangayFilterCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
             barangayComboBox.setDisable(!newVal);
             if (!newVal) barangayComboBox.setValue(ALL_BARANGAYS);
             updateAidSummary();
         });
 
-        // Barangay selection
         barangayComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateAidSummary());
 
-        // Disable barangay combo initially
         barangayComboBox.setDisable(true);
     }
 
@@ -668,12 +194,10 @@ public class PrintAidDialogController {
         closeBtn  .setOnAction(e -> closeDialog());
         cancelBtn .setOnAction(e -> closeDialog());
         previewBtn.setOnAction(e -> handlePreview());
-        printBtn  .setOnAction(e -> handlePrint());
+        printBtn.setOnAction(e -> showProgressAndOpenDialog());
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  DATA LOADING
-    // ────────────────────────────────────────────────────────────────────────
+
 
     private void loadData() {
         Task<Void> task = new Task<>() {
@@ -692,15 +216,8 @@ public class PrintAidDialogController {
             @Override
             protected void succeeded() {
                 allAidRecords = aidRecords;
-
-                ObservableList<DisasterModelComboBox> disasterList =
-                        FXCollections.observableArrayList(disasters);
-                disasterComboBox.setItems(disasterList);
-
-                aidNameComboBox.setItems(FXCollections.observableArrayList(aidNames));
-
-                if (!disasterList.isEmpty())
-                    disasterComboBox.getSelectionModel().selectFirst();
+                disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
+                aidNameComboBox .setItems(FXCollections.observableArrayList(aidNames));
             }
 
             @Override
@@ -715,33 +232,167 @@ public class PrintAidDialogController {
     private void loadBarangays() {
         if (barangayComboBox == null) return;
 
-        int    disasterId   = getSelectedDisasterId();
-        String selectedAid  = aidNameComboBox.getValue();
+        int    disasterId  = getSelectedDisasterId();
+        String selectedAid = aidNameComboBox.getValue();
 
-        if (disasterId < 0) {
-            barangayComboBox.setItems(FXCollections.observableArrayList(ALL_BARANGAYS));
+        if (disasterId == 0 || selectedAid == null || selectedAid.isBlank()) {
+            List<String> all = aidDAO.getAllBarangays();
+            all.add(0, ALL_BARANGAYS);
+            barangayComboBox.setItems(FXCollections.observableArrayList(all));
             barangayComboBox.setValue(ALL_BARANGAYS);
             return;
         }
 
-        List<String> barangays = (selectedAid != null && !selectedAid.isBlank())
-                ? aidDAO.getBarangaysByAidNameAndDisaster(disasterId, selectedAid)
-                : aidDAO.getBarangaysByDisaster(disasterId, 0);
-
+        List<String> barangays = aidDAO.getBarangaysByAidNameAndDisaster(disasterId, selectedAid);
         barangays.add(0, ALL_BARANGAYS);
         barangayComboBox.setItems(FXCollections.observableArrayList(barangays));
         barangayComboBox.setValue(ALL_BARANGAYS);
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  AID SUMMARY
-    // ────────────────────────────────────────────────────────────────────────
+
+    private void showProgressAndOpenDialog() {
+        if (!validate()) return;
+
+        String selectedAid = aidNameComboBox.getValue();
+        int    disasterId  = getSelectedDisasterId();
+        String disasterName = resolveDisasterName();
+
+        if (selectedAid == null || selectedAid.isBlank()) {
+            AlertDialogManager.showWarning("No Selection", "Please select an Aid Name.");
+            return;
+        }
+
+        createProgressDialog("Preparing data for printing/export...");
+
+        Task<PrintDialogData> task = new Task<>() {
+            @Override
+            protected PrintDialogData call() throws Exception {
+                PrintDialogData dialogData = new PrintDialogData();
+
+                updateProgress(0, 100);
+                updateMessage("Filtering aid records...");
+
+                List<AidModel> records = getFilteredAndSortedAidRecords(disasterId, selectedAid);
+
+                if (records.isEmpty()) {
+                    throw new Exception("No records found for the selected criteria.");
+                }
+
+                dialogData.filteredRecords = records;
+                dialogData.disasterName = disasterName;
+                dialogData.aidName = selectedAid;
+
+                updateProgress(30, 100);
+
+                if (isBarangayFilterActive()) {
+                    updateMessage("Loading barangay data...");
+                    List<AidModel> filtered = filterByBarangay(records, barangayComboBox.getValue());
+                    updateProgress(50, 100);
+                } else {
+                    updateProgress(50, 100);
+                }
+
+                updateMessage("Detecting connected printers...");
+                Thread.sleep(300);
+
+                ObservableList<PrinterEntry> activePrinters = buildPrinterEntries()
+                        .filtered(PrinterEntry::isActive);
+
+                updateProgress(80, 100);
+
+                // Step 4: Prepare dialog data (80-95%)
+                updateMessage("Preparing dialog components...");
+                Thread.sleep(300);
+                updateProgress(95, 100);
+
+                // Step 5: Finalize (95-100%)
+                updateMessage("Ready to open dialog...");
+                Thread.sleep(200);
+                updateProgress(100, 100);
+
+                return dialogData;
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            closeProgressDialog();
+            PrintDialogData dialogData = task.getValue();
+            showOutputFormatDialog(
+                    dialogData.filteredRecords,
+                    dialogData.disasterName,
+                    dialogData.aidName
+            );
+        });
+
+        task.setOnFailed(e -> {
+            closeProgressDialog();
+            Throwable exception = task.getException();
+            if (exception != null && exception.getMessage() != null) {
+                if (exception.getMessage().contains("No records found")) {
+                    AlertDialogManager.showWarning("No Data", exception.getMessage());
+                } else {
+                    AlertDialogManager.showError("Error",
+                            "Failed to load data: " + exception.getMessage());
+                }
+            } else {
+                AlertDialogManager.showError("Error", "An unknown error occurred.");
+            }
+            exception.printStackTrace();
+        });
+
+        progressBar.progressProperty().bind(task.progressProperty());
+        progressLabel.textProperty().bind(task.messageProperty());
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+
+    private void createProgressDialog(String initialMessage) {
+        progressStage = new Stage();
+        progressStage.initModality(Modality.APPLICATION_MODAL);
+        progressStage.initStyle(StageStyle.UNDECORATED);
+        progressStage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(15);
+        vbox.setPadding(new Insets(20));
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;");
+
+        Label titleLabel = new Label("Please Wait");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        titleLabel.setStyle("-fx-text-fill: #2c3e50;");
+
+        progressLabel = new Label(initialMessage);
+        progressLabel.setFont(Font.font("Arial", 12));
+        progressLabel.setStyle("-fx-text-fill: #555;");
+
+        progressBar = new ProgressBar(0);
+        progressBar.setPrefWidth(300);
+        progressBar.setPrefHeight(20);
+
+        vbox.getChildren().addAll(titleLabel, progressLabel, progressBar);
+
+        Scene scene = new Scene(vbox);
+        progressStage.setScene(scene);
+        progressStage.show();
+    }
+
+
+    private void closeProgressDialog() {
+        if (progressStage != null) {
+            Platform.runLater(() -> {
+                progressStage.close();
+                progressStage = null;
+            });
+        }
+    }
 
     private void updateAidSummary() {
-        String selectedAid  = aidNameComboBox.getValue();
-        int    disasterId   = getSelectedDisasterId();
+        String selectedAid = aidNameComboBox.getValue();
 
-        if (selectedAid == null || selectedAid.isBlank() || disasterId < 0) {
+        if (selectedAid == null || selectedAid.isBlank()) {
             beneficiaryCountLabel.setText("Beneficiaries: 0");
             hideAidSummary();
             printBtn  .setDisable(true);
@@ -749,42 +400,39 @@ public class PrintAidDialogController {
             return;
         }
 
-        List<AidModel> records = getFilteredAndSortedAidRecords(disasterId, selectedAid);
+        // ADD THIS GUARD — don't filter if records haven't loaded yet
+        if (allAidRecords == null || allAidRecords.isEmpty()) {
+            beneficiaryCountLabel.setText("Beneficiaries: loading...");
+            showAidSummary();
+            printBtn  .setDisable(true);
+            previewBtn.setDisable(true);
+            return;
+        }
 
-        boolean isGeneralAid = generalAidCheckBox.isSelected();
-        String contextInfo   = isGeneralAid ? " (General Aid)" : "";
-        String barangayInfo  = isBarangayFilterActive()
+        int            disasterId = getSelectedDisasterId();
+        List<AidModel> records    = getFilteredAndSortedAidRecords(disasterId, selectedAid);
+
+        boolean isGeneralAid = generalAidCheckBox.isSelected() || disasterId == 0;
+        String  contextInfo  = isGeneralAid ? " (General Aid)" : "";
+        String  barangayInfo = isBarangayFilterActive()
                 ? " | Barangay: " + barangayComboBox.getValue() : "";
 
         beneficiaryCountLabel.setText("Beneficiaries: " + records.size() + contextInfo + barangayInfo);
-
         showAidSummary();
         printBtn  .setDisable(records.isEmpty());
         previewBtn.setDisable(records.isEmpty());
     }
 
-    private void showAidSummary() {
-        aidSummary.setVisible(true);
-        aidSummary.setManaged(true);
-    }
+    private void showAidSummary() { aidSummary.setVisible(true);  aidSummary.setManaged(true);  }
+    private void hideAidSummary() { aidSummary.setVisible(false); aidSummary.setManaged(false); }
 
-    private void hideAidSummary() {
-        aidSummary.setVisible(false);
-        aidSummary.setManaged(false);
-    }
-
-    // ────────────────────────────────────────────────────────────────────────
+    // =========================================================================
     //  VALIDATION
-    // ────────────────────────────────────────────────────────────────────────
+    // =========================================================================
 
     private boolean validate() {
         if (aidNameComboBox.getValue() == null) {
             AlertDialogManager.showWarning("Validation", "Please select an Aid Name.");
-            return false;
-        }
-        if (getSelectedDisasterId() < 0) {
-            AlertDialogManager.showWarning("Validation",
-                    "Please select a Disaster or enable General Aid Distribution.");
             return false;
         }
         if (bondPaperSizeComboBox.getValue() == null) {
@@ -794,14 +442,29 @@ public class PrintAidDialogController {
         return true;
     }
 
-    // ────────────────────────────────────────────────────────────────────────
+    // =========================================================================
     //  PREVIEW
-    // ────────────────────────────────────────────────────────────────────────
+    // =========================================================================
 
     private void handlePreview() {
         if (!validate()) return;
 
-        VBox content = buildReportContent(getSelectedReportType());
+        String         selectedAid  = aidNameComboBox.getValue();
+        int            disasterId   = getSelectedDisasterId();
+        String         disasterName = resolveDisasterName();
+        List<AidModel> records      = getFilteredAndSortedAidRecords(disasterId, selectedAid);
+
+        if (records.isEmpty()) {
+            AlertDialogManager.showWarning("No Data", "No records found for the selected criteria.");
+            return;
+        }
+
+        configurePrintService();
+
+        VBox content = distributionSummaryRadio.isSelected()
+                ? printService.buildDistributionSummary(disasterName, selectedAid, records)
+                : printService.buildBeneficiaryList(disasterName, selectedAid, records);
+
         if (content == null) return;
 
         ScrollPane scrollPane = new ScrollPane(content);
@@ -811,361 +474,739 @@ public class PrintAidDialogController {
         Stage previewStage = new Stage();
         previewStage.initModality(Modality.APPLICATION_MODAL);
         previewStage.setTitle("Preview – " + getSelectedReportType());
-        previewStage.setScene(new Scene(scrollPane, 700, 850));
+        previewStage.setScene(new Scene(scrollPane, 800, 900));
         previewStage.show();
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  PRINT
-    // ────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    //  PRINT / EXPORT  —  output-format dialog (PDF or Printer)
+    // =========================================================================
 
-    private void handlePrint() {
+    /**
+     * Opens the output-format dialog.  The user chooses:
+     *   • Save as PDF  → FileChooser → iText 7 PDF
+     *   • Send to Printer → ComboBox of ACTIVE (connected) printers only.
+     *     If no active printers are found → AlertDialog "Not Connected in printer".
+     */
+    private void handlePrintOrExport() {
         if (!validate()) return;
 
-        String reportType = getSelectedReportType();
-        VBox   content    = buildReportContent(reportType);
-        if (content == null) return;
+        String         selectedAid  = aidNameComboBox.getValue();
+        int            disasterId   = getSelectedDisasterId();
+        String         disasterName = resolveDisasterName();
+        List<AidModel> records      = getFilteredAndSortedAidRecords(disasterId, selectedAid);
 
-        PrinterJob job = PrinterJob.createPrinterJob();
-        if (job == null) {
-            AlertDialogManager.showError("Print Error", "No printer is available.");
+        if (records.isEmpty()) {
+            AlertDialogManager.showWarning("No Data", "No records found for the selected criteria.");
             return;
         }
 
-        applyPageLayout(job);
+        showOutputFormatDialog(records, disasterName, selectedAid);
+    }
 
-        boolean showDialog = job.showPrintDialog(getOwnerWindow());
-        if (!showDialog) return;
+    /**
+     * Output-format dialog:
+     *
+     * ┌─ Output Format ──────────────────────────────────────────────┐
+     * │  ○ Save as PDF                                               │
+     * │  ○ Send to Printer                                           │
+     * │     ┌──────────────────────────────────────────────────────┐ │
+     * │     │ Select Printer:  [ComboBox — active printers only]   │ │
+     * │     └──────────────────────────────────────────────────────┘ │
+     * └──────────────────────────────────────────────────────────────┘
+     *
+     * ComboBox rules (identical to AddAidController):
+     *  • Virtual/software printers (PDF, FAX, XPS, OneNote…) are excluded.
+     *  • Only ACTIVE (physically connected) printers appear.
+     *  • Each item shows the printer name only — no badges, no icons.
+     *  • If NO active printers exist when "Send to Printer" is selected:
+     *      - Revert radio back to "Save as PDF"
+     *      - Show Alert: title="Printer Not Connected",
+     *                    header="Not Connected in printer",
+     *                    body="No connected printer was detected…"
+     */
+    private void showOutputFormatDialog(List<AidModel> records,
+                                        String disasterName,
+                                        String aidName) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Export / Print");
+        dialog.setHeaderText("Choose output format:");
 
-        int     copies     = copiesSpinner.getValue();
-        boolean allSuccess = true;
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(460);
 
-        for (int i = 0; i < copies; i++) {
-            if (!job.printPage(content)) { allSuccess = false; break; }
+        // ── Output format radios ──────────────────────────────────────────────
+        Label outputLbl = new Label("Output Format:");
+        outputLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+
+        ToggleGroup outputGroup  = new ToggleGroup();
+        RadioButton pdfRadio     = new RadioButton("Save as PDF");
+        RadioButton printerRadio = new RadioButton("Send to Printer");
+        pdfRadio.setToggleGroup(outputGroup);
+        printerRadio.setToggleGroup(outputGroup);
+        pdfRadio.setSelected(true);
+
+        // ── Build active-only printer list ────────────────────────────────────
+        ObservableList<PrinterEntry> allEntries    = buildPrinterEntries();
+        ObservableList<PrinterEntry> activeEntries = FXCollections.observableArrayList(
+                allEntries.filtered(PrinterEntry::isActive));
+
+        // ── Printer ComboBox — name only, no badges ───────────────────────────
+        ComboBox<PrinterEntry> printerComboBox = new ComboBox<>(activeEntries);
+        printerComboBox.setPrefWidth(420);
+        printerComboBox.setMaxWidth(Double.MAX_VALUE);
+
+        Callback<ListView<PrinterEntry>, ListCell<PrinterEntry>> nameOnlyFactory =
+                lv -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(PrinterEntry item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null); setGraphic(null);
+                        } else {
+                            setText(item.getPrinterName());
+                            setStyle("-fx-font-size: 12px; -fx-text-fill: #2c3e50;");
+                            setGraphic(null);
+                        }
+                    }
+                };
+
+        printerComboBox.setCellFactory(nameOnlyFactory);
+        printerComboBox.setButtonCell(nameOnlyFactory.call(null));
+
+        // Pre-select: default active printer → first active printer
+        activeEntries.stream()
+                .filter(PrinterEntry::isDefault)
+                .findFirst()
+                .or(() -> activeEntries.isEmpty()
+                        ? Optional.empty()
+                        : Optional.of(activeEntries.get(0)))
+                .ifPresent(printerComboBox::setValue);
+
+        // ── Printer section (hidden until "Send to Printer" chosen) ───────────
+        Separator sep = new Separator();
+        Label printerLbl = new Label("Select Printer:");
+        printerLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+
+        VBox printerSection = new VBox(7);
+        printerSection.getChildren().addAll(sep, printerLbl, printerComboBox);
+        printerSection.setVisible(false);
+        printerSection.setManaged(false);
+
+        // ── Radio toggle: show ComboBox OR alert if no active printers ─────────
+        outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == printerRadio) {
+                if (activeEntries.isEmpty()) {
+                    // Revert to PDF and alert user
+                    pdfRadio.setSelected(true);
+
+                    Alert notConnected = new Alert(Alert.AlertType.ERROR);
+                    notConnected.setTitle("Printer Not Connected");
+                    notConnected.setHeaderText("Not Connected in printer");
+                    notConnected.setContentText(
+                            "No connected printer was detected on this system.\n\n"
+                                    + "Please connect a printer and try again.");
+                    notConnected.showAndWait();
+                } else {
+                    printerSection.setVisible(true);
+                    printerSection.setManaged(true);
+                    dialog.getDialogPane().getScene().getWindow().sizeToScene();
+                }
+            } else {
+                printerSection.setVisible(false);
+                printerSection.setManaged(false);
+                dialog.getDialogPane().getScene().getWindow().sizeToScene();
+            }
+        });
+
+        content.getChildren().addAll(outputLbl, pdfRadio, printerRadio, printerSection);
+        dialog.getDialogPane().setContent(content);
+
+        ButtonType okBtn = new ButtonType("Generate", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != okBtn) return;
+
+            if (pdfRadio.isSelected()) {
+                generateAndSavePDF(records, disasterName, aidName);
+            } else {
+                PrinterEntry chosen = printerComboBox.getValue();
+                if (chosen == null) {
+                    AlertDialogManager.showWarning("No Printer Selected",
+                            "Please select a printer from the list.");
+                    return;
+                }
+                configurePrintService();
+                boolean success = distributionSummaryRadio.isSelected()
+                        ? printService.printDistributionSummary(disasterName, aidName, records)
+                        : printService.printBeneficiaryList(disasterName, aidName, records);
+                if (success) closeDialog();
+            }
+        });
+    }
+
+    // =========================================================================
+    //  PDF GENERATION  (iText 7)
+    // =========================================================================
+
+    /**
+     * Opens FileChooser → writes a professional A4 PDF using iText 7.
+     */
+    private void generateAndSavePDF(List<AidModel> records,
+                                    String disasterName,
+                                    String aidName) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save Aid Report as PDF");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files (*.pdf)", "*.pdf"));
+        chooser.setInitialFileName("AidReport_"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+                + ".pdf");
+
+        Stage owner;
+        try { owner = (Stage) printBtn.getScene().getWindow(); }
+        catch (Exception e) { owner = null; }
+
+        File file = chooser.showSaveDialog(owner);
+        if (file == null) return;
+
+        try {
+            buildPDF(file, records, disasterName, aidName);
+            AlertDialogManager.showInfo("PDF Saved",
+                    "PDF successfully saved to:\n" + file.getAbsolutePath());
+
+            if (java.awt.Desktop.isDesktopSupported()) {
+                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
+                    desktop.open(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("PDF Error", "Failed to generate PDF:\n" + e.getMessage());
         }
+    }
 
-        if (allSuccess) {
-            job.endJob();
-            AlertDialogManager.showInfo("Success",
-                    String.format("Document sent to printer.\n%d %s printed successfully.",
-                            copies, copies == 1 ? "copy" : "copies"));
-            closeDialog();
-        } else {
-            AlertDialogManager.showError("Print Error",
-                    "An error occurred while printing. Please try again.");
+    /**
+     * iText 7 PDF builder.
+     *
+     * Layout:
+     *   • Dark-navy header bar  (Aid Report | RespondPH + timestamp)
+     *   • Metadata table        (Aid Name, Disaster, Barangay, Total, Generated On)
+     *   • Beneficiary table     (alternating rows, priority-colour accent)
+     *   • Distribution summary  (score statistics)
+     *   • Page-number footer
+     */
+    private void buildPDF(File file,
+                          List<AidModel> records,
+                          String disasterName,
+                          String aidName) throws IOException {
+
+        PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        PdfFont fontMono   = PdfFontFactory.createFont(StandardFonts.COURIER);
+
+        // Resolve paper size from the ComboBox selection
+        PageSize pageSize = resolvePageSize();
+
+        PdfDocument pdfDoc = new PdfDocument(new PdfWriter(file));
+        Document    doc    = new Document(pdfDoc, pageSize);
+        doc.setMargins(36, 36, 54, 36);
+
+        String timestamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
+        String reportType = getSelectedReportType();
+
+        // ═════════════════════════════════════════════════════════════════════
+        //  HEADER BAR
+        // ═════════════════════════════════════════════════════════════════════
+        Table headerTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
+                .useAllAvailableWidth()
+                .setMarginBottom(4);
+
+        Cell titleCell = new Cell()
+                .add(new Paragraph("Aid Report — " + reportType)
+                        .setFont(fontBold).setFontSize(18).setFontColor(PDF_WHITE))
+                .add(new Paragraph(aidName)
+                        .setFont(fontNormal).setFontSize(11)
+                        .setFontColor(new DeviceRgb(189, 215, 238)))
+                .setBackgroundColor(PDF_HEADER_BG)
+                .setPadding(14)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
+
+        Cell metaCell = new Cell()
+                .add(new Paragraph("RespondPH")
+                        .setFont(fontBold).setFontSize(13).setFontColor(PDF_WHITE)
+                        .setTextAlignment(TextAlignment.RIGHT))
+                .add(new Paragraph(timestamp)
+                        .setFont(fontNormal).setFontSize(8)
+                        .setFontColor(new DeviceRgb(189, 215, 238))
+                        .setTextAlignment(TextAlignment.RIGHT))
+                .setBackgroundColor(PDF_HEADER_BG)
+                .setPadding(14)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                .setVerticalAlignment(VerticalAlignment.MIDDLE);
+
+        headerTable.addCell(titleCell).addCell(metaCell);
+        doc.add(headerTable);
+
+        // ═════════════════════════════════════════════════════════════════════
+        //  METADATA BOX
+        // ═════════════════════════════════════════════════════════════════════
+        Table metaTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
+                .useAllAvailableWidth()
+                .setBackgroundColor(new DeviceRgb(240, 244, 248))
+                .setBorder(new SolidBorder(new DeviceRgb(190, 210, 230), 1))
+                .setMarginTop(10).setMarginBottom(14);
+
+        addMetaRow(metaTable, "Aid Name",     aidName,                           fontBold, fontNormal);
+        addMetaRow(metaTable, "Disaster",     disasterName,                      fontBold, fontNormal);
+        addMetaRow(metaTable, "Barangay",     resolveBarangayLabel(),            fontBold, fontNormal);
+        addMetaRow(metaTable, "Total Records",records.size() + " beneficiaries", fontBold, fontNormal);
+        addMetaRow(metaTable, "Generated On", timestamp,                         fontBold, fontNormal);
+        doc.add(metaTable);
+
+        // ═════════════════════════════════════════════════════════════════════
+        //  BENEFICIARY TABLE
+        // ═════════════════════════════════════════════════════════════════════
+        Paragraph tableTitle = new Paragraph("Beneficiary List")
+                .setFont(fontBold).setFontSize(13)
+                .setFontColor(PDF_HEADER_BG)
+                .setMarginBottom(4);
+        doc.add(tableTitle);
+
+        Table table = new Table(UnitValue.createPercentArray(new float[]{5, 28, 18, 17, 16, 16}))
+                .useAllAvailableWidth()
+                .setMarginBottom(12);
+
+        // Column headers
+        for (String col : new String[]{ "#", "Beneficiary Name", "Aid Distributed", "Quantity", "Cost (₱)", "Score / Priority" }) {
+            table.addHeaderCell(new Cell()
+                    .add(new Paragraph(col).setFont(fontBold).setFontSize(9).setFontColor(PDF_WHITE))
+                    .setBackgroundColor(PDF_HEADER_BG)
+                    .setPadding(5)
+                    .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         }
-    }
-
-    private void applyPageLayout(PrinterJob job) {
-        Printer         printer     = job.getPrinter();
-        Paper           paper       = resolvePaper(printer);
-        PageOrientation orientation = landscapeRadio.isSelected()
-                ? PageOrientation.LANDSCAPE : PageOrientation.PORTRAIT;
-        PageLayout layout = printer.createPageLayout(
-                paper, orientation, Printer.MarginType.DEFAULT);
-        job.getJobSettings().setPageLayout(layout);
-    }
-
-    private Paper resolvePaper(Printer printer) {
-        String selected = bondPaperSizeComboBox.getValue();
-        if (selected == null) return Paper.A4;
-        if (selected.startsWith("Letter")) return Paper.NA_LETTER;
-        if (selected.startsWith("Legal"))  return Paper.LEGAL;
-        return Paper.A4;
-    }
-
-    // ────────────────────────────────────────────────────────────────────────
-    //  REPORT BUILDERS
-    // ────────────────────────────────────────────────────────────────────────
-
-    private String getSelectedReportType() {
-        if (distributionSummaryRadio.isSelected()) return "Distribution Summary";
-        return "Beneficiary List";
-    }
-
-    private VBox buildReportContent(String reportType) {
-        String selectedAid = aidNameComboBox.getValue();
-        int    disasterId  = getSelectedDisasterId();
-
-        if (selectedAid == null || disasterId < 0) {
-            AlertDialogManager.showWarning("No Selection",
-                    "Please select an Aid Name and a Disaster.");
-            return null;
-        }
-
-        List<AidModel> records = getFilteredAndSortedAidRecords(disasterId, selectedAid);
-
-        if (records.isEmpty()) {
-            AlertDialogManager.showWarning("No Data",
-                    "No records found for the selected criteria.");
-            return null;
-        }
-
-        String disasterName = resolveDisasterName();
-
-        return switch (reportType) {
-            case "Distribution Summary" ->
-                    buildDistributionSummaryContent(disasterName, selectedAid, records);
-            default ->
-                    buildBeneficiaryListContent(disasterName, selectedAid, records);
-        };
-    }
-
-    // ── Beneficiary List ────────────────────────────────────────────────────
-
-    private VBox buildBeneficiaryListContent(String disasterName, String aidName,
-                                             List<AidModel> records) {
-        VBox root = printPage();
-
-        if (includeHeaderCheckbox.isSelected())
-            root.getChildren().add(buildHeader("BENEFICIARY LIST", disasterName, aidName));
-
-        root.getChildren().add(separator());
-
-        // Column header row
-        HBox colHeader = styledRow(true);
-        colHeader.getChildren().addAll(
-                colCell("#",                 50,  true),
-                colCell("Beneficiary Name", 250,  true),
-                colCell("Date Received",    150,  true),
-                colCell("Amount (₱)",       110,  true),
-                colCell("Priority Score",   100,  true)
-        );
-        root.getChildren().add(colHeader);
 
         // Data rows
-        for (int i = 0; i < records.size(); i++) {
-            AidModel aid = records.get(i);
-            HBox row = styledRow(i % 2 == 0);
-            row.getChildren().addAll(
-                    colCell(String.valueOf(i + 1),                              50,  false),
-                    colCell(nvl(aid.getBeneficiaryName()),                     250,  false),
-                    colCell(aid.getDate() != null
-                            ? aid.getDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
-                            : "—",                                             150,  false),
-                    colCell(String.format("%.2f", aid.getCost()),              110,  false),
-                    colCell(extractScoreInfo(aid.getNotes()),                  100,  false)
-            );
-            root.getChildren().add(row);
+        boolean alt = false;
+        int rank = 1;
+        for (AidModel aid : records) {
+            DeviceRgb rowBg = alt
+                    ? new DeviceRgb(245, 248, 252)
+                    : new DeviceRgb(255, 255, 255);
+            alt = !alt;
+
+            String scoreInfo = extractScoreInfo(aid.getNotes());
+            DeviceRgb scoreColor = resolveScoreColor(aid.getNotes());
+
+            table.addCell(pdfCell(String.valueOf(rank++), fontMono,   8, rowBg, TextAlignment.CENTER));
+            table.addCell(pdfCell(safeStr(aid.getBeneficiaryName()), fontNormal, 9, rowBg, TextAlignment.LEFT));
+            table.addCell(pdfCell(safeStr(aid.getName()),            fontNormal, 9, rowBg, TextAlignment.LEFT));
+            table.addCell(pdfCell(String.valueOf(aid.getQuantity()), fontMono,   9, rowBg, TextAlignment.CENTER));
+            table.addCell(pdfCell(String.format("%.2f", aid.getCost()), fontMono, 9, rowBg, TextAlignment.RIGHT));
+
+            // Score cell with priority-colour accent
+            table.addCell(new Cell()
+                    .add(new Paragraph(scoreInfo).setFont(fontMono).setFontSize(8)
+                            .setFontColor(scoreColor).setTextAlignment(TextAlignment.CENTER))
+                    .setBackgroundColor(rowBg)
+                    .setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(5).setPaddingRight(5)
+                    .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                    .setBorderBottom(new SolidBorder(new DeviceRgb(220, 225, 230), 0.5f)));
+        }
+        doc.add(table);
+
+        // ═════════════════════════════════════════════════════════════════════
+        //  DISTRIBUTION SUMMARY FOOTER
+        // ═════════════════════════════════════════════════════════════════════
+        doc.add(new Paragraph(" ").setMarginTop(6).setMarginBottom(0));
+        LineSeparator sep = new LineSeparator(
+                new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f));
+        sep.setStrokeColor(new DeviceRgb(190, 200, 210));
+        sep.setMarginBottom(8);
+        doc.add(sep);
+
+        doc.add(new Paragraph("Distribution Summary")
+                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG)
+                .setMarginBottom(6));
+
+        // Totals
+        double   totalQty  = records.stream().mapToDouble(AidModel::getQuantity).sum();
+        double totalCost = records.stream().mapToDouble(AidModel::getCost).sum();
+        double avgScore  = records.stream()
+                .mapToDouble(a -> extractScore(a.getNotes())).average().orElse(0.0);
+
+        Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{50, 25, 25}))
+                .useAllAvailableWidth()
+                .setMarginBottom(14);
+
+        for (String col : new String[]{ "Metric", "Value", "" }) {
+            summaryTable.addHeaderCell(new Cell()
+                    .add(new Paragraph(col).setFont(fontBold).setFontSize(10).setFontColor(PDF_WHITE))
+                    .setBackgroundColor(PDF_HEADER_BG).setPadding(6)
+                    .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         }
 
-        root.getChildren().add(separator());
+        DeviceRgb sumBg1 = new DeviceRgb(235, 242, 250);
+        DeviceRgb sumBg2 = new DeviceRgb(245, 248, 252);
+        addSummaryRow(summaryTable, "Total Beneficiaries",  String.valueOf(records.size()), "",  fontBold, fontNormal, sumBg1);
+        addSummaryRow(summaryTable, "Total Quantity",        String.format("%.0f", totalQty)  ,       "",  fontNormal, fontNormal, sumBg2);
+        addSummaryRow(summaryTable, "Total Cost",            String.format("₱%.2f", totalCost), "", fontNormal, fontNormal, sumBg1);
+        addSummaryRow(summaryTable, "Average Priority Score",String.format("%.3f", avgScore),  "",  fontNormal, fontNormal, sumBg2);
+        doc.add(summaryTable);
 
-        double totalCost = records.stream().mapToDouble(AidModel::getCost).sum();
-        Label totalLabel = new Label(String.format(
-                "Total Beneficiaries: %d     Total Cost: ₱ %,.2f", records.size(), totalCost));
-        totalLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold;");
-        root.getChildren().add(totalLabel);
+        // Closing note
+        doc.add(new Paragraph(
+                "This report was generated automatically by RespondPH. "
+                        + "Beneficiary data reflects the latest aid distribution records.")
+                .setFont(fontNormal).setFontSize(8)
+                .setFontColor(new DeviceRgb(120, 130, 140))
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(8));
 
-        if (includeFooterCheckbox.isSelected())
-            root.getChildren().add(buildFooter(records.size()));
+        // Page numbers
+        int totalPages = pdfDoc.getNumberOfPages();
+        for (int i = 1; i <= totalPages; i++) {
+            doc.showTextAligned(
+                    new Paragraph("Page " + i + " of " + totalPages)
+                            .setFont(fontNormal).setFontSize(8)
+                            .setFontColor(new DeviceRgb(150, 160, 170)),
+                    pdfDoc.getPage(i).getPageSize().getWidth() / 2,
+                    22, i, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+        }
 
-        if (includePageNumbersCheckbox.isSelected())
-            root.getChildren().add(pageNumber(1));
-
-        return root;
+        doc.close();
     }
 
-    // ── Distribution Summary ────────────────────────────────────────────────
+    // =========================================================================
+    //  PDF HELPER METHODS
+    // =========================================================================
 
-    private VBox buildDistributionSummaryContent(String disasterName, String aidName,
-                                                 List<AidModel> records) {
-        VBox root = printPage();
-
-        if (includeHeaderCheckbox.isSelected())
-            root.getChildren().add(buildHeader("DISTRIBUTION SUMMARY", disasterName, aidName));
-
-        root.getChildren().add(separator());
-
-        double totalCost  = records.stream().mapToDouble(AidModel::getCost).sum();
-        double avgCost    = records.isEmpty() ? 0 : totalCost / records.size();
-        double maxCost    = records.stream().mapToDouble(AidModel::getCost).max().orElse(0);
-        double minCost    = records.stream().mapToDouble(AidModel::getCost).min().orElse(0);
-
-        root.getChildren().addAll(
-                statRow("Aid Name",            aidName),
-                statRow("Disaster Event",      disasterName),
-                statRow("Total Beneficiaries", records.size() + " persons"),
-                statRow("Total Cost",          String.format("₱ %,.2f", totalCost)),
-                statRow("Average Cost",        String.format("₱ %,.2f", avgCost)),
-                statRow("Highest Amount",      String.format("₱ %,.2f", maxCost)),
-                statRow("Lowest Amount",       String.format("₱ %,.2f", minCost))
-        );
-
-        root.getChildren().add(separator());
-
-        // Visual cost bar (scaled to total)
-        double barWidth = 500.0;
-
-        StackPane bar = new StackPane();
-        bar.setMaxWidth(barWidth);
-        bar.setMinWidth(barWidth);
-        bar.setMinHeight(22);
-        bar.setMaxHeight(22);
-        bar.setStyle("-fx-background-color: #e0e0e0; -fx-background-radius: 4;");
-
-        HBox fill = new HBox();
-        fill.setMinWidth(barWidth); // fully filled since this is total
-        fill.setMaxWidth(barWidth);
-        fill.setMinHeight(22);
-        fill.setMaxHeight(22);
-        fill.setStyle("-fx-background-color: #1a7a4a; -fx-background-radius: 4;");
-        StackPane.setAlignment(fill, Pos.CENTER_LEFT);
-
-        bar.getChildren().addAll(fill,
-                labelCentered(String.format("₱ %,.2f total distributed", totalCost)));
-
-        HBox barBox = new HBox(bar);
-        barBox.setPadding(new Insets(10, 0, 10, 0));
-        root.getChildren().add(barBox);
-
-        root.getChildren().add(separator());
-
-        Label noteLabel = new Label("✔ Distribution completed successfully.");
-        noteLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #1a7a4a;");
-        root.getChildren().add(noteLabel);
-
-        if (includeFooterCheckbox.isSelected())
-            root.getChildren().add(buildFooter(records.size()));
-
-        if (includePageNumbersCheckbox.isSelected())
-            root.getChildren().add(pageNumber(1));
-
-        return root;
+    private void addMetaRow(Table table, String label, String value,
+                            PdfFont fontBold, PdfFont fontNormal) {
+        table.addCell(new Cell()
+                .add(new Paragraph(label).setFont(fontBold).setFontSize(9)
+                        .setFontColor(new DeviceRgb(40, 60, 90)))
+                .setBackgroundColor(new DeviceRgb(225, 235, 245)).setPadding(6)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
+        table.addCell(new Cell()
+                .add(new Paragraph(value).setFont(fontNormal).setFontSize(9)
+                        .setFontColor(new DeviceRgb(40, 60, 90)))
+                .setBackgroundColor(new DeviceRgb(245, 248, 252)).setPadding(6)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  SHARED COMPONENT HELPERS
-    // ────────────────────────────────────────────────────────────────────────
-
-    private VBox printPage() {
-        VBox page = new VBox(6);
-        page.setPadding(new Insets(30));
-        page.setStyle("-fx-background-color: white; -fx-min-width: 600;");
-        return page;
+    private void addSummaryRow(Table table, String label, String val1, String val2,
+                               PdfFont labelFont, PdfFont valFont, DeviceRgb bg) {
+        table.addCell(new Cell().add(new Paragraph(label).setFont(labelFont).setFontSize(9)
+                        .setFontColor(new DeviceRgb(30, 50, 70))).setBackgroundColor(bg).setPadding(6)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                .setBorderBottom(new SolidBorder(new DeviceRgb(210, 218, 226), 0.5f)));
+        table.addCell(new Cell().add(new Paragraph(val1).setFont(valFont).setFontSize(9)
+                        .setFontColor(new DeviceRgb(30, 50, 70))).setBackgroundColor(bg).setPadding(6)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                .setBorderBottom(new SolidBorder(new DeviceRgb(210, 218, 226), 0.5f)));
+        table.addCell(new Cell().add(new Paragraph(val2).setFont(valFont).setFontSize(9)
+                        .setFontColor(new DeviceRgb(30, 50, 70))).setBackgroundColor(bg).setPadding(6)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                .setBorderBottom(new SolidBorder(new DeviceRgb(210, 218, 226), 0.5f)));
     }
 
-    private VBox buildHeader(String reportTitle, String disasterName, String aidName) {
-        VBox header = new VBox(4);
-        header.setAlignment(Pos.CENTER);
-
-        Label republic = new Label("Republic of the Philippines");
-        republic.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
-
-        Label title = new Label("BARANGAY DISASTER RISK REDUCTION AND MANAGEMENT");
-        title.setStyle("-fx-font-size: 13; -fx-font-weight: bold;");
-
-        Label reportTypeLabel = new Label(reportTitle);
-        reportTypeLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold; " +
-                "-fx-text-fill: #1a3a6b; -fx-padding: 4 0 0 0;");
-
-        Label disasterLabel = new Label("Disaster: " + disasterName);
-        disasterLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold; " +
-                "-fx-text-fill: #c0392b;");
-
-        Label aidLabel = new Label("Aid Type: " + aidName);
-        aidLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #333;");
-
-        Label dateLabel = new Label("Generated: " +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  HH:mm")));
-        dateLabel.setStyle("-fx-font-size: 10; -fx-text-fill: #777;");
-
-        header.getChildren().addAll(republic, title, reportTypeLabel,
-                disasterLabel, aidLabel, dateLabel);
-        return header;
+    private Cell pdfCell(String text, PdfFont font, float size,
+                         DeviceRgb bg, TextAlignment align) {
+        return new Cell()
+                .add(new Paragraph(text).setFont(font).setFontSize(size)
+                        .setTextAlignment(align).setFontColor(new DeviceRgb(40, 50, 60)))
+                .setBackgroundColor(bg)
+                .setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(5).setPaddingRight(5)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                .setBorderBottom(new SolidBorder(new DeviceRgb(220, 225, 230), 0.5f));
     }
 
-    private HBox buildFooter(int totalRecords) {
-        HBox footer = new HBox();
-        footer.setAlignment(Pos.CENTER_LEFT);
-        footer.setPadding(new Insets(10, 0, 0, 0));
-
-        Label left = new Label("Total Records: " + totalRecords);
-        left.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Label right = new Label("Prepared by BDRRMC  |  RespondPH System");
-        right.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
-
-        footer.getChildren().addAll(left, spacer, right);
-        return footer;
+    /** Resolve paper size from the ComboBox selection. */
+    private PageSize resolvePageSize() {
+        String sel = bondPaperSizeComboBox.getValue();
+        if (sel == null) return PageSize.A4;
+        if (sel.startsWith("Letter")) return PageSize.LETTER;
+        if (sel.startsWith("Legal"))  return PageSize.LEGAL;
+        return PageSize.A4;
     }
 
-    private Label pageNumber(int page) {
-        Label lbl = new Label("Page " + page);
-        lbl.setStyle("-fx-font-size: 9; -fx-text-fill: #aaa;");
-        HBox.setHgrow(lbl, Priority.ALWAYS);
-        return lbl;
+    /** Returns the barangay label for the metadata box. */
+    private String resolveBarangayLabel() {
+        if (isBarangayFilterActive()) return barangayComboBox.getValue();
+        return "All Barangays";
     }
 
-    private Region separator() {
-        Region sep = new Region();
-        sep.setMinHeight(1);
-        sep.setMaxHeight(1);
-        sep.setStyle("-fx-background-color: #bdc3c7;");
-        VBox.setMargin(sep, new Insets(6, 0, 6, 0));
-        return sep;
+    /** Derives a priority colour from the notes field. */
+    private DeviceRgb resolveScoreColor(String notes) {
+        if (notes == null) return PDF_LOW;
+        String lower = notes.toLowerCase();
+        if (lower.contains("high"))     return PDF_HIGH;
+        if (lower.contains("moderate")) return PDF_MODERATE;
+        return PDF_LOW;
     }
 
-    private HBox styledRow(boolean shaded) {
-        HBox row = new HBox();
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(4, 8, 4, 8));
-        row.setStyle("-fx-background-color: " + (shaded ? "#f2f3f4" : "white") + ";");
-        return row;
+    private String safeStr(String s) { return s != null ? s : ""; }
+
+    // =========================================================================
+    //  PRINTER DETECTION  (identical logic to AddAidController)
+    // =========================================================================
+
+    /** Inner class — wraps a Printer with active/default metadata. */
+    private static class PrinterEntry {
+        private final Printer printer;
+        private final boolean active;
+        private final boolean isDefault;
+
+        PrinterEntry(Printer p, boolean active, boolean isDefault) {
+            this.printer   = p;
+            this.active    = active;
+            this.isDefault = isDefault;
+        }
+
+        Printer getPrinter()     { return printer; }
+        String  getPrinterName() { return printer.getName(); }
+        boolean isActive()       { return active; }
+        boolean isDefault()      { return isDefault; }
+
+        @Override public String toString() { return printer.getName(); }
     }
 
-    private Label colCell(String text, double width, boolean header) {
-        Label lbl = new Label(text);
-        lbl.setMinWidth(width);
-        lbl.setMaxWidth(width);
-        lbl.setWrapText(true);
-        lbl.setStyle(header
-                ? "-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #1a3a6b;"
-                : "-fx-font-size: 11;");
-        return lbl;
+    /**
+     * Builds the full printer list sorted: default-active first,
+     * then other active (alphabetical), then inactive (alphabetical).
+     */
+    private ObservableList<PrinterEntry> buildPrinterEntries() {
+        ObservableList<PrinterEntry> entries = FXCollections.observableArrayList();
+        ObservableSet<Printer> printers = Printer.getAllPrinters();
+        Printer defaultPrinter = Printer.getDefaultPrinter();
+
+        if (printers == null || printers.isEmpty()) return entries;
+
+        for (Printer p : printers) {
+            boolean active = isPrinterActive(p);
+            boolean isDef  = p.equals(defaultPrinter);
+            entries.add(new PrinterEntry(p, active, isDef));
+        }
+
+        entries.sort((a, b) -> {
+            if (a.isDefault() != b.isDefault()) return a.isDefault() ? -1 : 1;
+            if (a.isActive()  != b.isActive())  return a.isActive()  ? -1 : 1;
+            return a.getPrinterName().compareToIgnoreCase(b.getPrinterName());
+        });
+        return entries;
     }
 
-    private HBox statRow(String label, String value) {
-        HBox row = new HBox(20);
-        row.setPadding(new Insets(4, 0, 4, 0));
-
-        Label lbl = new Label(label + ":");
-        lbl.setMinWidth(180);
-        lbl.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #444;");
-
-        Label val = new Label(value);
-        val.setStyle("-fx-font-size: 11;");
-
-        row.getChildren().addAll(lbl, val);
-        return row;
+    /**
+     * Master active-check:
+     *  1. Virtual/software printers → always FALSE (excluded from list).
+     *  2. Windows → PowerShell IsOnline, fallback WMIC PrinterStatus.
+     *  3. Linux/macOS → CUPS lpstat, fallback javax.print PrinterState.
+     *  4. Any ambiguity → FALSE (fail-safe).
+     */
+    private boolean isPrinterActive(Printer printer) {
+        if (printer == null) return false;
+        if (isVirtualPrinter(printer.getName())) return false;
+        String os = System.getProperty("os.name", "").toLowerCase();
+        return os.contains("win")
+                ? isPrinterActiveWindows(printer.getName())
+                : isPrinterActiveUnix(printer);
     }
 
-    private Label labelCentered(String text) {
-        Label lbl = new Label(text);
-        lbl.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: white;");
-        return lbl;
+    /**
+     * Returns TRUE for any software / virtual printer (no physical hardware).
+     * Matches: pdf, fax, xps, onenote, microsoft print/document,
+     *          send to, snagit, cutepdf, bullzip, dopdf, nitro,
+     *          foxit, pdfcreator, primopdf, pdf24, adobe pdf.
+     */
+    private boolean isVirtualPrinter(String name) {
+        if (name == null) return false;
+        String l = name.toLowerCase();
+        return l.contains("pdf")
+                || l.contains("fax")
+                || l.contains("xps")
+                || l.contains("onenote")
+                || l.contains("microsoft print")
+                || l.contains("microsoft document")
+                || l.contains("send to")
+                || l.contains("snagit")
+                || l.contains("cutepdf")
+                || l.contains("cute pdf")
+                || l.contains("bullzip")
+                || l.contains("dopdf")
+                || l.contains("nitro")
+                || l.contains("foxit")
+                || l.contains("pdfcreator")
+                || l.contains("primopdf")
+                || l.contains("pdf24")
+                || l.contains("adobe pdf");
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  FILTERING / SORTING
-    // ────────────────────────────────────────────────────────────────────────
+    /** Windows: PowerShell Get-Printer IsOnline → WMIC fallback. */
+    private boolean isPrinterActiveWindows(String printerName) {
+        try {
+            String safeName = printerName.replace("'", "''");
+            String[] cmd = {
+                    "powershell", "-NoProfile", "-NonInteractive", "-Command",
+                    "(Get-Printer -Name '" + safeName + "').IsOnline"
+            };
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line.trim());
+                output = sb.toString().trim();
+            }
+            try (java.io.InputStream err = proc.getErrorStream()) {
+                err.transferTo(java.io.OutputStream.nullOutputStream());
+            }
+            proc.waitFor();
+
+            if ("True".equalsIgnoreCase(output))  return true;
+            if ("False".equalsIgnoreCase(output)) return false;
+            return isPrinterActiveWindowsWmic(printerName);
+
+        } catch (Exception e) {
+            return isPrinterActiveWindowsWmic(printerName);
+        }
+    }
+
+    /**
+     * Windows WMIC fallback — queries PrinterStatus + WorkOffline.
+     * Only status 3 (Idle), 4 (Printing), 5 (Warmup) → ACTIVE.
+     * All other statuses or WorkOffline=TRUE → FALSE (fail-safe).
+     */
+    private boolean isPrinterActiveWindowsWmic(String printerName) {
+        try {
+            String safeName = printerName.replace("'", "\\'");
+            String[] cmd = {
+                    "wmic", "printer",
+                    "where", "Name='" + safeName + "'",
+                    "get", "PrinterStatus,WorkOffline",
+                    "/format:csv"
+            };
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line).append("\n");
+                output = sb.toString();
+            }
+            try (java.io.InputStream err = proc.getErrorStream()) {
+                err.transferTo(java.io.OutputStream.nullOutputStream());
+            }
+            proc.waitFor();
+
+            for (String line : output.split("\n")) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("Node") || line.startsWith("\r")) continue;
+                String[] parts = line.split(",");
+                if (parts.length < 3) continue;
+                String statusStr   = parts[parts.length - 2].trim();
+                String workOffline = parts[parts.length - 1].trim();
+                if ("TRUE".equalsIgnoreCase(workOffline)) return false;
+                try {
+                    int status = Integer.parseInt(statusStr);
+                    return (status == 3 || status == 4 || status == 5);
+                } catch (NumberFormatException ex) { return false; }
+            }
+            return false;
+        } catch (Exception e) { return false; }
+    }
+
+    /** Linux/macOS: CUPS lpstat → javax.print fallback. */
+    private boolean isPrinterActiveUnix(Printer printer) {
+        if (printer == null) return false;
+        try {
+            String[] cmd = { "lpstat", "-p", printer.getName() };
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line).append(" ");
+                output = sb.toString().toLowerCase();
+            }
+            proc.waitFor();
+            if (!output.isEmpty()) {
+                if (output.contains("enabled"))  return true;
+                if (output.contains("disabled")) return false;
+            }
+        } catch (Exception ignored) { }
+
+        try {
+            javax.print.PrintService[] services =
+                    javax.print.PrintServiceLookup.lookupPrintServices(null, null);
+            for (javax.print.PrintService svc : services) {
+                if (!svc.getName().equalsIgnoreCase(printer.getName())) continue;
+                javax.print.attribute.PrintServiceAttributeSet attrs = svc.getAttributes();
+                javax.print.attribute.standard.PrinterIsAcceptingJobs accepting =
+                        (javax.print.attribute.standard.PrinterIsAcceptingJobs)
+                                attrs.get(javax.print.attribute.standard.PrinterIsAcceptingJobs.class);
+                if (accepting != null &&
+                        accepting == javax.print.attribute.standard.PrinterIsAcceptingJobs.NOT_ACCEPTING_JOBS)
+                    return false;
+                javax.print.attribute.standard.PrinterState state =
+                        (javax.print.attribute.standard.PrinterState)
+                                attrs.get(javax.print.attribute.standard.PrinterState.class);
+                if (state != null) {
+                    return state == javax.print.attribute.standard.PrinterState.IDLE
+                            || state == javax.print.attribute.standard.PrinterState.PROCESSING;
+                }
+                break;
+            }
+        } catch (Exception ignored) { }
+        return false;
+    }
+
+    // =========================================================================
+    //  UTILITY METHODS
+    // =========================================================================
+
+    private void configurePrintService() {
+        printService.setPaperSize(bondPaperSizeComboBox.getValue());
+        printService.setLandscape(landscapeRadio.isSelected());
+        printService.setCopies(copiesSpinner.getValue());
+        printService.setIncludeHeader(includeHeaderCheckbox.isSelected());
+        printService.setIncludeFooter(includeFooterCheckbox.isSelected());
+        printService.setIncludePageNumbers(includePageNumbersCheckbox.isSelected());
+    }
+
+    private String getSelectedReportType() {
+        return distributionSummaryRadio.isSelected() ? "Distribution Summary" : "Beneficiary List";
+    }
+
+    private int getSelectedDisasterId() {
+        if (generalAidCheckBox.isSelected()) return 0;
+        DisasterModelComboBox d = disasterComboBox.getValue();
+        return d != null ? d.getDisasterId() : 0;
+    }
+
+    private String resolveDisasterName() {
+        if (generalAidCheckBox.isSelected()) return "General Aid";
+        DisasterModelComboBox d = disasterComboBox.getValue();
+        return d != null ? d.getDisasterName() : "General Aid";
+    }
 
     private List<AidModel> getFilteredAndSortedAidRecords(int disasterId, String aidName) {
         List<AidModel> filtered = allAidRecords.stream()
                 .filter(aid -> {
-                    boolean disasterMatch = (disasterId == 0 && aid.getDisasterId() == 0)
-                            || (disasterId > 0 && aid.getDisasterId() == disasterId);
-                    boolean nameMatch = aid.getName() != null && aid.getName().equals(aidName);
+                    boolean disasterMatch = (disasterId == 0) || (aid.getDisasterId() == disasterId);
+                    boolean nameMatch     = aid.getName() != null && aid.getName().equals(aidName);
                     return disasterMatch && nameMatch;
                 })
                 .collect(Collectors.toList());
 
-        if (isBarangayFilterActive()) {
+        if (isBarangayFilterActive())
             filtered = filterByBarangay(filtered, barangayComboBox.getValue());
-        }
 
         return sortByKMeansScore(filtered);
     }
@@ -1228,58 +1269,33 @@ public class PrintAidDialogController {
         } catch (Exception e) { return "N/A"; }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  UTILITIES
-    // ────────────────────────────────────────────────────────────────────────
-
-    private int getSelectedDisasterId() {
-        if (generalAidCheckBox.isSelected()) return 0;
-        DisasterModelComboBox d = disasterComboBox.getValue();
-        return d != null ? d.getDisasterId() : -1;
-    }
-
-    private String resolveDisasterName() {
-        if (generalAidCheckBox.isSelected()) return "General Aid";
-        DisasterModelComboBox d = disasterComboBox.getValue();
-        return d != null ? d.getDisasterName() : "—";
-    }
-
-    private String nvl(String s) {
-        return (s == null || s.isBlank()) ? "—" : s;
-    }
-
-    private javafx.stage.Window getOwnerWindow() {
-        try { return printBtn.getScene().getWindow(); }
-        catch (Exception e) { return null; }
-    }
-
     private void closeDialog() {
-        try {
-            Stage stage = (Stage) closeBtn.getScene().getWindow();
-            stage.close();
-        } catch (Exception ignored) { }
+        try { ((Stage) closeBtn.getScene().getWindow()).close(); }
+        catch (Exception ignored) { }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  DASHBOARD REFRESH
-    // ────────────────────────────────────────────────────────────────────────
+
 
     public void refreshComboBoxes() {
         Task<Void> task = new Task<>() {
             private List<DisasterModelComboBox> disasters;
             private List<String>                aidNames;
+            private List<AidModel>              freshAidRecords; // ADD THIS
 
             @Override
             protected Void call() {
-                disasters = disasterDAO.findAll();
-                aidNames  = aidDAO.getDistinctAidNames();
+                disasters        = disasterDAO.findAll();
+                aidNames         = aidDAO.getDistinctAidNames();
+                freshAidRecords  = aidDAO.getAllAidForTable(); // ADD THIS
                 return null;
             }
 
             @Override
             protected void succeeded() {
-                DisasterModelComboBox prev = disasterComboBox.getValue();
-                String prevAid = aidNameComboBox.getValue();
+                allAidRecords = freshAidRecords; // ADD THIS — replace stale cache
+
+                DisasterModelComboBox prev    = disasterComboBox.getValue();
+                String                prevAid = aidNameComboBox.getValue();
 
                 disasterComboBox.setItems(FXCollections.observableArrayList(disasters));
                 aidNameComboBox .setItems(FXCollections.observableArrayList(aidNames));

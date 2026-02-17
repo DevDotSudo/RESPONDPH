@@ -48,6 +48,24 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
+                <Button fx:id="pdfBtn" styleClass="primary-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Print PDF" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="printListBtn" styleClass="primary-button">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="8">
+                            <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon" />
+                            <Label styleClass="button-label" text="Print List" />
+                        </HBox>
+                    </graphic>
+                </Button>
+
                 <Button fx:id="addBtn" styleClass="primary-button">
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">

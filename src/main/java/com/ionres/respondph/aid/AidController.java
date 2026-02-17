@@ -31,7 +31,7 @@ public class AidController {
     @FXML private AnchorPane aidRootPane;
     @FXML private TextField aidSearchField;
     @FXML private Button aidSearchButton, addAidButton, refreshAidButton, printButton;
-    @FXML private TableColumn<AidModel, Integer> aidIdColumn;
+    @FXML private TableColumn<AidModel, Integer> beneficiaryIdColumn;
     @FXML private TableColumn<AidModel, String> beneficiaryColumn;
     @FXML private TableColumn<AidModel, String> disasterColumn;
     @FXML private TableColumn<AidModel, String> nameColumn;
@@ -64,7 +64,7 @@ public class AidController {
     }
 
     private void setupTableColumns() {
-        aidIdColumn.setCellValueFactory(new PropertyValueFactory<>("aidId"));
+        beneficiaryIdColumn.setCellValueFactory(new PropertyValueFactory<>("beneficiaryId"));
         beneficiaryColumn.setCellValueFactory(new PropertyValueFactory<>("beneficiaryName"));
         disasterColumn.setCellValueFactory(new PropertyValueFactory<>("disasterName"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -189,7 +189,7 @@ public class AidController {
 
         return allAidList.stream()
                 .filter(aid -> {
-                    if (String.valueOf(aid.getAidId()).contains(searchTerm)) {
+                    if (String.valueOf(aid.getBeneficiaryId()).contains(searchTerm)) {
                         return true;
                     }
                     if (aid.getBeneficiaryName() != null &&

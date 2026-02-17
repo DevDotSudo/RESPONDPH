@@ -272,23 +272,6 @@
     -fx-background-insets: 0;
 }
 
-.sms-toast,
-.sms-toast > * {
-    -fx-fill-width: true;
-}
-
-/* Ensure header/body can stretch fully */
-.sms-toast-header,
-.sms-toast-body {
-    -fx-max-width: infinity;
-}
-
-/* Progress bars fill the toast width */
-.sms-toast-progress,
-.sms-toast-progress-news {
-    -fx-max-width: infinity;
-}
-
 .sms-toast {
     -fx-background-color:   rgba(15, 17, 23, 0.97);
     -fx-background-radius:  14px;
@@ -350,6 +333,7 @@
 /* Default SMS progress bar (bulk send — keep blue/neutral) */
 .sms-toast-progress {
     -fx-pref-width:         100%;
+    -fx-max-width:          1.7976931348623157E308;
     -fx-pref-height:        8px;
     -fx-min-height:         8px;
     -fx-max-height:         8px;

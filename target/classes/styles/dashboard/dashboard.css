@@ -205,3 +205,158 @@
     -fx-border-color: transparent transparent rgba(59, 130, 246, 0.6) transparent;
     -fx-border-width: 0 0 2px 0;
 }
+
+.map-wrapper {
+    -fx-background-color: transparent;
+}
+
+.map-search-overlay {
+    -fx-padding: 10px 10px 0 0;
+    -fx-background-color: transparent;
+    -fx-alignment: center-right;
+}
+/* ===== MAP SEARCH BUTTON ===== */
+.map-search-btn {
+    -fx-background-color: #1e293b;  /* Solid dark blue-gray matching combobox */
+    -fx-border-color: rgba(249, 115, 22, 0.6);
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1.5px;
+    -fx-min-width: 42px;
+    -fx-min-height: 42px;
+    -fx-max-width: 42px;
+    -fx-max-height: 42px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0.3, 0, 2);
+}
+
+.map-search-btn:hover {
+    -fx-background-color: #2d3b4f;  /* Slightly lighter on hover */
+    -fx-border-color: #f97316;      /* Solid orange border on hover */
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 12, 0.35, 0, 0);
+}
+
+.map-search-btn:pressed {
+    -fx-background-color: #374151;  /* Darker when pressed */
+    -fx-translate-y: 1px;
+}
+
+.map-search-icon {
+    -fx-fill: #f97316;              /* Solid orange icon */
+    -glyph-size: 18px;
+}
+
+.map-search-btn:hover .map-search-icon {
+    -fx-fill: #fb923c;              /* Lighter orange on hover */
+}
+
+/* ===== ORANGE SEARCH COMBOBOX (MATCHING ADDBENEFICIARIESDIALOG) ===== */
+.map-search-combobox {
+    -fx-background-color: #1e293b;  /* Solid dark blue-gray background */
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 0;
+
+    /* Size */
+    -fx-pref-width: 280px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+
+.map-search-combobox:hover {
+    -fx-border-color: rgba(249,115,22,0.50);
+    -fx-background-color: #2d3b4f;  /* Slightly lighter on hover */
+}
+
+/* Input text field inside ComboBox */
+.map-search-combobox .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 0 0 0 14px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+
+/* List cell when not editable (for display) */
+.map-search-combobox > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 0 0 0 14px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Arrow button */
+.map-search-combobox .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10px 0 12px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+
+.map-search-combobox .arrow {
+    -fx-background-color: #94a3b8;
+    -fx-scale-shape: false;
+}
+
+.map-search-combobox:hover .arrow {
+    -fx-background-color: #f97316;
+}
+
+/* Dropdown popup */
+.map-search-combobox .combo-box-popup .list-view {
+    -fx-background-color: #1e293b;  /* Solid background matching the combobox */
+    -fx-border-color: rgba(249,115,22,0.3);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 16, 0.0, 0, 4);
+}
+
+.map-search-combobox .combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 14px;
+    -fx-background-radius: 5px;
+}
+
+.map-search-combobox .combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #f97316;  /* Solid orange on hover */
+    -fx-text-fill: #ffffff;
+}
+
+.map-search-combobox .combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #ea580c;  /* Darker orange for selected */
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+}
+
+/* Focus states */
+.map-search-combobox:focused {
+    -fx-border-color: #f97316;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.3), 8, 0.0, 0, 0);
+}
+
+/* Remove default focus indicators */
+.map-search-combobox:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}

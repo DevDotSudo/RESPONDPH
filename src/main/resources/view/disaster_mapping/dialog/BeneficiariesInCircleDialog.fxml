@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="750.0" prefWidth="1200.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/beneficiariesincircledialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.BeneficiariesInCircleDialogController">
+<VBox fx:id="root" prefHeight="750.0" prefWidth="1200.0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/beneficiariesincircledialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.BeneficiariesInCircleDialogController">
 
-    <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
         <padding>
             <Insets bottom="18" left="24" right="24" top="18" />
@@ -30,22 +28,12 @@
         </Button>
     </HBox>
 
-    <!-- ==================== ERROR CONTAINER ==================== -->
-    <VBox alignment="CENTER" managed="false" styleClass="error-box" visible="false">
-        <padding>
-            <Insets bottom="12" left="24" right="24" top="10" />
-        </padding>
-        <Label fx:id="errorLabel" styleClass="error-text" />
-    </VBox>
-
-    <!-- ==================== MAIN CONTENT ==================== -->
     <ScrollPane fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
         <VBox spacing="24" styleClass="dialog-body">
             <padding>
                 <Insets bottom="24" left="24" right="24" top="20" />
             </padding>
 
-            <!-- ==================== SECTION 1: DISASTER INFORMATION ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
@@ -55,7 +43,6 @@
                     <Label styleClass="section-subtitle" text="Affected Area" />
                 </HBox>
 
-                <!-- Disaster Info Card -->
                 <HBox spacing="16" styleClass="info-box">
                     <FontAwesomeIconView glyphName="FIRE" size="24" styleClass="info-icon" />
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
@@ -66,7 +53,6 @@
                 </HBox>
             </VBox>
 
-             <!-- Quick Actions Info -->
              <HBox spacing="12" styleClass="info-box">
                  <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="18" styleClass="info-icon" />
                  <VBox spacing="4" HBox.hgrow="ALWAYS">
@@ -77,7 +63,6 @@
 
             <Separator />
 
-            <!-- ==================== SECTION 2: BENEFICIARIES LIST ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
@@ -90,7 +75,6 @@
                     </HBox>
                 </HBox>
 
-                <!-- Action Buttons Row -->
                 <HBox alignment="CENTER_LEFT" spacing="12">
                     <Button fx:id="designatedSiteBtn" prefHeight="42.0" styleClass="btn-primary" HBox.hgrow="ALWAYS">
                         <graphic>

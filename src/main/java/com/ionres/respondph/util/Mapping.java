@@ -350,7 +350,6 @@ public class Mapping {
             clamp();
             redraw();
 
-            LOGGER.info("Map centered on: " + lat + ", " + lon + " at zoom " + zoom);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error centering map", e);
         }

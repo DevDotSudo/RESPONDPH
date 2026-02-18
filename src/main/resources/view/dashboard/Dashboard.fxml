@@ -9,29 +9,21 @@
     <VBox spacing="15.0" styleClass="dashboard-wrapper" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <HBox alignment="CENTER_LEFT" styleClass="dashboard-topbar">
-            <!-- Dashboard Mapping - Left -->
             <Label styleClass="dashboard-topbar-title" text="Dashboard Mapping" />
 
-            <!-- Spacer pushes time to center -->
             <Region HBox.hgrow="ALWAYS" />
 
-            <!-- Clock - Center (No container, icon on top of time) -->
             <VBox alignment="CENTER" spacing="4" styleClass="clock-container">
 
-                <!-- Time and Date -->
                 <Label fx:id="currentTimeLabel" styleClass="clock-time" />
                 <Label fx:id="currentDateLabel" styleClass="clock-date" />
             </VBox>
 
-            <!-- Spacer pushes admin to right -->
             <Region HBox.hgrow="ALWAYS" />
 
-            <!-- Admin Profile - Right (Icon inside label container) -->
             <HBox alignment="CENTER_RIGHT" spacing="8" styleClass="admin-name-label">
-                <!-- Admin Icon inside the label container -->
                 <FontAwesomeIconView glyphName="USER_CIRCLE" styleClass="admin-icon-inside" />
 
-                <!-- Admin Name -->
                 <Label fx:id="adminNameLabel" text="Admin Name" />
             </HBox>
         </HBox>
@@ -96,6 +88,33 @@
          </rowConstraints>
         </GridPane>
 
-        <Pane fx:id="mapContainer" styleClass="map-container" VBox.vgrow="ALWAYS" />
+        <!-- REPLACE the entire bottom Pane line with this: -->
+        <StackPane VBox.vgrow="ALWAYS" styleClass="map-wrapper">
+            <Pane fx:id="mapContainer" styleClass="map-container"
+                  StackPane.alignment="CENTER" />
+
+            <HBox fx:id="searchOverlay"
+                  alignment="CENTER_RIGHT"
+                  spacing="8"
+                  styleClass="map-search-overlay"
+                  StackPane.alignment="TOP_RIGHT"
+                  pickOnBounds="false"
+            >
+
+                <ComboBox fx:id="beneficiarySearchBox"
+                          editable="true"
+                          promptText="Find beneficiary."
+                          styleClass="map-search-combobox"
+                          visible="false"
+                          managed="false" />
+
+                <Button fx:id="searchToggleBtn"
+                        styleClass="map-search-btn">
+                    <graphic>
+                        <FontAwesomeIconView glyphName="SEARCH" styleClass="map-search-icon" />
+                    </graphic>
+                </Button>
+            </HBox>
+        </StackPane>
     </VBox>
 </AnchorPane>

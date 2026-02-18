@@ -3,18 +3,25 @@ package com.ionres.respondph.dashboard;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.common.model.EvacSiteMarker;
+import com.ionres.respondph.common.model.FamilyMemberModel;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.Mapping;
 import com.ionres.respondph.util.SessionManager;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.layout.Pane;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -22,30 +29,58 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DashboardController {
+
+    // ── Services ──────────────────────────────────────────────────────────────
     private final DashBoardService dashBoardService = AppContext.dashBoardService;
-    private final Mapping mapping = new Mapping();
+    private final Mapping          mapping          = new Mapping();
+
+    // ── Data ──────────────────────────────────────────────────────────────────
     private final List<BeneficiaryMarker> beneficiaries = new ArrayList<>();
-    @FXML private Pane mapContainer;
-    @FXML private Label totalBeneficiaryLabel;
-    @FXML private Label totalDisastersLabel;
-    @FXML private Label totalAidsLabel;
-    @FXML private Label currentDateLabel;
-    @FXML private Label currentTimeLabel;
-    @FXML private Label totalEvacutaionSiteLabel;
-    @FXML private Label adminNameLabel;
+    private final List<EvacSiteMarker>    evacSites     = new ArrayList<>();
+
+    // ── FXML ──────────────────────────────────────────────────────────────────
+    @FXML private Pane             mapContainer;
+    @FXML private Label            totalBeneficiaryLabel;
+    @FXML private Label            totalDisastersLabel;
+    @FXML private Label            totalAidsLabel;
+    @FXML private Label            currentDateLabel;
+    @FXML private Label            currentTimeLabel;
+    @FXML private Label            totalEvacutaionSiteLabel;
+    @FXML private Label            adminNameLabel;
+    @FXML private Button           searchToggleBtn;
+    @FXML private ComboBox<String> beneficiarySearchBox;
+    @FXML private HBox             searchOverlay;
+
+    // ── Marker images ─────────────────────────────────────────────────────────
     private Image personMarker;
-    private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
-    private static final double MARKER_WIDTH = 32;
-    private static final double MARKER_HEIGHT = 32;
-    private static final double MARKER_OFFSET_Y = MARKER_HEIGHT;
-    private final List<EvacSiteMarker> evacSites = new ArrayList<>();
     private Image evacSiteMarker;
-    private static final double EVAC_MARKER_WIDTH = 32;
-    private static final double EVAC_MARKER_HEIGHT = 32;
+
+    private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
+    private static final double MARKER_WIDTH         = 32;
+    private static final double MARKER_HEIGHT        = 32;
+    private static final double MARKER_OFFSET_Y      = MARKER_HEIGHT;
+    private static final double EVAC_MARKER_WIDTH    = 32;
+    private static final double EVAC_MARKER_HEIGHT   = 32;
     private static final double EVAC_MARKER_OFFSET_Y = EVAC_MARKER_HEIGHT;
 
+    // ── Drag / zoom ───────────────────────────────────────────────────────────
+    private double dragStartX, dragStartY;
+    private double currentCenterLat;
+    private double currentCenterLon;
+    private double currentZoom = 13.0;
+
+    // ── Selection ─────────────────────────────────────────────────────────────
+    private BeneficiaryMarker selectedBeneficiary = null;
+    private VBox               infoPanel;
+
+    // ── Combobox safe list ────────────────────────────────────────────────────
+    private final ObservableList<String> searchItems      = FXCollections.observableArrayList();
+    private       boolean                suppressListener = false;
+
+    // ── Boundary ──────────────────────────────────────────────────────────────
     private final double[][] boundary = {
             {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
             {11.0912,122.7648},{11.0897,122.7662},{11.0896,122.7796},
@@ -59,40 +94,91 @@ public class DashboardController {
             {11.0681,122.7489},{11.0719,122.7453},{11.0761,122.7454}
     };
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // initialize
+    // ═════════════════════════════════════════════════════════════════════════
     public void initialize() {
         AdminModel admin1 = SessionManager.getInstance().getCurrentAdmin();
         System.out.println("=== DashboardController.initialize() ===");
-        System.out.println("Admin from session: " + admin1);
-        if (admin1 != null) {
-            System.out.println("ID: " + admin1.getId());
-            System.out.println("Username: " + admin1.getUsername());
-            System.out.println("Firstname: " + admin1.getFirstname());
-            System.out.println("Lastname: " + admin1.getLastname());
-        }
+        if (admin1 != null) System.out.println("Username: " + admin1.getUsername());
 
         Platform.runLater(() -> {
+            if (searchOverlay != null) {
+                searchOverlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                searchOverlay.setPickOnBounds(false);
+            }
+        });
+
+        Platform.runLater(() -> {
+
+            // ── Load marker images ────────────────────────────────────────
             try {
                 personMarker = new Image(getClass().getResourceAsStream("/images/person_marker.png"));
-                if (personMarker.isError()) {
-                    System.err.println("Failed to load marker image: " + personMarker.getException().getMessage());
-                    personMarker = null;
-                }
-                // Load evacuation site marker
+                if (personMarker.isError()) personMarker = null;
                 evacSiteMarker = new Image(getClass().getResourceAsStream("/images/location-pin.png"));
-                if (evacSiteMarker.isError()) {
-                    System.err.println("Failed to load evac site marker image: " + evacSiteMarker.getException().getMessage());
-                    evacSiteMarker = null;
-                }
+                if (evacSiteMarker.isError()) evacSiteMarker = null;
             } catch (Exception e) {
-                System.err.println("Error loading marker image: " + e.getMessage());
                 personMarker = null;
             }
 
+            // ── Init map ──────────────────────────────────────────────────
             mapping.init(mapContainer);
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
                 drawEvacSites();
                 drawBeneficiaries();
+                repositionPanel();
+            });
+
+            // FIX 1: panel lives inside mapContainer (a Pane), not StackPane.
+            // Only Pane respects layoutX/layoutY for absolute positioning.
+            buildInfoPanel();
+            wireSearchComboBox();
+
+            // ── SINGLE click — drag / dismiss ─────────────────────────────
+            mapContainer.setOnMousePressed(e -> {
+                if (e.getButton() == MouseButton.PRIMARY) {
+                    BeneficiaryMarker hit = findMarkerAtScreen(e.getX(), e.getY());
+                    if (hit == null && selectedBeneficiary != null) {
+                        dismissPanel();
+                    }
+                    dragStartX = e.getX();
+                    dragStartY = e.getY();
+                }
+            });
+
+            mapContainer.setOnMouseDragged(e -> {
+                if (e.getButton() == MouseButton.PRIMARY) {
+                    double dx = e.getX() - dragStartX;
+                    double dy = e.getY() - dragStartY;
+                    dragStartX = e.getX();
+                    dragStartY = e.getY();
+
+                    double tilesOnScreen  = Math.pow(2, currentZoom);
+                    double degPerPixelLon = 360.0 / (tilesOnScreen * 256.0);
+                    double degPerPixelLat = degPerPixelLon * Math.cos(Math.toRadians(currentCenterLat));
+
+                    currentCenterLon -= dx * degPerPixelLon;
+                    currentCenterLat += dy * degPerPixelLat;
+                    mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
+                }
+            });
+
+            // ── DOUBLE click — show info panel ────────────────────────────
+            mapContainer.setOnMouseClicked(e -> {
+                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                    BeneficiaryMarker hit = findMarkerAtScreen(e.getX(), e.getY());
+                    if (hit != null) {
+                        selectBeneficiary(hit, false);
+                    }
+                }
+            });
+
+            // ── Scroll to zoom ────────────────────────────────────────────
+            mapContainer.setOnScroll(e -> {
+                double delta = e.getDeltaY() > 0 ? 0.5 : -0.5;
+                currentZoom = Math.max(10.0, Math.min(19.0, currentZoom + delta));
+                mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
             });
 
             DashboardRefresher.register(this);
@@ -100,28 +186,26 @@ public class DashboardController {
             loadBeneficiariesFromDb();
             loadEvacSitesFromDb();
 
-            // Delay centering to ensure canvas is fully initialized
-            Timeline centerDelay = new Timeline(new KeyFrame(Duration.millis(100), e -> {
-                centerMapOnBoundary();
-            }));
+            Timeline centerDelay = new Timeline(
+                    new KeyFrame(Duration.millis(100), e -> centerMapOnBoundary()));
             centerDelay.setCycleCount(1);
             centerDelay.play();
 
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
-
-            Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-                LocalDateTime now = LocalDateTime.now();
-                currentTimeLabel.setText(now.format(timeFormatter));
-                currentDateLabel.setText(now.format(dateFormatter));
-            }), new KeyFrame(Duration.seconds(1)));
-
+            // ── Clock ─────────────────────────────────────────────────────
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm:ss a");
+            Timeline clock = new Timeline(
+                    new KeyFrame(Duration.ZERO, e -> {
+                        LocalDateTime now = LocalDateTime.now();
+                        currentTimeLabel.setText(now.format(timeFmt));
+                        currentDateLabel.setText(now.format(dateFmt));
+                    }),
+                    new KeyFrame(Duration.seconds(1))
+            );
             clock.setCycleCount(Timeline.INDEFINITE);
             clock.play();
 
-            AdminModel currentAdmin = SessionManager.getInstance().getCurrentAdmin();
-            System.out.println("Admin inside runLater: " + currentAdmin);
-
+            // ── Admin name ────────────────────────────────────────────────
             SessionManager.getInstance().setOnSessionChanged(() -> {
                 AdminModel admin = SessionManager.getInstance().getCurrentAdmin();
                 if (admin != null) {
@@ -132,222 +216,406 @@ public class DashboardController {
                 }
             });
         });
+
+        searchToggleBtn.setOnAction(e -> searchToggle());
     }
 
-    /**
-     * Centers the map on the boundary polygon by calculating its centroid
-     * and setting to minimum zoom level
-     */
-    private void centerMapOnBoundary() {
-        if (boundary == null || boundary.length == 0) {
-            return;
-        }
+    // ═════════════════════════════════════════════════════════════════════════
+    // Combobox
+    // FIX 2: call hide() BEFORE every searchItems.setAll() to prevent the
+    //   ReadOnlyUnbackedObservableList.subList IndexOutOfBoundsException that
+    //   fires when the ListView tries to compute getAddedSubList() on a list
+    //   that was just cleared while the popup was still open.
+    // ═════════════════════════════════════════════════════════════════════════
+    private void wireSearchComboBox() {
+        beneficiarySearchBox.setItems(searchItems);
 
-        // Calculate the bounds of the polygon
-        double minLat = Double.MAX_VALUE;
-        double maxLat = Double.MIN_VALUE;
-        double minLon = Double.MAX_VALUE;
-        double maxLon = Double.MIN_VALUE;
+        beneficiarySearchBox.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (suppressListener) return;
+            if (newVal == null) return;
 
-        for (double[] point : boundary) {
-            double lat = point[0];
-            double lon = point[1];
+            Platform.runLater(() -> {
+                if (suppressListener) return;
+                String filter = newVal.trim().toLowerCase();
 
-            if (lat < minLat) minLat = lat;
-            if (lat > maxLat) maxLat = lat;
-            if (lon < minLon) minLon = lon;
-            if (lon > maxLon) maxLon = lon;
-        }
+                List<String> filtered = beneficiaries.stream()
+                        .filter(b -> b.name != null)
+                        .filter(b -> filter.isEmpty() || b.name.toLowerCase().contains(filter))
+                        .map(b -> b.name)
+                        .collect(Collectors.toList());
 
-        // Calculate the center point (centroid approximation)
-        double centerLat = (minLat + maxLat) / 2.0;
-        double centerLon = (minLon + maxLon) / 2.0;
+                // Must hide BEFORE mutating the list
+                beneficiarySearchBox.hide();
+                searchItems.setAll(filtered);
 
-        // Use minimum zoom level (13.0)
-        double zoom = 13.0;
+                if (!filter.isEmpty()) {
+                    beneficiarySearchBox.show();
+                }
+            });
+        });
 
-        System.out.println("=== Auto-centering map ===");
-        System.out.println("Boundary center: (" + centerLat + ", " + centerLon + ")");
-        System.out.println("Setting zoom level: " + zoom + " (MIN_ZOOM)");
+        beneficiarySearchBox.setOnAction(e -> {
+            if (suppressListener) return;
+            String selected = beneficiarySearchBox.getValue();
+            if (selected == null || selected.isBlank()) return;
 
-        // Center the map on the calculated coordinates with minimum zoom
-        mapping.setCenter(centerLat, centerLon, zoom);
+            BeneficiaryMarker found = beneficiaries.stream()
+                    .filter(b -> selected.equals(b.name))
+                    .findFirst()
+                    .orElse(null);
 
-        // Force additional redraw to ensure centering is applied
-        Platform.runLater(() -> {
-            mapping.redraw();
+            if (found != null) {
+                selectBeneficiary(found, true);
+
+                suppressListener = true;
+                beneficiarySearchBox.hide();
+                // Reset list to full before clearing so next open shows everything
+                searchItems.setAll(
+                        beneficiaries.stream()
+                                .filter(b -> b.name != null && !b.name.isBlank())
+                                .map(b -> b.name)
+                                .collect(Collectors.toList())
+                );
+                beneficiarySearchBox.setValue(null);
+                beneficiarySearchBox.getEditor().clear();
+                suppressListener = false;
+            }
         });
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // Search button toggle
+    // ═════════════════════════════════════════════════════════════════════════
+    private void searchToggle() {
+        boolean nowVisible = !beneficiarySearchBox.isVisible();
+        beneficiarySearchBox.setVisible(nowVisible);
+        beneficiarySearchBox.setManaged(nowVisible);
+
+        if (nowVisible) {
+            beneficiarySearchBox.hide(); // hide before mutation
+            searchItems.setAll(
+                    beneficiaries.stream()
+                            .filter(b -> b.name != null && !b.name.isBlank())
+                            .map(b -> b.name)
+                            .collect(Collectors.toList())
+            );
+            Platform.runLater(() -> {
+                beneficiarySearchBox.getEditor().clear();
+                beneficiarySearchBox.getEditor().requestFocus();
+            });
+        } else {
+            beneficiarySearchBox.hide();
+            suppressListener = true;
+            beneficiarySearchBox.setValue(null);
+            beneficiarySearchBox.getEditor().clear();
+            suppressListener = false;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // FIX 1: Build info panel inside mapContainer (a Pane).
+    //
+    // Root cause of invisible panel:
+    //   The old code added infoPanel to the StackPane parent and called
+    //   setManaged(false) + setLayoutX/Y. StackPane ignores layoutX/Y on its
+    //   children — it always centres them. Moving the panel into mapContainer
+    //   (which is a plain Pane) means absolute positioning via layoutX/Y works.
+    //
+    //   setViewOrder(-1) raises it above the Canvas that mapping draws on,
+    //   so it renders on top and receives mouse events correctly.
+    // ═════════════════════════════════════════════════════════════════════════
+    private void buildInfoPanel() {
+        infoPanel = new VBox(0);
+        infoPanel.setStyle(
+                "-fx-background-color: #2d3b4f;" +
+                        "-fx-border-color: rgba(249,115,22,0.50);" +
+                        "-fx-border-width: 1.5px;" +
+                        "-fx-border-radius: 8px;" +
+                        "-fx-background-radius: 8px;" +
+                        "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
+        );
+        infoPanel.setVisible(false);
+        infoPanel.setMouseTransparent(false);
+        infoPanel.setViewOrder(-1.0); // render above the canvas layer
+
+        mapContainer.getChildren().add(infoPanel);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Populate panel content
+    // ═════════════════════════════════════════════════════════════════════════
+    private void populateInfoPanel(BeneficiaryMarker b) {
+        infoPanel.getChildren().clear();
+
+        List<FamilyMemberModel> members = dashBoardService.getFamilyMembers(b.id);
+        int memberCount = members != null ? members.size() : 0;
+
+        double panelWidth = Math.max(180, Math.min(360,
+                longestNameWidth(b.name, members, 8.5, 56)));
+        infoPanel.setPrefWidth(panelWidth);
+        infoPanel.setMaxWidth(panelWidth);
+        infoPanel.setMaxHeight(Region.USE_PREF_SIZE);
+
+        // ── Header ────────────────────────────────────────────────────────
+        Label headerLbl = new Label("BENEFICIARY");
+        headerLbl.setStyle(
+                "-fx-text-fill: rgba(249,115,22,0.90);" +
+                        "-fx-font-size: 9px;" +
+                        "-fx-font-weight: 700;" +
+                        "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
+        );
+        Region hSpacer = new Region();
+        HBox.setHgrow(hSpacer, Priority.ALWAYS);
+        Button closeBtn = new Button("×");
+        applyCloseBtnStyle(closeBtn);
+        closeBtn.setOnAction(e -> dismissPanel());
+        HBox headerRow = new HBox(6, headerLbl, hSpacer, closeBtn);
+        headerRow.setAlignment(Pos.CENTER_LEFT);
+        headerRow.setPadding(new Insets(8, 10, 6, 12));
+
+        Region topDiv = new Region();
+        topDiv.setPrefHeight(1);
+        topDiv.setStyle("-fx-background-color: rgba(249,115,22,0.28);");
+
+        // ── Beneficiary block ─────────────────────────────────────────────
+        Label beneIdLbl = new Label("ID #" + b.id);
+        beneIdLbl.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.50);" +
+                        "-fx-font-size: 9px;" +
+                        "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
+        );
+        Label beneNameLbl = new Label(b.name != null ? b.name : "Unknown");
+        beneNameLbl.setStyle(
+                "-fx-text-fill: #f1f5f9;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 800;" +
+                        "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
+        );
+        VBox beneBox = new VBox(2, beneIdLbl, beneNameLbl);
+        beneBox.setPadding(new Insets(7, 12, 8, 12));
+        beneBox.setStyle("-fx-background-color: rgba(249,115,22,0.07);");
+
+        infoPanel.getChildren().addAll(headerRow, topDiv, beneBox);
+
+        // ── Family members ─────────────────────────────────────────────────
+        if (memberCount > 0) {
+            Region midDiv = new Region();
+            midDiv.setPrefHeight(1);
+            midDiv.setStyle("-fx-background-color: rgba(255,255,255,0.06);");
+
+            Label familyLbl = new Label("Family Members");
+            familyLbl.setStyle(
+                    "-fx-text-fill: rgba(148,163,184,0.65);" +
+                            "-fx-font-size: 9px;" +
+                            "-fx-font-weight: 700;" +
+                            "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
+            );
+            Label countLbl = new Label(memberCount + (memberCount != 1 ? " members" : " member"));
+            countLbl.setStyle(
+                    "-fx-text-fill: rgba(249,115,22,0.75);" +
+                            "-fx-font-size: 9px;" +
+                            "-fx-background-color: rgba(249,115,22,0.10);" +
+                            "-fx-background-radius: 3px;" +
+                            "-fx-border-color: rgba(249,115,22,0.25);" +
+                            "-fx-border-radius: 3px;" +
+                            "-fx-border-width: 1px;" +
+                            "-fx-padding: 1px 6px;"
+            );
+            Region fs = new Region();
+            HBox.setHgrow(fs, Priority.ALWAYS);
+            HBox familyRow = new HBox(6, familyLbl, fs, countLbl);
+            familyRow.setAlignment(Pos.CENTER_LEFT);
+            familyRow.setPadding(new Insets(7, 12, 4, 12));
+
+            VBox membersBox = new VBox(0);
+            for (int i = 0; i < members.size(); i++) {
+                FamilyMemberModel m = members.get(i);
+
+                Label mName = new Label(m.getFullName());
+                mName.setStyle(
+                        "-fx-text-fill: #cbd5e1;" +
+                                "-fx-font-size: 12px;" +
+                                "-fx-font-weight: 600;" +
+                                "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
+                );
+                Label mId = new Label("ID #" + m.getFamilyMemberId());
+                mId.setStyle(
+                        "-fx-text-fill: rgba(148,163,184,0.40);" +
+                                "-fx-font-size: 9px;" +
+                                "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
+                );
+                VBox mRow = new VBox(1, mName, mId);
+                mRow.setPadding(new Insets(6, 12, 6, 12));
+                if (i % 2 == 0) mRow.setStyle("-fx-background-color: rgba(255,255,255,0.02);");
+
+                membersBox.getChildren().add(mRow);
+                if (i < members.size() - 1) {
+                    Region sep = new Region();
+                    sep.setPrefHeight(1);
+                    sep.setStyle("-fx-background-color: rgba(255,255,255,0.04);");
+                    membersBox.getChildren().add(sep);
+                }
+            }
+
+            ScrollPane scroll = new ScrollPane(membersBox);
+            scroll.setFitToWidth(true);
+            scroll.setFitToHeight(false);
+            scroll.setMaxHeight(200);
+            scroll.setStyle(
+                    "-fx-background-color:transparent;" +
+                            "-fx-background:transparent;" +
+                            "-fx-border-color:transparent;" +
+                            "-fx-padding:0;"
+            );
+            scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            // Consume scroll events at filter phase so they never reach the map zoom handler
+            scroll.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, javafx.event.Event::consume);
+
+            infoPanel.getChildren().addAll(midDiv, familyRow, scroll);
+        }
+
+        Region bottomPad = new Region();
+        bottomPad.setPrefHeight(8);
+        infoPanel.getChildren().add(bottomPad);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Select beneficiary
+    // ═════════════════════════════════════════════════════════════════════════
+    private void selectBeneficiary(BeneficiaryMarker b, boolean centerMap) {
+        selectedBeneficiary = b;
+
+        if (centerMap) {
+            currentCenterLat = b.lat;
+            currentCenterLon = b.lon;
+            currentZoom      = 19.0;
+            mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
+        }
+
+        populateInfoPanel(b);
+
+        // Two pulses: first allows JavaFX to measure the panel's preferred size,
+        // second uses those measurements for accurate clamped positioning.
+        Platform.runLater(() -> Platform.runLater(() -> {
+            clampAndPositionPanel();
+            showWithFade(infoPanel);
+            mapping.redraw();
+        }));
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Reposition on every map redraw
+    // ═════════════════════════════════════════════════════════════════════════
+    private void repositionPanel() {
+        if (!infoPanel.isVisible()) return;
+        clampAndPositionPanel();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Core positioning
+    // ═════════════════════════════════════════════════════════════════════════
+    private void clampAndPositionPanel() {
+        if (selectedBeneficiary == null || infoPanel == null || !mapping.isInitialized()) return;
+        try {
+            Mapping.Point p = mapping.latLonToScreen(selectedBeneficiary.lat, selectedBeneficiary.lon);
+
+            double mapW = mapContainer.getWidth();
+            double mapH = mapContainer.getHeight();
+
+            double pw = infoPanel.prefWidth(-1);
+            if (pw <= 0) pw = 200;
+
+            double maxAllowedH = mapH - 16;
+            infoPanel.setMaxHeight(maxAllowedH);
+
+            double ph = infoPanel.prefHeight(pw);
+            if (ph > maxAllowedH) ph = maxAllowedH;
+            if (ph <= 0) ph = 80;
+
+            double tx = p.x - (pw / 2.0);
+            tx = Math.max(4, Math.min(tx, mapW - pw - 4));
+
+            double ty = p.y - MARKER_OFFSET_Y - ph - 10;
+            if (ty < 4)            ty = p.y + 6;
+            if (ty + ph > mapH - 4) ty = mapH - ph - 4;
+            ty = Math.max(4, ty);
+
+            infoPanel.setLayoutX(tx);
+            infoPanel.setLayoutY(ty);
+
+        } catch (Exception ignored) {}
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Dismiss
+    // ═════════════════════════════════════════════════════════════════════════
+    private void dismissPanel() {
+        selectedBeneficiary = null;
+        infoPanel.setVisible(false);
+        mapping.redraw();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Marker hit detection
+    // ═════════════════════════════════════════════════════════════════════════
+    private BeneficiaryMarker findMarkerAtScreen(double sx, double sy) {
+        if (!mapping.isInitialized()) return null;
+        boolean useImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
+
+        for (BeneficiaryMarker b : beneficiaries) {
+            if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
+            if (!isPointInPolygon(b.lon, b.lat, boundary)) continue;
+            try {
+                Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
+
+                double hx, hy, hw, hh;
+                if (useImage && personMarker != null) {
+                    hx = p.x - MARKER_WIDTH / 2;
+                    hy = p.y - MARKER_OFFSET_Y;
+                    hw = MARKER_WIDTH;
+                    hh = MARKER_HEIGHT;
+                } else {
+                    double r = 8;
+                    hx = p.x - r; hy = p.y - r;
+                    hw = r * 2;   hh = r * 2;
+                }
+                if (sx >= hx && sx <= hx + hw && sy >= hy && sy <= hy + hh) return b;
+            } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Center on boundary
+    // ═════════════════════════════════════════════════════════════════════════
+    private void centerMapOnBoundary() {
+        if (boundary == null || boundary.length == 0) return;
+
+        double minLat = Double.MAX_VALUE,  maxLat = -Double.MAX_VALUE;
+        double minLon = Double.MAX_VALUE,  maxLon = -Double.MAX_VALUE;
+        for (double[] pt : boundary) {
+            if (pt[0] < minLat) minLat = pt[0];
+            if (pt[0] > maxLat) maxLat = pt[0];
+            if (pt[1] < minLon) minLon = pt[1];
+            if (pt[1] > maxLon) maxLon = pt[1];
+        }
+
+        currentCenterLat = (minLat + maxLat) / 2.0;
+        currentCenterLon = (minLon + maxLon) / 2.0;
+        currentZoom      = 13.0;
+
+        mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
+        Platform.runLater(() -> mapping.redraw());
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Data loaders
+    // ═════════════════════════════════════════════════════════════════════════
     public void loadBeneficiariesFromDb() {
         beneficiaries.clear();
         beneficiaries.addAll(dashBoardService.getBeneficiaries());
         mapping.redraw();
-    }
-
-    private boolean isPointInPolygon(double x, double y, double[][] polygon) {
-        boolean inside = false;
-        for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-            double xi = polygon[i][1]; // lon
-            double yi = polygon[i][0]; // lat
-            double xj = polygon[j][1]; // lon
-            double yj = polygon[j][0]; // lat
-
-            boolean intersect = ((yi > y) != (yj > y))
-                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect) {
-                inside = !inside;
-            }
-        }
-        return inside;
-    }
-
-    private void drawBeneficiaries() {
-        if (!mapping.isInitialized() || beneficiaries.isEmpty()) return;
-
-        GraphicsContext gc = mapping.getGc();
-        double canvasWidth  = mapping.getCanvas().getWidth();
-        double canvasHeight = mapping.getCanvas().getHeight();
-
-        double padding = 50;
-        double minX = -padding, maxX = canvasWidth + padding;
-        double minY = -padding, maxY = canvasHeight + padding;
-
-        boolean useMarkerImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
-
-        double dotRadius = 4; // adjust if you want bigger/smaller
-        Color dotFill   = Color.rgb(0, 120, 255, 0.85);   // bright blue fill
-        Color dotStroke = Color.rgb(0, 70, 180, 0.95);    // deeper blue stroke
-
-        for (BeneficiaryMarker b : beneficiaries) {
-            if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
-
-            // keep polygon filtering
-            if (!isPointInPolygon(b.lon, b.lat, boundary)) continue;
-
-            try {
-                Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
-
-                if (p.x < 0 || p.y < 0) continue;
-
-                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
-
-                if (useMarkerImage && personMarker != null) {
-                    double markerX = p.x - (MARKER_WIDTH / 2);
-                    double markerY = p.y - MARKER_OFFSET_Y;
-                    gc.drawImage(personMarker, markerX, markerY, MARKER_WIDTH, MARKER_HEIGHT);
-
-                }
-                else {
-                    gc.setFill(dotFill);
-                    gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
-
-                    gc.setStroke(dotStroke);
-                    gc.setLineWidth(1.2);
-                    gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
-                }
-
-            } catch (Exception ignored) {
-                // keep rendering others even if one fails
-            }
-        }
-    }
-
-    private void drawBoundary() {
-        GraphicsContext gc = mapping.getGc();
-
-        // ===== Shadow Layer (dark red glow) =====
-        gc.setStroke(Color.rgb(120, 0, 0, 0.35));
-        gc.setLineWidth(6); // thicker shadow
-        gc.beginPath();
-
-        boolean first = true;
-        for (double[] c : boundary) {
-            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
-            if (first) {
-                gc.moveTo(p.x, p.y);
-                first = false;
-            } else {
-                gc.lineTo(p.x, p.y);
-            }
-        }
-        gc.closePath();
-        gc.stroke();
-
-
-        gc.setStroke(Color.rgb(255, 50, 50, 0.9));
-        gc.setLineWidth(2.5); // normal line thickness
-        gc.beginPath();
-
-        first = true;
-        for (double[] c : boundary) {
-            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
-            if (first) {
-                gc.moveTo(p.x, p.y);
-                first = false;
-            } else {
-                gc.lineTo(p.x, p.y);
-            }
-        }
-        gc.closePath();
-        gc.stroke();
-    }
-
-    private void drawEvacSites() {
-        if (!mapping.isInitialized() || evacSites.isEmpty()) return;
-
-        GraphicsContext gc = mapping.getGc();
-        double canvasWidth = mapping.getCanvas().getWidth();
-        double canvasHeight = mapping.getCanvas().getHeight();
-
-        double padding = 60;
-        double minX = -padding, maxX = canvasWidth + padding;
-        double minY = -padding, maxY = canvasHeight + padding;
-
-        boolean useMarkerImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
-
-        double dotRadius = 4; // same size as beneficiaries
-        Color dotFill = Color.rgb(234, 179, 8, 0.85);   // bright green fill
-        Color dotStroke = Color.rgb(234, 179, 8, 0.85);
-
-        for (EvacSiteMarker site : evacSites) {
-            if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
-
-            if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
-
-            try {
-                Mapping.Point p = mapping.latLonToScreen(site.lat, site.lon);
-
-                if (p.x < 0 || p.y < 0) continue;
-
-                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
-
-                if (useMarkerImage && evacSiteMarker != null) {
-                    double markerX = p.x - (EVAC_MARKER_WIDTH / 2);
-                    double markerY = p.y - EVAC_MARKER_OFFSET_Y;
-                    gc.drawImage(evacSiteMarker, markerX, markerY, EVAC_MARKER_WIDTH, EVAC_MARKER_HEIGHT);
-
-                } else if (useMarkerImage) {
-                    // Fallback: use GREEN color instead of red
-                    gc.setFill(Color.rgb(234, 179, 8, 0.85));
-                    gc.fillOval(p.x - 5, p.y - 5, 10, 10);
-                    gc.setStroke(Color.rgb(234, 179, 8, 0.85));
-                    gc.setLineWidth(1.5);
-                    gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
-
-                } else {
-                    gc.setFill(dotFill);
-                    gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
-
-                    gc.setStroke(dotStroke);
-                    gc.setLineWidth(1.2);
-                    gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
-                }
-
-            } catch (Exception ignored) {
-                // keep rendering others even if one fails
-            }
-        }
     }
 
     public void loadEvacSitesFromDb() {
@@ -362,5 +630,165 @@ public class DashboardController {
         totalAidsLabel.setText(String.valueOf(dashBoardService.fetchTotalAids()));
         totalEvacutaionSiteLabel.setText(String.valueOf(dashBoardService.fetchTotalEvacuationSites()));
         loadEvacSitesFromDb();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Drawing
+    // ═════════════════════════════════════════════════════════════════════════
+    private void drawBeneficiaries() {
+        if (!mapping.isInitialized() || beneficiaries.isEmpty()) return;
+
+        GraphicsContext gc  = mapping.getGc();
+        double canvasW      = mapping.getCanvas().getWidth();
+        double canvasH      = mapping.getCanvas().getHeight();
+        double pad          = 50;
+        boolean useImage    = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
+        double dotRadius    = 4;
+
+        for (BeneficiaryMarker b : beneficiaries) {
+            if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
+            if (!isPointInPolygon(b.lon, b.lat, boundary)) continue;
+            try {
+                Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
+                if (p.x < -pad || p.x > canvasW + pad) continue;
+                if (p.y < -pad || p.y > canvasH + pad) continue;
+
+                boolean sel = selectedBeneficiary != null && selectedBeneficiary.id == b.id;
+
+                if (useImage && personMarker != null) {
+                    if (sel) {
+                        gc.setStroke(Color.rgb(249, 115, 22, 0.85));
+                        gc.setLineWidth(2.5);
+                        gc.strokeOval(
+                                p.x - MARKER_WIDTH / 2 - 4,
+                                p.y - MARKER_OFFSET_Y - 4,
+                                MARKER_WIDTH + 8, MARKER_HEIGHT + 8);
+                    }
+                    gc.drawImage(personMarker,
+                            p.x - MARKER_WIDTH / 2, p.y - MARKER_OFFSET_Y,
+                            MARKER_WIDTH, MARKER_HEIGHT);
+                } else {
+                    if (sel) {
+                        gc.setStroke(Color.rgb(249, 115, 22, 0.30));
+                        gc.setLineWidth(8);
+                        gc.strokeOval(p.x - dotRadius - 5, p.y - dotRadius - 5,
+                                (dotRadius + 5) * 2, (dotRadius + 5) * 2);
+                    }
+                    Color fill   = sel ? Color.rgb(249, 115, 22, 0.95) : Color.rgb(0, 120, 255, 0.85);
+                    Color stroke = sel ? Color.rgb(249, 115, 22, 1.00) : Color.rgb(0, 70, 180, 0.95);
+                    gc.setFill(fill);
+                    gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+                    gc.setStroke(stroke);
+                    gc.setLineWidth(1.2);
+                    gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void drawBoundary() {
+        GraphicsContext gc = mapping.getGc();
+
+        gc.setStroke(Color.rgb(120, 0, 0, 0.35));
+        gc.setLineWidth(6);
+        gc.beginPath();
+        boolean first = true;
+        for (double[] c : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
+            if (first) { gc.moveTo(p.x, p.y); first = false; } else gc.lineTo(p.x, p.y);
+        }
+        gc.closePath();
+        gc.stroke();
+
+        gc.setStroke(Color.rgb(255, 50, 50, 0.9));
+        gc.setLineWidth(2.5);
+        gc.beginPath();
+        first = true;
+        for (double[] c : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
+            if (first) { gc.moveTo(p.x, p.y); first = false; } else gc.lineTo(p.x, p.y);
+        }
+        gc.closePath();
+        gc.stroke();
+    }
+
+    private void drawEvacSites() {
+        if (!mapping.isInitialized() || evacSites.isEmpty()) return;
+
+        GraphicsContext gc  = mapping.getGc();
+        double canvasW      = mapping.getCanvas().getWidth();
+        double canvasH      = mapping.getCanvas().getHeight();
+        double pad          = 60;
+        boolean useImage    = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
+        double dotRadius    = 4;
+        Color dotColor      = Color.rgb(234, 179, 8, 0.85);
+
+        for (EvacSiteMarker site : evacSites) {
+            if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
+            if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
+            try {
+                Mapping.Point p = mapping.latLonToScreen(site.lat, site.lon);
+                if (p.x < -pad || p.x > canvasW + pad) continue;
+                if (p.y < -pad || p.y > canvasH + pad) continue;
+
+                if (useImage && evacSiteMarker != null) {
+                    gc.drawImage(evacSiteMarker,
+                            p.x - EVAC_MARKER_WIDTH / 2, p.y - EVAC_MARKER_OFFSET_Y,
+                            EVAC_MARKER_WIDTH, EVAC_MARKER_HEIGHT);
+                } else {
+                    gc.setFill(dotColor);
+                    gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+                    gc.setStroke(dotColor);
+                    gc.setLineWidth(1.2);
+                    gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Helpers
+    // ═════════════════════════════════════════════════════════════════════════
+    private double longestNameWidth(String beneName,
+                                    List<FamilyMemberModel> members,
+                                    double charPx, double hPad) {
+        double max = (beneName != null ? beneName.length() : 8) * charPx + hPad;
+        if (members != null) {
+            for (FamilyMemberModel m : members) {
+                String n = m.getFullName();
+                double w = (n != null ? n.length() : 4) * charPx + hPad;
+                if (w > max) max = w;
+            }
+        }
+        return max;
+    }
+
+    private void showWithFade(javafx.scene.Node node) {
+        node.setOpacity(0);
+        node.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), node);
+        ft.setFromValue(0);
+        ft.setToValue(1);
+        ft.play();
+    }
+
+    private void applyCloseBtnStyle(Button btn) {
+        String n = "-fx-background-color:transparent;-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
+        String h = "-fx-background-color:transparent;-fx-text-fill:#ef4444;-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
+        btn.setStyle(n);
+        btn.setOnMouseEntered(e -> btn.setStyle(h));
+        btn.setOnMouseExited(e  -> btn.setStyle(n));
+    }
+
+    private boolean isPointInPolygon(double x, double y, double[][] polygon) {
+        boolean inside = false;
+        for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            double xi = polygon[i][1], yi = polygon[i][0];
+            double xj = polygon[j][1], yj = polygon[j][0];
+            boolean intersect = ((yi > y) != (yj > y))
+                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
     }
 }

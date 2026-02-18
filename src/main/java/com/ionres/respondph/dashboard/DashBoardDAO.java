@@ -1,8 +1,8 @@
 package com.ionres.respondph.dashboard;
 
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.common.model.DisasterCircleEncrypted;
 import com.ionres.respondph.common.model.EvacSiteMappingModel;
+import com.ionres.respondph.common.model.FamilyMemberModel;
 
 import java.util.List;
 
@@ -16,4 +16,5 @@ public interface DashBoardDAO {
     List<BeneficiariesMappingModel> fetchAllBeneficiaries();
     List<EvacSiteMappingModel> fetchAllEvacSites();
     int getDistinctAidCount();
+    List<FamilyMemberModel> fetchFamilyMembers(int beneficiaryId);
 }

@@ -2,6 +2,7 @@ package com.ionres.respondph.dashboard;
 
 import com.ionres.respondph.common.model.DisasterCircleEncrypted;
 import com.ionres.respondph.common.model.EvacSiteMappingModel;
+import com.ionres.respondph.common.model.FamilyMemberModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.ResourceUtils;
@@ -216,6 +217,48 @@ public class DashBoardDAOImpl implements DashBoardDAO {
         } finally {
             ResourceUtils.closeResources(rs, ps);
         }
+        return list;
+    }
+
+    @Override
+    public List<FamilyMemberModel> fetchFamilyMembers(int beneficiaryId) {
+        List<FamilyMemberModel> list = new ArrayList<>();
+
+        String sql = "SELECT familymember_id, first_name, middle_name, last_name " +
+                "FROM family_member " +
+                "WHERE beneficiary_id = ?";
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            Connection conn = connection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, beneficiaryId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                try {
+                    int    id         = rs.getInt("familymember_id");
+                    String firstName  = rs.getString("first_name");
+                    String middleName = rs.getString("middle_name");  // raw encrypted
+                    String lastName   = rs.getString("last_name");    // raw encrypted
+
+                    list.add(new FamilyMemberModel(id, firstName, middleName, lastName));
+
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error reading family member row", e);
+                }
+            }
+
+            LOGGER.info("Fetched " + list.size() + " family members for beneficiary ID " + beneficiaryId);
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching family members for beneficiary ID " + beneficiaryId, e);
+        } finally {
+            ResourceUtils.closeResources(rs, ps);
+        }
+
         return list;
     }
 }

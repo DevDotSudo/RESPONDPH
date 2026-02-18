@@ -98,4 +98,40 @@ public class DashBoardServiceImpl implements DashBoardService {
 
         return result;
     }
+
+    @Override
+    public List<FamilyMemberModel> getFamilyMembers(int beneficiaryId) {
+        List<FamilyMemberModel> result = new ArrayList<>();
+
+        for (FamilyMemberModel raw : dashBoardDAO.fetchFamilyMembers(beneficiaryId)) {
+            try {
+                String firstName  = safeDecrypt(raw.getFirstName());
+                String middleName = safeDecrypt(raw.getMiddleName());
+                String lastName   = safeDecrypt(raw.getLastName());
+
+                result.add(new FamilyMemberModel(
+                        raw.getFamilyMemberId(),
+                        firstName,
+                        middleName,
+                        lastName
+                ));
+
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error decrypting family member (ID: " + raw.getFamilyMemberId() + ")", ex);
+            }
+        }
+
+        return result;
+    }
+
+    private String safeDecrypt(String encrypted) {
+        if (encrypted == null || encrypted.isBlank()) return null;
+        try {
+            return CRYPTO.decryptWithOneParameter(encrypted);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Decryption failed, returning null", e);
+            return null;
+        }
+    }
+
 }

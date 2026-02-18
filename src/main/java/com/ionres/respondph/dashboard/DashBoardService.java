@@ -3,6 +3,7 @@ package com.ionres.respondph.dashboard;
 import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.common.model.EvacSiteMarker;
+import com.ionres.respondph.common.model.FamilyMemberModel;
 
 import java.util.List;
 
@@ -14,4 +15,5 @@ public interface DashBoardService {
     List<DisasterCircleInfo> getCircles();
     List<BeneficiaryMarker> getBeneficiaries();
     List<EvacSiteMarker> getEvacSites();
+    public List<FamilyMemberModel> getFamilyMembers(int beneficiaryId);
 }

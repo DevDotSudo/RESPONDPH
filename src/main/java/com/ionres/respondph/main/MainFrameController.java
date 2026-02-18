@@ -79,7 +79,6 @@ public class MainFrameController {
     @FXML private Button aidTypeBtn;
     @FXML private Button aidBtn;
     @FXML private Button sendSmsBtn;
-    @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
 
     // ── Nav state ─────────────────────────────────────────────────────────────
@@ -783,7 +782,7 @@ public class MainFrameController {
                 dashboardBtn, manageAdminBtn, manageBeneficiariesBtn, familyMembersBtn,
                 disasterBtn, disasterMappingBtn, disasterDamageBtn,
                 aidBtn, aidTypeBtn, evacBtn, evacPlanBtn,
-                vulnerabilityBtn, sendSmsBtn, settingsBtn, logoutBtn
+                vulnerabilityBtn, sendSmsBtn, logoutBtn
         };
         for (Button b : btns) if (b != null) b.setOnAction(nav);
     }
@@ -837,7 +836,6 @@ public class MainFrameController {
         else if (s == disasterDamageBtn)      { ensureSectionOpen(disasterSectionContent,   disasterSectionIcon);   handleDisasterDamage(); }
         else if (s == vulnerabilityBtn)       handleVulnerabilityIndicator();
         else if (s == sendSmsBtn)             handleSendSms();
-        else if (s == settingsBtn)            handleSettings();
         else if (s == logoutBtn)              handleLogout();
         else if (s == aidBtn)                 { ensureSectionOpen(aidsSectionContent, aidsSectionIcon); handleAid(); }
         else if (s == aidTypeBtn)             { ensureSectionOpen(aidsSectionContent, aidsSectionIcon); handleAidType(); }
@@ -857,7 +855,6 @@ public class MainFrameController {
     private void handleEvacSite()               { loadPage("/view/evac_site/EvacSite.fxml");                      activeButton(evacBtn); }
     private void handleEvacPlan()               { loadPage("/view/evacuation_plan/EvacuationPlan.fxml");          activeButton(evacPlanBtn); }
     private void handleSendSms()                { loadPage("/view/send_sms/SendSMS.fxml");                        activeButton(sendSmsBtn); }
-    private void handleSettings()               { loadPage("/view/settings/Settings.fxml");                       activeButton(settingsBtn); }
     private void handleVulnerabilityIndicator() {
         DashboardRefresher.refreshFlds();
         loadPage("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");

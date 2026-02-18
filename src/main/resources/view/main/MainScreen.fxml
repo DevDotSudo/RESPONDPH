@@ -196,15 +196,6 @@
                         </graphic>
                     </Button>
 
-                    <Button fx:id="settingsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
-                        <graphic>
-                            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                <FontAwesomeIconView glyphName="GEAR" styleClass="nav-icon" />
-                                <Label styleClass="nav-text" text="Settings" />
-                            </HBox>
-                        </graphic>
-                    </Button>
-
                 </VBox>
             </ScrollPane>
 
@@ -227,28 +218,12 @@
         <StackPane fx:id="contentShell" styleClass="content-shell">
             <VBox fx:id="contentArea" styleClass="content-area" />
 
-            <VBox fx:id="smsProgressToast"
-                  managed="false"
-                  visible="true"
-                  spacing="0"
-                  fillWidth="true"
-                  styleClass="sms-toast"
-                  maxWidth="-1"
-                  maxHeight="-1"
-                  StackPane.alignment="BOTTOM_RIGHT">
+            <VBox fx:id="smsProgressToast" fillWidth="true" managed="false" maxHeight="-1" maxWidth="-1" spacing="0" styleClass="sms-toast" visible="true" StackPane.alignment="BOTTOM_RIGHT">
 
                 <!-- HEADER -->
-                <HBox fx:id="smsToastHeader"
-                      alignment="CENTER_LEFT"
-                      spacing="8"
-                      maxWidth="-1"
-                      styleClass="sms-toast-header">
+                <HBox fx:id="smsToastHeader" alignment="CENTER_LEFT" maxWidth="-1" spacing="8" styleClass="sms-toast-header">
 
-                    <Label fx:id="smsProgressTitle"
-                           text="Sending SMS (API)"
-                           styleClass="sms-toast-title"
-                           maxWidth="1.7976931348623157E308"
-                           HBox.hgrow="ALWAYS" />
+                    <Label fx:id="smsProgressTitle" maxWidth="1.7976931348623157E308" styleClass="sms-toast-title" text="Sending SMS (API)" HBox.hgrow="ALWAYS" />
 
                     <HBox alignment="CENTER_RIGHT" spacing="6">
                         <Button fx:id="smsMinimizeBtn" styleClass="sms-icon-btn" text="–" />
@@ -257,22 +232,11 @@
                 </HBox>
 
                 <!-- BODY -->
-                <VBox fx:id="smsToastBody"
-                      spacing="6"
-                      fillWidth="true"
-                      maxWidth="-1"
-                      maxHeight="-1"
-                      styleClass="sms-toast-body">
+                <VBox fx:id="smsToastBody" fillWidth="true" maxHeight="-1" maxWidth="-1" spacing="6" styleClass="sms-toast-body">
 
-                    <Label fx:id="smsProgressMessage"
-                           text="Sending 1 of 200"
-                           styleClass="sms-toast-subtitle"
-                           wrapText="true"
-                           maxWidth="1.7976931348623157E308" />
+                    <Label fx:id="smsProgressMessage" maxWidth="1.7976931348623157E308" styleClass="sms-toast-subtitle" text="Sending 1 of 200" wrapText="true" />
 
-                    <ProgressBar fx:id="smsProgressBar"
-                                 styleClass="sms-toast-progress"
-                                 maxWidth="1.7976931348623157E308" />
+                    <ProgressBar fx:id="smsProgressBar" maxWidth="1.7976931348623157E308" styleClass="sms-toast-progress" />
                 </VBox>
 
             </VBox>

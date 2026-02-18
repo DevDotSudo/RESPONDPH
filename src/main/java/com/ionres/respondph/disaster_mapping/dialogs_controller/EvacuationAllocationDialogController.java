@@ -789,6 +789,7 @@ public class EvacuationAllocationDialogController implements Initializable {
                 }
 
                 closeDialog();
+                DashboardRefresher.refreshEvacuationPlanController();
             } else {
                 AlertDialogManager.showError("Error", "Failed to allocate any beneficiaries:\n" +
                         String.join("\n", result.errors));

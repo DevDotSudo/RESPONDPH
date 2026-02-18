@@ -89,11 +89,6 @@
                             <Region HBox.hgrow="ALWAYS" />
                         </HBox>
 
-                        <VBox fx:id="aiLoadingBox" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
-                            <ProgressIndicator fx:id="piAi" prefHeight="26" prefWidth="26" />
-                            <Label text="Generating news..." />
-                        </VBox>
-
                         <VBox fx:id="aiResponseContainer" fillWidth="true" managed="false" maxWidth="1.7976931348623157E308" spacing="10" styleClass="ai-response-pane" visible="false">
 
                             <Label fx:id="aiResponseLabel" styleClass="ai-response-label" text="AI Generated News Options:" />
@@ -102,16 +97,11 @@
                         <toggleGroup>
                            <ToggleGroup fx:id="newsAiResponse" />
                         </toggleGroup></RadioButton>
-
                             <RadioButton fx:id="rbNewsSlot2" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
-
                             <RadioButton fx:id="rbNewsSlot3" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
-
                             <RadioButton fx:id="rbNewsSlot4" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
-
                             <RadioButton fx:id="rbNewsSlot5" maxWidth="1.7976931348623157E308" styleClass="ai-news-slot" toggleGroup="$newsAiResponse" wrapText="true" />
                         </VBox>
-
                     </VBox>
                 </VBox>
 

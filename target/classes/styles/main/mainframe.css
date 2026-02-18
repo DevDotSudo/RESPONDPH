@@ -330,8 +330,10 @@
     -fx-text-fill:          #F4F4F5;
 }
 
+/* Default SMS progress bar (bulk send — keep blue/neutral) */
 .sms-toast-progress {
     -fx-pref-width:         100%;
+    -fx-max-width:          1.7976931348623157E308;
     -fx-pref-height:        8px;
     -fx-min-height:         8px;
     -fx-max-height:         8px;
@@ -351,6 +353,7 @@
     -fx-background-insets:  0;
 }
 
+/* Footer bar */
 .main-footer {
     -fx-background-color:   rgba(15, 17, 23, 0.95);
     -fx-padding:            8px 16px;

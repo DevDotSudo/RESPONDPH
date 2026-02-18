@@ -85,7 +85,7 @@
 
             <TableView fx:id="aidTable" styleClass="aid-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="aidIdColumn" text="ID" minWidth="80" maxWidth="80"/>
+                    <TableColumn fx:id="beneficiaryIdColumn" text="Beneficiary ID" prefWidth="100.0" />
                     <TableColumn fx:id="beneficiaryColumn" text="Beneficiary Name" minWidth="80" maxWidth="160"/>
                     <TableColumn fx:id="disasterColumn" text="Disaster Name" minWidth="80" maxWidth="160"/>
                     <TableColumn fx:id="nameColumn" text="Aid Name" prefWidth="160"/>

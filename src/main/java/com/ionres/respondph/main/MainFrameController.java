@@ -18,11 +18,28 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * MainFrameController — main shell controller.
+ *
+ * News-progress toast shows:
+ *  • A scrollable log of grounding events (search queries, pages read, confirmed items).
+ *  • A live "streaming preview" label (dim italic) updated with each chunk.
+ *  • A dedicated "tick" label (elapsed / current action) updated by the background ticker.
+ *  • Five progress dots that fill orange as each item is confirmed.
+ *
+ * Design rules that keep the UI clean:
+ *  - streamingLabel is ONE label, updated in-place, never duplicated.
+ *  - tickLabel      is ONE label, updated in-place, never duplicated.
+ *  - Both are always kept at the BOTTOM of the log list.
+ *  - commitStreamingLabel() promotes the current preview into a permanent row
+ *    and clears the reference so the next chunk creates a fresh one.
+ */
 public class MainFrameController {
 
     private static MainFrameController INSTANCE;
     public static MainFrameController getInstance() { return INSTANCE; }
 
+    // ── FXML ─────────────────────────────────────────────────────────────────
     @FXML private VBox        contentArea;
     @FXML private VBox        smsProgressToast;
     @FXML private VBox        smsToastBody;
@@ -65,9 +82,12 @@ public class MainFrameController {
     @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
 
-    private Button   activeBtn;
-    private boolean  smsMinimized = false;
-    private Task<?>  currentSmsTask;
+    // ── Nav state ─────────────────────────────────────────────────────────────
+    private Button  activeBtn;
+
+    // ── SMS bulk state ────────────────────────────────────────────────────────
+    private boolean smsMinimized  = false;
+    private Task<?> currentSmsTask;
     private Timeline snapTimeline;
 
     // ── News toast state ──────────────────────────────────────────────────────
@@ -76,60 +96,65 @@ public class MainFrameController {
     private ScrollPane newsLogScroll;
     private HBox       newsDotBar;
     private Label      newsCountLabel;
-    /** Single label updated in-place for live token stream. Replaced on commit. */
-    private Label      streamingLabel;
-    /** Single label updated in-place for the elapsed-seconds ticker. */
-    private Label      tickLabel;
-    private int        confirmedNewsCount = 0;
-    private Timeline   pulseTimeline;
-    private static final int MAX_LOG_ROWS = 12;
 
-    // ── Grounding emoji prefixes — must match what NewsGeneratorService emits ─
-    private static final String GROUNDING_SEARCH_EMOJI = "🔍";
-    private static final String GROUNDING_PAGE_EMOJI   = "📄";
+    /**
+     * Single label rendered at the BOTTOM of the log for the live streaming
+     * preview (dim italic). Updated in-place; replaced on item commit.
+     */
+    private Label streamingLabel;
 
+    /**
+     * Single label rendered at the BOTTOM of the log for the elapsed-seconds
+     * ticker / current-action ticker. Updated in-place; removed on state change.
+     */
+    private Label tickLabel;
+
+    private int      confirmedNewsCount = 0;
+    private Timeline pulseTimeline;
+
+    /**
+     * Registered by SendSMSController before starting news generation.
+     * Cleared automatically when hideNewsProgress() is called.
+     */
+    private Runnable newsCancelAction;
+
+    // ── Constants ─────────────────────────────────────────────────────────────
+    private static final int      MAX_LOG_ROWS      = 14;
     private static final Duration CHEVRON_DURATION  = Duration.millis(180);
     private static final double   CHEVRON_COLLAPSED = 0;
     private static final double   CHEVRON_EXPANDED  = 90;
     private static final String   ORANGE_STYLE =
             "-fx-accent: #F97316; -fx-control-inner-background: rgba(249,115,22,0.12);";
 
+    private static final String GROUNDING_SEARCH_EMOJI = "🔍";
+    private static final String GROUNDING_PAGE_EMOJI   = "📄";
+
     // ─────────────────────────────────────────────────────────────────────────
     @FXML
     public void initialize() {
         INSTANCE = this;
+
+        // Minimize button — collapses toast body to footer strip
         if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeToFooter());
-        if (smsCloseBtn    != null) smsCloseBtn.setOnAction(e -> { if (currentSmsTask != null) currentSmsTask.cancel(); hideSmsProgress(); });
-        if (btnShowProgress!= null) btnShowProgress.setOnAction(e -> restoreFromFooter());
 
+        // Close (X) button — context-aware:
+        //   news active  → confirm cancel  →  invoke cancel action
+        //   bulk SMS     → cancel task     →  hide
+        //   nothing      → just hide
+        if (smsCloseBtn != null) smsCloseBtn.setOnAction(e -> handleCloseButton());
+
+        if (btnShowProgress != null) btnShowProgress.setOnAction(e -> restoreFromFooter());
+
+        // Ensure toast sizing is consistent
         if (smsProgressToast != null) {
-
-            smsProgressToast.setMinSize(
-                    Region.USE_PREF_SIZE,
-                    Region.USE_PREF_SIZE
-            );
-
-            smsProgressToast.setPrefSize(
-                    Region.USE_COMPUTED_SIZE,
-                    Region.USE_COMPUTED_SIZE
-            );
-
-            smsProgressToast.setMaxSize(
-                    Region.USE_PREF_SIZE,
-                    Region.USE_PREF_SIZE
-            );
+            smsProgressToast.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            smsProgressToast.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+            smsProgressToast.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         }
+        if (smsToastBody   != null) smsToastBody.setMaxHeight(Region.USE_PREF_SIZE);
+        if (smsProgressBar != null) smsProgressBar.setMaxWidth(Double.MAX_VALUE);
 
-        if (smsToastBody != null) {
-
-            smsToastBody.setMaxHeight(Region.USE_PREF_SIZE);
-        }
-
-        if (smsProgressBar != null) {
-
-            smsProgressBar.setMaxWidth(Double.MAX_VALUE);
-        }
-
+        // Sidebar toggles
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn,   disasterSectionContent,   disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn,        aidsSectionContent,       aidsSectionIcon);
@@ -138,160 +163,126 @@ public class MainFrameController {
         collapseAllSections();
         loadPage("/view/dashboard/Dashboard.fxml");
         activeButton(dashboardBtn);
-
-        EventHandler<ActionEvent> nav = this::handleActions;
-        if (dashboardBtn           != null) dashboardBtn.setOnAction(nav);
-        if (manageAdminBtn         != null) manageAdminBtn.setOnAction(nav);
-        if (manageBeneficiariesBtn != null) manageBeneficiariesBtn.setOnAction(nav);
-        if (familyMembersBtn       != null) familyMembersBtn.setOnAction(nav);
-        if (disasterBtn            != null) disasterBtn.setOnAction(nav);
-        if (disasterMappingBtn     != null) disasterMappingBtn.setOnAction(nav);
-        if (disasterDamageBtn      != null) disasterDamageBtn.setOnAction(nav);
-        if (aidBtn                 != null) aidBtn.setOnAction(nav);
-        if (aidTypeBtn             != null) aidTypeBtn.setOnAction(nav);
-        if (evacBtn                != null) evacBtn.setOnAction(nav);
-        if (evacPlanBtn            != null) evacPlanBtn.setOnAction(nav);
-        if (vulnerabilityBtn       != null) vulnerabilityBtn.setOnAction(nav);
-        if (sendSmsBtn             != null) sendSmsBtn.setOnAction(nav);
-        if (settingsBtn            != null) settingsBtn.setOnAction(nav);
-        if (logoutBtn              != null) logoutBtn.setOnAction(nav);
+        wireNavButtons();
 
         hideFooter();
         hideSmsProgress();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // NEWS PROGRESS
+    // CANCEL ACTION
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public void setNewsCancelAction(Runnable action) { this.newsCancelAction = action; }
+
+    private void handleCloseButton() {
+        if (newsCancelAction != null) {
+            boolean ok = AlertDialogManager.showConfirmation(
+                    "Cancel AI News Generation",
+                    "News generation is still in progress.\nCancel and discard results?",
+                    ButtonType.OK, ButtonType.CANCEL
+            );
+            if (ok) {
+                Runnable action = newsCancelAction;
+                newsCancelAction = null;       // clear first — re-entrant safety
+                if (action != null) action.run();
+                // hideNewsProgress() will be called by SendSMSController's whenComplete handler
+            }
+        } else if (currentSmsTask != null) {
+            currentSmsTask.cancel();
+            hideSmsProgress();
+        } else {
+            hideSmsProgress();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // NEWS PROGRESS — public API called by SendSMSController
     // ─────────────────────────────────────────────────────────────────────────
 
     public void showNewsProgress(String topic) {
         Platform.runLater(() -> {
-            smsMinimized = false; confirmedNewsCount = 0; streamingLabel = null; tickLabel = null;
+            resetNewsState();
             if (smsProgressTitle   != null) smsProgressTitle.setText("AI News Generator");
-            if (smsProgressMessage != null) { smsProgressMessage.setVisible(false); smsProgressMessage.setManaged(false); }
-            if (smsToastBody != null && newsActivityPane != null) smsToastBody.getChildren().remove(newsActivityPane);
+            if (smsProgressMessage != null) setProgressMessageVisible(false);
+
+            // Remove any leftover news pane from a prior run
+            if (newsActivityPane != null && smsToastBody != null)
+                smsToastBody.getChildren().remove(newsActivityPane);
+
             newsActivityPane = buildNewsPane(topic);
             if (smsToastBody != null) smsToastBody.getChildren().add(newsActivityPane);
-            setBarRaw(0.0); applyOrangeStyle(); showToast(); hideFooter(); startPulse();
+
+            setBarRaw(0.0);
+            applyOrangeStyle();
+            showToast();
+            hideFooter();
+            startPulse();
         });
     }
 
     /**
-     * Interprets every status string that NewsGeneratorService.generateNewsHeadlines() emits.
+     * Central dispatcher — called for every status string from NewsGeneratorService.
      *
-     * The service emits these formats (no prefix constants — matched by content):
-     *
-     *   "Waiting for AI…"
-     *       → tick label in log (initial state before grounding starts)
-     *
-     *   "🔍 Searching: \"…\" (Xs)"   — grounding search query
-     *   "📄 Reading: … (Xs)"         — grounding page title
-     *       → strip the trailing " (Xs)", typewriter-reveal as a grounding row,
-     *         update tick label with the full text including elapsed
-     *
-     *   "Writing news… (Xs)\n▶ tail"
-     *       → tick label update (no new item yet, text is flowing)
-     *         tail after \n▶ goes to the streaming label
-     *
-     *   "N of 5 items found (Xs)\n▶ tail"
-     *       → dot fill + item confirmed row + streaming label updated with tail
-     *         (the ticker also re-emits this form without a \n▶ tail — handled same way)
-     *
-     *   "Validating articles… (Xs)"  → dim info row
-     *   "Done — N of 5 items in Xs"  → gold done row, fill remaining dots
-     *   "Reconnecting…"              → dim info row
+     * Status string protocol (defined by NewsGeneratorService):
+     *   "🔍 Searching: …"                  — grounding search query
+     *   "📄 Reading: …"                     — grounding page read
+     *   "Writing news… (Xs)"                — stream has started, no item yet
+     *   "N of 5 items found (Xs)\n▶ tail"  — Nth item confirmed
+     *   "Validating articles… (Xs)"         — post-stream validation
+     *   "Done — N of 5 items in Xs"        — finished
+     *   "Reconnecting…"                     — fallback call
+     *   "Cancelled."                        — user cancelled
+     *   (anything else with \n▶ suffix)    — live stream preview update
      */
     public void setNewsProgress(double progress, String status) {
         if (!Platform.isFxApplicationThread()) {
             Platform.runLater(() -> setNewsProgress(progress, status));
             return;
         }
+        if (status == null) { animateBarTo(Math.max(0.0, Math.min(1.0, progress))); return; }
 
-        double clamped = Math.max(0.0, Math.min(1.0, progress));
-        animateBarTo(clamped);
+        animateBarTo(Math.max(0.0, Math.min(1.0, progress)));
 
-        if (status == null) return;
-
-        // ── Split header from optional stream tail (\n▶ separator) ───────────
-        // The service appends "\n▶ <tail>" to item-confirmed and per-chunk events
-        // so the toast can show live token preview alongside the progress label.
+        // Split header from optional stream tail
         String header;
-        String streamTail; // may be null
+        String streamTail;
         int nlIdx = status.indexOf('\n');
         if (nlIdx >= 0) {
-            header    = status.substring(0, nlIdx).trim();
+            header = status.substring(0, nlIdx).trim();
             String after = status.substring(nlIdx + 1).trim();
-            // after is "▶ <tail>" — strip the leading arrow marker
             streamTail = after.startsWith("▶ ") ? after.substring(2) : after;
         } else {
             header    = status.trim();
             streamTail = null;
         }
 
-        // Update footer when minimized — always uses the header (first line)
+        // Mirror to footer strip when minimised
         if (smsMinimized) showFooterText(header);
+        if (newsLogBox  == null) return;
 
-        if (newsLogBox == null) return;
+        // ── Routing logic ─────────────────────────────────────────────────────
 
-        // ── "Waiting for AI…" — initial tick before grounding starts ─────────
-        if (header.equals("Waiting for AI…")) {
-            updateTickLabel(header);
-            return;
-        }
-
-        // ── Grounding rows: 🔍 search queries and 📄 page titles ─────────────
-        // Format: "🔍 Searching: \"…\" (12s)"  or  "📄 Reading: … (5s)"
-        // We show the full string (including elapsed) as the tick label for the
-        // footer/minimized view, and strip the trailing " (Ns)" for the typewriter
-        // row so the log doesn't fill up with ever-changing elapsed numbers.
+        // Elapsed ticker updates (search/page events that update continuously)
         if (header.startsWith(GROUNDING_SEARCH_EMOJI) || header.startsWith(GROUNDING_PAGE_EMOJI)) {
-            updateTickLabel(header);           // live elapsed in the tick slot
-            clearStreamingLabel();             // grounding supersedes any streaming preview
-
-            // Strip trailing " (Ns)" for the typewriter row — keep it clean
-            String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
-            String lastRow = getLastGroundingRowText();
-            if (!rowText.equals(lastRow)) {    // skip exact duplicates (ticker re-fires same label)
-                clearTickLabel();              // replace tick slot with a real typewriter row
-                RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
-                appendRowTypewriter(rowText, kind);
-            }
+            handleGroundingEvent(header);
             return;
         }
 
-        // ── "Writing news… (Xs)" — text flowing but no item complete yet ─────
-        // The service emits this on every chunk before the first item is confirmed.
-        // Show elapsed in the tick label; route the stream tail to the streaming label.
+        // Stream started — only update tick + preview
         if (header.startsWith("Writing news…")) {
             updateTickLabel(header);
             if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
 
-        // ── "N of 5 items found (Xs)" — a complete item just landed ─────────
-        // Emitted by both the stream loop (with \n▶ tail) and the ticker (without).
-        // Only the stream-loop variant (streamTail != null) advances the dot count.
-        if (header.matches("\\d+ of 5 items.*")) {
-            int n = 0;
-            try { n = Integer.parseInt(header.split(" ")[0]); } catch (NumberFormatException ignored) {}
-
-            if (streamTail != null) {
-                // Real item event from the stream loop — advance UI state
-                commitStreamingLabel();
-                clearTickLabel();
-                for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
-                confirmedNewsCount = n;
-                if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
-                appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
-                updateStreamingLabel(streamTail);  // show live tail of next item being written
-            } else {
-                // Ticker heartbeat — just refresh the tick label with the elapsed count
-                updateTickLabel(header);
-            }
+        // Item confirmed — N of 5
+        if (header.matches("\\d+ of \\d+ items.*")) {
+            handleItemConfirmed(header, streamTail);
             return;
         }
 
-        // ── "Validating articles… (Xs)" ──────────────────────────────────────
+        // Post-stream validation phase
         if (header.startsWith("Validating")) {
             commitStreamingLabel();
             clearTickLabel();
@@ -299,88 +290,163 @@ public class MainFrameController {
             return;
         }
 
-        // ── "Done — N of 5 items in Xs" ──────────────────────────────────────
+        // Done
         if (header.startsWith("Done")) {
-            commitStreamingLabel();
-            clearTickLabel();
-            stopPulse();
-            appendRow("🎉 " + header, RowKind.ITEM);
-            for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
-            if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
+            handleDone(header);
             return;
         }
 
-        // ── "Reconnecting…" ───────────────────────────────────────────────────
+        // Reconnecting fallback
         if (header.startsWith("Reconnecting")) {
             commitStreamingLabel();
             clearTickLabel();
-            appendRow("🔄 Reconnecting…", RowKind.INFO);
+            appendRow("🔄 Reconnecting — switching to direct call…", RowKind.INFO);
+            return;
+        }
+
+        // Cancelled
+        if (header.startsWith("Cancelled")) {
+            commitStreamingLabel();
+            clearTickLabel();
+            stopPulse();
+            appendRow("🚫 Generation cancelled.", RowKind.INFO);
         }
     }
 
     public void hideNewsProgress() {
         Platform.runLater(() -> {
-            stopPulse(); smsMinimized = false; currentSmsTask = null;
-            cancelSnapAnimation(); resetBarStyle();
-            if (smsProgressMessage != null) { smsProgressMessage.setVisible(true); smsProgressMessage.setManaged(true); smsProgressMessage.setWrapText(false); }
-            if (smsToastBody != null && newsActivityPane != null) smsToastBody.getChildren().remove(newsActivityPane);
-            newsActivityPane = null; newsLogBox = null; newsLogScroll = null;
-            newsDotBar = null; newsCountLabel = null; streamingLabel = null; tickLabel = null;
-            confirmedNewsCount = 0;
-            if (smsProgressToast != null) { smsProgressToast.setVisible(false); smsProgressToast.setManaged(false); }
+            newsCancelAction = null;
+            stopPulse();
+            resetNewsState();
+            cancelSnapAnimation();
+            resetBarStyle();
+            setProgressMessageVisible(true);
+
+            if (smsToastBody != null && newsActivityPane != null)
+                smsToastBody.getChildren().remove(newsActivityPane);
+            newsActivityPane = null;
+
+            if (smsProgressToast != null) {
+                smsProgressToast.setVisible(false);
+                smsProgressToast.setManaged(false);
+            }
             hideFooter();
         });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // TOAST BUILDER
+    // Internal status handlers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void handleGroundingEvent(String header) {
+        // Strip trailing "(Xs)" for the log row, keep it in the tick label
+        String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
+
+        updateTickLabel(header); // tick shows the live elapsed version
+
+        // Only add a log row if this grounding event is different from the last one
+        if (!rowText.equals(lastGroundingRowText())) {
+            clearStreamingLabel(); // grounding event interrupts stream preview
+            clearTickLabel();      // promote tick to a real row
+            RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
+            appendRowTypewriter(rowText, kind);
+        }
+    }
+
+    private void handleItemConfirmed(String header, String streamTail) {
+        // Parse the item count from "N of 5 items…"
+        int n = 0;
+        try { n = Integer.parseInt(header.split(" ")[0]); } catch (NumberFormatException ignored) {}
+
+        if (streamTail != null) {
+            // Real item event (has stream tail) — advance confirmed state
+            commitStreamingLabel();
+            clearTickLabel();
+
+            for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
+            confirmedNewsCount = n;
+            if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
+            appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
+            updateStreamingLabel(streamTail);
+        } else {
+            // Heartbeat only — just refresh tick label
+            updateTickLabel(header);
+        }
+    }
+
+    private void handleDone(String header) {
+        commitStreamingLabel();
+        clearTickLabel();
+        stopPulse();
+        appendRow("🎉 " + header, RowKind.ITEM);
+        for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
+        confirmedNewsCount = 5;
+        if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Toast builder
     // ─────────────────────────────────────────────────────────────────────────
 
     private VBox buildNewsPane(String topic) {
         VBox pane = new VBox(8);
-        pane.setFillWidth(true); pane.setMaxWidth(Double.MAX_VALUE);
+        pane.setFillWidth(true);
+        pane.setMaxWidth(Double.MAX_VALUE);
         pane.setPadding(new Insets(4, 0, 0, 0));
 
         Label topicLabel = new Label("Topic: " + (topic != null ? topic : "…"));
-        topicLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.50); -fx-font-size: 11px; -fx-font-style: italic;");
+        topicLabel.setStyle(
+                "-fx-text-fill: rgba(255,255,255,0.50); " +
+                        "-fx-font-size: 11px; -fx-font-style: italic;");
 
-        newsDotBar = new HBox(6); newsDotBar.setAlignment(Pos.CENTER_LEFT);
+        // Dots row
+        newsDotBar = new HBox(6);
+        newsDotBar.setAlignment(Pos.CENTER_LEFT);
         for (int i = 0; i < 5; i++) {
-            Circle dot = new Circle(5); dot.setId("news-dot-" + i);
-            dot.setFill(Color.web("#ffffff18")); dot.setStroke(Color.web("#F97316")); dot.setStrokeWidth(1.5);
+            Circle dot = new Circle(5);
+            dot.setId("news-dot-" + i);
+            dot.setFill(Color.web("#ffffff18"));
+            dot.setStroke(Color.web("#F97316"));
+            dot.setStrokeWidth(1.5);
             newsDotBar.getChildren().add(dot);
         }
         newsCountLabel = new Label("0 of 5 items found");
-        newsCountLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
-        HBox dotRow = new HBox(10, newsDotBar, newsCountLabel); dotRow.setAlignment(Pos.CENTER_LEFT);
+        newsCountLabel.setStyle(
+                "-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
+        HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
+        dotRow.setAlignment(Pos.CENTER_LEFT);
 
-        newsLogBox = new VBox(3); newsLogBox.setFillWidth(true);
+        // Log box
+        newsLogBox = new VBox(3);
+        newsLogBox.setFillWidth(true);
         newsLogBox.setPadding(new Insets(6, 8, 6, 8));
-        newsLogBox.setStyle("-fx-background-color: rgba(0,0,0,0.30); -fx-background-radius: 6px;");
+        newsLogBox.setStyle(
+                "-fx-background-color: rgba(0,0,0,0.30); -fx-background-radius: 6px;");
 
         newsLogScroll = new ScrollPane(newsLogBox);
-        newsLogScroll.setFitToWidth(true); newsLogScroll.setPrefHeight(110); newsLogScroll.setMaxHeight(110);
+        newsLogScroll.setFitToWidth(true);
+        newsLogScroll.setPrefHeight(120);
+        newsLogScroll.setMaxHeight(120);
         newsLogScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         newsLogScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        newsLogScroll.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;");
+        newsLogScroll.setStyle(
+                "-fx-background: transparent; -fx-background-color: transparent; " +
+                        "-fx-border-color: transparent; -fx-padding: 0;");
 
         pane.getChildren().addAll(topicLabel, dotRow, newsLogScroll);
         return pane;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // LOG ROW MANAGEMENT
+    // Log row management
     // ─────────────────────────────────────────────────────────────────────────
 
     private enum RowKind { SEARCH, PAGE, ITEM, INFO }
 
-    /**
-     * Standard append with fade-in — used for lifecycle events (items, validating, done).
-     */
+    /** Append a permanent row, fading it in. Trims list to MAX_LOG_ROWS. */
     private void appendRow(String text, RowKind kind) {
         if (newsLogBox == null) return;
-        if (newsLogBox.getChildren().size() >= MAX_LOG_ROWS)
-            newsLogBox.getChildren().remove(0);
+        ensureLogCapacity();
         Label row = makeRowLabel(text, kind);
         row.setOpacity(0.0);
         newsLogBox.getChildren().add(row);
@@ -389,36 +455,46 @@ public class MainFrameController {
         scrollBottom();
     }
 
-    /**
-     * Typewriter reveal — used exclusively for GROUNDING rows (search queries and pages).
-     */
+    /** Append a permanent row with a typewriter reveal animation. */
     private void appendRowTypewriter(String fullText, RowKind kind) {
-        if (newsLogBox == null) return;
-        if (newsLogBox.getChildren().size() >= MAX_LOG_ROWS)
-            newsLogBox.getChildren().remove(0);
-
+        if (newsLogBox == null || fullText == null || fullText.isBlank()) return;
+        ensureLogCapacity();
         Label row = makeRowLabel("", kind);
-        row.setOpacity(1.0);
         newsLogBox.getChildren().add(row);
         scrollBottom();
 
-        final int totalChars = fullText.length();
-        final long charDelayMs = 35;
-        final int[] idx = {0};
-        Timeline typewriter = new Timeline();
-        typewriter.setCycleCount(totalChars);
-        KeyFrame kf = new KeyFrame(Duration.millis(charDelayMs), e -> {
+        int totalChars = fullText.length();
+        int[] idx = {0};
+        Timeline tw = new Timeline(new KeyFrame(Duration.millis(28), e -> {
             idx[0]++;
-            String revealed = fullText.substring(0, idx[0]);
-            row.setText(idx[0] < totalChars ? revealed + "▌" : revealed);
-        });
-        typewriter.getKeyFrames().add(kf);
-        PauseTransition pause = new PauseTransition(Duration.millis(80));
-        pause.setOnFinished(e -> typewriter.play());
+            row.setText(idx[0] < totalChars
+                    ? fullText.substring(0, idx[0]) + "▌"
+                    : fullText);
+        }));
+        tw.setCycleCount(totalChars);
+        // Tiny pause before starting, to let the pane lay out
+        PauseTransition pause = new PauseTransition(Duration.millis(60));
+        pause.setOnFinished(e -> tw.play());
         pause.play();
     }
 
-    /** Build a styled label for the given row kind. */
+    private void ensureLogCapacity() {
+        if (newsLogBox == null) return;
+        // Never remove the special tick/streaming labels — only remove real rows
+        while (newsLogBox.getChildren().size() >= MAX_LOG_ROWS) {
+            boolean removed = false;
+            for (int i = 0; i < newsLogBox.getChildren().size(); i++) {
+                var node = newsLogBox.getChildren().get(i);
+                if (node != tickLabel && node != streamingLabel) {
+                    newsLogBox.getChildren().remove(i);
+                    removed = true;
+                    break;
+                }
+            }
+            if (!removed) break; // only special labels left — stop trimming
+        }
+    }
+
     private Label makeRowLabel(String text, RowKind kind) {
         Label row = new Label(text);
         row.setWrapText(true);
@@ -432,29 +508,38 @@ public class MainFrameController {
         return row;
     }
 
-    /**
-     * Updates the live streaming preview label in-place.
-     * Shows the tail of the current item being written by the AI.
-     * Created lazily on first call; replaced (committed) when an item is confirmed.
-     */
+    // ── Streaming label ───────────────────────────────────────────────────────
+
+    /** Update (or create) the single streaming preview label at the bottom of the log. */
     private void updateStreamingLabel(String tail) {
         if (newsLogBox == null || tail == null || tail.isBlank()) return;
         if (streamingLabel == null) {
-            if (newsLogBox.getChildren().size() >= MAX_LOG_ROWS)
-                newsLogBox.getChildren().remove(0);
+            ensureLogCapacity();
             streamingLabel = new Label();
-            streamingLabel.setWrapText(true); streamingLabel.setMaxWidth(Double.MAX_VALUE);
-            streamingLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.32); -fx-font-size: 10.5px; -fx-font-style: italic;");
+            streamingLabel.setWrapText(true);
+            streamingLabel.setMaxWidth(Double.MAX_VALUE);
+            streamingLabel.setStyle(
+                    "-fx-text-fill: rgba(255,255,255,0.30); " +
+                            "-fx-font-size: 10.5px; -fx-font-style: italic;");
             newsLogBox.getChildren().add(streamingLabel);
+        } else {
+            // Ensure it stays at the bottom (tick label may be below it — re-anchor)
+            reorderSpecialLabels();
         }
         streamingLabel.setText(tail);
         scrollBottom();
     }
 
-    /** Freezes the current streaming label; next update creates a fresh one. */
-    private void commitStreamingLabel() { streamingLabel = null; }
+    /**
+     * "Promote" the streaming label to a permanent entry by clearing the reference.
+     * The label node itself stays in the list but loses its special status, so the
+     * next chunk will create a NEW streaming label below it.
+     */
+    private void commitStreamingLabel() {
+        streamingLabel = null;  // orphan the node — next update creates a new one below
+    }
 
-    /** Clears the streaming label from the log entirely (e.g. when grounding starts). */
+    /** Remove the streaming label from the log entirely. */
     private void clearStreamingLabel() {
         if (streamingLabel != null && newsLogBox != null) {
             newsLogBox.getChildren().remove(streamingLabel);
@@ -462,25 +547,27 @@ public class MainFrameController {
         }
     }
 
-    /**
-     * Updates the single tick label in-place with the current elapsed/status text.
-     * e.g. "🔎 Searching news sources… (12s)" or "🔎 Writing news… (4s)"
-     * Created lazily; cleared when real content rows take over.
-     */
+    // ── Tick label ────────────────────────────────────────────────────────────
+
+    /** Update (or create) the single elapsed-seconds ticker label at the bottom. */
     private void updateTickLabel(String text) {
         if (newsLogBox == null) return;
         if (tickLabel == null) {
+            ensureLogCapacity();
             tickLabel = new Label();
             tickLabel.setWrapText(false);
             tickLabel.setMaxWidth(Double.MAX_VALUE);
-            tickLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 11px;");
+            tickLabel.setStyle(
+                    "-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 11px;");
             newsLogBox.getChildren().add(tickLabel);
+        } else {
+            reorderSpecialLabels();
         }
         tickLabel.setText("🔎 " + text);
         scrollBottom();
     }
 
-    /** Removes the tick label from the log box when real content starts arriving. */
+    /** Remove the tick label. */
     private void clearTickLabel() {
         if (tickLabel != null && newsLogBox != null) {
             newsLogBox.getChildren().remove(tickLabel);
@@ -489,19 +576,25 @@ public class MainFrameController {
     }
 
     /**
-     * Returns the text of the last typewriter-revealed grounding row (SEARCH or PAGE),
-     * used to suppress duplicate rows when the ticker re-emits the same label.
+     * Ensure special labels (tick, streaming) are always at the very bottom
+     * of the log, in the order: [permanent rows…] [tickLabel] [streamingLabel].
      */
-    private String getLastGroundingRowText() {
-        if (newsLogBox == null || newsLogBox.getChildren().isEmpty()) return null;
+    private void reorderSpecialLabels() {
+        if (newsLogBox == null) return;
+        if (tickLabel      != null) { newsLogBox.getChildren().remove(tickLabel);      newsLogBox.getChildren().add(tickLabel); }
+        if (streamingLabel != null) { newsLogBox.getChildren().remove(streamingLabel); newsLogBox.getChildren().add(streamingLabel); }
+    }
+
+    /** Returns the text of the last SEARCH or PAGE row (excluding special labels). */
+    private String lastGroundingRowText() {
+        if (newsLogBox == null) return null;
         for (int i = newsLogBox.getChildren().size() - 1; i >= 0; i--) {
             var node = newsLogBox.getChildren().get(i);
             if (node instanceof Label lbl && lbl != streamingLabel && lbl != tickLabel) {
                 String style = lbl.getStyle();
-                if (style.contains("#93C5FD") || style.contains("#86EFAC")) { // SEARCH or PAGE color
-                    return lbl.getText().replace("▌", ""); // strip trailing cursor if still typing
-                }
-                break; // last real row is not a grounding row
+                if (style.contains("#93C5FD") || style.contains("#86EFAC"))
+                    return lbl.getText().replace("▌", "");
+                break;
             }
         }
         return null;
@@ -512,16 +605,19 @@ public class MainFrameController {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // DOT + PULSE
+    // Dot + pulse
     // ─────────────────────────────────────────────────────────────────────────
 
     private void fillDot(int i) {
         if (newsDotBar == null || i < 0 || i >= newsDotBar.getChildren().size()) return;
         Circle dot = (Circle) newsDotBar.getChildren().get(i);
-        dot.setFill(Color.web("#F97316")); dot.setStroke(Color.web("#FDBA74"));
+        dot.setFill(Color.web("#F97316"));
+        dot.setStroke(Color.web("#FDBA74"));
         ScaleTransition pop = new ScaleTransition(Duration.millis(220), dot);
-        pop.setFromX(1.0); pop.setFromY(1.0); pop.setToX(1.5); pop.setToY(1.5);
-        pop.setAutoReverse(true); pop.setCycleCount(2); pop.play();
+        pop.setFromX(1.0); pop.setFromY(1.0);
+        pop.setToX(1.5);   pop.setToY(1.5);
+        pop.setAutoReverse(true); pop.setCycleCount(2);
+        pop.play();
     }
 
     private void startPulse() {
@@ -530,23 +626,31 @@ public class MainFrameController {
             if (newsLogBox == null || newsLogBox.getChildren().isEmpty()) return;
             var last = newsLogBox.getChildren().get(newsLogBox.getChildren().size() - 1);
             FadeTransition ft = new FadeTransition(Duration.millis(450), last);
-            ft.setFromValue(1.0); ft.setToValue(0.30); ft.setAutoReverse(true); ft.setCycleCount(2); ft.play();
+            ft.setFromValue(1.0); ft.setToValue(0.30);
+            ft.setAutoReverse(true); ft.setCycleCount(2);
+            ft.play();
         }));
-        pulseTimeline.setCycleCount(Timeline.INDEFINITE); pulseTimeline.play();
+        pulseTimeline.setCycleCount(Timeline.INDEFINITE);
+        pulseTimeline.play();
     }
 
-    private void stopPulse() { if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; } }
+    private void stopPulse() {
+        if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // SMS BULK PROGRESS
+    // SMS bulk progress (unchanged public API)
     // ─────────────────────────────────────────────────────────────────────────
 
     public void showSmsProgress(String title, int total) {
         Platform.runLater(() -> {
-            smsMinimized = false; resetBarStyle();
-            if (smsProgressMessage != null) { smsProgressMessage.setVisible(true); smsProgressMessage.setManaged(true); }
-            if (smsProgressTitle   != null) smsProgressTitle.setText(title != null ? title : "Sending SMS");
-            setSmsCount(0, total); showToast(); hideFooter();
+            smsMinimized = false;
+            resetBarStyle();
+            setProgressMessageVisible(true);
+            if (smsProgressTitle != null) smsProgressTitle.setText(title != null ? title : "Sending SMS");
+            setSmsCount(0, total);
+            showToast();
+            hideFooter();
         });
     }
 
@@ -572,29 +676,50 @@ public class MainFrameController {
 
     public void hideSmsProgress() {
         Platform.runLater(() -> {
-            smsMinimized = false; currentSmsTask = null; cancelSnapAnimation(); resetBarStyle();
-            if (smsProgressToast != null) { smsProgressToast.setVisible(false); smsProgressToast.setManaged(false); }
+            smsMinimized = false; currentSmsTask = null;
+            cancelSnapAnimation(); resetBarStyle();
+            if (smsProgressToast != null) {
+                smsProgressToast.setVisible(false);
+                smsProgressToast.setManaged(false);
+            }
             hideFooter();
         });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // BAR HELPERS
+    // Progress bar helpers
     // ─────────────────────────────────────────────────────────────────────────
 
     private void animateBarTo(double target) {
-        if (smsProgressBar == null) return; cancelSnapAnimation();
-        double cur = smsProgressBar.getProgress(); if (cur < 0) cur = 0;
+        if (smsProgressBar == null) return;
+        cancelSnapAnimation();
+        double cur = smsProgressBar.getProgress();
+        if (cur < 0) cur = 0;
         snapTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,       new KeyValue(smsProgressBar.progressProperty(), cur)),
-                new KeyFrame(Duration.millis(180), new KeyValue(smsProgressBar.progressProperty(), target)));
+                new KeyFrame(Duration.ZERO,        new KeyValue(smsProgressBar.progressProperty(), cur)),
+                new KeyFrame(Duration.millis(180),  new KeyValue(smsProgressBar.progressProperty(), target)));
         snapTimeline.play();
     }
 
-    private void setBarRaw(double v)   { cancelSnapAnimation(); if (smsProgressBar != null) smsProgressBar.setProgress(v); }
-    private void cancelSnapAnimation() { if (snapTimeline != null) { snapTimeline.stop(); snapTimeline = null; } }
-    private void applyOrangeStyle()    { if (smsProgressBar == null) return; smsProgressBar.setStyle(ORANGE_STYLE); if (!smsProgressBar.getStyleClass().contains("sms-toast-progress-news")) smsProgressBar.getStyleClass().add("sms-toast-progress-news"); }
-    private void resetBarStyle()       { if (smsProgressBar == null) return; smsProgressBar.setStyle(""); smsProgressBar.getStyleClass().remove("sms-toast-progress-news"); }
+    private void setBarRaw(double v)    { cancelSnapAnimation(); if (smsProgressBar != null) smsProgressBar.setProgress(v); }
+    private void cancelSnapAnimation()  { if (snapTimeline != null) { snapTimeline.stop(); snapTimeline = null; } }
+
+    private void applyOrangeStyle() {
+        if (smsProgressBar == null) return;
+        smsProgressBar.setStyle(ORANGE_STYLE);
+        if (!smsProgressBar.getStyleClass().contains("sms-toast-progress-news"))
+            smsProgressBar.getStyleClass().add("sms-toast-progress-news");
+    }
+
+    private void resetBarStyle() {
+        if (smsProgressBar == null) return;
+        smsProgressBar.setStyle("");
+        smsProgressBar.getStyleClass().remove("sms-toast-progress-news");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Toast show/hide/minimize
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void showToast() {
         if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
@@ -603,25 +728,65 @@ public class MainFrameController {
     }
 
     private void minimizeToFooter() {
-        if (smsMinimized) return; smsMinimized = true;
+        if (smsMinimized) return;
+        smsMinimized = true;
         if (smsToastBody     != null) { smsToastBody.setVisible(false);     smsToastBody.setManaged(false); }
         if (smsProgressToast != null) { smsProgressToast.setVisible(false); smsProgressToast.setManaged(false); }
-        showFooterText(newsCountLabel != null ? newsCountLabel.getText() : "Working…");
+        String footerText = newsCountLabel != null ? newsCountLabel.getText() : "Working…";
+        showFooterText(footerText);
     }
 
     private void restoreFromFooter() {
-        if (!smsMinimized) return; smsMinimized = false;
+        if (!smsMinimized) return;
+        smsMinimized = false;
         if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
         if (smsProgressToast != null) { smsProgressToast.setVisible(true); smsProgressToast.setManaged(true); }
         hideFooter();
     }
 
-    private void showFooterText(String t) { if (footerStatusLabel != null) footerStatusLabel.setText(t != null ? t : "Working…"); if (footerBar != null) { footerBar.setVisible(true); footerBar.setManaged(true); } }
-    private void hideFooter()             { if (footerBar != null) { footerBar.setVisible(false); footerBar.setManaged(false); } }
+    private void showFooterText(String t) {
+        if (footerStatusLabel != null) footerStatusLabel.setText(t != null ? t : "Working…");
+        if (footerBar != null) { footerBar.setVisible(true); footerBar.setManaged(true); }
+    }
+
+    private void hideFooter() {
+        if (footerBar != null) { footerBar.setVisible(false); footerBar.setManaged(false); }
+    }
+
+    private void setProgressMessageVisible(boolean visible) {
+        if (smsProgressMessage != null) {
+            smsProgressMessage.setVisible(visible);
+            smsProgressMessage.setManaged(visible);
+            if (visible) smsProgressMessage.setWrapText(false);
+        }
+    }
+
+    /** Reset all news-toast tracking state (does NOT touch FXML nodes). */
+    private void resetNewsState() {
+        smsMinimized        = false;
+        confirmedNewsCount  = 0;
+        newsLogBox          = null;
+        newsLogScroll       = null;
+        newsDotBar          = null;
+        newsCountLabel      = null;
+        streamingLabel      = null;
+        tickLabel           = null;
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // NAVIGATION
+    // Navigation
     // ─────────────────────────────────────────────────────────────────────────
+
+    private void wireNavButtons() {
+        EventHandler<ActionEvent> nav = this::handleActions;
+        Button[] btns = {
+                dashboardBtn, manageAdminBtn, manageBeneficiariesBtn, familyMembersBtn,
+                disasterBtn, disasterMappingBtn, disasterDamageBtn,
+                aidBtn, aidTypeBtn, evacBtn, evacPlanBtn,
+                vulnerabilityBtn, sendSmsBtn, settingsBtn, logoutBtn
+        };
+        for (Button b : btns) if (b != null) b.setOnAction(nav);
+    }
 
     private void collapseAllSections() {
         collapseSection(managementSectionContent, managementSectionIcon);
@@ -629,66 +794,105 @@ public class MainFrameController {
         collapseSection(aidsSectionContent,        aidsSectionIcon);
         collapseSection(evacSectionContent,        evacSectionIcon);
     }
-    private void collapseSection(VBox c, FontAwesomeIconView i) { if (c==null||i==null) return; c.setVisible(false); c.setManaged(false); i.setRotate(CHEVRON_COLLAPSED); }
-    private void setupSectionToggle(Button b, VBox c, FontAwesomeIconView i) {
-        if (b==null||c==null||i==null) return;
-        b.setOnAction(e -> { boolean o=!c.isVisible(); collapseAllSections(); if(o){c.setVisible(true);c.setManaged(true);animateChevron(i,CHEVRON_EXPANDED);} });
+
+    private void collapseSection(VBox c, FontAwesomeIconView i) {
+        if (c == null || i == null) return;
+        c.setVisible(false); c.setManaged(false);
+        i.setRotate(CHEVRON_COLLAPSED);
     }
-    private void ensureSectionOpen(VBox c, FontAwesomeIconView i) { if(c==null||i==null||c.isVisible()) return; collapseAllSections(); c.setVisible(true); c.setManaged(true); animateChevron(i,CHEVRON_EXPANDED); }
-    private void animateChevron(FontAwesomeIconView i, double a) { if(i==null) return; RotateTransition rt=new RotateTransition(CHEVRON_DURATION,i); rt.setToAngle(a); rt.play(); }
+
+    private void setupSectionToggle(Button b, VBox c, FontAwesomeIconView i) {
+        if (b == null || c == null || i == null) return;
+        b.setOnAction(e -> {
+            boolean opening = !c.isVisible();
+            collapseAllSections();
+            if (opening) {
+                c.setVisible(true); c.setManaged(true);
+                animateChevron(i, CHEVRON_EXPANDED);
+            }
+        });
+    }
+
+    private void ensureSectionOpen(VBox c, FontAwesomeIconView i) {
+        if (c == null || i == null || c.isVisible()) return;
+        collapseAllSections();
+        c.setVisible(true); c.setManaged(true);
+        animateChevron(i, CHEVRON_EXPANDED);
+    }
+
+    private void animateChevron(FontAwesomeIconView i, double angle) {
+        if (i == null) return;
+        RotateTransition rt = new RotateTransition(CHEVRON_DURATION, i);
+        rt.setToAngle(angle); rt.play();
+    }
 
     private void handleActions(ActionEvent ev) {
         Object s = ev.getSource();
-        if      (s==dashboardBtn)           handleDashboard();
-        else if (s==manageAdminBtn)         { ensureSectionOpen(managementSectionContent,managementSectionIcon); handleManageAdmins(); }
-        else if (s==manageBeneficiariesBtn) { ensureSectionOpen(managementSectionContent,managementSectionIcon); handleManageBeneficiaries(); }
-        else if (s==familyMembersBtn)       { ensureSectionOpen(managementSectionContent,managementSectionIcon); handleFamilyMembers(); }
-        else if (s==disasterBtn)            { ensureSectionOpen(disasterSectionContent,disasterSectionIcon);     handleDisaster(); }
-        else if (s==disasterMappingBtn)     { ensureSectionOpen(disasterSectionContent,disasterSectionIcon);     handleDisasterMapping(); }
-        else if (s==disasterDamageBtn)      { ensureSectionOpen(disasterSectionContent,disasterSectionIcon);     handleDisasterDamage(); }
-        else if (s==vulnerabilityBtn)       handleVulnerabilityIndicator();
-        else if (s==sendSmsBtn)             handleSendSms();
-        else if (s==settingsBtn)            handleSettings();
-        else if (s==logoutBtn)              handleLogout();
-        else if (s==aidBtn)                 { ensureSectionOpen(aidsSectionContent,aidsSectionIcon); handleAid(); }
-        else if (s==aidTypeBtn)             { ensureSectionOpen(aidsSectionContent,aidsSectionIcon); handleAidType(); }
-        else if (s==evacBtn)                { ensureSectionOpen(evacSectionContent,evacSectionIcon);  handleEvacSite(); }
-        else if (s==evacPlanBtn)            { ensureSectionOpen(evacSectionContent,evacSectionIcon);  handleEvacPlan(); }
+        if      (s == dashboardBtn)           handleDashboard();
+        else if (s == manageAdminBtn)         { ensureSectionOpen(managementSectionContent, managementSectionIcon); handleManageAdmins(); }
+        else if (s == manageBeneficiariesBtn) { ensureSectionOpen(managementSectionContent, managementSectionIcon); handleManageBeneficiaries(); }
+        else if (s == familyMembersBtn)       { ensureSectionOpen(managementSectionContent, managementSectionIcon); handleFamilyMembers(); }
+        else if (s == disasterBtn)            { ensureSectionOpen(disasterSectionContent,   disasterSectionIcon);   handleDisaster(); }
+        else if (s == disasterMappingBtn)     { ensureSectionOpen(disasterSectionContent,   disasterSectionIcon);   handleDisasterMapping(); }
+        else if (s == disasterDamageBtn)      { ensureSectionOpen(disasterSectionContent,   disasterSectionIcon);   handleDisasterDamage(); }
+        else if (s == vulnerabilityBtn)       handleVulnerabilityIndicator();
+        else if (s == sendSmsBtn)             handleSendSms();
+        else if (s == settingsBtn)            handleSettings();
+        else if (s == logoutBtn)              handleLogout();
+        else if (s == aidBtn)                 { ensureSectionOpen(aidsSectionContent, aidsSectionIcon); handleAid(); }
+        else if (s == aidTypeBtn)             { ensureSectionOpen(aidsSectionContent, aidsSectionIcon); handleAidType(); }
+        else if (s == evacBtn)                { ensureSectionOpen(evacSectionContent,  evacSectionIcon); handleEvacSite(); }
+        else if (s == evacPlanBtn)            { ensureSectionOpen(evacSectionContent,  evacSectionIcon); handleEvacPlan(); }
     }
 
-    private void handleDashboard()           { loadPage("/view/dashboard/Dashboard.fxml");                     activeButton(dashboardBtn); }
-    private void handleManageAdmins()        { loadPage("/view/admin/ManageAdmins.fxml");                      activeButton(manageAdminBtn); }
-    private void handleManageBeneficiaries() { loadPage("/view/beneficiary/ManageBeneficiaries.fxml");         activeButton(manageBeneficiariesBtn); }
-    private void handleFamilyMembers()       { loadPage("/view/family/FamilyMembers.fxml");                    activeButton(familyMembersBtn); }
-    private void handleDisaster()            { loadPage("/view/disaster/Disaster.fxml");                       activeButton(disasterBtn); }
-    private void handleDisasterMapping()     { loadPage("/view/disaster_mapping/DisasterMapping.fxml");        activeButton(disasterMappingBtn); }
-    private void handleDisasterDamage()      { loadPage("/view/disaster_damage/DisasterDamage.fxml");          activeButton(disasterDamageBtn); }
-    private void handleAid()                 { loadPage("/view/aid/Aid.fxml");                                 activeButton(aidBtn); }
-    private void handleAidType()             { loadPage("/view/aid_type/AidType.fxml");                        activeButton(aidTypeBtn); }
-    private void handleEvacSite()            { loadPage("/view/evac_site/EvacSite.fxml");                      activeButton(evacBtn); }
-    private void handleEvacPlan()            { loadPage("/view/evacuation_plan/EvacuationPlan.fxml");          activeButton(evacPlanBtn); }
-    private void handleSendSms()             { loadPage("/view/send_sms/SendSMS.fxml");                        activeButton(sendSmsBtn); }
-    private void handleSettings()            { loadPage("/view/settings/Settings.fxml");                       activeButton(settingsBtn); }
-    private void handleVulnerabilityIndicator() { DashboardRefresher.refreshFlds(); loadPage("/view/vulnerability_indicator/VulnerabilityIndicator.fxml"); activeButton(vulnerabilityBtn); }
+    private void handleDashboard()              { loadPage("/view/dashboard/Dashboard.fxml");                     activeButton(dashboardBtn); }
+    private void handleManageAdmins()           { loadPage("/view/admin/ManageAdmins.fxml");                      activeButton(manageAdminBtn); }
+    private void handleManageBeneficiaries()    { loadPage("/view/beneficiary/ManageBeneficiaries.fxml");         activeButton(manageBeneficiariesBtn); }
+    private void handleFamilyMembers()          { loadPage("/view/family/FamilyMembers.fxml");                    activeButton(familyMembersBtn); }
+    private void handleDisaster()               { loadPage("/view/disaster/Disaster.fxml");                       activeButton(disasterBtn); }
+    private void handleDisasterMapping()        { loadPage("/view/disaster_mapping/DisasterMapping.fxml");        activeButton(disasterMappingBtn); }
+    private void handleDisasterDamage()         { loadPage("/view/disaster_damage/DisasterDamage.fxml");          activeButton(disasterDamageBtn); }
+    private void handleAid()                    { loadPage("/view/aid/Aid.fxml");                                 activeButton(aidBtn); }
+    private void handleAidType()                { loadPage("/view/aid_type/AidType.fxml");                        activeButton(aidTypeBtn); }
+    private void handleEvacSite()               { loadPage("/view/evac_site/EvacSite.fxml");                      activeButton(evacBtn); }
+    private void handleEvacPlan()               { loadPage("/view/evacuation_plan/EvacuationPlan.fxml");          activeButton(evacPlanBtn); }
+    private void handleSendSms()                { loadPage("/view/send_sms/SendSMS.fxml");                        activeButton(sendSmsBtn); }
+    private void handleSettings()               { loadPage("/view/settings/Settings.fxml");                       activeButton(settingsBtn); }
+    private void handleVulnerabilityIndicator() {
+        DashboardRefresher.refreshFlds();
+        loadPage("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");
+        activeButton(vulnerabilityBtn);
+    }
 
     private void handleLogout() {
-        if (!AlertDialogManager.showConfirmation("Logout","Do you want to logout?")) return;
-        new AppPreferences().clearRememberMe(); SessionManager.getInstance().clearSession();
-        Stage stage=(Stage)logoutBtn.getScene().getWindow(); stage.close();
-        SceneManager.showStage("/view/auth/Login.fxml","RESPONDPH - Login");
+        if (!AlertDialogManager.showConfirmation("Logout", "Do you want to logout?")) return;
+        new AppPreferences().clearRememberMe();
+        SessionManager.getInstance().clearSession();
+        Stage stage = (Stage) logoutBtn.getScene().getWindow();
+        stage.close();
+        SceneManager.showStage("/view/auth/Login.fxml", "RESPONDPH - Login");
     }
 
     private void loadPage(String fxml) {
-        SceneManager.SceneEntry<?> e=SceneManager.load(fxml); Parent root=e.getRoot();
-        if (root instanceof Region r) { r.setMaxSize(Double.MAX_VALUE,Double.MAX_VALUE); VBox.setVgrow(r,Priority.ALWAYS); }
+        SceneManager.SceneEntry<?> e = SceneManager.load(fxml);
+        Parent root = e.getRoot();
+        if (root instanceof Region r) {
+            r.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            VBox.setVgrow(r, Priority.ALWAYS);
+        }
         contentArea.getChildren().setAll(root);
     }
 
     private void activeButton(Button btn) {
-        if (btn==null) return;
-        if (activeBtn!=null) { activeBtn.getStyleClass().remove("nav-button-active"); activeBtn.getStyleClass().remove("nav-button-child-active"); }
-        activeBtn=btn;
-        String cls=btn.getStyleClass().contains("nav-button-child")?"nav-button-child-active":"nav-button-active";
-        if (!activeBtn.getStyleClass().contains(cls)) activeBtn.getStyleClass().add(cls);
+        if (btn == null) return;
+        if (activeBtn != null) {
+            activeBtn.getStyleClass().remove("nav-button-active");
+            activeBtn.getStyleClass().remove("nav-button-child-active");
+        }
+        activeBtn = btn;
+        String cls = btn.getStyleClass().contains("nav-button-child")
+                ? "nav-button-child-active" : "nav-button-active";
+        if (!activeBtn.getStyleClass().contains(cls))
+            activeBtn.getStyleClass().add(cls);
     }
 }

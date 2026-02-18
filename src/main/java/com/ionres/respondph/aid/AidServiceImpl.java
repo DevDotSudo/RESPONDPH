@@ -1,3 +1,4 @@
+
 package com.ionres.respondph.aid;
 
 import com.ionres.respondph.aid.KMeansAidDistribution.BeneficiaryCluster;
@@ -12,12 +13,12 @@ public class AidServiceImpl implements AidService {
 
     private final AidDAO aidDAO;
     private final KMeansAidDistribution kMeans;
-    private final FCMAidDistribution    fcm;     // ← NEW
+    private final FCMAidDistribution    fcm;
 
     public AidServiceImpl() {
         this.aidDAO  = new AidDAOImpl(DBConnection.getInstance());
         this.kMeans  = new KMeansAidDistribution();
-        this.fcm     = new FCMAidDistribution();   // default params (m=2, ε=1e-5, 300 iter)
+        this.fcm     = new FCMAidDistribution();
     }
 
     public AidServiceImpl(AidDAO aidDAO) {
@@ -26,9 +27,79 @@ public class AidServiceImpl implements AidService {
         this.fcm     = new FCMAidDistribution();
     }
 
-    // =========================================================================
-    //  EXISTING K-MEANS METHODS  (unchanged)
-    // =========================================================================
+
+    public List<BeneficiaryCluster> previewClustersOnly(
+            int aidTypeId, int disasterId, int numberOfClusters) {
+
+        List<BeneficiaryCluster> eligible =
+                aidDAO.getBeneficiariesWithScores(aidTypeId, disasterId);
+
+        if (eligible.isEmpty()) return eligible;
+
+        return kMeans.clusterAllBeneficiaries(eligible, numberOfClusters);
+    }
+
+
+    public List<BeneficiaryCluster> previewClustersOnlyByBarangay(
+            int aidTypeId, int disasterId, int numberOfClusters, String barangay) {
+
+        List<String> barangays = new ArrayList<>();
+        barangays.add(barangay);
+        return previewClustersOnlyByBarangays(aidTypeId, disasterId, numberOfClusters, barangays);
+    }
+
+
+    public List<BeneficiaryCluster> previewClustersOnlyByBarangays(
+            int aidTypeId, int disasterId, int numberOfClusters, List<String> barangays) {
+
+        List<BeneficiaryCluster> eligible =
+                aidDAO.getBeneficiariesWithScoresByBarangays(aidTypeId, disasterId, barangays);
+
+        if (eligible.isEmpty()) return eligible;
+
+        return kMeans.clusterAllBeneficiaries(eligible, numberOfClusters);
+    }
+
+
+    public List<BeneficiaryCluster> previewClustersOnlyFCM(
+            int aidTypeId, int disasterId, int numberOfClusters) {
+
+        List<BeneficiaryCluster> eligible =
+                aidDAO.getBeneficiariesWithScores(aidTypeId, disasterId);
+
+        if (eligible.isEmpty()) return eligible;
+
+        List<FCMAidDistribution.BeneficiaryCluster> fcmList = toFCMList(eligible);
+        List<FCMAidDistribution.BeneficiaryCluster> all =
+                fcm.getPrioritizedBeneficiaries(fcmList, Integer.MAX_VALUE, numberOfClusters);
+        return fromFCMList(all);
+    }
+
+
+    public List<BeneficiaryCluster> previewClustersOnlyFCMByBarangay(
+            int aidTypeId, int disasterId, int numberOfClusters, String barangay) {
+
+        List<String> barangays = new ArrayList<>();
+        barangays.add(barangay);
+        return previewClustersOnlyFCMByBarangays(aidTypeId, disasterId, numberOfClusters, barangays);
+    }
+
+
+    public List<BeneficiaryCluster> previewClustersOnlyFCMByBarangays(
+            int aidTypeId, int disasterId, int numberOfClusters, List<String> barangays) {
+
+        List<BeneficiaryCluster> eligible =
+                aidDAO.getBeneficiariesWithScoresByBarangays(aidTypeId, disasterId, barangays);
+
+        if (eligible.isEmpty()) return eligible;
+
+        List<FCMAidDistribution.BeneficiaryCluster> fcmList = toFCMList(eligible);
+        List<FCMAidDistribution.BeneficiaryCluster> all =
+                fcm.getPrioritizedBeneficiaries(fcmList, Integer.MAX_VALUE, numberOfClusters);
+        return fromFCMList(all);
+    }
+
+
 
     @Override
     public int distributeAidWithKMeans(String aidName, int aidTypeId, int disasterId,
@@ -240,7 +311,6 @@ public class AidServiceImpl implements AidService {
             return 0;
         }
 
-        // Convert KMeans clusters to FCM clusters for processing
         List<FCMAidDistribution.BeneficiaryCluster> fcmList = toFCMList(eligible);
 
         int maxBeneficiaries = availableQuantity / quantityPerBeneficiary;
@@ -252,9 +322,6 @@ public class AidServiceImpl implements AidService {
                 "FCM Distribution", disasterContext);
     }
 
-    /**
-     * Distributes aid to a single barangay using Fuzzy C-Means clustering.
-     */
     @Override
     public int distributeAidWithFCMByBarangay(
             String aidName, int aidTypeId, int disasterId,
@@ -267,9 +334,6 @@ public class AidServiceImpl implements AidService {
                 quantityPerBeneficiary, costPerUnit, provider, numberOfClusters, barangays);
     }
 
-    /**
-     * Distributes aid to multiple barangays using Fuzzy C-Means clustering.
-     */
     @Override
     public int distributeAidWithFCMByBarangays(
             String aidName, int aidTypeId, int disasterId,
@@ -325,9 +389,6 @@ public class AidServiceImpl implements AidService {
         return fromFCMList(selected);
     }
 
-    /**
-     * Preview FCM distribution for a single barangay.
-     */
     @Override
     public List<BeneficiaryCluster> previewAidDistributionFCMByBarangay(
             int aidTypeId, int disasterId,
@@ -340,9 +401,6 @@ public class AidServiceImpl implements AidService {
                 quantityPerBeneficiary, numberOfClusters, barangays);
     }
 
-    /**
-     * Preview FCM distribution for multiple barangays.
-     */
     @Override
     public List<BeneficiaryCluster> previewAidDistributionFCMByBarangays(
             int aidTypeId, int disasterId,
@@ -363,11 +421,7 @@ public class AidServiceImpl implements AidService {
         return fromFCMList(selected);
     }
 
-    // =========================================================================
-    //  PRIVATE HELPERS
-    // =========================================================================
 
-    /** Build a base AidModel (no notes set yet). */
     private AidModel buildAidModel(int beneficiaryId, int aidTypeId, int disasterId,
                                    String aidName, LocalDate date,
                                    int qty, double costPerUnit, String provider) {
@@ -383,10 +437,6 @@ public class AidServiceImpl implements AidService {
         return aid;
     }
 
-    /**
-     * Saves a list of KMeans BeneficiaryCluster objects to the database.
-     * @return count of successfully saved records
-     */
     private int persistDistribution(List<BeneficiaryCluster> list,
                                     String aidName, int aidTypeId, int disasterId,
                                     int qty, double cost, String provider,
@@ -424,10 +474,6 @@ public class AidServiceImpl implements AidService {
         return count;
     }
 
-    /**
-     * Saves a list of FCM BeneficiaryCluster objects to the database.
-     * Notes include the fuzzy membership value for transparency.
-     */
     private int persistFCMDistribution(List<FCMAidDistribution.BeneficiaryCluster> list,
                                        String aidName, int aidTypeId, int disasterId,
                                        int qty, double cost, String provider,
@@ -469,7 +515,6 @@ public class AidServiceImpl implements AidService {
         return count;
     }
 
-    /** Convert KMeans BeneficiaryCluster list → FCM BeneficiaryCluster list. */
     private List<FCMAidDistribution.BeneficiaryCluster> toFCMList(List<BeneficiaryCluster> src) {
         List<FCMAidDistribution.BeneficiaryCluster> out = new ArrayList<>();
         for (BeneficiaryCluster b : src) {
@@ -478,7 +523,6 @@ public class AidServiceImpl implements AidService {
         }
         return out;
     }
-
 
     private List<BeneficiaryCluster> fromFCMList(List<FCMAidDistribution.BeneficiaryCluster> src) {
         List<BeneficiaryCluster> out = new ArrayList<>();

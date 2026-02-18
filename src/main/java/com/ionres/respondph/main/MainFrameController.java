@@ -18,22 +18,7 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-/**
- * MainFrameController — main shell controller.
- *
- * News-progress toast shows:
- *  • A scrollable log of grounding events (search queries, pages read, confirmed items).
- *  • A live "streaming preview" label (dim italic) updated with each chunk.
- *  • A dedicated "tick" label (elapsed / current action) updated by the background ticker.
- *  • Five progress dots that fill orange as each item is confirmed.
- *
- * Design rules that keep the UI clean:
- *  - streamingLabel is ONE label, updated in-place, never duplicated.
- *  - tickLabel      is ONE label, updated in-place, never duplicated.
- *  - Both are always kept at the BOTTOM of the log list.
- *  - commitStreamingLabel() promotes the current preview into a permanent row
- *    and clears the reference so the next chunk creates a fresh one.
- */
+
 public class MainFrameController {
 
     private static MainFrameController INSTANCE;
@@ -79,7 +64,6 @@ public class MainFrameController {
     @FXML private Button aidTypeBtn;
     @FXML private Button aidBtn;
     @FXML private Button sendSmsBtn;
-    @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
 
     // ── Nav state ─────────────────────────────────────────────────────────────
@@ -90,35 +74,24 @@ public class MainFrameController {
     private Task<?> currentSmsTask;
     private Timeline snapTimeline;
 
-    // ── News toast state ──────────────────────────────────────────────────────
     private VBox       newsActivityPane;
     private VBox       newsLogBox;
     private ScrollPane newsLogScroll;
     private HBox       newsDotBar;
     private Label      newsCountLabel;
 
-    /**
-     * Single label rendered at the BOTTOM of the log for the live streaming
-     * preview (dim italic). Updated in-place; replaced on item commit.
-     */
+
     private Label streamingLabel;
 
-    /**
-     * Single label rendered at the BOTTOM of the log for the elapsed-seconds
-     * ticker / current-action ticker. Updated in-place; removed on state change.
-     */
+
     private Label tickLabel;
 
     private int      confirmedNewsCount = 0;
     private Timeline pulseTimeline;
 
-    /**
-     * Registered by SendSMSController before starting news generation.
-     * Cleared automatically when hideNewsProgress() is called.
-     */
+
     private Runnable newsCancelAction;
 
-    // ── Constants ─────────────────────────────────────────────────────────────
     private static final int      MAX_LOG_ROWS      = 14;
     private static final Duration CHEVRON_DURATION  = Duration.millis(180);
     private static final double   CHEVRON_COLLAPSED = 0;
@@ -129,18 +102,13 @@ public class MainFrameController {
     private static final String GROUNDING_SEARCH_EMOJI = "🔍";
     private static final String GROUNDING_PAGE_EMOJI   = "📄";
 
-    // ─────────────────────────────────────────────────────────────────────────
     @FXML
     public void initialize() {
         INSTANCE = this;
 
-        // Minimize button — collapses toast body to footer strip
         if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeToFooter());
 
-        // Close (X) button — context-aware:
-        //   news active  → confirm cancel  →  invoke cancel action
-        //   bulk SMS     → cancel task     →  hide
-        //   nothing      → just hide
+
         if (smsCloseBtn != null) smsCloseBtn.setOnAction(e -> handleCloseButton());
 
         if (btnShowProgress != null) btnShowProgress.setOnAction(e -> restoreFromFooter());
@@ -196,9 +164,7 @@ public class MainFrameController {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // NEWS PROGRESS — public API called by SendSMSController
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     public void showNewsProgress(String topic) {
         Platform.runLater(() -> {
@@ -783,7 +749,7 @@ public class MainFrameController {
                 dashboardBtn, manageAdminBtn, manageBeneficiariesBtn, familyMembersBtn,
                 disasterBtn, disasterMappingBtn, disasterDamageBtn,
                 aidBtn, aidTypeBtn, evacBtn, evacPlanBtn,
-                vulnerabilityBtn, sendSmsBtn, settingsBtn, logoutBtn
+                vulnerabilityBtn, sendSmsBtn,logoutBtn
         };
         for (Button b : btns) if (b != null) b.setOnAction(nav);
     }
@@ -837,7 +803,6 @@ public class MainFrameController {
         else if (s == disasterDamageBtn)      { ensureSectionOpen(disasterSectionContent,   disasterSectionIcon);   handleDisasterDamage(); }
         else if (s == vulnerabilityBtn)       handleVulnerabilityIndicator();
         else if (s == sendSmsBtn)             handleSendSms();
-        else if (s == settingsBtn)            handleSettings();
         else if (s == logoutBtn)              handleLogout();
         else if (s == aidBtn)                 { ensureSectionOpen(aidsSectionContent, aidsSectionIcon); handleAid(); }
         else if (s == aidTypeBtn)             { ensureSectionOpen(aidsSectionContent, aidsSectionIcon); handleAidType(); }
@@ -857,7 +822,6 @@ public class MainFrameController {
     private void handleEvacSite()               { loadPage("/view/evac_site/EvacSite.fxml");                      activeButton(evacBtn); }
     private void handleEvacPlan()               { loadPage("/view/evacuation_plan/EvacuationPlan.fxml");          activeButton(evacPlanBtn); }
     private void handleSendSms()                { loadPage("/view/send_sms/SendSMS.fxml");                        activeButton(sendSmsBtn); }
-    private void handleSettings()               { loadPage("/view/settings/Settings.fxml");                       activeButton(settingsBtn); }
     private void handleVulnerabilityIndicator() {
         DashboardRefresher.refreshFlds();
         loadPage("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");

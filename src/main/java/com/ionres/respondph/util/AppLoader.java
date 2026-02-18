@@ -77,7 +77,6 @@ public class AppLoader {
         SceneManager.preload("/view/disaster_mapping/DisasterMapping.fxml");
         SceneManager.preload("/view/disaster_damage/DisasterDamage.fxml");
         SceneManager.preload("/view/send_sms/SendSMS.fxml");
-        SceneManager.preload("/view/settings/Settings.fxml");
     }
 
     private static void preloadDialogs() throws Exception {

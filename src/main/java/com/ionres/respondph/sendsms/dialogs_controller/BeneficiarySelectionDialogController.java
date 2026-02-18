@@ -1,6 +1,7 @@
 package com.ionres.respondph.sendsms.dialogs_controller;
 
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.util.DashboardRefresher;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -49,6 +50,7 @@ public class BeneficiarySelectionDialogController {
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colBarangay.setCellValueFactory(new PropertyValueFactory<>("barangay"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("mobileNumber"));
+        DashboardRefresher.registerBeneficiarySelectionDialog(this);
 
 
         tblBeneficiaries.setEditable(true);

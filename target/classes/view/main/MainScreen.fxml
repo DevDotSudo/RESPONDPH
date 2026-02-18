@@ -196,15 +196,6 @@
                         </graphic>
                     </Button>
 
-                    <Button fx:id="settingsBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
-                        <graphic>
-                            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                                <FontAwesomeIconView glyphName="GEAR" styleClass="nav-icon" />
-                                <Label styleClass="nav-text" text="Settings" />
-                            </HBox>
-                        </graphic>
-                    </Button>
-
                 </VBox>
             </ScrollPane>
 

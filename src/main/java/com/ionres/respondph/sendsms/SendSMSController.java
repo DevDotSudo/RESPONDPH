@@ -20,6 +20,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import com.ionres.respondph.disaster_mapping.DisasterMappingService;
+import com.ionres.respondph.disaster_mapping.DisasterMappingServiceImpl;
+import com.ionres.respondph.common.model.DisasterCircleInfo;
+import com.ionres.respondph.database.DBConnection;
+
 
 import java.awt.Desktop;
 import java.net.URI;
@@ -81,17 +86,16 @@ public class SendSMSController implements Initializable {
     @FXML private Button   btnSaveEvacMessage;
     @FXML private Label    lblMessageStatus;
 
-    // ── State ─────────────────────────────────────────────────────────────────
+    private DisasterMappingService disasterMappingService;
+
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
     private final List<NewsItem>   storedNewsItems           = new ArrayList<>();
     private RadioButton[]          newsSlots;
 
-    /** Guard: prevents starting a second generation while one is in flight. */
     private final AtomicBoolean generationInProgress = new AtomicBoolean(false);
 
     private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
 
-    // ── Services / DAOs ───────────────────────────────────────────────────────
     private CustomEvacMessageManager evacMessageManager;
     private SmsService               smsService;
     private SMSSender                smsSender;
@@ -99,7 +103,6 @@ public class SendSMSController implements Initializable {
     private BeneficiaryDAO           beneficiaryDAO;
     private DisasterDAO              disasterDAO;
 
-    // ── Dialog-open guard ─────────────────────────────────────────────────────
     private boolean isOpeningDialog    = false;
     private boolean isUpdatingComboBox = false;
 
@@ -115,6 +118,7 @@ public class SendSMSController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         smsService = new SmsServiceImpl();
         smsSender  = SMSSender.getInstance();
+        disasterMappingService = new DisasterMappingServiceImpl(DBConnection.getInstance());
 
         try {
             newsGeneratorService = new NewsGeneratorService();
@@ -373,7 +377,7 @@ public class SendSMSController implements Initializable {
     // TABLE / SMS LOGS
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void loadSMSLogs() {
+    public void loadSMSLogs() {
         try {
             List<SmsModel> logs = smsService.getAllSMSLogs();
             if (logs != null) {
@@ -904,7 +908,7 @@ public class SendSMSController implements Initializable {
             }
             case "By Disaster Area" -> {
                 DisasterModel d = (cbSelectDisaster != null) ? cbSelectDisaster.getValue() : null;
-                yield d != null ? beneficiaryDAO.getBeneficiariesByDisaster(d.getDisasterId()) : List.of();
+                yield d != null ? getBeneficiariesInDisasterArea(d) : List.of();
             }
             default -> base.startsWith("Selected Beneficiaries")
                     ? new ArrayList<>(selectedBeneficiariesList)
@@ -978,9 +982,74 @@ public class SendSMSController implements Initializable {
         if (btnSendSMS != null) btnSendSMS.setDisable(!enabled);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // FXML-bound refresh handlers (wired via FXML onAction or setupEventHandlers)
-    // ─────────────────────────────────────────────────────────────────────────
+    public void reloadBeneficiarySelectionTable() {
+        try {
+            List<BeneficiaryModel> freshList = beneficiaryDAO.getAllBeneficiaries();
+            BeneficiarySelectionDialogController ctrl =
+                    DialogManager.getController("selection", BeneficiarySelectionDialogController.class);
+            if (ctrl != null) {
+                ctrl.setBeneficiaries(freshList);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<BeneficiaryModel> getBeneficiariesInDisasterArea(DisasterModel disaster) {
+        List<BeneficiaryModel> result = new ArrayList<>();
+        try {
+            List<DisasterCircleInfo> circles = disasterMappingService
+                    .getDisasterCirclesByDisasterId(disaster.getDisasterId());
+
+            if (circles == null || circles.isEmpty()) {
+                AlertDialogManager.showWarning("No Disaster Area",
+                        "No geographic area defined for: " + disaster.getName() +
+                                "\n\nPlease set the disaster location and radius in Disaster Mapping first.");
+                return result;
+            }
+
+
+            java.util.Set<Integer> addedIds = new java.util.HashSet<>();
+
+            for (DisasterCircleInfo circle : circles) {
+                List<BeneficiaryModel> allBeneficiaries = beneficiaryDAO.getAllBeneficiaries();
+
+                for (BeneficiaryModel b : allBeneficiaries) {
+                    if (addedIds.contains(b.getId())) continue;
+
+                    double lat, lon;
+                    try {
+                        lat = Double.parseDouble(b.getLatitude() != null ? b.getLatitude() : "");
+                        lon = Double.parseDouble(b.getLongitude() != null ? b.getLongitude() : "");
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+
+                    double distance = com.ionres.respondph.util.GeographicUtils
+                            .calculateDistance(lat, lon, circle.lat, circle.lon);
+
+                    if (!Double.isNaN(distance) && distance <= circle.radius) {
+                        if (b.getMobileNumber() != null && !b.getMobileNumber().trim().isEmpty()) {
+                            result.add(b);
+                            addedIds.add(b.getId());
+                        }
+                    }
+                }
+            }
+
+            if (result.isEmpty()) {
+                AlertDialogManager.showWarning("No Beneficiaries in Area",
+                        "No beneficiaries with phone numbers found inside the disaster area of: "
+                                + disaster.getName());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Error",
+                    "Failed to get beneficiaries in disaster area: " + e.getMessage());
+        }
+        return result;
+    }
 
     @FXML private void onRefreshPorts()   { populateAvailablePorts(); }
     @FXML private void onDisconnect() {

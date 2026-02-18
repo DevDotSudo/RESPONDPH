@@ -1,12 +1,16 @@
 package com.ionres.respondph.util;
 import com.ionres.respondph.aid.dialogs_controller.PrintAidDialogController;
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.dashboard.DashboardController;
 import com.ionres.respondph.disaster_mapping.DisasterMappingController;
 import com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController;
 import com.ionres.respondph.evacuation_plan.EvacuationPlanController;
 import com.ionres.respondph.sendsms.SendSMSController;
+import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorController;
 import javafx.application.Platform;
+
+import java.util.List;
 
 public final class DashboardRefresher {
 
@@ -17,8 +21,16 @@ public final class DashboardRefresher {
     private static DisasterMappingController disasterMappingController;
     private static EvacuationSiteMappingController evacuationSiteMappingController;
     private static EvacuationPlanController evacuationPlanController;
+    private static BeneficiarySelectionDialogController beneficiarySelectionDialogController;
 
-    private DashboardRefresher() {}
+
+    private DashboardRefresher() {
+
+    }
+
+    public static void registerBeneficiarySelectionDialog(BeneficiarySelectionDialogController controller) {
+        beneficiarySelectionDialogController = controller;
+    }
 
     public static void register(DashboardController ctrl) {
         controller = ctrl;
@@ -73,6 +85,11 @@ public final class DashboardRefresher {
             Platform.runLater(sendSMSController::loadDisasters);
         }
     }
+    public static void refreshSMSLogs(){
+        if(sendSMSController != null){
+            Platform.runLater(sendSMSController::loadSMSLogs);
+        }
+    }
 
 
     public static  void refreshFlds(){
@@ -102,6 +119,12 @@ public final class DashboardRefresher {
     public static void refreshEvacuationPlanController(){
         if (evacuationPlanController != null){
             Platform.runLater(evacuationPlanController::loadTable);
+        }
+    }
+
+    public static void refreshBeneficiarySelectionTable() {
+        if (sendSMSController != null) {
+            Platform.runLater(sendSMSController::reloadBeneficiarySelectionTable);
         }
     }
 }

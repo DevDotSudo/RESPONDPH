@@ -61,6 +61,12 @@ public class AidController {
         refreshAidButton.setOnAction(handler);
         aidSearchButton.setOnAction(handler);
         printButton.setOnAction(handler);
+
+        aidSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || newValue.trim().isEmpty()) {
+                loadAidData();
+            }
+        });
     }
 
     private void setupTableColumns() {

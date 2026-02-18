@@ -305,7 +305,9 @@ public class EditBeneficiariesDialogController {
                                     "Household scores and aid scores have been recalculated.");
                     DashboardRefresher.refresh();
                     DashboardRefresher.refreshBeneInSend();
+                    DashboardRefresher.refreshDisasterInSend();
                     DashboardRefresher.refreshMapInDisasterMapping();
+                    DashboardRefresher.refreshBeneficiarySelectionTable();
                 } else {
                     AlertDialogManager.showWarning("Partial Success",
                             "Beneficiary updated, but some scores failed to recalculate.");

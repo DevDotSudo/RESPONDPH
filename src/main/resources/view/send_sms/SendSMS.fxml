@@ -130,7 +130,6 @@
                                         <String fx:value="By Barangay" />
                                         <String fx:value="Selected Beneficiaries" />
                                         <String fx:value="By Disaster Area" />
-                                        <String fx:value="Custom List" />
                                     </FXCollections>
                                 </items>
                             </ComboBox>

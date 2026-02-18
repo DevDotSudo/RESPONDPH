@@ -283,7 +283,9 @@ public class AddBeneficiariesDialogController {
                 clearFields();
                 DashboardRefresher.refresh();
                 DashboardRefresher.refreshBeneInSend();
+                DashboardRefresher.refreshDisasterInSend();
                 DashboardRefresher.refreshMapInDisasterMapping();
+                DashboardRefresher.refreshBeneficiarySelectionTable();
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,

@@ -52,6 +52,12 @@ public class EvacuationPlanController {
         loadTable();
 
         DashboardRefresher.registerEvacuationPlanController(this);
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || newValue.trim().isEmpty()) {
+                loadTable();
+            }
+        });
     }
 
     private void setupTable() {

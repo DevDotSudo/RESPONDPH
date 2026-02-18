@@ -210,12 +210,20 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
     public List<FamilyMembersModel> searchFamilyMember(String searchTxt) {
         List<FamilyMembersModel> allFamilyMembers = getAllFamilyMembers();
         List<FamilyMembersModel> filterFamilyMembers = new ArrayList<>();
+        String lowerSearch = searchTxt.toLowerCase();
 
-        for (FamilyMembersModel familyMembersModel : allFamilyMembers) {
-            if (familyMembersModel.getFirstName().toLowerCase().contains(searchTxt.toLowerCase()) ||
-                    familyMembersModel.getMiddleName().toLowerCase().contains(searchTxt.toLowerCase()) ||
-                    familyMembersModel.getLastName().toLowerCase().contains(searchTxt.toLowerCase())) {
-                filterFamilyMembers.add(familyMembersModel);
+        for (FamilyMembersModel fm : allFamilyMembers) {
+            boolean matchesMemberName =
+                    (fm.getFirstName() != null && fm.getFirstName().toLowerCase().contains(lowerSearch)) ||
+                            (fm.getMiddleName() != null && fm.getMiddleName().toLowerCase().contains(lowerSearch)) ||
+                            (fm.getLastName() != null && fm.getLastName().toLowerCase().contains(lowerSearch));
+
+            boolean matchesBeneficiaryName =
+                    fm.getBeneficiaryName() != null &&
+                            fm.getBeneficiaryName().toLowerCase().contains(lowerSearch);
+
+            if (matchesMemberName || matchesBeneficiaryName) {
+                filterFamilyMembers.add(fm);
             }
         }
         return filterFamilyMembers;

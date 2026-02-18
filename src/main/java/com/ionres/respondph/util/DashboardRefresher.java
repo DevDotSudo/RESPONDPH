@@ -7,6 +7,8 @@ import com.ionres.respondph.evacuation_plan.EvacuationPlanController;
 import com.ionres.respondph.sendsms.SendSMSController;
 import com.ionres.respondph.vulnerability_indicator.VulnerabilityIndicatorController;
 import javafx.application.Platform;
+import com.ionres.respondph.beneficiary.BeneficiaryModel;
+import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
 
 public final class DashboardRefresher {
 
@@ -17,6 +19,7 @@ public final class DashboardRefresher {
     private static DisasterMappingController disasterMappingController;
     private static EvacuationSiteMappingController evacuationSiteMappingController;
     private static EvacuationPlanController evacuationPlanController;
+    private static BeneficiarySelectionDialogController beneficiarySelectionDialogController;
 
     private DashboardRefresher() {}
 
@@ -26,6 +29,10 @@ public final class DashboardRefresher {
 
     public static  void registerLoadVulScore(VulnerabilityIndicatorController controller){
         vulnerabilityIndicatorController = controller;
+    }
+
+    public static void registerBeneficiarySelectionDialog(BeneficiarySelectionDialogController controller) {
+        beneficiarySelectionDialogController = controller;
     }
 
     public static  void  registerDisasterNameAndAidtypeName(PrintAidDialogController controller){
@@ -74,6 +81,17 @@ public final class DashboardRefresher {
         }
     }
 
+    public static void refreshBeneficiarySelectionTable() {
+        if (sendSMSController != null) {
+            Platform.runLater(sendSMSController::reloadBeneficiarySelectionTable);
+        }
+    }
+
+    public static void refreshSMSLogs(){
+        if(sendSMSController != null){
+            Platform.runLater(sendSMSController::loadSMSLogs);
+        }
+    }
 
     public static  void refreshFlds(){
         if (vulnerabilityIndicatorController != null){

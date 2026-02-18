@@ -16,7 +16,6 @@ public class FamilyMemberModel {
         this.lastName       = lastName;
     }
 
-
     public String getFullName() {
         StringBuilder sb = new StringBuilder();
         if (firstName  != null && !firstName.isBlank())  sb.append(firstName.trim());
@@ -36,8 +35,6 @@ public class FamilyMemberModel {
 
     public String getLastName()                    { return lastName; }
     public void   setLastName(String lastName)     { this.lastName = lastName; }
-
-    // ── toString ──────────────────────────────────────────────────────────────
 
     @Override
     public String toString() {

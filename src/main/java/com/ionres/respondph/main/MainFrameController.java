@@ -23,7 +23,7 @@ public class MainFrameController {
     private static MainFrameController INSTANCE;
     public static MainFrameController getInstance() { return INSTANCE; }
 
-    @FXML private VBox contentArea;
+    @FXML public VBox        contentArea;
 
     @FXML private VBox        smsProgressToast;
     @FXML private VBox        smsToastBody;
@@ -54,11 +54,10 @@ public class MainFrameController {
     // Divider between pills
     @FXML private Label  footerDivider;
 
-    // ── FXML — Sidebar ───────────────────────────────────────────────────────
-    @FXML private Button managementSectionBtn;
-    @FXML private Button disasterSectionBtn;
-    @FXML private Button aidsSectionBtn;
-    @FXML private Button evacSectionBtn;
+    @FXML public Button managementSectionBtn;
+    @FXML public Button disasterSectionBtn;
+    @FXML public Button aidsSectionBtn;
+    @FXML public Button evacSectionBtn;
     @FXML private VBox   managementSectionContent;
     @FXML private VBox   disasterSectionContent;
     @FXML private VBox   aidsSectionContent;
@@ -70,21 +69,21 @@ public class MainFrameController {
 
     @FXML private Button dashboardBtn;
     @FXML private Button manageAdminBtn;
-    @FXML private Button manageBeneficiariesBtn;
+    @FXML public   Button manageBeneficiariesBtn;
     @FXML private Button familyMembersBtn;
-    @FXML private Button disasterBtn;
+    @FXML public   Button disasterBtn;
     @FXML private Button disasterMappingBtn;
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
-    @FXML private Button evacBtn;
+    @FXML public   Button evacBtn;
     @FXML private Button evacPlanBtn;
     @FXML private Button aidTypeBtn;
-    @FXML private Button aidBtn;
+    @FXML public   Button aidBtn;
     @FXML private Button sendSmsBtn;
     @FXML private Button logoutBtn;
 
     // ── Nav ──────────────────────────────────────────────────────────────────
-    private Button activeBtn;
+    public Button activeBtn;
 
     // ── SMS toast state ───────────────────────────────────────────────────────
     private boolean  smsMinimized   = false;
@@ -94,7 +93,6 @@ public class MainFrameController {
     private Runnable smsCancelAction;
     private String   smsFooterText  = "";
 
-    // ── News toast state ──────────────────────────────────────────────────────
     private boolean  newsMinimized  = false;
     private boolean  newsVisible    = false;
     private Timeline newsSnapTimeline;
@@ -111,7 +109,6 @@ public class MainFrameController {
     private int        confirmedNewsCount = 0;
     private Timeline   pulseTimeline;
 
-    // ── Constants ─────────────────────────────────────────────────────────────
     private static final int      MAX_LOG_ROWS      = 14;
     private static final Duration CHEVRON_DURATION  = Duration.millis(180);
     private static final double   CHEVRON_COLLAPSED = 0;
@@ -808,9 +805,21 @@ public class MainFrameController {
         pill.setManaged(visible);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // NAVIGATION
-    // ═════════════════════════════════════════════════════════════════════════
+    public void openManagementSection() {
+        ensureSectionOpen(managementSectionContent, managementSectionIcon);
+    }
+
+    public void openDisasterSection() {
+        ensureSectionOpen(disasterSectionContent, disasterSectionIcon);
+    }
+
+    public void openAidsSection() {
+        ensureSectionOpen(aidsSectionContent, aidsSectionIcon);
+    }
+
+    public void openEvacSection() {
+        ensureSectionOpen(evacSectionContent, evacSectionIcon);
+    }
 
     private void wireNavButtons() {
         EventHandler<ActionEvent> nav = this::handleActions;

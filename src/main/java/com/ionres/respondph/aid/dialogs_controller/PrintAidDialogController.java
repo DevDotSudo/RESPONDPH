@@ -833,6 +833,7 @@ public class PrintAidDialogController {
                     return;
                 }
                 configurePrintService();
+                sendToPrinterSilently(records, disasterName, aidName, chosen.getPrinter());
             }
         });
 
@@ -840,7 +841,6 @@ public class PrintAidDialogController {
         scene.setFill(null);
         outputStage.setScene(scene);
 
-        // Center on owner
         if (dialogStage != null) {
             outputStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 500) / 2);
             outputStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 400) / 2);
@@ -849,6 +849,81 @@ public class PrintAidDialogController {
         outputStage.show();
     }
 
+    private void sendToPrinterSilently(List<AidModel> records,
+                                       String disasterName,
+                                       String aidName,
+                                       Printer targetPrinter) {
+        configurePrintService();
+
+        VBox content = distributionSummaryRadio.isSelected()
+                ? printService.buildDistributionSummary(disasterName, aidName, records)
+                : printService.buildBeneficiaryList(disasterName, aidName, records);
+
+        if (content == null) {
+            AlertDialogManager.showError("Print Error", "Failed to build report content.");
+            return;
+        }
+
+        PrinterJob job = (targetPrinter != null)
+                ? PrinterJob.createPrinterJob(targetPrinter)
+                : PrinterJob.createPrinterJob();
+
+        if (job == null) {
+            AlertDialogManager.showError("Print Error",
+                    "Could not create a print job for the selected printer.\n"
+                            + "Please check that the printer is connected and try again.");
+            return;
+        }
+
+        Printer         printer     = job.getPrinter();
+        Paper           paper       = resolvePaper(printer);
+        PageOrientation orientation = landscapeRadio.isSelected()
+                ? PageOrientation.LANDSCAPE : PageOrientation.PORTRAIT;
+        double margin = 36;
+        PageLayout pageLayout = printer.createPageLayout(
+                paper, orientation, margin, margin, margin, margin);
+        job.getJobSettings().setPageLayout(pageLayout);
+
+        int copies = copiesSpinner.getValue();
+        job.getJobSettings().setCopies(copies);
+
+        // ── Calculate and lock page range to actual data ──────────────────────
+        int actualPageCount = calculatePageCount(records, pageLayout);
+        job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
+
+        // ── Silent print ─────────────────────────────────────────────────────
+        if (job.printPage(pageLayout, content)) {
+            job.endJob();
+            AlertDialogManager.showInfo("Print Successful",
+                    String.format("Document sent to: %s%n%d page(s) × %d %s printed successfully.",
+                            job.getPrinter().getName(),
+                            actualPageCount,
+                            copies, copies == 1 ? "copy" : "copies"));
+            closeDialog();
+        } else {
+            AlertDialogManager.showError("Print Error",
+                    "An error occurred while printing. Please try again.");
+        }
+    }
+
+    private Paper resolvePaper(Printer printer) {
+        String selected = bondPaperSizeComboBox.getValue();
+        if (selected == null) return Paper.A4;
+        if (selected.startsWith("Letter")) return Paper.NA_LETTER;
+        if (selected.startsWith("Legal"))  return Paper.LEGAL;
+        return Paper.A4;
+    }
+
+    private int calculatePageCount(List<AidModel> records, PageLayout pageLayout) {
+        if (records == null || records.isEmpty()) return 1;
+
+        // Usable height minus header/footer/title overhead (~150px)
+        double usableHeight = pageLayout.getPrintableHeight() - 150;
+        int    rowHeight    = 22; // each beneficiary row ~22px
+        int    rowsPerPage  = Math.max(1, (int) (usableHeight / rowHeight));
+
+        return Math.max(1, (int) Math.ceil((double) records.size() / rowsPerPage));
+    }
 
     private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle) {
         VBox section = new VBox(10);
@@ -1392,12 +1467,6 @@ public class PrintAidDialogController {
                 : isPrinterActiveUnix(printer);
     }
 
-    /**
-     * Returns TRUE for any software / virtual printer (no physical hardware).
-     * Matches: pdf, fax, xps, onenote, microsoft print/document,
-     *          send to, snagit, cutepdf, bullzip, dopdf, nitro,
-     *          foxit, pdfcreator, primopdf, pdf24, adobe pdf.
-     */
     private boolean isVirtualPrinter(String name) {
         if (name == null) return false;
         String l = name.toLowerCase();
@@ -1421,7 +1490,6 @@ public class PrintAidDialogController {
                 || l.contains("adobe pdf");
     }
 
-    /** Windows: PowerShell Get-Printer IsOnline → WMIC fallback. */
     private boolean isPrinterActiveWindows(String printerName) {
         try {
             String safeName = printerName.replace("'", "''");

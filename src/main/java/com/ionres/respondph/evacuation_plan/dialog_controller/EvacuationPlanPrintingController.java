@@ -8,6 +8,7 @@ import com.ionres.respondph.evac_site.EvacSiteDAO;
 import com.ionres.respondph.evac_site.EvacSiteDAOServiceImpl;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.SessionManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
@@ -843,33 +844,72 @@ public class EvacuationPlanPrintingController {
 
         if (job == null) {
             AlertDialogManager.showError("Print Error",
-                    "Could not create a print job for the selected printer.\n" +
-                            "Please check that the printer is connected and try again.");
+                    "Could not create a print job for the selected printer.\n"
+                            + "Please check that the printer is connected and try again.");
             return;
         }
 
+        // Apply paper size + orientation from UI
         applyPageLayout(job);
         PageLayout pageLayout = job.getJobSettings().getPageLayout();
 
-        if (!job.showPrintDialog(getOwnerWindow())) return;
+        // ── Calculate actual page count based on data ─────────────────────────
+        int actualPageCount = calculatePageCount(filtered, pageLayout, reportType);
 
-        int     copies     = copiesSpinner.getValue();
-        boolean allSuccess = true;
-        for (int i = 0; i < copies; i++) {
-            if (!job.printPage(pageLayout, content)) { allSuccess = false; break; }
-        }
+        // Set copies from spinner
+        int copies = copiesSpinner.getValue();
+        job.getJobSettings().setCopies(copies);
 
-        if (allSuccess) {
+        // Lock page range to actual data pages only (not 1–9999)
+        job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
+        // ─────────────────────────────────────────────────────────────────────
+
+        // Silent print — no dialog
+        if (job.printPage(pageLayout, content)) {
             job.endJob();
-            AlertDialogManager.showInfo("Success",
-                    String.format("Document sent to printer: %s\n%d %s printed.",
+            AlertDialogManager.showInfo("Print Successful",
+                    String.format("Document sent to: %s%n%d page(s) × %d %s printed successfully.",
                             job.getPrinter().getName(),
+                            actualPageCount,
                             copies, copies == 1 ? "copy" : "copies"));
             closeDialog();
         } else {
             AlertDialogManager.showError("Print Error",
                     "An error occurred while printing. Please try again.");
         }
+    }
+
+    private int calculatePageCount(List<EvacuationPlanModel> filtered,
+                                   PageLayout pageLayout, String reportType) {
+        if (filtered == null || filtered.isEmpty()) return 1;
+
+        double pageHeight = pageLayout.getPrintableHeight();
+
+        double usableHeight = pageHeight - 120;
+        int rowHeight;
+
+        switch (reportType) {
+            case "Evacuation Plan":
+                rowHeight = 24;
+                break;
+            case "Capacity Report":
+                return 1;
+            default:
+                rowHeight = 22;
+                break;
+        }
+
+        int rowsPerPage = Math.max(1, (int) (usableHeight / rowHeight));
+        int totalRows   = filtered.size();
+
+        if ("Evacuation Plan".equals(reportType)) {
+            long groupCount = filtered.stream()
+                    .map(p -> Character.toUpperCase(p.getBeneficiaryName().charAt(0)))
+                    .distinct().count();
+            totalRows += (int) groupCount; // each group label takes ~1 extra row
+        }
+
+        return Math.max(1, (int) Math.ceil((double) totalRows / rowsPerPage));
     }
 
     private void applyPageLayout(PrinterJob job) {
@@ -945,7 +985,7 @@ public class EvacuationPlanPrintingController {
         headerTable.addCell(new Cell()
                 .add(new Paragraph(reportType.toUpperCase())
                         .setFont(fontBold).setFontSize(18).setFontColor(PDF_WHITE))
-                .add(new Paragraph("Barangay Disaster Risk Reduction and Management")
+                .add(new Paragraph("MUNICIPAL OF BANATE Disaster Risk Reduction and Management")
                         .setFont(fontNormal).setFontSize(10)
                         .setFontColor(new DeviceRgb(189, 215, 238)))
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)
@@ -1632,7 +1672,8 @@ public class EvacuationPlanPrintingController {
         left.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label right = new Label("Prepared by BDRRMC  |  RespondPH System");
+        String preparedBy = SessionManager.getInstance().getCurrentAdminFullName();
+        Label right = new Label("Prepared by" + preparedBy);
         right.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
         footer.getChildren().addAll(left, spacer, right);
         return footer;

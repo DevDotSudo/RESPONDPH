@@ -372,7 +372,6 @@ public class EvacuationPlanController {
         }
     }
 
-
     private VBox createPrintContent(String disasterName, Map<String, List<EvacuationPlanModel>> groupedByEvacSite) {
         VBox content = new VBox(10);
         content.setPadding(new Insets(20));

@@ -17,8 +17,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.print.Printer;
-import javafx.print.PrinterJob;
+import javafx.print.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -904,12 +903,7 @@ public class DisasterDamageController {
         });
     }
 
-    // =========================================================================
-    // PRINT / PDF
-    // =========================================================================
-
-    private void printRecords(List<DisasterDamageModel> records,
-                              DisasterItem disaster, Printer printer) {
+    private void printRecords(List<DisasterDamageModel> records, DisasterItem disaster, Printer printer) {
         try {
             PrinterJob job = PrinterJob.createPrinterJob(printer);
             if (job == null) {
@@ -917,63 +911,181 @@ public class DisasterDamageController {
                         "Could not create a print job for the selected printer.");
                 return;
             }
-            if (!job.showPrintDialog(null)) return;
+
+            PageLayout pageLayout = printer.createPageLayout(
+                    Paper.A4, PageOrientation.LANDSCAPE, 36, 36, 36, 36);
+            job.getJobSettings().setPageLayout(pageLayout);
+
+            // ── Calculate actual page count ───────────────────────────────────
+            int rowsPerPage = Math.max(1, (int)((pageLayout.getPrintableHeight() - 150) / 22));
+            int actualPageCount = Math.max(1, (int) Math.ceil((double) records.size() / rowsPerPage));
+            job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
 
             VBox content = createPrintContent(records, disaster);
-            if (job.printPage(content)) {
+
+            // ── Silent print — no dialog ──────────────────────────────────────
+            if (job.printPage(pageLayout, content)) {
                 job.endJob();
                 AlertDialogManager.showInfo("Print Success",
                         "Document sent to printer: " + job.getPrinter().getName());
             } else {
-                AlertDialogManager.showError("Print Error",
-                        "Failed to send document to printer.");
+                AlertDialogManager.showError("Print Error", "Failed to send document to printer.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError("Print Error",
-                    "Error during printing:\n" + e.getMessage());
+            AlertDialogManager.showError("Print Error", "Error during printing:\n" + e.getMessage());
         }
     }
 
     private VBox createPrintContent(List<DisasterDamageModel> records, DisasterItem disaster) {
-        VBox content = new VBox(8);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: white; -fx-font-family: 'Courier New';");
+        VBox root = new VBox(0);
+        root.setStyle("-fx-background-color: white;");
+        root.setPrefWidth(900);
 
-        Label title = new Label("DISASTER DAMAGE ASSESSMENT REPORT");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        title.setAlignment(Pos.CENTER);
-        title.setStyle("-fx-padding: 0 0 10 0;");
-        content.getChildren().add(title);
-
+        String timestamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
         String disasterInfo = disaster.getDisasterId() == 0
                 ? "All Disasters"
                 : disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
-        content.getChildren().add(new Label("Disaster: " + disasterInfo));
-        content.getChildren().add(new Label("Generated: " +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a"))));
-        content.getChildren().add(new Label("Total Records: " + records.size()));
-        content.getChildren().add(new Label(""));
 
-        String fmt = "%-6s %-25s %-20s %-15s %-12s %-12s %-12s";
-        content.getChildren().add(new Label(String.format(fmt,
-                "ID", "Beneficiary", "Disaster", "Severity", "Assessment", "Verified", "Reg Date")));
-        content.getChildren().add(new Label(String.format(fmt,
-                "------", "-------------------------", "--------------------",
-                "---------------", "------------", "------------", "------------")));
+        // ── Header bar (dark navy) ────────────────────────────────────────────
+        HBox header = new HBox();
+        header.setStyle("-fx-background-color: #2c3e50; -fx-padding: 14 18 14 18;");
+        header.setAlignment(Pos.CENTER_LEFT);
 
+        VBox headerLeft = new VBox(3);
+        Label reportTitle = new Label("DISASTER DAMAGE ASSESSMENT REPORT");
+        reportTitle.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: white;");
+        Label subTitle = new Label("Barangay Disaster Risk Reduction and Management");
+        subTitle.setStyle("-fx-font-size: 10; -fx-text-fill: #bdd7ee;");
+        headerLeft.getChildren().addAll(reportTitle, subTitle);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        VBox headerRight = new VBox(3);
+        headerRight.setAlignment(Pos.CENTER_RIGHT);
+        Label systemName = new Label("RespondPH");
+        systemName.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: white;");
+        Label tsLabel = new Label(timestamp);
+        tsLabel.setStyle("-fx-font-size: 8; -fx-text-fill: #bdd7ee;");
+        headerRight.getChildren().addAll(systemName, tsLabel);
+
+        header.getChildren().addAll(headerLeft, spacer, headerRight);
+        root.getChildren().add(header);
+
+        // ── Metadata box ──────────────────────────────────────────────────────
+        GridPane meta = new GridPane();
+        meta.setStyle("-fx-background-color: #f0f4f8; -fx-border-color: #bed2e6; -fx-border-width: 1; -fx-padding: 0;");
+        meta.setHgap(0);
+        meta.setVgap(0);
+        ColumnConstraints col1 = new ColumnConstraints(); col1.setPercentWidth(25);
+        ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(25);
+        ColumnConstraints col3 = new ColumnConstraints(); col3.setPercentWidth(25);
+        ColumnConstraints col4 = new ColumnConstraints(); col4.setPercentWidth(25);
+        meta.getColumnConstraints().addAll(col1, col2, col3, col4);
+
+        addMetaCell(meta, "Disaster Event",  disasterInfo,                   0, 0);
+        addMetaCell(meta, "Disaster Type",   disaster.getDisasterType(),      1, 0);
+        addMetaCell(meta, "Total Records",   records.size() + " records",     2, 0);
+        addMetaCell(meta, "Generated On",    timestamp,                       3, 0);
+
+        VBox.setMargin(meta, new Insets(10, 0, 14, 0));
+        root.getChildren().add(meta);
+
+        // ── Table header row ──────────────────────────────────────────────────
+        HBox tableHeader = new HBox(0);
+        tableHeader.setStyle("-fx-background-color: #2c3e50; -fx-padding: 5 6 5 6;");
+        tableHeader.getChildren().addAll(
+                colHeaderCell("#",               50),
+                colHeaderCell("Beneficiary",    200),
+                colHeaderCell("Disaster",       160),
+                colHeaderCell("Severity",       120),
+                colHeaderCell("Assessment Date",120),
+                colHeaderCell("Verified By",    120),
+                colHeaderCell("Reg Date",       100)
+        );
+        root.getChildren().add(tableHeader);
+
+        // ── Data rows ─────────────────────────────────────────────────────────
+        boolean alt = false;
+        int rowNum = 1;
         for (DisasterDamageModel d : records) {
-            content.getChildren().add(new Label(String.format(fmt,
-                    d.getBeneficiaryDisasterDamageId(),
-                    truncate(d.getBeneficiaryFirstname(), 25),
-                    truncate(d.getDisasterName(), 20),
-                    truncate(d.getHouseDamageSeverity(), 15),
-                    truncate(d.getAssessmentDate(), 12),
-                    truncate(d.getVerifiedBy(), 12),
-                    truncate(d.getRegDate(), 12))));
+            String rowBg = alt ? "#f5f8fc" : "#ffffff";
+            alt = !alt;
+
+            HBox row = new HBox(0);
+            row.setStyle("-fx-background-color: " + rowBg + "; -fx-padding: 4 6 4 6; " +
+                    "-fx-border-color: transparent transparent #dce1e6 transparent; -fx-border-width: 0.5;");
+
+            row.getChildren().addAll(
+                    colDataCell(String.valueOf(rowNum++),                          50,  true),
+                    colDataCell(nvl(d.getBeneficiaryFirstname()),                  200, false),
+                    colDataCell(nvl(d.getDisasterName()),                          160, false),
+                    colDataCell(nvl(d.getHouseDamageSeverity()),                   120, false),
+                    colDataCell(nvl(d.getAssessmentDate()),                        120, false),
+                    colDataCell(nvl(d.getVerifiedBy()),                            120, false),
+                    colDataCell(nvl(d.getRegDate()),                               100, false)
+            );
+            root.getChildren().add(row);
         }
-        return content;
+
+        // ── Totals row ────────────────────────────────────────────────────────
+        HBox totalRow = new HBox();
+        totalRow.setStyle("-fx-background-color: #e8f0f8; -fx-padding: 5 6 5 6;");
+        Label totalLabel = new Label("Total Records: " + records.size());
+        totalLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        totalRow.getChildren().add(totalLabel);
+        VBox.setMargin(totalRow, new Insets(0, 0, 10, 0));
+        root.getChildren().add(totalRow);
+
+        // ── Closing note ──────────────────────────────────────────────────────
+        Label note = new Label("This report was generated automatically by RespondPH. " +
+                "Data reflects the latest disaster damage assessment records.");
+        note.setStyle("-fx-font-size: 8; -fx-text-fill: #888; -fx-padding: 8 0 0 0;");
+        note.setAlignment(Pos.CENTER);
+        note.setMaxWidth(Double.MAX_VALUE);
+        root.getChildren().add(note);
+
+        return root;
     }
+
+// ── Print layout helper cells ─────────────────────────────────────────────────
+
+    private void addMetaCell(GridPane grid, String label, String value, int col, int row) {
+        VBox cell = new VBox(2);
+        String labelBg = "#e1ebf5";
+        String valueBg = "#f5f8fc";
+        cell.setStyle("-fx-background-color: " + valueBg + "; -fx-padding: 6 8 6 8; " +
+                "-fx-border-color: #bed2e6; -fx-border-width: 0.5;");
+        Label lbl = new Label(label);
+        lbl.setStyle("-fx-font-size: 9; -fx-font-weight: bold; -fx-text-fill: #283c5a; " +
+                "-fx-background-color: " + labelBg + "; -fx-padding: 1 3 1 3;");
+        Label val = new Label(value != null ? value : "—");
+        val.setStyle("-fx-font-size: 9; -fx-text-fill: #283c5a;");
+        val.setWrapText(true);
+        cell.getChildren().addAll(lbl, val);
+        grid.add(cell, col, row);
+    }
+
+    private Label colHeaderCell(String text, double width) {
+        Label lbl = new Label(text);
+        lbl.setMinWidth(width); lbl.setMaxWidth(width);
+        lbl.setStyle("-fx-font-size: 9; -fx-font-weight: bold; -fx-text-fill: white;");
+        lbl.setWrapText(false);
+        return lbl;
+    }
+
+    private Label colDataCell(String text, double width, boolean centered) {
+        Label lbl = new Label(text);
+        lbl.setMinWidth(width); lbl.setMaxWidth(width);
+        lbl.setStyle("-fx-font-size: 9; -fx-text-fill: #283c3c;");
+        lbl.setWrapText(false);
+        if (centered) lbl.setAlignment(Pos.CENTER);
+        return lbl;
+    }
+
+    private String nvl(String s) { return (s == null || s.isBlank()) ? "—" : s; }
 
     private String truncate(String s, int maxLength) {
         if (s == null) return "";
@@ -1218,10 +1330,6 @@ public class DisasterDamageController {
         };
         actionsColumn.setCellFactory(cellFactory);
     }
-
-    // =========================================================================
-    // PRINTER UTILITIES
-    // =========================================================================
 
     private boolean isPrinterActive(Printer printer) {
         if (printer == null) return false;

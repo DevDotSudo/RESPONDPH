@@ -1,0 +1,10 @@
+.settings-root {
+    -fx-background-color: #e5e7eb;
+}
+
+.page-title {
+    -fx-font-family: "Arial";
+    -fx-font-weight: bold;
+    -fx-font-size: 32px;
+    -fx-text-fill: #1f2937;
+}

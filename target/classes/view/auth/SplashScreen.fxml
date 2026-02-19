@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane prefHeight="800.0" prefWidth="1600.0" styleClass="root" stylesheets="@/styles/auth/splashscreen.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.splash.SplashScreenController">
+
+    <VBox alignment="CENTER" spacing="40" styleClass="content-container">
+
+        <!-- Logo and Branding Section -->
+        <VBox fx:id="brandingSection" alignment="CENTER" spacing="25" styleClass="branding-section">
+            <ImageView fitHeight="200" fitWidth="200" preserveRatio="true">
+                <Image url="@/images/respondph_logo_.png" />
+            </ImageView>
+
+            <VBox alignment="CENTER" spacing="10">
+                <Label styleClass="brand-title" text="RespondPH" />
+                <Label styleClass="brand-subtitle" text="Resilient Emergency System for Prioritized Operations, Notification Dissemination in the Philippines" />
+            </VBox>
+        </VBox>
+
+        <!-- Progress Section -->
+        <VBox fx:id="progressSection" alignment="CENTER" maxWidth="500" spacing="15" styleClass="progress-section">
+            <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0" styleClass="custom-progress-bar" />
+            <Label fx:id="loadingText" styleClass="loading-text" text="Loading application..." />
+        </VBox>
+
+    </VBox>
+
+</StackPane>

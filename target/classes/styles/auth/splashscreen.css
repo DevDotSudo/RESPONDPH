@@ -1,0 +1,59 @@
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b, #334155);
+}
+
+.content-container {
+    -fx-padding: 60px;
+}
+
+.branding-section {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 30, 0, 0, 5);
+}
+
+.brand-title {
+    -fx-font-size: 56px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-family: "Segoe UI", "Arial", "Helvetica", sans-serif;
+    -fx-letter-spacing: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
+}
+
+.brand-subtitle {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-font-family: "Segoe UI", "Arial", "Helvetica", sans-serif;
+    -fx-letter-spacing: 1px;
+}
+
+.progress-section {
+    -fx-padding: 20px;
+}
+
+.custom-progress-bar {
+    -fx-pref-height: 8px;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 4px;
+}
+
+.custom-progress-bar .track {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+}
+
+.custom-progress-bar .bar {
+    -fx-background-color: linear-gradient(to right, #f97316 0%, #fb923c 50%, #f97316 100%);
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.6), 8, 0, 0, 0);
+}
+
+.loading-text {
+    -fx-font-size: 16px;
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+    -fx-font-family: "Segoe UI", "Arial", "Helvetica", sans-serif;
+    -fx-font-weight: 500;
+}

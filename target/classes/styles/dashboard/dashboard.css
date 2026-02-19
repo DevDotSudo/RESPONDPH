@@ -1,0 +1,362 @@
+.dashboard-root {
+    -fx-background-color: #0b1220;
+    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* Remove extra wrapper padding */
+.dashboard-wrapper {
+    -fx-padding: 0;
+    -fx-background-color: #0b1220;
+}
+
+.cards-grid {
+    -fx-padding: 0;
+}
+
+.flat-card-blue,
+.flat-card-red,
+.flat-card-green,
+.flat-card-yellow {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+    -fx-padding: 0;
+}
+
+.flat-card-content {
+    -fx-padding: 16px;
+}
+
+.flat-value {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+}
+
+.flat-label {
+    -fx-text-fill: rgba(226,232,240,0.65);
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.flat-icon {
+    -fx-background-radius: 10px;
+    -fx-padding: 12px 16px;
+}
+
+.flat-icon-symbol {
+    -fx-fill: white;
+    -glyph-size: 24px;
+}
+
+/* ===== COLORS (Soft Opacity) ===== */
+
+/* Blue */
+.flat-card-blue {
+    -fx-background-color: rgba(59,130,246,0.08);
+    -fx-border-color: rgba(59,130,246,0.22);
+}
+.flat-card-blue .flat-icon {
+    -fx-background-color: rgba(59,130,246,0.55);
+}
+
+/* Red */
+.flat-card-red {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.22);
+}
+.flat-card-red .flat-icon {
+    -fx-background-color: rgba(239,68,68,0.55);
+}
+
+/* Green */
+.flat-card-green {
+    -fx-background-color: rgba(16,185,129,0.08);
+    -fx-border-color: rgba(16,185,129,0.22);
+}
+.flat-card-green .flat-icon {
+    -fx-background-color: rgba(16,185,129,0.55);
+}
+
+/* Yellow */
+.flat-card-yellow {
+    -fx-background-color: rgba(245,158,11,0.08);
+    -fx-border-color: rgba(245,158,11,0.22);
+}
+.flat-card-yellow .flat-icon {
+    -fx-background-color: rgba(245,158,11,0.55);
+}
+
+.flat-card-blue:hover,
+.flat-card-red:hover,
+.flat-card-green:hover,
+.flat-card-yellow:hover {
+    -fx-border-color: rgba(255,255,255,0.20);
+    -fx-background-color: rgba(255,255,255,0.02);
+}
+
+.map-container {
+    -fx-background-radius: 16px;
+    -fx-border-radius: 16px;
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148, 163, 184, 0.14);
+    -fx-border-width: 1px;
+}
+
+.dashboard-topbar {
+    -fx-background-color: transparent;
+    -fx-padding: 0px 0 8px 0;
+    -fx-border-color: rgba(148, 163, 184, 0.18);
+    -fx-border-width: 0 0 1px 0;
+    -fx-alignment: center-left;
+}
+
+/* Dashboard Mapping - Left */
+.dashboard-topbar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* Clock - Center (No container background) */
+.clock-container {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.clock-icon-container {
+    -fx-background-color: rgba(148, 163, 184, 0.15);
+    -fx-background-radius: 5px;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-width: 36px;
+    -fx-max-height: 36px;
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.clock-icon {
+    -fx-fill: #94a3b8;
+    -glyph-size: 20px;
+}
+
+.clock-time {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Inter", "Segoe UI", monospace;
+    -fx-alignment: center;
+    -fx-padding: 2px 0 0 0;
+}
+
+.clock-date {
+    -fx-text-fill: rgba(148, 163, 184, 0.9);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-alignment: center;
+    -fx-padding: 0;
+}/* ===== ADMIN PROFILE - ICON INSIDE LABEL CONTAINER ===== */
+.admin-name-label {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.22) transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-style: solid;
+    -fx-spacing: 8px;
+    -fx-alignment: center;
+}
+
+/* Admin icon styling */
+.admin-icon-inside {
+    -fx-fill: rgba(255, 255, 255, 0.9);
+    -glyph-size: 24px;
+}
+
+/* Admin name label - remove default label background */
+.admin-name-label .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-padding: 0;
+}
+
+/* HOVER STATE - bottom border only */
+.admin-name-label:hover {
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.5) transparent;
+    -fx-border-width: 0 0 2px 0;  /* Slightly thicker on hover */
+}
+
+.admin-name-label:hover .admin-icon-inside {
+    -fx-fill: rgba(59, 130, 246, 1);
+}
+
+/* PRESSED STATE */
+.admin-name-label:pressed {
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.7) transparent;
+    -fx-border-width: 0 0 2px 0;
+    -fx-translate-y: 1px;
+}
+
+/* FOCUSED STATE */
+.admin-name-label:focused {
+    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.6) transparent;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.map-wrapper {
+    -fx-background-color: transparent;
+}
+
+.map-search-overlay {
+    -fx-padding: 10px 10px 0 0;
+    -fx-background-color: transparent;
+    -fx-alignment: center-right;
+}
+/* ===== MAP SEARCH BUTTON ===== */
+.map-search-btn {
+    -fx-background-color: #1e293b;  /* Solid dark blue-gray matching combobox */
+    -fx-border-color: rgba(249, 115, 22, 0.6);
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1.5px;
+    -fx-min-width: 42px;
+    -fx-min-height: 42px;
+    -fx-max-width: 42px;
+    -fx-max-height: 42px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0.3, 0, 2);
+}
+
+.map-search-btn:hover {
+    -fx-background-color: #2d3b4f;  /* Slightly lighter on hover */
+    -fx-border-color: #f97316;      /* Solid orange border on hover */
+    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 12, 0.35, 0, 0);
+}
+
+.map-search-btn:pressed {
+    -fx-background-color: #374151;  /* Darker when pressed */
+    -fx-translate-y: 1px;
+}
+
+.map-search-icon {
+    -fx-fill: #f97316;              /* Solid orange icon */
+    -glyph-size: 18px;
+}
+
+.map-search-btn:hover .map-search-icon {
+    -fx-fill: #fb923c;              /* Lighter orange on hover */
+}
+
+/* ===== ORANGE SEARCH COMBOBOX (MATCHING ADDBENEFICIARIESDIALOG) ===== */
+.map-search-combobox {
+    -fx-background-color: #1e293b;  /* Solid dark blue-gray background */
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 0;
+
+    /* Size */
+    -fx-pref-width: 280px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+
+.map-search-combobox:hover {
+    -fx-border-color: rgba(249,115,22,0.50);
+    -fx-background-color: #2d3b4f;  /* Slightly lighter on hover */
+}
+
+/* Input text field inside ComboBox */
+.map-search-combobox .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 0 0 0 14px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+
+/* List cell when not editable (for display) */
+.map-search-combobox > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 0 0 0 14px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Arrow button */
+.map-search-combobox .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10px 0 12px;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+
+.map-search-combobox .arrow {
+    -fx-background-color: #94a3b8;
+    -fx-scale-shape: false;
+}
+
+.map-search-combobox:hover .arrow {
+    -fx-background-color: #f97316;
+}
+
+/* Dropdown popup */
+.map-search-combobox .combo-box-popup .list-view {
+    -fx-background-color: #1e293b;  /* Solid background matching the combobox */
+    -fx-border-color: rgba(249,115,22,0.3);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 16, 0.0, 0, 4);
+}
+
+.map-search-combobox .combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 14px;
+    -fx-background-radius: 5px;
+}
+
+.map-search-combobox .combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #f97316;  /* Solid orange on hover */
+    -fx-text-fill: #ffffff;
+}
+
+.map-search-combobox .combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #ea580c;  /* Darker orange for selected */
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+}
+
+/* Focus states */
+.map-search-combobox:focused {
+    -fx-border-color: #f97316;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.3), 8, 0.0, 0, 0);
+}
+
+/* Remove default focus indicators */
+.map-search-combobox:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}

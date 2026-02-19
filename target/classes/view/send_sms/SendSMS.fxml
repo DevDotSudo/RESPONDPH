@@ -116,15 +116,6 @@
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label styleClass="input-label" text="Recipient Group:" />
                             <ComboBox fx:id="cbSelectBeneficiary" prefWidth="300" styleClass="recipient-combo">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="All Beneficiaries" />
-                                        <String fx:value="By Barangay" />
-                                        <String fx:value="Selected Beneficiaries" />
-                                        <String fx:value="By Disaster Area" />
-                                        <String fx:value="Custom List" />
-                                    </FXCollections>
-                                </items>
                             </ComboBox>
                         </HBox>
 

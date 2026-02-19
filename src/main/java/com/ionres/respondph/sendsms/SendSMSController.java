@@ -480,8 +480,7 @@ public class SendSMSController implements Initializable {
                     "All Beneficiaries",
                     "By Barangay",
                     "Selected Beneficiaries",
-                    "By Disaster Area",
-                    "Custom List"
+                    "By Disaster Area"
             ));
             cbSelectBeneficiary.getSelectionModel().selectFirst();
             cbSelectBeneficiary.getSelectionModel().selectedItemProperty()

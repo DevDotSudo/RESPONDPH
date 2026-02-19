@@ -36,7 +36,7 @@
                 <ColumnConstraints hgrow="ALWAYS" />
             </columnConstraints>
 
-            <StackPane styleClass="flat-card-blue" GridPane.columnIndex="0">
+            <StackPane fx:id="cardBeneficiary" styleClass="flat-card-blue" GridPane.columnIndex="0">
                 <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
                         <FontAwesomeIconView glyphName="USERS" styleClass="flat-icon-symbol" />
@@ -48,7 +48,7 @@
                 </HBox>
             </StackPane>
 
-            <StackPane styleClass="flat-card-red" GridPane.columnIndex="1">
+            <StackPane fx:id="cardDisasters" styleClass="flat-card-red" GridPane.columnIndex="1">
                 <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
                         <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" styleClass="flat-icon-symbol" />
@@ -60,7 +60,7 @@
                 </HBox>
             </StackPane>
 
-            <StackPane styleClass="flat-card-green" GridPane.columnIndex="2">
+            <StackPane fx:id="cardAids" styleClass="flat-card-green" GridPane.columnIndex="2">
                 <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
                         <FontAwesomeIconView glyphName="MEDKIT" styleClass="flat-icon-symbol" />
@@ -72,7 +72,7 @@
                 </HBox>
             </StackPane>
 
-            <StackPane styleClass="flat-card-yellow" GridPane.columnIndex="3">
+            <StackPane fx:id="cardEvacuationSite" styleClass="flat-card-yellow" GridPane.columnIndex="3">
                 <HBox alignment="CENTER_LEFT" spacing="14" styleClass="flat-card-content">
                     <StackPane styleClass="flat-icon">
                         <FontAwesomeIconView glyphName="HOME" styleClass="flat-icon-symbol" />

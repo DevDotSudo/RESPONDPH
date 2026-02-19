@@ -27,8 +27,6 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
 
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -96,7 +94,6 @@ public class PrintAidDialogController {
     @FXML private Button printBtn;
     @FXML private Button closeBtn;
 
-    private Stage dialogStage;
     // ── Services / DAOs ──────────────────────────────────────────────────────
     private final DisasterDAO     disasterDAO  = new DisasterDAOImpl(DBConnection.getInstance());
     private final AidDAO          aidDAO       = new AidDAOImpl(DBConnection.getInstance());
@@ -129,9 +126,9 @@ public class PrintAidDialogController {
     private static final DeviceRgb PDF_LOW       = new DeviceRgb(149, 165, 166);
     private static final DeviceRgb PDF_ROW_ALT   = new DeviceRgb(248, 249, 250);
 
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
+    // =========================================================================
+    //  INIT
+    // =========================================================================
 
     @FXML
     public void initialize() {
@@ -358,129 +355,27 @@ public class PrintAidDialogController {
         progressStage.initStyle(StageStyle.UNDECORATED);
         progressStage.setAlwaysOnTop(true);
 
-        // ── Outer wrapper (dark card) ────────────────────────────────
-        VBox card = new VBox(0);
-        card.setPrefWidth(420);
-        card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
-        );
+        VBox vbox = new VBox(15);
+        vbox.setPadding(new Insets(20));
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;");
 
-        // ── Header ───────────────────────────────────────────────────
-        HBox header = new HBox(12);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(18, 22, 18, 22));
-        header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
-                        "-fx-border-width: 0 0 1 0;" +
-                        "-fx-background-radius: 10 10 0 0;"
-        );
-
-        // Spinner icon (ProgressIndicator used as a spinner)
-        ProgressIndicator spinner = new ProgressIndicator();
-        spinner.setPrefSize(22, 22);
-        spinner.setMaxSize(22, 22);
-        spinner.setMinSize(22, 22);
-        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
-
-        VBox titleBlock = new VBox(3);
         Label titleLabel = new Label("Please Wait");
-        titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
-        titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-font-weight: 900;"
-        );
-        Label subtitleLabel = new Label("Processing your request…");
-        subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 600;"
-        );
-        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
-        header.getChildren().addAll(spinner, titleBlock);
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        titleLabel.setStyle("-fx-text-fill: #2c3e50;");
 
-        // ── Body ─────────────────────────────────────────────────────
-        VBox body = new VBox(14);
-        body.setPadding(new Insets(22, 22, 24, 22));
-        body.setAlignment(Pos.CENTER_LEFT);
-        body.setStyle("-fx-background-color: transparent;");
-
-        // Status message label
         progressLabel = new Label(initialMessage);
-        progressLabel.setWrapText(true);
-        progressLabel.setMaxWidth(Double.MAX_VALUE);
-        progressLabel.setStyle(
-                "-fx-text-fill: rgba(226,232,240,0.85);" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 600;"
-        );
-
-        // Progress bar track wrapper
-        VBox barWrapper = new VBox(0);
-        barWrapper.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.06);" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-padding: 0;"
-        );
+        progressLabel.setFont(Font.font("Arial", 12));
+        progressLabel.setStyle("-fx-text-fill: #555;");
 
         progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(Double.MAX_VALUE);
-        progressBar.setPrefHeight(10);
-        progressBar.setMaxWidth(Double.MAX_VALUE);
-        progressBar.setStyle(
-                "-fx-accent: rgba(249,115,22,0.95);" +
-                        "-fx-background-color: transparent;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-radius: 6;"
-        );
-        barWrapper.getChildren().add(progressBar);
+        progressBar.setPrefWidth(300);
+        progressBar.setPrefHeight(20);
 
-        // Percentage label (right-aligned)
-        Label pctLabel = new Label("0%");
-        pctLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
-                        "-fx-font-size: 11px;" +
-                        "-fx-font-weight: 700;"
-        );
-        HBox pctRow = new HBox();
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        pctRow.getChildren().addAll(spacer, pctLabel);
+        vbox.getChildren().addAll(titleLabel, progressLabel, progressBar);
 
-        // Update pct label when progress changes
-        progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
-            double pct = newVal.doubleValue();
-            if (pct < 0) {
-                pctLabel.setText("…");
-            } else {
-                pctLabel.setText(String.format("%.0f%%", pct * 100));
-            }
-        });
-
-        body.getChildren().addAll(progressLabel, barWrapper, pctRow);
-
-        card.getChildren().addAll(header, body);
-
-        Scene scene = new Scene(card);
-        scene.setFill(null); // transparent scene background
+        Scene scene = new Scene(vbox);
         progressStage.setScene(scene);
-
-        // Center on owner if available
-        if (dialogStage != null) {
-            progressStage.initOwner(dialogStage);
-            progressStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 420) / 2);
-            progressStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 160) / 2);
-        }
-
         progressStage.show();
     }
 
@@ -633,195 +528,106 @@ public class PrintAidDialogController {
     private void showOutputFormatDialog(List<AidModel> records,
                                         String disasterName,
                                         String aidName) {
-        Stage outputStage = new Stage();
-        outputStage.initModality(Modality.WINDOW_MODAL);
-        outputStage.initOwner(dialogStage);
-        outputStage.initStyle(StageStyle.UNDECORATED);
-        outputStage.setTitle("Export / Print");
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Export / Print");
+        dialog.setHeaderText("Choose output format:");
 
-        // ── Root card ────────────────────────────────────────────────
-        VBox card = new VBox(0);
-        card.setPrefWidth(500);
-        card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
-        );
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(460);
 
-        // ── HEADER ───────────────────────────────────────────────────
-        HBox header = new HBox(12);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(18, 22, 18, 22));
-        header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
-                        "-fx-border-width: 0 0 1 0;" +
-                        "-fx-background-radius: 10 10 0 0;"
-        );
-
-        FontAwesomeIconView exportIcon = new FontAwesomeIconView(FontAwesomeIcon.SHARE_SQUARE_ALT);
-        exportIcon.setSize("20");
-        exportIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.95);");
-
-        VBox titleBlock = new VBox(3);
-        Label titleLabel = new Label("Export / Print");
-        titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-font-weight: 900;"
-        );
-        Label subtitleLabel = new Label("Choose how to output your aid records");
-        subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 600;"
-        );
-        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
-
-        Region headerSpacer = new Region();
-        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
-
-        Button headerCloseBtn = new Button();
-        FontAwesomeIconView timesIcon = new FontAwesomeIconView(FontAwesomeIcon.TIMES);
-        timesIcon.setSize("13");
-        timesIcon.setGlyphStyle("-fx-fill: rgba(248,250,252,0.95);");
-        headerCloseBtn.setGraphic(timesIcon);
-        headerCloseBtn.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.03);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-padding: 8 12 8 12;" +
-                        "-fx-cursor: hand;"
-        );
-
-        header.getChildren().addAll(exportIcon, titleBlock, headerSpacer, headerCloseBtn);
-
-        // ── BODY ─────────────────────────────────────────────────────
-        VBox body = new VBox(20);
-        body.setPadding(new Insets(22, 22, 24, 22));
-        body.setStyle("-fx-background-color: transparent;");
-
-        // ── SECTION: Output Format ────────────────────────────────────
-        VBox outputSection = buildSection(
-                FontAwesomeIcon.SHARE_SQUARE_ALT, "Output Format",
-                "Choose how to export the aid records"
-        );
+        // ── Output format radios ──────────────────────────────────────────────
+        Label outputLbl = new Label("Output Format:");
+        outputLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
 
         ToggleGroup outputGroup  = new ToggleGroup();
-        RadioButton pdfRadio     = buildRadioCard("Save as PDF",     FontAwesomeIcon.FILE_PDF_ALT, outputGroup);
-        RadioButton printerRadio = buildRadioCard("Send to Printer", FontAwesomeIcon.PRINT,        outputGroup);
+        RadioButton pdfRadio     = new RadioButton("Save as PDF");
+        RadioButton printerRadio = new RadioButton("Send to Printer");
+        pdfRadio.setToggleGroup(outputGroup);
+        printerRadio.setToggleGroup(outputGroup);
         pdfRadio.setSelected(true);
 
-        HBox radioRow = new HBox(10);
-        radioRow.getChildren().addAll(pdfRadio, printerRadio);
-        outputSection.getChildren().add(radioRow);
-
-        // ── SECTION: Printer selection (hidden by default) ────────────
-        VBox printerSection = new VBox(10);
-        printerSection.setVisible(false);
-        printerSection.setManaged(false);
-
-        VBox printerCard = buildSection(
-                FontAwesomeIcon.DESKTOP, "Select Printer",
-                "Only connected printers are shown"
-        );
-
+        // ── Build active-only printer list ────────────────────────────────────
         ObservableList<PrinterEntry> allEntries    = buildPrinterEntries();
         ObservableList<PrinterEntry> activeEntries = FXCollections.observableArrayList(
                 allEntries.filtered(PrinterEntry::isActive));
 
+        // ── Printer ComboBox — name only, no badges ───────────────────────────
         ComboBox<PrinterEntry> printerComboBox = new ComboBox<>(activeEntries);
+        printerComboBox.setPrefWidth(420);
         printerComboBox.setMaxWidth(Double.MAX_VALUE);
-        printerComboBox.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.04);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-padding: 4 10 4 10;" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 700;"
-        );
 
         Callback<ListView<PrinterEntry>, ListCell<PrinterEntry>> nameOnlyFactory =
                 lv -> new ListCell<>() {
                     @Override
                     protected void updateItem(PrinterEntry item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (empty || item == null) { setText(null); setGraphic(null); }
-                        else {
+                        if (empty || item == null) {
+                            setText(null); setGraphic(null);
+                        } else {
                             setText(item.getPrinterName());
-                            setStyle(
-                                    "-fx-font-size: 13px;" +
-                                            "-fx-font-weight: 700;" +
-                                            "-fx-text-fill: rgba(226,232,240,0.95);" +
-                                            "-fx-background-color: transparent;" +
-                                            "-fx-padding: 10 12 10 12;"
-                            );
+                            setStyle("-fx-font-size: 12px; -fx-text-fill: #2c3e50;");
+                            setGraphic(null);
                         }
                     }
                 };
+
         printerComboBox.setCellFactory(nameOnlyFactory);
         printerComboBox.setButtonCell(nameOnlyFactory.call(null));
 
+        // Pre-select: default active printer → first active printer
         activeEntries.stream()
-                .filter(PrinterEntry::isDefault).findFirst()
-                .or(() -> activeEntries.isEmpty() ? Optional.empty() : Optional.of(activeEntries.get(0)))
+                .filter(PrinterEntry::isDefault)
+                .findFirst()
+                .or(() -> activeEntries.isEmpty()
+                        ? Optional.empty()
+                        : Optional.of(activeEntries.get(0)))
                 .ifPresent(printerComboBox::setValue);
 
-        printerCard.getChildren().add(printerComboBox);
-        printerSection.getChildren().add(printerCard);
+        // ── Printer section (hidden until "Send to Printer" chosen) ───────────
+        Separator sep = new Separator();
+        Label printerLbl = new Label("Select Printer:");
+        printerLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
 
-        // ── Toggle: show/hide printer section ────────────────────────
+        VBox printerSection = new VBox(7);
+        printerSection.getChildren().addAll(sep, printerLbl, printerComboBox);
+        printerSection.setVisible(false);
+        printerSection.setManaged(false);
+
+        // ── Radio toggle: show ComboBox OR alert if no active printers ─────────
         outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == printerRadio) {
                 if (activeEntries.isEmpty()) {
+                    // Revert to PDF and alert user
                     pdfRadio.setSelected(true);
-                    AlertDialogManager.showError(
-                            "No Printer Connected",
-                            "No connected printer was detected on this system.\n\nPlease connect a printer and try again.");
+
+                    Alert notConnected = new Alert(Alert.AlertType.ERROR);
+                    notConnected.setTitle("Printer Not Connected");
+                    notConnected.setHeaderText("Not Connected in printer");
+                    notConnected.setContentText(
+                            "No connected printer was detected on this system.\n\n"
+                                    + "Please connect a printer and try again.");
+                    notConnected.showAndWait();
                 } else {
                     printerSection.setVisible(true);
                     printerSection.setManaged(true);
-                    outputStage.sizeToScene();
+                    dialog.getDialogPane().getScene().getWindow().sizeToScene();
                 }
             } else {
                 printerSection.setVisible(false);
                 printerSection.setManaged(false);
-                outputStage.sizeToScene();
+                dialog.getDialogPane().getScene().getWindow().sizeToScene();
             }
         });
 
-        body.getChildren().addAll(outputSection, printerSection);
+        content.getChildren().addAll(outputLbl, pdfRadio, printerRadio, printerSection);
+        dialog.getDialogPane().setContent(content);
 
-        // ── FOOTER ───────────────────────────────────────────────────
-        HBox footer = new HBox(10);
-        footer.setAlignment(Pos.CENTER_RIGHT);
-        footer.setPadding(new Insets(16, 22, 18, 22));
-        footer.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.02);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
-                        "-fx-border-width: 1 0 0 0;" +
-                        "-fx-background-radius: 0 0 10 10;"
-        );
+        ButtonType okBtn = new ButtonType("Generate", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
 
-        Button cancelBtn  = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false);
-        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true);
-
-        footer.getChildren().addAll(cancelBtn, generateBtn);
-        card.getChildren().addAll(header, body, footer);
-
-        // ── Wire close actions ────────────────────────────────────────
-        headerCloseBtn.setOnAction(e -> outputStage.close());
-        cancelBtn.setOnAction(e -> outputStage.close());
-
-        generateBtn.setOnAction(e -> {
-            outputStage.close();
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != okBtn) return;
 
             if (pdfRadio.isSelected()) {
                 generateAndSavePDF(records, disasterName, aidName);
@@ -833,203 +639,21 @@ public class PrintAidDialogController {
                     return;
                 }
                 configurePrintService();
+                boolean success = distributionSummaryRadio.isSelected()
+                        ? printService.printDistributionSummary(disasterName, aidName, records)
+                        : printService.printBeneficiaryList(disasterName, aidName, records);
+                if (success) closeDialog();
             }
         });
-
-        Scene scene = new Scene(card);
-        scene.setFill(null);
-        outputStage.setScene(scene);
-
-        // Center on owner
-        if (dialogStage != null) {
-            outputStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 500) / 2);
-            outputStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 400) / 2);
-        }
-
-        outputStage.show();
     }
 
+    // =========================================================================
+    //  PDF GENERATION  (iText 7)
+    // =========================================================================
 
-    private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle) {
-        VBox section = new VBox(10);
-        section.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.03);" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 8;" +
-                        "-fx-border-radius: 8;" +
-                        "-fx-padding: 14 16 14 16;"
-        );
-
-        HBox sectionHeader = new HBox(10);
-        sectionHeader.setAlignment(Pos.CENTER_LEFT);
-
-        FontAwesomeIconView sectionIcon = new FontAwesomeIconView(icon);
-        sectionIcon.setSize("14");
-        sectionIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.90);");
-
-        VBox sectionTitleBlock = new VBox(2);
-        Label sectionTitle = new Label(title);
-        sectionTitle.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.95);" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 800;"
-        );
-        Label sectionSubtitle = new Label(subtitle);
-        sectionSubtitle.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
-                        "-fx-font-size: 11px;" +
-                        "-fx-font-weight: 600;"
-        );
-        sectionTitleBlock.getChildren().addAll(sectionTitle, sectionSubtitle);
-        sectionHeader.getChildren().addAll(sectionIcon, sectionTitleBlock);
-        section.getChildren().add(sectionHeader);
-
-        return section;
-    }
-
-    private RadioButton buildRadioCard(String label, FontAwesomeIcon icon, ToggleGroup group) {
-        RadioButton radio = new RadioButton(label);
-        radio.setToggleGroup(group);
-
-        FontAwesomeIconView radioIcon = new FontAwesomeIconView(icon);
-        radioIcon.setSize("13");
-        radioIcon.setGlyphStyle("-fx-fill: rgba(226,232,240,0.80);");
-        radio.setGraphic(radioIcon);
-
-        radio.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.04);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 7;" +
-                        "-fx-border-radius: 7;" +
-                        "-fx-padding: 10 16 10 16;" +
-                        "-fx-text-fill: rgba(226,232,240,0.90);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 700;" +
-                        "-fx-cursor: hand;"
-        );
-
-        // Highlight selected state
-        radio.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            if (isSelected) {
-                radio.setStyle(
-                        "-fx-background-color: rgba(249,115,22,0.12);" +
-                                "-fx-border-color: rgba(249,115,22,0.60);" +
-                                "-fx-border-width: 1;" +
-                                "-fx-background-radius: 7;" +
-                                "-fx-border-radius: 7;" +
-                                "-fx-padding: 10 16 10 16;" +
-                                "-fx-text-fill: rgba(249,115,22,0.95);" +
-                                "-fx-font-size: 12px;" +
-                                "-fx-font-weight: 700;" +
-                                "-fx-cursor: hand;"
-                );
-                radioIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.95);");
-            } else {
-                radio.setStyle(
-                        "-fx-background-color: rgba(255,255,255,0.04);" +
-                                "-fx-border-color: rgba(148,163,184,0.20);" +
-                                "-fx-border-width: 1;" +
-                                "-fx-background-radius: 7;" +
-                                "-fx-border-radius: 7;" +
-                                "-fx-padding: 10 16 10 16;" +
-                                "-fx-text-fill: rgba(226,232,240,0.90);" +
-                                "-fx-font-size: 12px;" +
-                                "-fx-font-weight: 700;" +
-                                "-fx-cursor: hand;"
-                );
-                radioIcon.setGlyphStyle("-fx-fill: rgba(226,232,240,0.80);");
-            }
-        });
-
-        return radio;
-    }
-
-    private Button buildFooterButton(String label, FontAwesomeIcon icon, boolean isPrimary) {
-        FontAwesomeIconView btnIcon = new FontAwesomeIconView(icon);
-        btnIcon.setSize("13");
-        btnIcon.setGlyphStyle(isPrimary
-                ? "-fx-fill: rgba(255,255,255,0.95);"
-                : "-fx-fill: rgba(148,163,184,0.90);"
-        );
-
-        Button btn = new Button(label, btnIcon);
-        btn.setMinWidth(126);
-        btn.setMinHeight(40);
-        btn.setStyle(isPrimary
-                ? "-fx-background-color: rgba(249,115,22,0.92);" +
-                "-fx-border-color: rgba(249,115,22,0.70);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(255,255,255,0.95);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 800;" +
-                "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.10);" +
-                "-fx-border-color: rgba(148,163,184,0.38);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.96);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 700;" +
-                "-fx-cursor: hand;"
-        );
-
-        // Hover effects
-        btn.setOnMouseEntered(e -> btn.setStyle(isPrimary
-                ? "-fx-background-color: rgba(249,115,22,1.0);" +
-                "-fx-border-color: rgba(249,115,22,0.90);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 800;" +
-                "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.15);" +
-                "-fx-border-color: rgba(148,163,184,0.50);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.95);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 700;" +
-                "-fx-cursor: hand;"
-        ));
-
-        btn.setOnMouseExited(e -> btn.setStyle(isPrimary
-                ? "-fx-background-color: rgba(249,115,22,0.92);" +
-                "-fx-border-color: rgba(249,115,22,0.70);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(255,255,255,0.95);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 800;" +
-                "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.10);" +
-                "-fx-border-color: rgba(148,163,184,0.38);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.96);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 700;" +
-                "-fx-cursor: hand;"
-        ));
-
-        return btn;
-    }
-
+    /**
+     * Opens FileChooser → writes a professional A4 PDF using iText 7.
+     */
     private void generateAndSavePDF(List<AidModel> records,
                                     String disasterName,
                                     String aidName) {

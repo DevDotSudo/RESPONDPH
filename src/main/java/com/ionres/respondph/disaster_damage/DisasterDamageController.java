@@ -22,7 +22,9 @@ import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -72,46 +74,41 @@ public class DisasterDamageController {
     @FXML private TableColumn<DisasterDamageModel, String> registeredDateColumn;
     @FXML private TableColumn<DisasterDamageModel, Void> actionsColumn;
 
-    private Stage dialogStage;
-
-    // Progress dialog components
+    // Progress bar components
     private Stage progressStage;
     private ProgressBar progressBar;
     private Label progressLabel;
 
-    // ── PDF color palette ─────────────────────────────────────────────────────
-    private static final DeviceRgb COLOR_HEADER_BG = new DeviceRgb(44, 62, 80);
-    private static final DeviceRgb COLOR_WHITE      = new DeviceRgb(255, 255, 255);
-    private static final DeviceRgb COLOR_ALT_ROW    = new DeviceRgb(248, 249, 250);
-    private static final DeviceRgb COLOR_ACCENT     = new DeviceRgb(52, 152, 219);
+    // Data for print dialog
+    private List<DisasterItem> loadedDisasters;
+    private ObservableList<PrinterEntry> loadedPrinters;
+    private boolean dataLoaded = false;
 
-    // ── Printer entry ─────────────────────────────────────────────────────────
+    // ── PDF color palette ─────────────────────────────────────────────────────
+    private static final DeviceRgb COLOR_HEADER_BG = new DeviceRgb(44, 62, 80);   // dark navy
+    private static final DeviceRgb COLOR_WHITE = new DeviceRgb(255, 255, 255);
+    private static final DeviceRgb COLOR_ALT_ROW = new DeviceRgb(248, 249, 250); // light grey
+    private static final DeviceRgb COLOR_ACCENT = new DeviceRgb(52, 152, 219);   // blue
+
+    // Printer entry class
     private static class PrinterEntry {
         private final Printer printer;
         private final boolean active;
         private final boolean isDefault;
 
         PrinterEntry(Printer p, boolean active, boolean isDefault) {
-            this.printer   = p;
-            this.active    = active;
+            this.printer = p;
+            this.active = active;
             this.isDefault = isDefault;
         }
 
-        Printer getPrinter()    { return printer; }
-        String  getPrinterName(){ return printer.getName(); }
-        boolean isActive()      { return active; }
-        boolean isDefault()     { return isDefault; }
+        Printer getPrinter() { return printer; }
+        String getPrinterName() { return printer.getName(); }
+        boolean isActive() { return active; }
+        boolean isDefault() { return isDefault; }
 
         @Override public String toString() { return printer.getName(); }
     }
-
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
-
-    // =========================================================================
-    // INIT
-    // =========================================================================
 
     @FXML
     private void initialize() {
@@ -131,29 +128,38 @@ public class DisasterDamageController {
 
     private void handleActions(ActionEvent event) {
         Object src = event.getSource();
-        if      (src == searchBtn)   handleSearch();
-        else if (src == addBtn)      handleAddDisasterDamage();
-        else if (src == refreshBtn)  handleRefresh();
-        else if (src == printListBtn)showProgressAndOpenDialog("PRINT");
-        else if (src == pdfBtn)      showProgressAndOpenDialog("PDF");
+
+        if (src == searchBtn) {
+            handleSearch();
+        }
+        else if(src == addBtn){
+            handleAddDisasterDamage();
+        }
+        else if(src == refreshBtn){
+            handleRefresh();
+        }
+        else if(src == printListBtn){
+            showProgressAndOpenDialog("PRINT");
+        }
+        else if(src == pdfBtn){
+            showProgressAndOpenDialog("PDF");
+        }
     }
 
-    // =========================================================================
-    // PROGRESS + BACKGROUND TASK
-    // =========================================================================
 
     private void showProgressAndOpenDialog(String outputType) {
-        createProgressDialog("Loading data for " +
-                (outputType.equals("PRINT") ? "printing..." : "PDF export..."));
+
+        createProgressDialog("Loading data for " + (outputType.equals("PRINT") ? "printing..." : "PDF export..."));
 
         Task<PrintDialogData> task = new Task<>() {
             @Override
             protected PrintDialogData call() throws Exception {
                 PrintDialogData dialogData = new PrintDialogData();
 
-                // Step 1: Disasters (0-30%)
+
                 updateProgress(0, 100);
                 updateMessage("Loading disaster list...");
+
 
                 Set<DisasterItem> disasterSet = new HashSet<>();
                 disasterSet.add(new DisasterItem(0, "All Disasters", "All"));
@@ -163,21 +169,25 @@ public class DisasterDamageController {
                     int count = 0;
                     for (DisasterDamageModel d : disasterList) {
                         disasterSet.add(new DisasterItem(
-                                d.getDisasterId(), d.getDisasterName(), d.getDisasterType()));
+                                d.getDisasterId(),
+                                d.getDisasterName(),
+                                d.getDisasterType()
+                        ));
                         count++;
-                        updateProgress((count * 30.0) / total, 100);
+                        // Update progress for this step (0-30%)
+                        updateProgress((count * 30) / total, 100);
                     }
                 }
 
                 List<DisasterItem> disasters = new ArrayList<>(disasterSet);
                 disasters.sort((a, b) -> {
                     if (a.getDisasterId() == 0) return -1;
-                    if (b.getDisasterId() == 0) return  1;
+                    if (b.getDisasterId() == 0) return 1;
                     return a.getDisasterName().compareToIgnoreCase(b.getDisasterName());
                 });
                 dialogData.disasters = disasters;
 
-                // Step 2: Printers (30-70%)
+                // Step 2: Load active printers (30-70%)
                 updateProgress(30, 100);
                 updateMessage("Detecting connected printers...");
 
@@ -187,29 +197,42 @@ public class DisasterDamageController {
 
                 if (printers != null && !printers.isEmpty()) {
                     List<Printer> printerList = new ArrayList<>(printers);
-                    int total = printerList.size(), count = 0;
+                    int totalPrinters = printerList.size();
+                    int printerCount = 0;
+
                     for (Printer p : printerList) {
                         boolean active = isPrinterActive(p);
-                        boolean isDef  = p.equals(defaultPrinter);
+                        boolean isDef = p.equals(defaultPrinter);
                         activePrinters.add(new PrinterEntry(p, active, isDef));
-                        count++;
-                        updateProgress(30 + (count * 40.0) / total, 100);
+                        printerCount++;
+
+                        // Update progress for this step (30-70%)
+                        double stepProgress = 30 + ((printerCount * 40) / totalPrinters);
+                        updateProgress(stepProgress, 100);
                     }
                 }
 
+                // Filter only active printers and sort
                 ObservableList<PrinterEntry> filteredActive = FXCollections.observableArrayList(
-                        activePrinters.filtered(PrinterEntry::isActive));
+                        activePrinters.filtered(PrinterEntry::isActive)
+                );
+
                 filteredActive.sort((a, b) -> {
                     if (a.isDefault() != b.isDefault()) return a.isDefault() ? -1 : 1;
                     return a.getPrinterName().compareToIgnoreCase(b.getPrinterName());
                 });
+
                 dialogData.printers = filteredActive;
 
-                // Step 3: Prepare (70-100%)
+                // Step 3: Final preparations (70-90%)
                 updateProgress(70, 100);
                 updateMessage("Preparing dialog components...");
+
+                // Small delay to ensure everything is ready
                 Thread.sleep(300);
                 updateProgress(90, 100);
+
+                // Step 4: Complete (90-100%)
                 updateMessage("Ready to open dialog...");
                 Thread.sleep(200);
                 updateProgress(100, 100);
@@ -220,8 +243,8 @@ public class DisasterDamageController {
 
         task.setOnSucceeded(e -> {
             closeProgressDialog();
-            PrintDialogData data = task.getValue();
-            showPrintDialog(outputType, data.disasters, data.printers);
+            PrintDialogData dialogData = task.getValue();
+            showPrintDialog(outputType, dialogData.disasters, dialogData.printers);
         });
 
         task.setOnFailed(e -> {
@@ -239,12 +262,11 @@ public class DisasterDamageController {
         thread.start();
     }
 
+
     private static class PrintDialogData {
         List<DisasterItem> disasters;
         ObservableList<PrinterEntry> printers;
     }
-
-    // ── Progress dialog ───────────────────────────────────────────────────────
 
     private void createProgressDialog(String initialMessage) {
         progressStage = new Stage();
@@ -252,119 +274,30 @@ public class DisasterDamageController {
         progressStage.initStyle(StageStyle.UNDECORATED);
         progressStage.setAlwaysOnTop(true);
 
-        VBox card = new VBox(0);
-        card.setPrefWidth(420);
-        card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
-        );
+        VBox vbox = new VBox(15);
+        vbox.setPadding(new Insets(20));
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;");
 
-        // Header
-        HBox header = new HBox(12);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(18, 22, 18, 22));
-        header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
-                        "-fx-border-width: 0 0 1 0;" +
-                        "-fx-background-radius: 10 10 0 0;"
-        );
-
-        ProgressIndicator spinner = new ProgressIndicator();
-        spinner.setPrefSize(22, 22);
-        spinner.setMaxSize(22, 22);
-        spinner.setMinSize(22, 22);
-        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
-
-        VBox titleBlock = new VBox(3);
         Label titleLabel = new Label("Please Wait");
-        titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
-        titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-font-weight: 900;"
-        );
-        Label subtitleLabel = new Label("Processing your request…");
-        subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 600;"
-        );
-        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
-        header.getChildren().addAll(spinner, titleBlock);
-
-        // Body
-        VBox body = new VBox(14);
-        body.setPadding(new Insets(22, 22, 24, 22));
-        body.setAlignment(Pos.CENTER_LEFT);
-        body.setStyle("-fx-background-color: transparent;");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        titleLabel.setStyle("-fx-text-fill: #2c3e50;");
 
         progressLabel = new Label(initialMessage);
-        progressLabel.setWrapText(true);
-        progressLabel.setMaxWidth(Double.MAX_VALUE);
-        progressLabel.setStyle(
-                "-fx-text-fill: rgba(226,232,240,0.85);" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 600;"
-        );
-
-        VBox barWrapper = new VBox(0);
-        barWrapper.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.06);" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-padding: 0;"
-        );
+        progressLabel.setFont(Font.font("Arial", 12));
+        progressLabel.setStyle("-fx-text-fill: #555;");
 
         progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(Double.MAX_VALUE);
-        progressBar.setPrefHeight(10);
-        progressBar.setMaxWidth(Double.MAX_VALUE);
-        progressBar.setStyle(
-                "-fx-accent: rgba(249,115,22,0.95);" +
-                        "-fx-background-color: transparent;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-radius: 6;"
-        );
-        barWrapper.getChildren().add(progressBar);
+        progressBar.setPrefWidth(300);
+        progressBar.setPrefHeight(20);
 
-        Label pctLabel = new Label("0%");
-        pctLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
-                        "-fx-font-size: 11px;" +
-                        "-fx-font-weight: 700;"
-        );
-        HBox pctRow = new HBox();
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        pctRow.getChildren().addAll(spacer, pctLabel);
+        vbox.getChildren().addAll(titleLabel, progressLabel, progressBar);
 
-        progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
-            double pct = newVal.doubleValue();
-            pctLabel.setText(pct < 0 ? "…" : String.format("%.0f%%", pct * 100));
-        });
-
-        body.getChildren().addAll(progressLabel, barWrapper, pctRow);
-        card.getChildren().addAll(header, body);
-
-        Scene scene = new Scene(card);
-        scene.setFill(null);
+        Scene scene = new Scene(vbox);
         progressStage.setScene(scene);
-
-        if (dialogStage != null) {
-            progressStage.initOwner(dialogStage);
-            progressStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 420) / 2);
-            progressStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 160) / 2);
-        }
-
         progressStage.show();
     }
+
 
     private void closeProgressDialog() {
         if (progressStage != null) {
@@ -375,541 +308,140 @@ public class DisasterDamageController {
         }
     }
 
-    // =========================================================================
-    // PRINT DIALOG  (dark-card design)
-    // =========================================================================
+    private void handleRefresh() {
+        loadTable();
+    }
 
-    private void showPrintDialog(String outputType,
-                                 List<DisasterItem> disasters,
-                                 ObservableList<PrinterEntry> activePrinters) {
+    private void handleSearch() {
+        String searchText = searchField.getText().trim();
+        if (searchText.isEmpty()) {
+            loadTable();
+        } else {
+            searchDisasterDamage(searchText);
+        }
+    }
 
-        // ── Stage ────────────────────────────────────────────────────────────
-        Stage printStage = new Stage();
-        printStage.initModality(Modality.APPLICATION_MODAL);
-        printStage.initStyle(StageStyle.UNDECORATED);
-        printStage.setTitle(outputType.equals("PRINT")
-                ? "Print Disaster Damage Report" : "Save Disaster Damage Report as PDF");
+    private void handleAddDisasterDamage() {
+        showAddDisasterDamageDialog();
+    }
 
-        // ── Root card ────────────────────────────────────────────────────────
-        VBox card = new VBox(0);
-        card.setPrefWidth(500);
-        card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
-        );
 
-        // ── HEADER ───────────────────────────────────────────────────────────
-        HBox header = new HBox(12);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(18, 22, 18, 22));
-        header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
-                        "-fx-border-width: 0 0 1 0;" +
-                        "-fx-background-radius: 10 10 0 0;"
-        );
+    private void showPrintDialog(String outputType, List<DisasterItem> disasters, ObservableList<PrinterEntry> activePrinters) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(outputType.equals("PRINT") ? "Print Disaster Damage Report" : "Save Disaster Damage Report as PDF");
+        dialog.setHeaderText("Select disaster to " + (outputType.equals("PRINT") ? "print:" : "export:"));
 
-        FontAwesomeIconView headerIcon = new FontAwesomeIconView(
-                outputType.equals("PRINT") ? FontAwesomeIcon.PRINT : FontAwesomeIcon.FILE_PDF_ALT);
-        headerIcon.setSize("20");
-        headerIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.95);");
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(450);
 
-        VBox titleBlock = new VBox(3);
-        Label titleLabel = new Label(outputType.equals("PRINT") ? "Print Report" : "Export as PDF");
-        titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-font-weight: 900;"
-        );
-        Label subtitleLabel = new Label("Disaster Damage Assessment Report");
-        subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 600;"
-        );
-        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
+        Label disasterLbl = new Label("Disaster:");
+        disasterLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
 
-        Region headerSpacer = new Region();
-        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
-
-        Button headerCloseBtn = new Button();
-        FontAwesomeIconView timesIcon = new FontAwesomeIconView(FontAwesomeIcon.TIMES);
-        timesIcon.setSize("13");
-        timesIcon.setGlyphStyle("-fx-fill: rgba(248,250,252,0.95);");
-        headerCloseBtn.setGraphic(timesIcon);
-        headerCloseBtn.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.03);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-padding: 8 12 8 12;" +
-                        "-fx-cursor: hand;"
-        );
-
-        header.getChildren().addAll(headerIcon, titleBlock, headerSpacer, headerCloseBtn);
-
-        // ── BODY ─────────────────────────────────────────────────────────────
-        VBox body = new VBox(20);
-        body.setPadding(new Insets(22, 22, 24, 22));
-        body.setStyle("-fx-background-color: transparent;");
-
-        // ── SECTION: Disaster selection ───────────────────────────────────────
-        VBox disasterSection = buildSection(
-                FontAwesomeIcon.BOLT, "Select Disaster",
-                "Choose which disaster records to include"
-        );
-
-        ComboBox<DisasterItem> disasterCombo =
-                new ComboBox<>(FXCollections.observableArrayList(disasters));
-        disasterCombo.setMaxWidth(Double.MAX_VALUE);
+        ComboBox<DisasterItem> disasterCombo = new ComboBox<>(FXCollections.observableArrayList(disasters));
+        disasterCombo.setPrefWidth(400);
         disasterCombo.setPromptText("Select disaster...");
         disasterCombo.getSelectionModel().selectFirst();
-        disasterCombo.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.04);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-padding: 4 10 4 10;" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 700;"
-        );
 
-        Callback<ListView<DisasterItem>, ListCell<DisasterItem>> disasterCellFactory =
-                lv -> {
-                    if (lv != null) {
-                        lv.setStyle(
-                                "-fx-background-color: #0b1220;" +
-                                        "-fx-border-color: rgba(148,163,184,0.22);" +
-                                        "-fx-border-width: 1;" +
-                                        "-fx-border-radius: 6;" +
-                                        "-fx-background-radius: 6;"
-                        );
-                    }
-                    return new ListCell<>() {
-                        @Override
-                        protected void updateItem(DisasterItem item, boolean empty) {
-                            super.updateItem(item, empty);
-                            if (empty || item == null) {
-                                setText(null);
-                                setGraphic(null);
-                                setStyle("-fx-background-color: transparent;");
-                            } else {
-                                setText(item.toString());
-                                setStyle(
-                                        "-fx-font-size: 13px;" +
-                                                "-fx-font-weight: 700;" +
-                                                "-fx-text-fill: rgba(226,232,240,0.95);" +
-                                                "-fx-background-color: transparent;" +
-                                                "-fx-padding: 10 12 10 12;"
-                                );
-                                setOnMouseEntered(e -> setStyle(
-                                        "-fx-font-size: 13px;" +
-                                                "-fx-font-weight: 700;" +
-                                                "-fx-text-fill: rgba(249,115,22,0.95);" +
-                                                "-fx-background-color: rgba(249,115,22,0.10);" +
-                                                "-fx-padding: 10 12 10 12;"
-                                ));
-                                setOnMouseExited(e -> setStyle(
-                                        "-fx-font-size: 13px;" +
-                                                "-fx-font-weight: 700;" +
-                                                "-fx-text-fill: rgba(226,232,240,0.95);" +
-                                                "-fx-background-color: transparent;" +
-                                                "-fx-padding: 10 12 10 12;"
-                                ));
-                            }
-                        }
-                    };
-                };
-        disasterCombo.setCellFactory(disasterCellFactory);
-        disasterCombo.setButtonCell(disasterCellFactory.call(null));
-        disasterSection.getChildren().add(disasterCombo);
+        Label formatLbl = new Label("Output Format: " + (outputType.equals("PRINT") ? "Send to Printer" : "Save as PDF"));
+        formatLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2c3e50;");
 
-        body.getChildren().add(disasterSection);
-
-        // ── SECTION: Printer (PRINT mode only) ───────────────────────────────
-        ComboBox<PrinterEntry> printerCombo = new ComboBox<>(activePrinters);
+        VBox printerSection = new VBox(10);
+        printerSection.setVisible(outputType.equals("PRINT"));
+        printerSection.setManaged(outputType.equals("PRINT"));
 
         if (outputType.equals("PRINT")) {
-            VBox printerSectionBox = new VBox(10);
+            Label printerLbl = new Label("Select Printer:");
+            printerLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
 
-            VBox printerCard = buildSection(
-                    FontAwesomeIcon.DESKTOP, "Select Printer",
-                    "Only connected printers are shown"
-            );
-
-            printerCombo.setMaxWidth(Double.MAX_VALUE);
+            ComboBox<PrinterEntry> printerCombo = new ComboBox<>(activePrinters);
+            printerCombo.setPrefWidth(400);
             printerCombo.setPromptText("Choose printer...");
-            printerCombo.setStyle(
-                    "-fx-background-color: rgba(255,255,255,0.04);" +
-                            "-fx-border-color: rgba(148,163,184,0.20);" +
-                            "-fx-border-width: 1;" +
-                            "-fx-background-radius: 6;" +
-                            "-fx-border-radius: 6;" +
-                            "-fx-padding: 4 10 4 10;" +
-                            "-fx-font-size: 13px;" +
-                            "-fx-font-weight: 700;"
-            );
 
-            Callback<ListView<PrinterEntry>, ListCell<PrinterEntry>> printerCellFactory =
-                    lv -> {
-                        if (lv != null) {
-                            lv.setStyle(
-                                    "-fx-background-color: #0b1220;" +
-                                            "-fx-border-color: rgba(148,163,184,0.22);" +
-                                            "-fx-border-width: 1;" +
-                                            "-fx-border-radius: 6;" +
-                                            "-fx-background-radius: 6;"
-                            );
-                        }
-                        return new ListCell<>() {
-                            @Override
-                            protected void updateItem(PrinterEntry item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty || item == null) {
-                                    setText(null);
-                                    setGraphic(null);
-                                    setStyle("-fx-background-color: transparent;");
-                                } else {
-                                    setText(item.getPrinterName());
-                                    setStyle(
-                                            "-fx-font-size: 13px;" +
-                                                    "-fx-font-weight: 700;" +
-                                                    "-fx-text-fill: rgba(226,232,240,0.95);" +
-                                                    "-fx-background-color: transparent;" +
-                                                    "-fx-padding: 10 12 10 12;"
-                                    );
-                                    setOnMouseEntered(e -> setStyle(
-                                            "-fx-font-size: 13px;" +
-                                                    "-fx-font-weight: 700;" +
-                                                    "-fx-text-fill: rgba(249,115,22,0.95);" +
-                                                    "-fx-background-color: rgba(249,115,22,0.10);" +
-                                                    "-fx-padding: 10 12 10 12;"
-                                    ));
-                                    setOnMouseExited(e -> setStyle(
-                                            "-fx-font-size: 13px;" +
-                                                    "-fx-font-weight: 700;" +
-                                                    "-fx-text-fill: rgba(226,232,240,0.95);" +
-                                                    "-fx-background-color: transparent;" +
-                                                    "-fx-padding: 10 12 10 12;"
-                                    ));
-                                }
-                            }
-                        };
-                    };
-            printerCombo.setCellFactory(printerCellFactory);
-            printerCombo.setButtonCell(printerCellFactory.call(null));
+            printerCombo.setCellFactory(lv -> new ListCell<>() {
+                @Override
+                protected void updateItem(PrinterEntry item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getPrinterName());
+                }
+            });
+            printerCombo.setButtonCell(new ListCell<>() {
+                @Override
+                protected void updateItem(PrinterEntry item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getPrinterName());
+                }
+            });
 
             activePrinters.stream()
                     .filter(PrinterEntry::isDefault)
                     .findFirst()
-                    .or(() -> activePrinters.isEmpty()
-                            ? Optional.empty()
-                            : Optional.of(activePrinters.get(0)))
                     .ifPresent(printerCombo::setValue);
 
-            if (activePrinters.isEmpty()) {
-                Label warning = new Label("⚠  No connected printers found. Please connect a printer and try again.");
-                warning.setWrapText(true);
-                warning.setStyle(
-                        "-fx-text-fill: rgba(249,115,22,0.90);" +
-                                "-fx-font-size: 12px;" +
-                                "-fx-font-weight: 700;"
-                );
-                printerCombo.setDisable(true);
-                printerCard.getChildren().addAll(printerCombo, warning);
-            } else {
-                printerCard.getChildren().add(printerCombo);
-            }
+            printerSection.getChildren().addAll(printerLbl, printerCombo);
 
-            printerSectionBox.getChildren().add(printerCard);
-            body.getChildren().add(printerSectionBox);
+            if (activePrinters.isEmpty()) {
+                Label warning = new Label("⚠ No connected printers found. Please connect a printer and try again.");
+                warning.setStyle("-fx-text-fill: #c0392b; -fx-font-size: 11px;");
+                printerSection.getChildren().add(warning);
+                printerCombo.setDisable(true);
+            }
         }
 
-        // ── FOOTER ───────────────────────────────────────────────────────────
-        HBox footer = new HBox(10);
-        footer.setAlignment(Pos.CENTER_RIGHT);
-        footer.setPadding(new Insets(16, 22, 18, 22));
-        footer.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.02);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
-                        "-fx-border-width: 1 0 0 0;" +
-                        "-fx-background-radius: 0 0 10 10;"
-        );
+        content.getChildren().addAll(disasterLbl, disasterCombo, formatLbl, printerSection);
 
-        Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false);
-        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true);
-        footer.getChildren().addAll(cancelBtn, generateBtn);
+        dialog.getDialogPane().setContent(content);
 
-        card.getChildren().addAll(header, body, footer);
+        ButtonType generateBtn = new ButtonType("Generate", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(generateBtn, ButtonType.CANCEL);
 
-        // ── Wire actions ──────────────────────────────────────────────────────
-        headerCloseBtn.setOnAction(e -> printStage.close());
-        cancelBtn.setOnAction(e -> printStage.close());
-
-        generateBtn.setOnAction(e -> {
-            DisasterItem selected = disasterCombo.getValue();
-            if (selected == null) {
-                AlertDialogManager.showWarning("Selection Required", "Please select a disaster.");
-                return;
-            }
-
-            List<DisasterDamageModel> records = getFilteredRecords(selected);
-            if (records.isEmpty()) {
-                AlertDialogManager.showWarning("No Records",
-                        "No disaster damage records found for the selected disaster.");
-                return;
-            }
-
-            printStage.close();
-
-            if (outputType.equals("PRINT")) {
-                PrinterEntry selectedPrinter = printerCombo.getValue();
-                if (selectedPrinter == null) {
-                    AlertDialogManager.showWarning("No Printer Selected",
-                            "Please select a printer from the list.");
+        dialog.showAndWait().ifPresent(result -> {
+            if (result == generateBtn) {
+                DisasterItem selected = disasterCombo.getValue();
+                if (selected == null) {
+                    AlertDialogManager.showWarning("Selection Required", "Please select a disaster.");
                     return;
                 }
-                printRecords(records, selected, selectedPrinter.getPrinter());
-            } else {
-                generateAndSavePDF(records, selected);
+
+                List<DisasterDamageModel> records = getFilteredRecords(selected);
+
+                if (records.isEmpty()) {
+                    AlertDialogManager.showWarning("No Records",
+                            "No disaster damage records found for the selected disaster.");
+                    return;
+                }
+
+                if (outputType.equals("PRINT")) {
+                    ComboBox<PrinterEntry> printerCombo = (ComboBox<PrinterEntry>) printerSection.getChildren().get(1);
+                    PrinterEntry selectedPrinter = printerCombo.getValue();
+
+                    if (selectedPrinter == null) {
+                        AlertDialogManager.showWarning("No Printer Selected",
+                                "Please select a printer from the list.");
+                        return;
+                    }
+
+                    printRecords(records, selected, selectedPrinter.getPrinter());
+                } else {
+                    generateAndSavePDF(records, selected);
+                }
             }
         });
-
-        Scene scene = new Scene(card);
-        scene.setFill(null);
-        printStage.setScene(scene);
-
-        // Center on screen
-        printStage.setOnShown(e -> {
-            javafx.geometry.Rectangle2D screen =
-                    javafx.stage.Screen.getPrimary().getVisualBounds();
-            printStage.setX((screen.getWidth()  - card.getWidth())  / 2);
-            printStage.setY((screen.getHeight() - card.getHeight()) / 2);
-        });
-
-        printStage.show();
     }
 
-    // =========================================================================
-    // SHARED DARK-CARD HELPERS
-    // =========================================================================
-
-    private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle) {
-        VBox section = new VBox(10);
-        section.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.03);" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 8;" +
-                        "-fx-border-radius: 8;" +
-                        "-fx-padding: 14 16 14 16;"
-        );
-
-        HBox sectionHeader = new HBox(10);
-        sectionHeader.setAlignment(Pos.CENTER_LEFT);
-
-        FontAwesomeIconView sectionIcon = new FontAwesomeIconView(icon);
-        sectionIcon.setSize("14");
-        sectionIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.90);");
-
-        VBox sectionTitleBlock = new VBox(2);
-        Label sectionTitle = new Label(title);
-        sectionTitle.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.95);" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 800;"
-        );
-        Label sectionSubtitle = new Label(subtitle);
-        sectionSubtitle.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
-                        "-fx-font-size: 11px;" +
-                        "-fx-font-weight: 600;"
-        );
-        sectionTitleBlock.getChildren().addAll(sectionTitle, sectionSubtitle);
-        sectionHeader.getChildren().addAll(sectionIcon, sectionTitleBlock);
-        section.getChildren().add(sectionHeader);
-
-        return section;
-    }
-
-    private RadioButton buildRadioCard(String label, FontAwesomeIcon icon, ToggleGroup group) {
-        RadioButton radio = new RadioButton(label);
-        radio.setToggleGroup(group);
-
-        FontAwesomeIconView radioIcon = new FontAwesomeIconView(icon);
-        radioIcon.setSize("13");
-        radioIcon.setGlyphStyle("-fx-fill: rgba(226,232,240,0.80);");
-        radio.setGraphic(radioIcon);
-
-        String baseStyle =
-                "-fx-background-color: rgba(255,255,255,0.04);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 7;" +
-                        "-fx-border-radius: 7;" +
-                        "-fx-padding: 10 16 10 16;" +
-                        "-fx-text-fill: rgba(226,232,240,0.90);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 700;" +
-                        "-fx-cursor: hand;";
-
-        String selectedStyle =
-                "-fx-background-color: rgba(249,115,22,0.12);" +
-                        "-fx-border-color: rgba(249,115,22,0.60);" +
-                        "-fx-border-width: 1;" +
-                        "-fx-background-radius: 7;" +
-                        "-fx-border-radius: 7;" +
-                        "-fx-padding: 10 16 10 16;" +
-                        "-fx-text-fill: rgba(249,115,22,0.95);" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: 700;" +
-                        "-fx-cursor: hand;";
-
-        radio.setStyle(baseStyle);
-
-        radio.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            radio.setStyle(isSelected ? selectedStyle : baseStyle);
-            radioIcon.setStyle(isSelected
-                    ? "-fx-fill: rgba(249,115,22,0.95);"
-                    : "-fx-fill: rgba(226,232,240,0.80);");
-        });
-
-        return radio;
-    }
-
-    private Button buildFooterButton(String label, FontAwesomeIcon icon, boolean isPrimary) {
-        FontAwesomeIconView btnIcon = new FontAwesomeIconView(icon);
-        btnIcon.setSize("13");
-        btnIcon.setGlyphStyle(isPrimary
-                ? "-fx-fill: rgba(255,255,255,0.95);"
-                : "-fx-fill: rgba(226,232,240,0.96);");
-
-        Button btn = new Button(label, btnIcon);
-        btn.setMinWidth(126);
-        btn.setMinHeight(40);
-
-        String normalStyle = isPrimary
-                ? "-fx-background-color: rgba(249,115,22,0.92);" +
-                "-fx-border-color: rgba(249,115,22,0.70);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(255,255,255,0.95);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 800;" +
-                "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.10);" +
-                "-fx-border-color: rgba(148,163,184,0.38);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.96);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 700;" +
-                "-fx-cursor: hand;";
-
-        String hoverStyle = isPrimary
-                ? "-fx-background-color: rgba(249,115,22,1.0);" +
-                "-fx-border-color: rgba(249,115,22,0.90);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 800;" +
-                "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.15);" +
-                "-fx-border-color: rgba(148,163,184,0.50);" +
-                "-fx-border-width: 1;" +
-                "-fx-background-radius: 7;" +
-                "-fx-border-radius: 7;" +
-                "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.95);" +
-                "-fx-font-size: 13px;" +
-                "-fx-font-weight: 700;" +
-                "-fx-cursor: hand;";
-
-        btn.setStyle(normalStyle);
-        btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
-        btn.setOnMouseExited(e -> btn.setStyle(normalStyle));
-
-        return btn;
-    }
-
-    // =========================================================================
-    // DATA / TABLE / SEARCH
-    // =========================================================================
 
     private List<DisasterDamageModel> getFilteredRecords(DisasterItem selected) {
         if (selected.getDisasterId() == 0) {
             return new ArrayList<>(disasterList);
-        }
-        return disasterList.stream()
-                .filter(d -> d.getDisasterId() == selected.getDisasterId())
-                .collect(Collectors.toList());
-    }
-
-    private void handleRefresh() { loadTable(); }
-
-    private void handleSearch() {
-        String searchText = searchField.getText().trim();
-        if (searchText.isEmpty()) loadTable();
-        else searchDisasterDamage(searchText);
-    }
-
-    private void handleAddDisasterDamage() { showAddDisasterDamageDialog(); }
-
-    public void loadTable() {
-        try {
-            List<DisasterDamageModel> disasterDamage = disasterDamageService.getAllDisasterDamage();
-            disasterList = FXCollections.observableArrayList(disasterDamage);
-            disastersDamageTbl.setItems(disasterList);
-            if (disasterDamage.isEmpty())
-                disastersDamageTbl.setPlaceholder(new Label("No disaster damage records found"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("Load Error",
-                    "Failed to load disaster damage records: " + e.getMessage());
+        } else {
+            return disasterList.stream()
+                    .filter(d -> d.getDisasterId() == selected.getDisasterId())
+                    .collect(Collectors.toList());
         }
     }
 
-    private void searchDisasterDamage(String searchText) {
-        try {
-            List<DisasterDamageModel> filtered =
-                    disasterDamageService.searchDisasterDamage(searchText);
-            disasterList = FXCollections.observableArrayList(filtered);
-            disastersDamageTbl.setItems(disasterList);
-            if (filtered.isEmpty())
-                disastersDamageTbl.setPlaceholder(
-                        new Label("No records found for: " + searchText));
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("Search Error",
-                    "Failed to search disaster damage records: " + e.getMessage());
-        }
-    }
 
-    private void setupSearchListener() {
-        searchField.textProperty().addListener((obs, oldValue, newValue) -> {
-            if (newValue.trim().isEmpty()) loadTable();
-        });
-    }
-
-    // =========================================================================
-    // PRINT / PDF
-    // =========================================================================
-
-    private void printRecords(List<DisasterDamageModel> records,
-                              DisasterItem disaster, Printer printer) {
+    private void printRecords(List<DisasterDamageModel> records, DisasterItem disaster, Printer printer) {
         try {
             PrinterJob job = PrinterJob.createPrinterJob(printer);
             if (job == null) {
@@ -917,61 +449,74 @@ public class DisasterDamageController {
                         "Could not create a print job for the selected printer.");
                 return;
             }
+
             if (!job.showPrintDialog(null)) return;
 
             VBox content = createPrintContent(records, disaster);
+
             if (job.printPage(content)) {
                 job.endJob();
                 AlertDialogManager.showInfo("Print Success",
                         "Document sent to printer: " + job.getPrinter().getName());
             } else {
-                AlertDialogManager.showError("Print Error",
-                        "Failed to send document to printer.");
+                AlertDialogManager.showError("Print Error", "Failed to send document to printer.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError("Print Error",
-                    "Error during printing:\n" + e.getMessage());
+            AlertDialogManager.showError("Print Error", "Error during printing:\n" + e.getMessage());
         }
     }
 
+    /**
+     * Create print content as VBox
+     */
     private VBox createPrintContent(List<DisasterDamageModel> records, DisasterItem disaster) {
         VBox content = new VBox(8);
         content.setPadding(new Insets(20));
         content.setStyle("-fx-background-color: white; -fx-font-family: 'Courier New';");
 
+        // Title
         Label title = new Label("DISASTER DAMAGE ASSESSMENT REPORT");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         title.setAlignment(Pos.CENTER);
         title.setStyle("-fx-padding: 0 0 10 0;");
         content.getChildren().add(title);
 
+        // Disaster info
         String disasterInfo = disaster.getDisasterId() == 0
                 ? "All Disasters"
                 : disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
         content.getChildren().add(new Label("Disaster: " + disasterInfo));
-        content.getChildren().add(new Label("Generated: " +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a"))));
+
+        // Date generated
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a"));
+        content.getChildren().add(new Label("Generated: " + date));
+
+        // Total records
         content.getChildren().add(new Label("Total Records: " + records.size()));
         content.getChildren().add(new Label(""));
 
-        String fmt = "%-6s %-25s %-20s %-15s %-12s %-12s %-12s";
-        content.getChildren().add(new Label(String.format(fmt,
+        // Table headers
+        String format = "%-6s %-25s %-20s %-15s %-12s %-12s %-12s";
+        content.getChildren().add(new Label(String.format(format,
                 "ID", "Beneficiary", "Disaster", "Severity", "Assessment", "Verified", "Reg Date")));
-        content.getChildren().add(new Label(String.format(fmt,
+        content.getChildren().add(new Label(String.format(format,
                 "------", "-------------------------", "--------------------",
                 "---------------", "------------", "------------", "------------")));
 
+        // Records
         for (DisasterDamageModel d : records) {
-            content.getChildren().add(new Label(String.format(fmt,
+            content.getChildren().add(new Label(String.format(format,
                     d.getBeneficiaryDisasterDamageId(),
                     truncate(d.getBeneficiaryFirstname(), 25),
                     truncate(d.getDisasterName(), 20),
                     truncate(d.getHouseDamageSeverity(), 15),
                     truncate(d.getAssessmentDate(), 12),
                     truncate(d.getVerifiedBy(), 12),
-                    truncate(d.getRegDate(), 12))));
+                    truncate(d.getRegDate(), 12)
+            )));
         }
+
         return content;
     }
 
@@ -980,6 +525,9 @@ public class DisasterDamageController {
         return s.length() <= maxLength ? s : s.substring(0, maxLength - 3) + "...";
     }
 
+    /**
+     * Generate and save PDF
+     */
     private void generateAndSavePDF(List<DisasterDamageModel> records, DisasterItem disaster) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save Disaster Damage Report PDF");
@@ -989,9 +537,10 @@ public class DisasterDamageController {
         String disasterName = disaster.getDisasterId() == 0
                 ? "All_Disasters"
                 : disaster.getDisasterName().replaceAll("\\s+", "_");
-        chooser.setInitialFileName("DisasterDamage_" + disasterName + "_"
+        String defaultName = "DisasterDamage_" + disasterName + "_"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-                + ".pdf");
+                + ".pdf";
+        chooser.setInitialFileName(defaultName);
 
         File file = chooser.showSaveDialog(null);
         if (file == null) return;
@@ -1000,11 +549,15 @@ public class DisasterDamageController {
             buildPDF(file, records, disaster);
             AlertDialogManager.showInfo("PDF Saved",
                     "PDF successfully saved to:\n" + file.getAbsolutePath());
+
+            // Open PDF
             if (java.awt.Desktop.isDesktopSupported()) {
                 java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
-                if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
+                if (desktop.isSupported(java.awt.Desktop.Action.OPEN)) {
                     desktop.open(file);
+                }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialogManager.showError("PDF Error",
@@ -1012,70 +565,256 @@ public class DisasterDamageController {
         }
     }
 
-    private void buildPDF(File file, List<DisasterDamageModel> records,
-                          DisasterItem disaster) throws IOException {
-        PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+    private void buildPDF(File file, List<DisasterDamageModel> records, DisasterItem disaster) throws IOException {
+        PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
         PdfDocument pdfDoc = new PdfDocument(new PdfWriter(file));
-        Document doc = new Document(pdfDoc, PageSize.A4.rotate());
+        Document doc = new Document(pdfDoc, PageSize.A4.rotate()); // Landscape for more columns
         doc.setMargins(36, 36, 36, 36);
 
         String timestamp = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a"));
 
-        doc.add(new Paragraph("DISASTER DAMAGE ASSESSMENT REPORT")
+        Paragraph title = new Paragraph("DISASTER DAMAGE ASSESSMENT REPORT")
                 .setFont(fontBold).setFontSize(18)
-                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(10));
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(10);
+        doc.add(title);
 
         String disasterInfo = disaster.getDisasterId() == 0
                 ? "All Disasters"
                 : disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
-        doc.add(new Paragraph("Disaster: " + disasterInfo + " | Generated: " + timestamp
-                + " | Total Records: " + records.size())
+        Paragraph info = new Paragraph(
+                "Disaster: " + disasterInfo + " | Generated: " + timestamp +
+                        " | Total Records: " + records.size())
                 .setFont(fontNormal).setFontSize(10)
-                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20));
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
+        doc.add(info);
 
-        Table table = new Table(UnitValue.createPercentArray(
-                new float[]{5, 20, 15, 12, 12, 12, 12})).useAllAvailableWidth();
+        Table table = new Table(UnitValue.createPercentArray(new float[]{5, 20, 15, 12, 12, 12, 12}))
+                .useAllAvailableWidth();
 
-        for (String h : new String[]{"ID", "Beneficiary", "Disaster", "Severity",
-                "Assessment Date", "Verified By", "Reg Date"}) {
+        String[] headers = {"ID", "Beneficiary", "Disaster", "Severity", "Assessment Date", "Verified By", "Reg Date"};
+        for (String header : headers) {
             table.addHeaderCell(new Cell()
-                    .add(new Paragraph(h).setFont(fontBold).setFontSize(9)
-                            .setFontColor(COLOR_WHITE))
-                    .setBackgroundColor(COLOR_HEADER_BG).setPadding(5));
+                    .add(new Paragraph(header).setFont(fontBold).setFontSize(9).setFontColor(COLOR_WHITE))
+                    .setBackgroundColor(COLOR_HEADER_BG)
+                    .setPadding(5));
         }
 
+        // Data rows
         boolean alt = false;
         for (DisasterDamageModel d : records) {
             DeviceRgb rowBg = alt ? COLOR_ALT_ROW : COLOR_WHITE;
             alt = !alt;
+
             table.addCell(cellOf(String.valueOf(d.getBeneficiaryDisasterDamageId()), fontNormal, 8, rowBg));
             table.addCell(cellOf(d.getBeneficiaryFirstname(), fontNormal, 8, rowBg));
-            table.addCell(cellOf(d.getDisasterName(),         fontNormal, 8, rowBg));
-            table.addCell(cellOf(d.getHouseDamageSeverity(),  fontNormal, 8, rowBg));
-            table.addCell(cellOf(d.getAssessmentDate(),       fontNormal, 8, rowBg));
-            table.addCell(cellOf(d.getVerifiedBy(),           fontNormal, 8, rowBg));
-            table.addCell(cellOf(d.getRegDate(),              fontNormal, 8, rowBg));
+            table.addCell(cellOf(d.getDisasterName(), fontNormal, 8, rowBg));
+            table.addCell(cellOf(d.getHouseDamageSeverity(), fontNormal, 8, rowBg));
+            table.addCell(cellOf(d.getAssessmentDate(), fontNormal, 8, rowBg));
+            table.addCell(cellOf(d.getVerifiedBy(), fontNormal, 8, rowBg));
+            table.addCell(cellOf(d.getRegDate(), fontNormal, 8, rowBg));
         }
+
         doc.add(table);
 
-        doc.add(new Paragraph("\nSummary:\nTotal Records: " + records.size()
-                + "\nReport generated by RespondPH System")
-                .setFont(fontNormal).setFontSize(9).setMarginTop(20));
+        // Summary at the bottom
+        Paragraph summary = new Paragraph(
+                "\nSummary:\n" +
+                        "Total Records: " + records.size() + "\n" +
+                        "Report generated by RespondPH System")
+                .setFont(fontNormal).setFontSize(9)
+                .setMarginTop(20);
+        doc.add(summary);
+
         doc.close();
     }
 
     private Cell cellOf(String text, PdfFont font, float size, DeviceRgb bg) {
         return new Cell()
                 .add(new Paragraph(text != null ? text : "").setFont(font).setFontSize(size))
-                .setBackgroundColor(bg).setPadding(4);
+                .setBackgroundColor(bg)
+                .setPadding(4);
     }
 
-    // =========================================================================
-    // DIALOGS
-    // =========================================================================
+
+    private boolean isPrinterActive(Printer printer) {
+        if (printer == null) return false;
+
+        // Skip virtual printers
+        if (isVirtualPrinter(printer.getName())) return false;
+
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (os.contains("win")) {
+            return isPrinterActiveWindows(printer.getName());
+        }
+        return true; // Assume active on non-Windows
+    }
+
+    private boolean isVirtualPrinter(String printerName) {
+        if (printerName == null) return false;
+        String lower = printerName.toLowerCase();
+        return lower.contains("pdf") || lower.contains("fax") || lower.contains("xps") ||
+                lower.contains("onenote") || lower.contains("microsoft print") ||
+                lower.contains("send to") || lower.contains("snagit") ||
+                lower.contains("cutepdf") || lower.contains("bullzip") ||
+                lower.contains("dopdf") || lower.contains("nitro") ||
+                lower.contains("foxit") || lower.contains("pdfcreator") ||
+                lower.contains("primopdf") || lower.contains("pdf24") ||
+                lower.contains("adobe pdf");
+    }
+
+    private boolean isPrinterActiveWindows(String printerName) {
+        try {
+            String safeName = printerName.replace("'", "''");
+            String[] cmd = {
+                    "powershell",
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-Command",
+                    "(Get-Printer -Name '" + safeName + "').IsOnline"
+            };
+
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                output = reader.lines().collect(Collectors.joining()).trim();
+            }
+            proc.waitFor();
+
+            return "True".equalsIgnoreCase(output);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+    public static class DisasterItem {
+        private final int disasterId;
+        private final String disasterName;
+        private final String disasterType;
+
+        public DisasterItem(int disasterId, String disasterName, String disasterType) {
+            this.disasterId = disasterId;
+            this.disasterName = disasterName;
+            this.disasterType = disasterType;
+        }
+
+        public int getDisasterId() { return disasterId; }
+        public String getDisasterName() { return disasterName; }
+        public String getDisasterType() { return disasterType; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DisasterItem that = (DisasterItem) o;
+            return disasterId == that.disasterId;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(disasterId);
+        }
+
+        @Override
+        public String toString() {
+            if (disasterId == 0) return disasterName;
+            return disasterName + " (" + disasterType + ")";
+        }
+    }
+
+    private void setupTableColumns() {
+        damage_id.setCellValueFactory(new PropertyValueFactory<>("beneficiaryDisasterDamageId"));
+
+        beneficiaryNameColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(
+                        cellData.getValue().getBeneficiaryId() + " - " +
+                                cellData.getValue().getBeneficiaryFirstname()
+                )
+        );
+
+        disasterColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(
+                        cellData.getValue().getDisasterId() + " - " +
+                                cellData.getValue().getDisasterType() + " (" +
+                                cellData.getValue().getDisasterName() + ")"
+                )
+        );
+
+        damageSeverityColumn.setCellValueFactory(new PropertyValueFactory<>("houseDamageSeverity"));
+        assessmentDateColumn.setCellValueFactory(new PropertyValueFactory<>("assessmentDate"));
+        verifiedByColumn.setCellValueFactory(new PropertyValueFactory<>("verifiedBy"));
+        registeredDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
+    }
+
+    public void loadTable() {
+        try {
+            List<DisasterDamageModel> disasterDamage = disasterDamageService.getAllDisasterDamage();
+            disasterList = FXCollections.observableArrayList(disasterDamage);
+            disastersDamageTbl.setItems(disasterList);
+
+            if (disasterDamage.isEmpty()) {
+                disastersDamageTbl.setPlaceholder(new Label("No disaster damage records found"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Load Error",
+                    "Failed to load disaster damage records: " + e.getMessage());
+        }
+    }
+
+    private void deleteDisasterDamage(DisasterDamageModel disasterDamage) {
+        if (disasterDamage == null || disasterDamage.getBeneficiaryDisasterDamageId() <= 0) {
+            AlertDialogManager.showError("Invalid Selection",
+                    "Disaster damage ID is missing or invalid. Please select a valid record.");
+            return;
+        }
+
+        boolean confirm = AlertDialogManager.showConfirmation(
+                "Delete Disaster Damage Record",
+                "Are you sure you want to delete this disaster damage record?"
+        );
+
+        if (confirm) {
+            try {
+                boolean success = disasterDamageService.deleteDisasterDamage(disasterDamage);
+
+                if (success) {
+                    int beneficiaryId = disasterDamage.getBeneficiaryId();
+                    int adminId = SessionManager.getInstance().getCurrentAdminId();
+
+                    UpdateTrigger trigger = new UpdateTrigger();
+                    boolean cascadeSuccess = trigger.triggerCascadeUpdateAfterDisasterDamageDelete(
+                            beneficiaryId, disasterDamage.getDisasterId()
+                    );
+
+                    if (cascadeSuccess) {
+                        AlertDialogManager.showSuccess("Success",
+                                "Disaster damage record has been successfully Deleted.\n" +
+                                        "Household and aid scores have been automatically recalculated.");
+                    } else {
+                        AlertDialogManager.showWarning("Partial Success",
+                                "Disaster damage record has been deleted, but score recalculation encountered issues.\n" +
+                                        "Please check the console for details.");
+                    }
+
+                    disasterList.remove(disasterDamage);
+                } else {
+                    AlertDialogManager.showError("Delete Failed",
+                            "Failed to delete disaster damage record. Please try again.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                AlertDialogManager.showError("Delete Error",
+                        "An error occurred while deleting disaster damage record: " + e.getMessage());
+            }
+        }
+    }
 
     private void showAddDisasterDamageDialog() {
         try {
@@ -1098,10 +837,12 @@ public class DisasterDamageController {
             controller.setDisasterDamageService(this.disasterDamageService);
             controller.setDisasterDamageController(this);
 
-            DisasterDamageModel full = disasterDamageService.getDisasterDamageId(
-                    disasterDamage.getBeneficiaryDisasterDamageId());
-            if (full != null) {
-                controller.setDisasterDamage(full);
+            DisasterDamageModel fullDisasterDamage = disasterDamageService.getDisasterDamageId(
+                    disasterDamage.getBeneficiaryDisasterDamageId()
+            );
+
+            if (fullDisasterDamage != null) {
+                controller.setDisasterDamage(fullDisasterDamage);
             } else {
                 AlertDialogManager.showError("Data Error",
                         "Unable to load disaster damage data. The record may have been deleted.");
@@ -1115,183 +856,77 @@ public class DisasterDamageController {
         }
     }
 
-    private void deleteDisasterDamage(DisasterDamageModel disasterDamage) {
-        if (disasterDamage == null || disasterDamage.getBeneficiaryDisasterDamageId() <= 0) {
-            AlertDialogManager.showError("Invalid Selection",
-                    "Disaster damage ID is missing or invalid. Please select a valid record.");
-            return;
-        }
+    private void searchDisasterDamage(String searchText) {
+        try {
+            List<DisasterDamageModel> filteredDisasterDamage =
+                    disasterDamageService.searchDisasterDamage(searchText);
 
-        boolean confirm = AlertDialogManager.showConfirmation(
-                "Delete Disaster Damage Record",
-                "Are you sure you want to delete this disaster damage record?");
+            disasterList = FXCollections.observableArrayList(filteredDisasterDamage);
+            disastersDamageTbl.setItems(disasterList);
 
-        if (confirm) {
-            try {
-                boolean success = disasterDamageService.deleteDisasterDamage(disasterDamage);
-                if (success) {
-                    int beneficiaryId = disasterDamage.getBeneficiaryId();
-                    UpdateTrigger trigger = new UpdateTrigger();
-                    boolean cascadeSuccess = trigger.triggerCascadeUpdateAfterDisasterDamageDelete(
-                            beneficiaryId, disasterDamage.getDisasterId());
-
-                    if (cascadeSuccess) {
-                        AlertDialogManager.showSuccess("Success",
-                                "Disaster damage record has been successfully deleted.\n" +
-                                        "Household and aid scores have been automatically recalculated.");
-                    } else {
-                        AlertDialogManager.showWarning("Partial Success",
-                                "Disaster damage record has been deleted, but score recalculation encountered issues.\n" +
-                                        "Please check the console for details.");
-                    }
-                    disasterList.remove(disasterDamage);
-                } else {
-                    AlertDialogManager.showError("Delete Failed",
-                            "Failed to delete disaster damage record. Please try again.");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                AlertDialogManager.showError("Delete Error",
-                        "An error occurred while deleting disaster damage record: " + e.getMessage());
+            if (filteredDisasterDamage.isEmpty()) {
+                disastersDamageTbl.setPlaceholder(new Label("No records found for: " + searchText));
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Search Error",
+                    "Failed to search disaster damage records: " + e.getMessage());
         }
     }
 
-    // =========================================================================
-    // TABLE SETUP
-    // =========================================================================
-
-    private void setupTableColumns() {
-        damage_id.setCellValueFactory(new PropertyValueFactory<>("beneficiaryDisasterDamageId"));
-
-        beneficiaryNameColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
-                        cellData.getValue().getBeneficiaryId() + " - " +
-                                cellData.getValue().getBeneficiaryFirstname()));
-
-        disasterColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
-                        cellData.getValue().getDisasterId() + " - " +
-                                cellData.getValue().getDisasterType() + " (" +
-                                cellData.getValue().getDisasterName() + ")"));
-
-        damageSeverityColumn.setCellValueFactory(new PropertyValueFactory<>("houseDamageSeverity"));
-        assessmentDateColumn.setCellValueFactory(new PropertyValueFactory<>("assessmentDate"));
-        verifiedByColumn.setCellValueFactory(new PropertyValueFactory<>("verifiedBy"));
-        registeredDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
+    private void setupSearchListener() {
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.trim().isEmpty()) {
+                loadTable();
+            }
+        });
     }
 
     private void setupActionButtons() {
-        Callback<TableColumn<DisasterDamageModel, Void>,
-                TableCell<DisasterDamageModel, Void>> cellFactory = param -> new TableCell<>() {
+        Callback<TableColumn<DisasterDamageModel, Void>, TableCell<DisasterDamageModel, Void>> cellFactory =
+                new Callback<>() {
+                    @Override
+                    public TableCell<DisasterDamageModel, Void> call(TableColumn<DisasterDamageModel, Void> param) {
+                        return new TableCell<>() {
+                            private final FontAwesomeIconView editIcon = new FontAwesomeIconView(FontAwesomeIcon.EDIT);
+                            private final FontAwesomeIconView deleteIcon = new FontAwesomeIconView(FontAwesomeIcon.TRASH);
+                            private final Button editButton = new Button("", editIcon);
+                            private final Button deleteButton = new Button("", deleteIcon);
 
-            private final FontAwesomeIconView editIcon   = new FontAwesomeIconView(FontAwesomeIcon.EDIT);
-            private final FontAwesomeIconView deleteIcon = new FontAwesomeIconView(FontAwesomeIcon.TRASH);
-            private final Button editButton   = new Button("", editIcon);
-            private final Button deleteButton = new Button("", deleteIcon);
+                            {
+                                editIcon.getStyleClass().add("edit-icon");
+                                deleteIcon.getStyleClass().add("delete-icon");
+                                editButton.getStyleClass().add("edit-button");
+                                deleteButton.getStyleClass().add("delete-button");
 
-            {
-                editIcon.getStyleClass().add("edit-icon");
-                deleteIcon.getStyleClass().add("delete-icon");
-                editButton.getStyleClass().add("edit-button");
-                deleteButton.getStyleClass().add("delete-button");
+                                editButton.setOnAction(event -> {
+                                    DisasterDamageModel disasterDamage = getTableView().getItems().get(getIndex());
+                                    showEditDisasterDamageDialog(disasterDamage);
+                                });
 
-                editButton.setOnAction(event ->
-                        showEditDisasterDamageDialog(getTableView().getItems().get(getIndex())));
-                deleteButton.setOnAction(event ->
-                        deleteDisasterDamage(getTableView().getItems().get(getIndex())));
-            }
+                                deleteButton.setOnAction(event -> {
+                                    DisasterDamageModel disasterDamage = getTableView().getItems().get(getIndex());
+                                    deleteDisasterDamage(disasterDamage);
+                                });
+                            }
 
-            @Override
-            public void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    HBox box = new HBox(10, editButton, deleteButton);
-                    box.setAlignment(Pos.CENTER);
-                    box.getStyleClass().add("action-buttons-container");
-                    setGraphic(box);
-                    setAlignment(Pos.CENTER);
-                }
-            }
-        };
+                            @Override
+                            public void updateItem(Void item, boolean empty) {
+                                super.updateItem(item, empty);
+                                if (empty) {
+                                    setGraphic(null);
+                                } else {
+                                    HBox box = new HBox(10, editButton, deleteButton);
+                                    box.setAlignment(Pos.CENTER);
+                                    box.getStyleClass().add("action-buttons-container");
+                                    setGraphic(box);
+                                    setAlignment(Pos.CENTER);
+                                }
+                            }
+                        };
+                    }
+                };
+
         actionsColumn.setCellFactory(cellFactory);
-    }
-
-    // =========================================================================
-    // PRINTER UTILITIES
-    // =========================================================================
-
-    private boolean isPrinterActive(Printer printer) {
-        if (printer == null) return false;
-        if (isVirtualPrinter(printer.getName())) return false;
-        String os = System.getProperty("os.name", "").toLowerCase();
-        return os.contains("win") ? isPrinterActiveWindows(printer.getName()) : true;
-    }
-
-    private boolean isVirtualPrinter(String printerName) {
-        if (printerName == null) return false;
-        String lower = printerName.toLowerCase();
-        return lower.contains("pdf")    || lower.contains("fax")      || lower.contains("xps")      ||
-                lower.contains("onenote")|| lower.contains("microsoft print") ||
-                lower.contains("send to")|| lower.contains("snagit")   || lower.contains("cutepdf")  ||
-                lower.contains("bullzip")|| lower.contains("dopdf")    || lower.contains("nitro")    ||
-                lower.contains("foxit")  || lower.contains("pdfcreator")|| lower.contains("primopdf") ||
-                lower.contains("pdf24")  || lower.contains("adobe pdf");
-    }
-
-    private boolean isPrinterActiveWindows(String printerName) {
-        try {
-            String safeName = printerName.replace("'", "''");
-            String[] cmd = {
-                    "powershell", "-NoProfile", "-NonInteractive", "-Command",
-                    "(Get-Printer -Name '" + safeName + "').IsOnline"
-            };
-            Process proc = Runtime.getRuntime().exec(cmd);
-            String output;
-            try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
-                output = reader.lines().collect(Collectors.joining()).trim();
-            }
-            proc.waitFor();
-            return "True".equalsIgnoreCase(output);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    // =========================================================================
-    // DISASTER ITEM
-    // =========================================================================
-
-    public static class DisasterItem {
-        private final int    disasterId;
-        private final String disasterName;
-        private final String disasterType;
-
-        public DisasterItem(int disasterId, String disasterName, String disasterType) {
-            this.disasterId   = disasterId;
-            this.disasterName = disasterName;
-            this.disasterType = disasterType;
-        }
-
-        public int    getDisasterId()   { return disasterId; }
-        public String getDisasterName() { return disasterName; }
-        public String getDisasterType() { return disasterType; }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            return disasterId == ((DisasterItem) o).disasterId;
-        }
-
-        @Override public int hashCode() { return Objects.hash(disasterId); }
-
-        @Override
-        public String toString() {
-            return disasterId == 0 ? disasterName : disasterName + " (" + disasterType + ")";
-        }
     }
 }

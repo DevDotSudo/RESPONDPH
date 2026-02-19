@@ -111,6 +111,8 @@
     /* kills default white */
     -fx-control-inner-background: rgba(255,255,255,0.03);
     -fx-control-inner-background-alt: rgba(255,255,255,0.02);
+
+    -fx-table-cell-border-color: transparent;
 }
 
 
@@ -128,11 +130,13 @@
 .admin-table .column-header-background {
     -fx-background-color: rgba(255,255,255,0.05);
     -fx-background-radius: 5px 5px 0 0;
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 0 0 1px 0;
 }
 
 .admin-table .column-header .label {
     -fx-text-fill: #ffffff;
-    -fx-font-size: 15px;  /* ✅ bigger */
+    -fx-font-size: 15px;
     -fx-font-weight: 900;
 }
 
@@ -141,7 +145,7 @@
 .admin-table .column-header,
 .admin-table .filler {
     -fx-background-color: transparent;
-    -fx-size: 42px;
+    -fx-size: 44px;
     -fx-border-color: rgba(148, 163, 184, 0.10);
     -fx-border-width: 0 1px 0 0;
 }
@@ -173,10 +177,10 @@
     -fx-text-fill: rgba(226,232,240,0.95);
     -fx-font-size: 15px;  /* ✅ bigger */
     -fx-font-weight: 700;
-
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 1px 0 0;
     -fx-padding: 14px;
     -fx-alignment: CENTER;
-
     -fx-background-color: transparent;
 }
 

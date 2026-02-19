@@ -109,6 +109,8 @@ public class AppLoader {
         // Aid Dialogs
         DialogManager.preload("addAid", "/view/aid/dialog/AddAidDialog.fxml");
         DialogManager.preload("printAidDialog", "/view/aid/dialog/PrintAidDialog.fxml");
+        DialogManager.preload("preview", "/view/aid/dialog/PreviewDistributionDialog.fxml");
+
 
         // Evac Site
         DialogManager.preload("addEvacSite", "/view/evac_site/dialog/AddEvacSiteDialog.fxml");

@@ -2,7 +2,6 @@ package com.ionres.respondph.common.services;
 
 import com.google.genai.Client;
 import com.google.genai.types.*;
-
 import java.net.URI;
 import java.net.http.*;
 import java.net.http.HttpResponse;
@@ -14,56 +13,28 @@ import java.util.concurrent.atomic.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-/**
- * NewsGeneratorService — Generates exactly 5 verified, live-linked SMS-ready
- * news items for Iloilo City. Strategy:
- *
- *  1. Ask Gemini (with Google Search grounding) for REQUEST_COUNT (10) raw items.
- *  2. While streaming, parse completed lines, verify URLs in parallel.
- *  3. After streaming ends, wait for in-flight verifications, then rank/dedup.
- *  4. If fewer than TARGET (5) survive, emit a single retry call for the gap.
- *  5. Return best TARGET items, progress-reported throughout.
- */
 public class NewsGeneratorService {
 
-    // ── Configuration ─────────────────────────────────────────────────────────
     private static final String ENV_API_KEY    = "GEMINI_API_KEY";
     private static final String MODEL_ID       = "gemini-3-pro-preview";
 
-    /** How many items we ask Gemini for (buffer so we can afford to discard some). */
     private static final int REQUEST_COUNT = 10;
-    /** How many we ultimately return to the caller. */
     private static final int TARGET        = 5;
 
-    /** Minimum/maximum acceptable SMS character length. */
     private static final int MIN_LEN = 280;
     private static final int MAX_LEN = 320;
 
-    /** Whether to do a live HTTP probe for every candidate URL. */
     private static final boolean VERIFY_URL_LIVE = true;
 
-    /** How long to wait per URL probe. */
     private static final Duration URL_TIMEOUT = Duration.ofSeconds(7);
 
-    /** Max parallel URL verification workers. */
     private static final int URL_VERIFY_THREADS = 6;
 
-    // ── Regex ─────────────────────────────────────────────────────────────────
-
-    /**
-     * Matches a fully-formed output line:
-     *   {@code N. <sms text> (Source: https://…)}
-     */
     private static final Pattern LINE_PARSER = Pattern.compile(
             "^\\s*(?:\\d+\\s*[.):\\-]\\s*)?(.+?)\\s*\\(\\s*[Ss]ource\\s*:\\s*(https?://[^\\s)]+)\\s*\\)\\s*$"
     );
 
-    /**
-     * Used to count how many complete items are already in the buffer
-     * (to drive incremental progress events while streaming).
-     */
     private static final Pattern COMPLETE_ITEM = Pattern.compile(
             "(?m)^\\s*(?:\\d+\\s*[.):\\-]\\s*)?.{50,}?\\(\\s*[Ss]ource\\s*:\\s*https?://[^\\s)]{10,}\\s*\\)\\s*$"
     );
@@ -107,17 +78,6 @@ public class NewsGeneratorService {
         if (t != null) t.interrupt();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Public API
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Async entry-point. Returns a CompletableFuture that resolves to a list
-     * of up to TARGET verified {@link NewsItem} objects.
-     *
-     * @param topic      The news topic (e.g., "typhoon", "barangay updates").
-     * @param onProgress {@code (progress 0..1, statusString) -> void}
-     */
     public CompletableFuture<List<NewsItem>> generateNewsHeadlines(
             String topic,
             BiConsumer<Double, String> onProgress) {
@@ -128,14 +88,12 @@ public class NewsGeneratorService {
             streamThread.set(Thread.currentThread());
             long startMs = System.currentTimeMillis();
 
-            // Shared mutable state (only touched on the stream thread except the tick)
             List<NewsItem>            verified          = new CopyOnWriteArrayList<>();
             Set<String>               usedUrls          = ConcurrentHashMap.newKeySet();
             Set<String>               seenFingerprints  = ConcurrentHashMap.newKeySet();
             List<Future<NewsItem>>    pendingVerify     = new ArrayList<>();
             AtomicBoolean             streamDone        = new AtomicBoolean(false);
 
-            // ── Elapsed-seconds ticker ────────────────────────────────────────
             ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread t = new Thread(r, "news-ticker"); t.setDaemon(true); return t;
             });
@@ -154,8 +112,8 @@ public class NewsGeneratorService {
 
             // ── Phase 1 : stream Gemini response ─────────────────────────────
             StringBuilder buffer       = new StringBuilder();
-            int           parsedLines  = 0;    // how many raw lines we've already dispatched for verification
-            int           seenComplete = 0;    // count of complete-looking lines in buffer (for UI events)
+            int           parsedLines  = 0;
+            int           seenComplete = 0;
             String        lastSearchQ  = null;
 
             try {
@@ -165,7 +123,6 @@ public class NewsGeneratorService {
                 for (GenerateContentResponse chunk : stream) {
                     if (cancelRequested.get()) break;
 
-                    // ── Grounding label ───────────────────────────────────────
                     GroundingStatus gs = extractGroundingStatus(chunk);
                     if (gs != null && !gs.label.equals(lastSearchQ)) {
                         lastSearchQ = gs.label;
@@ -175,17 +132,14 @@ public class NewsGeneratorService {
                                 gs.label + " (" + e + "s)");
                     }
 
-                    // ── Accumulate text ───────────────────────────────────────
                     String piece = safeText(chunk);
                     if (piece != null && !piece.isEmpty()) {
                         buffer.append(piece);
 
-                        // Count complete lines now in buffer
                         int nowComplete = countComplete(buffer.toString());
                         if (nowComplete > seenComplete) {
                             seenComplete = nowComplete;
 
-                            // Dispatch any NEW fully-formed lines for async URL verification
                             int dispatched = dispatchNewLines(
                                     buffer.toString(), parsedLines,
                                     usedUrls, seenFingerprints,
@@ -270,15 +224,6 @@ public class NewsGeneratorService {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Dispatch / Drain / Wait helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Parses lines from the buffer starting at {@code fromLine} (0-indexed line count
-     * already processed), submits each valid candidate for async URL verification,
-     * and returns how many NEW lines were dispatched.
-     */
     private int dispatchNewLines(
             String raw, int alreadyParsed,
             Set<String> usedUrls, Set<String> seenFingerprints,
@@ -293,7 +238,7 @@ public class NewsGeneratorService {
 
         for (String line : lines) {
             lineIndex++;
-            if (lineIndex <= alreadyParsed) continue; // already handled
+            if (lineIndex <= alreadyParsed) continue;
 
             String trimmed = line.trim();
             if (trimmed.isEmpty()) continue;
@@ -309,14 +254,12 @@ public class NewsGeneratorService {
             String rawSms = m.group(1).trim();
             String url    = m.group(2).trim();
 
-            // Quick pre-checks before spinning up a thread
             if (!isLikelyReliableUrl(url))   continue;
             if (usedUrls.contains(url))       continue;
 
             String sms = cleanSms(rawSms);
             if (!isSmsAcceptable(sms))         continue;
 
-            // Reserve URL slot immediately to prevent double-submission
             usedUrls.add(url);
             dispatched++;
 
@@ -338,7 +281,6 @@ public class NewsGeneratorService {
         return dispatched;
     }
 
-    /** Poll all pending futures and move done ones into verified (non-blocking). */
     private void drainVerified(
             List<Future<NewsItem>> pending,
             List<NewsItem> verified,
@@ -358,7 +300,6 @@ public class NewsGeneratorService {
         }
     }
 
-    /** Block until all pending futures complete or timeout expires. */
     private void waitForPending(
             List<Future<NewsItem>> pending,
             List<NewsItem> verified,
@@ -372,7 +313,6 @@ public class NewsGeneratorService {
                 try { Thread.sleep(150); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
             }
         }
-        // Cancel anything still in-flight
         cancelPending(pending);
     }
 
@@ -384,10 +324,6 @@ public class NewsGeneratorService {
     private boolean containsUrl(List<NewsItem> list, String url) {
         return list.stream().anyMatch(i -> i.url().equalsIgnoreCase(url));
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Retry gap (blocking, single non-stream call for missing items)
-    // ─────────────────────────────────────────────────────────────────────────
 
     private List<NewsItem> retryGap(
             String topic, int needed,

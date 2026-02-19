@@ -73,28 +73,24 @@ public class SendSMSController implements Initializable {
 
     @FXML private HBox              smsLoadingBox;
     @FXML private ProgressIndicator piSms;
-
     @FXML private RadioButton rbNewsSlot1;
     @FXML private RadioButton rbNewsSlot2;
     @FXML private RadioButton rbNewsSlot3;
     @FXML private RadioButton rbNewsSlot4;
     @FXML private RadioButton rbNewsSlot5;
-
+    @FXML private Button btnDisconnect;
     @FXML private TextArea txtCustomEvacMessage;
     @FXML private Button   btnSaveEvacMessage;
     @FXML private Label    lblMessageStatus;
     private DisasterMappingService disasterMappingService;
-    // ── State ─────────────────────────────────────────────────────────────────
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
     private final List<NewsItem>   storedNewsItems           = new ArrayList<>();
     private RadioButton[]          newsSlots;
 
-    /** Guard: prevents starting a second generation while one is in flight. */
     private final AtomicBoolean generationInProgress = new AtomicBoolean(false);
 
     private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
 
-    // ── Services / DAOs ───────────────────────────────────────────────────────
     private CustomEvacMessageManager evacMessageManager;
     private SmsService               smsService;
     private SMSSender                smsSender;
@@ -102,18 +98,22 @@ public class SendSMSController implements Initializable {
     private BeneficiaryDAO           beneficiaryDAO;
     private DisasterDAO              disasterDAO;
 
-    // ── Dialog-open guard ─────────────────────────────────────────────────────
     private boolean isOpeningDialog    = false;
     private boolean isUpdatingComboBox = false;
 
     private final javafx.beans.value.ChangeListener<String> portChangeListener =
             (obs, oldPort, newPort) -> {
-                if (newPort != null && !newPort.equals(oldPort) && rbGsm != null && rbGsm.isSelected())
-                    connectToSelectedPort(newPort);
-                updateSendButtonState();
+                if (newPort == null || newPort.equals(oldPort)) return;
+                if (newPort.contains("No") || newPort.contains("Error")) {
+                    updateConnectionLabel("No valid port selected", "red");
+                    updateDisconnectButtonVisibility();
+                    updateSendButtonState();
+                    return;
+                }
+                // Auto-connect regardless of GSM/API toggle — user explicitly picked a port
+                autoConnectToPort(newPort);
             };
 
-    // ─────────────────────────────────────────────────────────────────────────
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         smsService = new SmsServiceImpl();
@@ -154,9 +154,37 @@ public class SendSMSController implements Initializable {
         loadExistingEvacMessage();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // AI SLOT LAYOUT
-    // ─────────────────────────────────────────────────────────────────────────
+    private void autoConnectToPort(String portName) {
+        updateConnectionLabel("Connecting to " + portName + "…", "orange");
+        updateDisconnectButtonVisibility();
+
+        new Thread(() -> {
+            boolean ok = smsSender.connectToPort(portName, 5000);
+            Platform.runLater(() -> {
+                if (ok) {
+                    updateConnectionLabel("Connected to " + portName, "green");
+                } else {
+                    updateConnectionLabel("Failed to connect to " + portName, "red");
+                    AlertDialogManager.showError("Connection Failed",
+                            "Could not connect to GSM modem on " + portName +
+                                    ".\nCheck if the device is plugged in and not in use.");
+                }
+                updateDisconnectButtonVisibility();
+                updateSendButtonState();
+            });
+        }, "GSM-Connect-Thread").start();
+    }
+
+    private void updateDisconnectButtonVisibility() {
+        if (btnDisconnect == null) return;
+        boolean connected = smsSender.isConnected();
+        btnDisconnect.setVisible(connected);
+        btnDisconnect.setManaged(connected);
+    }
+
+    private void connectToSelectedPort(String portName) {
+        autoConnectToPort(portName);
+    }
 
     private void bindAiSlotWidths() {
         if (aiResponseContainer == null) return;
@@ -169,10 +197,6 @@ public class SendSMSController implements Initializable {
             rb.prefWidthProperty().bind(aiResponseContainer.widthProperty().subtract(paddingLR));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // NEWS SLOTS
-    // ─────────────────────────────────────────────────────────────────────────
 
     private void setupNewsSlots() {
         if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
@@ -295,81 +319,65 @@ public class SendSMSController implements Initializable {
 
     private void populateAvailablePorts() {
         if (cbSelectPorts == null) return;
-        Platform.runLater(() -> {
+
+        // Remove old listener to avoid double-firing during repopulation
+        cbSelectPorts.getSelectionModel().selectedItemProperty()
+                .removeListener(portChangeListener);
+
+        new Thread(() -> {
+            List<String> ports;
             try {
-                List<String> ports = smsSender.getAvailablePorts();
-                if (ports.isEmpty()) {
+                ports = smsSender.getAvailablePorts(); // blocking — runs off FX thread
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));
+                    cbSelectPorts.setDisable(true);
+                    cbSelectPorts.getSelectionModel().selectFirst();
+                    updateConnectionLabel("Error: " + e.getMessage(), "red");
+                    updateDisconnectButtonVisibility();
+                });
+                return;
+            }
+
+            final List<String> finalPorts = ports;
+            Platform.runLater(() -> {
+                if (finalPorts.isEmpty()) {
                     cbSelectPorts.setItems(FXCollections.observableArrayList("No ports available"));
                     cbSelectPorts.setDisable(true);
                     cbSelectPorts.getSelectionModel().selectFirst();
-                    updateConnectionLabel("Disconnected - No ports found", "red");
+                    updateConnectionLabel("No ports found", "red");
                 } else {
-                    ObservableList<String> items = FXCollections.observableArrayList(ports);
+                    ObservableList<String> items = FXCollections.observableArrayList(finalPorts);
                     cbSelectPorts.setItems(items);
                     cbSelectPorts.setDisable(false);
 
+                    // If already connected to a known port, just select it without reconnecting
                     String connected = smsSender.getConnectedPort();
                     if (connected != null && items.contains(connected)) {
                         cbSelectPorts.getSelectionModel().select(connected);
                         updateConnectionLabel("Connected to " + connected, "green");
                     } else {
                         cbSelectPorts.getSelectionModel().selectFirst();
-                        updateConnectionLabel("Disconnected", "orange");
+                        updateConnectionLabel("Select a port to connect", "orange");
                     }
-                    cbSelectPorts.getSelectionModel().selectedItemProperty()
-                            .addListener(portChangeListener);
                 }
-            } catch (Exception e) {
-                cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));
-                cbSelectPorts.setDisable(true);
-                cbSelectPorts.getSelectionModel().selectFirst();
-                updateConnectionLabel("Error: " + e.getMessage(), "red");
-                e.printStackTrace();
-            }
-        });
-    }
 
-    private void connectToSelectedPort(String portName) {
-        if (portName == null || portName.isEmpty()
-                || portName.contains("No") || portName.contains("Error")) return;
+                // Re-attach listener AFTER populating so it doesn't fire during setup
+                cbSelectPorts.getSelectionModel().selectedItemProperty()
+                        .addListener(portChangeListener);
 
-        new Thread(() -> {
-            boolean ok = smsSender.connectToPort(portName, 5000);
-            Platform.runLater(() -> {
-                if (ok) {
-                    updateConnectionLabel("Connected to " + portName, "green");
-                    AlertDialogManager.showSuccess("Success", "Connected to GSM modem on " + portName);
-                } else {
-                    updateConnectionLabel("Failed to connect to " + portName, "red");
-                    AlertDialogManager.showError("Connection Failed",
-                            "Could not connect to GSM modem on " + portName);
-                }
+                updateDisconnectButtonVisibility();
                 updateSendButtonState();
             });
-        }, "GSM-Connect-Thread").start();
+        }, "Port-Scan-Thread").start();
     }
+
+
 
     private void updateConnectionLabel(String text, String color) {
         if (connectionStatusLabel != null) {
             connectionStatusLabel.setText(text);
             connectionStatusLabel.setStyle("-fx-text-fill: " + color + ";");
-        }
-    }
-
-    private void updateConnectionStatus() {
-        if (connectionStatusLabel == null) return;
-        if (rbApi != null && rbApi.isSelected()) {
-            connectionStatusLabel.setText("Using SMS API");
-            connectionStatusLabel.setStyle("-fx-text-fill: blue;");
-        } else if (rbGsm != null && rbGsm.isSelected()) {
-            if (smsSender.isConnected()) {
-                String port = smsSender.getConnectedPort();
-                connectionStatusLabel.setText("Connected to " + (port != null ? port : "unknown port"));
-                connectionStatusLabel.setStyle("-fx-text-fill: green;");
-            } else {
-                connectionStatusLabel.setText("Disconnected - Select a port");
-                connectionStatusLabel.setStyle("-fx-text-fill: orange;");
-            }
         }
     }
 
@@ -490,12 +498,8 @@ public class SendSMSController implements Initializable {
 
         boolean aiEnabled = newsGeneratorService != null;
 
-        // Start collapsed — shown after successful generation
         updateAiResponseVisibility(false);
 
-        if (btnUseSelectedNews != null) {
-            btnUseSelectedNews.setOnAction(e -> onUseSelectedNews());
-        }
         if (btnGenerateNews != null) {
             btnGenerateNews.setDisable(!aiEnabled);
             btnGenerateNews.setOnAction(e -> onGenerateNews());
@@ -507,10 +511,6 @@ public class SendSMSController implements Initializable {
             btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // NETWORK STATUS
-    // ─────────────────────────────────────────────────────────────────────────
 
     private void checkNetworkStatus() {
         if (lblNetworkStatus == null) return;
@@ -538,10 +538,6 @@ public class SendSMSController implements Initializable {
         lblNetworkStatus.setText(online ? "Online" : "Offline - Internet required for AI");
         lblNetworkStatus.setStyle("-fx-text-fill: " + (online ? "#22c55e;" : "#ef4444;"));
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // CUSTOM EVAC MESSAGE
-    // ─────────────────────────────────────────────────────────────────────────
 
     private void loadExistingEvacMessage() {
         if (txtCustomEvacMessage == null) return;
@@ -586,17 +582,13 @@ public class SendSMSController implements Initializable {
     private void updateEvacMessageStatus(boolean saved, int length) {
         if (lblMessageStatus == null) return;
         if (saved) {
-            lblMessageStatus.setText("✓ Custom evacuation message saved (" + length + " characters)");
+            lblMessageStatus.setText("✓ Custom evacuation message saved.");
             lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
         } else {
             lblMessageStatus.setText("No custom evacuation message set (using default format)");
             lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // RECIPIENT GROUP SELECTION
-    // ─────────────────────────────────────────────────────────────────────────
 
     private void onRecipientGroupChanged() {
         if (isUpdatingComboBox || isOpeningDialog) return;
@@ -664,10 +656,6 @@ public class SendSMSController implements Initializable {
         }, "LoadBarangayThread").start();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // BENEFICIARY SELECTION DIALOG
-    // ─────────────────────────────────────────────────────────────────────────
-
     private void openBeneficiarySelectionDialog() {
         if (isOpeningDialog) return;
         isOpeningDialog = true;
@@ -722,7 +710,6 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    /** Updates the "Selected Beneficiaries" entry text in the combo box. */
     private void updateComboEntry(String text) {
         if (cbSelectBeneficiary == null) return;
         ObservableList<String> items = cbSelectBeneficiary.getItems();
@@ -735,15 +722,10 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // AI NEWS GENERATION
-    // ─────────────────────────────────────────────────────────────────────────
-
     @FXML
     private void onGenerateNews() {
         if (cbNewsTopic == null || btnGenerateNews == null) return;
 
-        // Guard against double-clicks / re-entry
         if (!generationInProgress.compareAndSet(false, true)) return;
 
         if (newsGeneratorService == null) {
@@ -765,7 +747,6 @@ public class SendSMSController implements Initializable {
             return;
         }
 
-        // ── Reset UI ──────────────────────────────────────────────────────────
         storedNewsItems.clear();
         clearNewsSlots();
         updateAiResponseVisibility(false);
@@ -781,36 +762,37 @@ public class SendSMSController implements Initializable {
                         Platform.runLater(() -> { if (main != null) main.setNewsProgress(progress, status); }))
                 .whenComplete((result, ex) -> Platform.runLater(() -> {
 
-                    // ── Always restore UI ─────────────────────────────────────────
                     generationInProgress.set(false);
 
-                    if (main != null) {
-                        main.setNewsCancelAction(null);
-                        main.hideNewsProgress();
-                    }
+                    // Always clear the cancel action
+                    if (main != null) main.setNewsCancelAction(null);
 
                     // ── Error path ────────────────────────────────────────────────
                     if (ex != null) {
                         ex.printStackTrace();
+                        if (main != null) main.hideNewsProgress();
+                        // Fix: proper null check before getMessage()
+                        String errMsg = (ex.getCause() != null)
+                                ? ex.getCause().getMessage()
+                                : ex.getMessage();
                         AlertDialogManager.showError("AI Error",
-                                "News generation failed:\n" + ex.getCause() != null
-                                        ? ex.getCause().getMessage()
-                                        : ex.getMessage());
+                                "News generation failed:\n" + errMsg);
                         return;
                     }
 
-                    // ── Empty = cancelled or zero results ─────────────────────────
-                    // (toast already showed "Cancelled." — no extra dialog needed)
-                    if (result == null || result.isEmpty()) return;
+                    if (result == null || result.isEmpty()) {
+                        if (main != null) main.hideNewsProgress();
+                        return;
+                    }
 
-                    // ── Populate slots ────────────────────────────────────────────
+                    if (main != null) main.hideNewsProgress();
+
                     storedNewsItems.addAll(result);
                     int n = Math.min(storedNewsItems.size(), newsSlots.length);
                     for (int i = 0; i < n; i++) updateNewsSlot(i, storedNewsItems.get(i));
 
                     updateAiResponseVisibility(true);
 
-                    // Only alert if we got fewer than TARGET (5)
                     if (n < 5) {
                         AlertDialogManager.showInfo("Partial Results",
                                 "Generated " + n + " of 5 news items.\n"
@@ -821,30 +803,15 @@ public class SendSMSController implements Initializable {
                 }));
     }
 
-    @FXML
-    private void onUseSelectedNews() {
-        if (newsAiResponse == null || txtMessage == null) return;
-        Toggle toggle = newsAiResponse.getSelectedToggle();
-        if (toggle == null) return;
-        for (int i = 0; i < newsSlots.length; i++) {
-            if (newsSlots[i] == toggle && i < storedNewsItems.size()) {
-                loadNewsToMessage(i);
-                break;
-            }
-        }
-    }
-
     private void updateAiResponseVisibility(boolean visible) {
         if (aiResponseContainer != null) {
             aiResponseContainer.setVisible(visible);
             aiResponseContainer.setManaged(visible);
         }
+
         if (btnUseSelectedNews != null) {
-            btnUseSelectedNews.setVisible(visible);
-            btnUseSelectedNews.setManaged(visible);
             btnUseSelectedNews.setDisable(!visible);
         }
-        // Show/hide individual slots so the layout collapses cleanly
         for (RadioButton slot : newsSlots) {
             if (slot == null) continue;
             slot.setVisible(visible);
@@ -852,10 +819,6 @@ public class SendSMSController implements Initializable {
         }
         if (!visible && newsAiResponse != null) newsAiResponse.selectToggle(null);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // SMS LOADING UI
-    // ─────────────────────────────────────────────────────────────────────────
 
     private void setSmsLoading(boolean loading) {
         if (smsLoadingBox != null) {
@@ -865,10 +828,6 @@ public class SendSMSController implements Initializable {
         if (btnSendSMS  != null) btnSendSMS.setDisable(loading);
         if (txtMessage  != null) txtMessage.setDisable(loading);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // SEND SMS
-    // ─────────────────────────────────────────────────────────────────────────
 
     @FXML
     private void onSendSMS() {
@@ -893,12 +852,11 @@ public class SendSMSController implements Initializable {
                 "Send to " + recipients.size() + " recipient(s) via " + method + "?",
                 ButtonType.OK, ButtonType.CANCEL
         );
-        if (confirmed) sendSMSToRecipients(recipients, txtMessage.getText(), method);
+        if (confirmed) sendSMSToRecipients(recipients, "RESPONDPH: " + txtMessage.getText(), method);
     }
 
     private List<BeneficiaryModel> getRecipients(String group) {
         if (group == null) return List.of();
-        // Strip the count suffix added to "Selected Beneficiaries (N selected)"
         String base = group.contains("(") ? group.substring(0, group.indexOf("(")).trim() : group;
         return switch (base) {
             case "All Beneficiaries"       -> beneficiaryDAO.getAllBeneficiaries();
@@ -920,10 +878,19 @@ public class SendSMSController implements Initializable {
         setSmsLoading(true);
         int total = recipients.size();
 
+        smsService.cancelBulkSend();
         MainFrameController main = MainFrameController.getInstance();
         if (main != null) {
             main.showSmsProgress("Sending SMS (" + method + ")", total);
             main.setSmsCount(0, total);
+
+            main.setSmsCancelAction(() -> {
+                smsService.cancelBulkSend();
+                Platform.runLater(() -> {
+                    setSmsLoading(false);
+                    loadSMSLogs();
+                });
+            });
         }
 
         if (smsService instanceof SmsServiceImpl impl) {
@@ -934,13 +901,17 @@ public class SendSMSController implements Initializable {
                         if (main != null) main.setSmsCount(done, tot);
                     });
                 }
+
                 @Override
                 public void onFinished(int tot, int successCount, String m) {
                     Platform.runLater(() -> {
                         setSmsLoading(false);
-                        if (main != null) main.hideSmsProgress();
+                        if (main != null) {
+                            main.setSmsCancelAction(null);   // clear before hiding
+                            main.hideSmsProgress();
+                        }
                         AlertDialogManager.showSuccess("Send Complete",
-                                successCount + " of " + tot + " messages sent. (" + m + ")");
+                                successCount + " of " + tot + " messages sent.\n(" + m + ")");
                         loadSMSLogs();
                     });
                 }
@@ -953,9 +924,13 @@ public class SendSMSController implements Initializable {
                 return null;
             }
         };
+
         task.setOnFailed(ev -> Platform.runLater(() -> {
             setSmsLoading(false);
-            if (main != null) main.hideSmsProgress();
+            if (main != null) {
+                main.setSmsCancelAction(null);
+                main.hideSmsProgress();
+            }
             Throwable ex = task.getException();
             AlertDialogManager.showError("Send Failed",
                     ex != null ? ex.getMessage() : "Unknown error");
@@ -1050,13 +1025,35 @@ public class SendSMSController implements Initializable {
         return result;
     }
 
-    @FXML private void onRefreshPorts()   { populateAvailablePorts(); }
+    @FXML private void onRefreshPorts() {
+        populateAvailablePorts();
+    }
+
+    private void updateConnectionStatus() {
+        if (connectionStatusLabel == null) return;
+        if (rbApi != null && rbApi.isSelected()) {
+            connectionStatusLabel.setText("Using SMS API");
+            connectionStatusLabel.setStyle("-fx-text-fill: blue;");
+        } else if (rbGsm != null && rbGsm.isSelected()) {
+            if (smsSender.isConnected()) {
+                String port = smsSender.getConnectedPort();
+                connectionStatusLabel.setText("Connected to " + (port != null ? port : "unknown port"));
+                connectionStatusLabel.setStyle("-fx-text-fill: green;");
+            } else {
+                connectionStatusLabel.setText("Select a port to connect");
+                connectionStatusLabel.setStyle("-fx-text-fill: orange;");
+            }
+        }
+        updateDisconnectButtonVisibility();
+    }
+
     @FXML private void onDisconnect() {
         if (smsSender != null && smsSender.isConnected()) {
             smsSender.disconnect();
             updateConnectionLabel("Disconnected", "orange");
-            AlertDialogManager.showInfo("Disconnected", "GSM modem disconnected.");
+            updateDisconnectButtonVisibility();
             updateSendButtonState();
+            AlertDialogManager.showInfo("Disconnected", "GSM modem disconnected.");
         }
     }
 }

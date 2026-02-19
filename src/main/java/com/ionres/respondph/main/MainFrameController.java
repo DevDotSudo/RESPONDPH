@@ -18,29 +18,13 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-/**
- * MainFrameController — main shell controller.
- *
- * News-progress toast shows:
- *  • A scrollable log of grounding events (search queries, pages read, confirmed items).
- *  • A live "streaming preview" label (dim italic) updated with each chunk.
- *  • A dedicated "tick" label (elapsed / current action) updated by the background ticker.
- *  • Five progress dots that fill orange as each item is confirmed.
- *
- * Design rules that keep the UI clean:
- *  - streamingLabel is ONE label, updated in-place, never duplicated.
- *  - tickLabel      is ONE label, updated in-place, never duplicated.
- *  - Both are always kept at the BOTTOM of the log list.
- *  - commitStreamingLabel() promotes the current preview into a permanent row
- *    and clears the reference so the next chunk creates a fresh one.
- */
 public class MainFrameController {
 
     private static MainFrameController INSTANCE;
     public static MainFrameController getInstance() { return INSTANCE; }
 
-    // ── FXML ─────────────────────────────────────────────────────────────────
-    @FXML private VBox        contentArea;
+    @FXML private VBox contentArea;
+
     @FXML private VBox        smsProgressToast;
     @FXML private VBox        smsToastBody;
     @FXML private Label       smsProgressTitle;
@@ -49,10 +33,28 @@ public class MainFrameController {
     @FXML private Button      smsMinimizeBtn;
     @FXML private Button      smsCloseBtn;
 
-    @FXML private HBox   footerBar;
-    @FXML private Label  footerStatusLabel;
-    @FXML private Button btnShowProgress;
+    @FXML private VBox        newsProgressToast;
+    @FXML private VBox        newsToastBody;
+    @FXML private Label       newsProgressTitle;
+    @FXML private ProgressBar newsProgressBar;
+    @FXML private Button      newsMinimizeBtn;
+    @FXML private Button      newsCloseBtn;
 
+    @FXML private HBox   footerBar;
+
+    @FXML private HBox   smsFooterPill;
+    @FXML private Label  footerSmsLabel;
+    @FXML private Button btnShowSmsProgress;
+
+    // News pill
+    @FXML private HBox   newsFooterPill;
+    @FXML private Label  footerNewsLabel;
+    @FXML private Button btnShowNewsProgress;
+
+    // Divider between pills
+    @FXML private Label  footerDivider;
+
+    // ── FXML — Sidebar ───────────────────────────────────────────────────────
     @FXML private Button managementSectionBtn;
     @FXML private Button disasterSectionBtn;
     @FXML private Button aidsSectionBtn;
@@ -81,41 +83,33 @@ public class MainFrameController {
     @FXML private Button sendSmsBtn;
     @FXML private Button logoutBtn;
 
-    // ── Nav state ─────────────────────────────────────────────────────────────
-    private Button  activeBtn;
+    // ── Nav ──────────────────────────────────────────────────────────────────
+    private Button activeBtn;
 
-    // ── SMS bulk state ────────────────────────────────────────────────────────
-    private boolean smsMinimized  = false;
-    private Task<?> currentSmsTask;
-    private Timeline snapTimeline;
+    // ── SMS toast state ───────────────────────────────────────────────────────
+    private boolean  smsMinimized   = false;
+    private boolean  smsVisible     = false;
+    private Task<?>  currentSmsTask = null;
+    private Timeline smsSnapTimeline;
+    private Runnable smsCancelAction;
+    private String   smsFooterText  = "";
 
     // ── News toast state ──────────────────────────────────────────────────────
+    private boolean  newsMinimized  = false;
+    private boolean  newsVisible    = false;
+    private Timeline newsSnapTimeline;
+    private Runnable newsCancelAction;
+    private String   newsFooterText = "";
+
     private VBox       newsActivityPane;
     private VBox       newsLogBox;
     private ScrollPane newsLogScroll;
     private HBox       newsDotBar;
     private Label      newsCountLabel;
-
-    /**
-     * Single label rendered at the BOTTOM of the log for the live streaming
-     * preview (dim italic). Updated in-place; replaced on item commit.
-     */
-    private Label streamingLabel;
-
-    /**
-     * Single label rendered at the BOTTOM of the log for the elapsed-seconds
-     * ticker / current-action ticker. Updated in-place; removed on state change.
-     */
-    private Label tickLabel;
-
-    private int      confirmedNewsCount = 0;
-    private Timeline pulseTimeline;
-
-    /**
-     * Registered by SendSMSController before starting news generation.
-     * Cleared automatically when hideNewsProgress() is called.
-     */
-    private Runnable newsCancelAction;
+    private Label      streamingLabel;
+    private Label      tickLabel;
+    private int        confirmedNewsCount = 0;
+    private Timeline   pulseTimeline;
 
     // ── Constants ─────────────────────────────────────────────────────────────
     private static final int      MAX_LOG_ROWS      = 14;
@@ -124,27 +118,30 @@ public class MainFrameController {
     private static final double   CHEVRON_EXPANDED  = 90;
     private static final String   ORANGE_STYLE =
             "-fx-accent: #F97316; -fx-control-inner-background: rgba(249,115,22,0.12);";
-
     private static final String GROUNDING_SEARCH_EMOJI = "🔍";
     private static final String GROUNDING_PAGE_EMOJI   = "📄";
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // INITIALIZE
+    // ═════════════════════════════════════════════════════════════════════════
+
     @FXML
     public void initialize() {
         INSTANCE = this;
 
-        // Minimize button — collapses toast body to footer strip
-        if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeToFooter());
+        // SMS toast buttons
+        if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeSmsToFooter());
+        if (smsCloseBtn    != null) smsCloseBtn.setOnAction(e -> handleSmsCloseButton());
 
-        // Close (X) button — context-aware:
-        //   news active  → confirm cancel  →  invoke cancel action
-        //   bulk SMS     → cancel task     →  hide
-        //   nothing      → just hide
-        if (smsCloseBtn != null) smsCloseBtn.setOnAction(e -> handleCloseButton());
+        // News toast buttons
+        if (newsMinimizeBtn != null) newsMinimizeBtn.setOnAction(e -> minimizeNewsToFooter());
+        if (newsCloseBtn    != null) newsCloseBtn.setOnAction(e -> handleNewsCloseButton());
 
-        if (btnShowProgress != null) btnShowProgress.setOnAction(e -> restoreFromFooter());
+        // Footer — each pill has its OWN show button
+        if (btnShowSmsProgress  != null) btnShowSmsProgress.setOnAction(e -> restoreSmsFromFooter());
+        if (btnShowNewsProgress != null) btnShowNewsProgress.setOnAction(e -> restoreNewsFromFooter());
 
-        // Ensure toast sizing is consistent
+        // SMS toast sizing
         if (smsProgressToast != null) {
             smsProgressToast.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             smsProgressToast.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
@@ -153,7 +150,16 @@ public class MainFrameController {
         if (smsToastBody   != null) smsToastBody.setMaxHeight(Region.USE_PREF_SIZE);
         if (smsProgressBar != null) smsProgressBar.setMaxWidth(Double.MAX_VALUE);
 
-        // Sidebar toggles
+        // News toast sizing
+        if (newsProgressToast != null) {
+            newsProgressToast.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            newsProgressToast.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+            newsProgressToast.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        }
+        if (newsToastBody   != null) newsToastBody.setMaxHeight(Region.USE_PREF_SIZE);
+        if (newsProgressBar != null) newsProgressBar.setMaxWidth(Double.MAX_VALUE);
+
+        // Sidebar
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn,   disasterSectionContent,   disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn,        aidsSectionContent,       aidsSectionIcon);
@@ -166,26 +172,127 @@ public class MainFrameController {
 
         hideFooter();
         hideSmsProgress();
+        hideNewsProgress();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CANCEL ACTION
-    // ─────────────────────────────────────────────────────────────────────────
+    private void refreshFooter() {
+        boolean smsMini  = smsVisible  && smsMinimized;
+        boolean newsMini = newsVisible && newsMinimized;
 
-    public void setNewsCancelAction(Runnable action) { this.newsCancelAction = action; }
+        // Update SMS pill
+        if (smsFooterPill != null) {
+            smsFooterPill.setVisible(smsMini);
+            smsFooterPill.setManaged(smsMini);
+        }
+        if (footerSmsLabel != null && smsMini) {
+            footerSmsLabel.setText("📨 " + smsFooterText);
+        }
 
-    private void handleCloseButton() {
-        if (newsCancelAction != null) {
+        // Update News pill
+        if (newsFooterPill != null) {
+            newsFooterPill.setVisible(newsMini);
+            newsFooterPill.setManaged(newsMini);
+        }
+        if (footerNewsLabel != null && newsMini) {
+            footerNewsLabel.setText("🤖 " + newsFooterText);
+        }
+
+        // Divider — only when both are minimised
+        if (footerDivider != null) {
+            footerDivider.setVisible(smsMini && newsMini);
+            footerDivider.setManaged(smsMini && newsMini);
+        }
+
+        // Footer bar — visible if at least one pill is active
+        boolean anyMini = smsMini || newsMini;
+        if (footerBar != null) {
+            footerBar.setVisible(anyMini);
+            footerBar.setManaged(anyMini);
+        }
+    }
+
+    private void hideFooter() {
+        setPillVisible(smsFooterPill,  false);
+        setPillVisible(newsFooterPill, false);
+        setNodeVisible(footerDivider,  false);
+        if (footerBar != null) {
+            footerBar.setVisible(false);
+            footerBar.setManaged(false);
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // SMS PROGRESS TOAST — public API
+    // ═════════════════════════════════════════════════════════════════════════
+
+    public void setSmsCancelAction(Runnable action) { this.smsCancelAction = action; }
+
+    public void showSmsProgress(String title, int total) {
+        Platform.runLater(() -> {
+            smsMinimized  = false;
+            smsVisible    = true;
+            smsFooterText = "Preparing…";
+            resetSmsBarStyle();
+            if (smsProgressTitle   != null) smsProgressTitle.setText(title != null ? title : "Sending SMS");
+            if (smsProgressMessage != null) {
+                smsProgressMessage.setVisible(true);
+                smsProgressMessage.setManaged(true);
+            }
+            setSmsCount(0, total);
+            showSmsToast();
+        });
+    }
+
+    public void setSmsCount(int sent, int total) {
+        Platform.runLater(() -> {
+            String msg = "Sending " + sent + " of " + total;
+            if (smsProgressMessage != null) smsProgressMessage.setText(msg);
+            if (smsProgressBar     != null)
+                smsProgressBar.setProgress(total <= 0 ? 0 : sent / (double) total);
+            smsFooterText = msg;
+            if (smsMinimized) refreshFooter();   // live-update the pill label
+        });
+    }
+
+    public void bindSmsTask(Task<?> task) {
+        Platform.runLater(() -> {
+            currentSmsTask = task;
+            if (task == null) return;
+            task.setOnSucceeded(e -> hideSmsProgress());
+            task.setOnFailed(e    -> hideSmsProgress());
+            task.setOnCancelled(e -> hideSmsProgress());
+        });
+    }
+
+    public void hideSmsProgress() {
+        Platform.runLater(() -> {
+            smsMinimized    = false;
+            smsVisible      = false;
+            currentSmsTask  = null;
+            smsCancelAction = null;
+            smsFooterText   = "";
+            cancelSmsSnapAnimation();
+            resetSmsBarStyle();
+            setNodeVisible(smsProgressToast, false);
+            refreshFooter();
+        });
+    }
+
+    // ── SMS internal ──────────────────────────────────────────────────────────
+
+    private void handleSmsCloseButton() {
+        if (smsCancelAction != null) {
             boolean ok = AlertDialogManager.showConfirmation(
-                    "Cancel AI News Generation",
-                    "News generation is still in progress.\nCancel and discard results?",
+                    "Cancel SMS Sending",
+                    "SMS sending is still in progress.\n" +
+                            "Messages already sent cannot be recalled.\n\nStop sending now?",
                     ButtonType.OK, ButtonType.CANCEL
             );
             if (ok) {
-                Runnable action = newsCancelAction;
-                newsCancelAction = null;       // clear first — re-entrant safety
+                Runnable action = smsCancelAction;
+                smsCancelAction = null;
                 if (action != null) action.run();
-                // hideNewsProgress() will be called by SendSMSController's whenComplete handler
+                hideSmsProgress();
             }
         } else if (currentSmsTask != null) {
             currentSmsTask.cancel();
@@ -195,119 +302,114 @@ public class MainFrameController {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // NEWS PROGRESS — public API called by SendSMSController
-    // ─────────────────────────────────────────────────────────────────────────
+    private void minimizeSmsToFooter() {
+        if (!smsVisible || smsMinimized) return;
+        smsMinimized = true;
+        if (smsToastBody     != null) { smsToastBody.setVisible(false);     smsToastBody.setManaged(false); }
+        if (smsProgressToast != null) { smsProgressToast.setVisible(false); smsProgressToast.setManaged(false); }
+        refreshFooter();
+    }
+
+    private void restoreSmsFromFooter() {
+        if (!smsVisible || !smsMinimized) return;
+        smsMinimized = false;
+        if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
+        if (smsProgressToast != null) { smsProgressToast.setVisible(true); smsProgressToast.setManaged(true); }
+        refreshFooter();   // hides SMS pill; news pill stays if news still minimised
+    }
+
+    private void showSmsToast() {
+        if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
+        if (smsMinimizeBtn   != null) { smsMinimizeBtn.setVisible(true);   smsMinimizeBtn.setManaged(true); }
+        if (smsProgressToast != null) { smsProgressToast.setVisible(true); smsProgressToast.setManaged(true); }
+    }
+
+    private void cancelSmsSnapAnimation() {
+        if (smsSnapTimeline != null) { smsSnapTimeline.stop(); smsSnapTimeline = null; }
+    }
+
+    private void resetSmsBarStyle() {
+        if (smsProgressBar == null) return;
+        smsProgressBar.setStyle("");
+        smsProgressBar.getStyleClass().remove("sms-toast-progress-news");
+    }
+
+
+    public void setNewsCancelAction(Runnable action) { this.newsCancelAction = action; }
 
     public void showNewsProgress(String topic) {
         Platform.runLater(() -> {
-            resetNewsState();
-            if (smsProgressTitle   != null) smsProgressTitle.setText("AI News Generator");
-            if (smsProgressMessage != null) setProgressMessageVisible(false);
+            resetNewsLogState();
+            newsMinimized  = false;
+            newsVisible    = true;
+            newsFooterText = topic != null ? topic : "AI generating…";
 
-            // Remove any leftover news pane from a prior run
-            if (newsActivityPane != null && smsToastBody != null)
-                smsToastBody.getChildren().remove(newsActivityPane);
+            if (newsProgressTitle != null) newsProgressTitle.setText("AI News Generator");
 
-            newsActivityPane = buildNewsPane(topic);
-            if (smsToastBody != null) smsToastBody.getChildren().add(newsActivityPane);
+            if (newsActivityPane != null && newsToastBody != null)
+                newsToastBody.getChildren().remove(newsActivityPane);
 
-            setBarRaw(0.0);
-            applyOrangeStyle();
-            showToast();
-            hideFooter();
+            newsActivityPane = buildNewsActivityPane(topic);
+            if (newsToastBody != null) newsToastBody.getChildren().add(newsActivityPane);
+
+            setNewsBarRaw(0.0);
+            applyNewsOrangeStyle();
+            showNewsToast();
             startPulse();
         });
     }
 
-    /**
-     * Central dispatcher — called for every status string from NewsGeneratorService.
-     *
-     * Status string protocol (defined by NewsGeneratorService):
-     *   "🔍 Searching: …"                  — grounding search query
-     *   "📄 Reading: …"                     — grounding page read
-     *   "Writing news… (Xs)"                — stream has started, no item yet
-     *   "N of 5 items found (Xs)\n▶ tail"  — Nth item confirmed
-     *   "Validating articles… (Xs)"         — post-stream validation
-     *   "Done — N of 5 items in Xs"        — finished
-     *   "Reconnecting…"                     — fallback call
-     *   "Cancelled."                        — user cancelled
-     *   (anything else with \n▶ suffix)    — live stream preview update
-     */
     public void setNewsProgress(double progress, String status) {
         if (!Platform.isFxApplicationThread()) {
             Platform.runLater(() -> setNewsProgress(progress, status));
             return;
         }
-        if (status == null) { animateBarTo(Math.max(0.0, Math.min(1.0, progress))); return; }
+        if (status == null) { animateNewsBarTo(Math.max(0.0, Math.min(1.0, progress))); return; }
 
-        animateBarTo(Math.max(0.0, Math.min(1.0, progress)));
+        animateNewsBarTo(Math.max(0.0, Math.min(1.0, progress)));
 
-        // Split header from optional stream tail
         String header;
         String streamTail;
         int nlIdx = status.indexOf('\n');
         if (nlIdx >= 0) {
-            header = status.substring(0, nlIdx).trim();
+            header     = status.substring(0, nlIdx).trim();
             String after = status.substring(nlIdx + 1).trim();
             streamTail = after.startsWith("▶ ") ? after.substring(2) : after;
         } else {
-            header    = status.trim();
+            header     = status.trim();
             streamTail = null;
         }
 
-        // Mirror to footer strip when minimised
-        if (smsMinimized) showFooterText(header);
-        if (newsLogBox  == null) return;
+        // Live-update footer pill label
+        newsFooterText = header;
+        if (newsMinimized) refreshFooter();
 
-        // ── Routing logic ─────────────────────────────────────────────────────
+        if (newsLogBox == null) return;
 
-        // Elapsed ticker updates (search/page events that update continuously)
         if (header.startsWith(GROUNDING_SEARCH_EMOJI) || header.startsWith(GROUNDING_PAGE_EMOJI)) {
-            handleGroundingEvent(header);
-            return;
+            handleGroundingEvent(header); return;
         }
-
-        // Stream started — only update tick + preview
         if (header.startsWith("Writing news…")) {
             updateTickLabel(header);
             if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
-
-        // Item confirmed — N of 5
         if (header.matches("\\d+ of \\d+ items.*")) {
-            handleItemConfirmed(header, streamTail);
-            return;
+            handleItemConfirmed(header, streamTail); return;
         }
-
-        // Post-stream validation phase
         if (header.startsWith("Validating")) {
-            commitStreamingLabel();
-            clearTickLabel();
-            appendRow("🔎 " + header, RowKind.INFO);
-            return;
+            commitStreamingLabel(); clearTickLabel();
+            appendRow("🔎 " + header, RowKind.INFO); return;
         }
-
-        // Done
         if (header.startsWith("Done")) {
-            handleDone(header);
-            return;
+            handleDone(header); return;
         }
-
-        // Reconnecting fallback
         if (header.startsWith("Reconnecting")) {
-            commitStreamingLabel();
-            clearTickLabel();
-            appendRow("🔄 Reconnecting — switching to direct call…", RowKind.INFO);
-            return;
+            commitStreamingLabel(); clearTickLabel();
+            appendRow("🔄 Reconnecting — switching to direct call…", RowKind.INFO); return;
         }
-
-        // Cancelled
         if (header.startsWith("Cancelled")) {
-            commitStreamingLabel();
-            clearTickLabel();
-            stopPulse();
+            commitStreamingLabel(); clearTickLabel(); stopPulse();
             appendRow("🚫 Generation cancelled.", RowKind.INFO);
         }
     }
@@ -315,79 +417,105 @@ public class MainFrameController {
     public void hideNewsProgress() {
         Platform.runLater(() -> {
             newsCancelAction = null;
+            newsVisible      = false;
+            newsMinimized    = false;
+            newsFooterText   = "";
             stopPulse();
-            resetNewsState();
-            cancelSnapAnimation();
-            resetBarStyle();
-            setProgressMessageVisible(true);
+            resetNewsLogState();
+            cancelNewsSnapAnimation();
+            resetNewsBarStyle();
 
-            if (smsToastBody != null && newsActivityPane != null)
-                smsToastBody.getChildren().remove(newsActivityPane);
+            if (newsToastBody != null && newsActivityPane != null)
+                newsToastBody.getChildren().remove(newsActivityPane);
             newsActivityPane = null;
 
-            if (smsProgressToast != null) {
-                smsProgressToast.setVisible(false);
-                smsProgressToast.setManaged(false);
-            }
-            hideFooter();
+            setNodeVisible(newsProgressToast, false);
+            refreshFooter();
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Internal status handlers
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── News internal ─────────────────────────────────────────────────────────
 
-    private void handleGroundingEvent(String header) {
-        // Strip trailing "(Xs)" for the log row, keep it in the tick label
-        String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
-
-        updateTickLabel(header); // tick shows the live elapsed version
-
-        // Only add a log row if this grounding event is different from the last one
-        if (!rowText.equals(lastGroundingRowText())) {
-            clearStreamingLabel(); // grounding event interrupts stream preview
-            clearTickLabel();      // promote tick to a real row
-            RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
-            appendRowTypewriter(rowText, kind);
-        }
-    }
-
-    private void handleItemConfirmed(String header, String streamTail) {
-        // Parse the item count from "N of 5 items…"
-        int n = 0;
-        try { n = Integer.parseInt(header.split(" ")[0]); } catch (NumberFormatException ignored) {}
-
-        if (streamTail != null) {
-            // Real item event (has stream tail) — advance confirmed state
-            commitStreamingLabel();
-            clearTickLabel();
-
-            for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
-            confirmedNewsCount = n;
-            if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
-            appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
-            updateStreamingLabel(streamTail);
+    private void handleNewsCloseButton() {
+        if (newsCancelAction != null) {
+            boolean ok = AlertDialogManager.showConfirmation(
+                    "Cancel AI News Generation",
+                    "News generation is still in progress.\nCancel and discard results?",
+                    ButtonType.OK, ButtonType.CANCEL
+            );
+            if (ok) {
+                Runnable action = newsCancelAction;
+                newsCancelAction = null;
+                if (action != null) action.run();
+                hideNewsProgress();
+            }
         } else {
-            // Heartbeat only — just refresh tick label
-            updateTickLabel(header);
+            hideNewsProgress();
         }
     }
 
-    private void handleDone(String header) {
-        commitStreamingLabel();
-        clearTickLabel();
-        stopPulse();
-        appendRow("🎉 " + header, RowKind.ITEM);
-        for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
-        confirmedNewsCount = 5;
-        if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
+    private void minimizeNewsToFooter() {
+        if (!newsVisible || newsMinimized) return;
+        newsMinimized = true;
+        if (newsToastBody     != null) { newsToastBody.setVisible(false);     newsToastBody.setManaged(false); }
+        if (newsProgressToast != null) { newsProgressToast.setVisible(false); newsProgressToast.setManaged(false); }
+        refreshFooter();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Toast builder
-    // ─────────────────────────────────────────────────────────────────────────
+    private void restoreNewsFromFooter() {
+        if (!newsVisible || !newsMinimized) return;
+        newsMinimized = false;
+        if (newsToastBody     != null) { newsToastBody.setVisible(true);     newsToastBody.setManaged(true); }
+        if (newsProgressToast != null) { newsProgressToast.setVisible(true); newsProgressToast.setManaged(true); }
+        refreshFooter();   // hides news pill; SMS pill stays if SMS still minimised
+    }
 
-    private VBox buildNewsPane(String topic) {
+    private void showNewsToast() {
+        if (newsToastBody     != null) { newsToastBody.setVisible(true);     newsToastBody.setManaged(true); }
+        if (newsMinimizeBtn   != null) { newsMinimizeBtn.setVisible(true);   newsMinimizeBtn.setManaged(true); }
+        if (newsProgressToast != null) { newsProgressToast.setVisible(true); newsProgressToast.setManaged(true); }
+    }
+
+    // ── News bar helpers ──────────────────────────────────────────────────────
+
+    private void animateNewsBarTo(double target) {
+        if (newsProgressBar == null) return;
+        cancelNewsSnapAnimation();
+        double cur = newsProgressBar.getProgress();
+        if (cur < 0) cur = 0;
+        newsSnapTimeline = new Timeline(
+                new KeyFrame(Duration.ZERO,        new KeyValue(newsProgressBar.progressProperty(), cur)),
+                new KeyFrame(Duration.millis(180),  new KeyValue(newsProgressBar.progressProperty(), target)));
+        newsSnapTimeline.play();
+    }
+
+    private void setNewsBarRaw(double v) {
+        cancelNewsSnapAnimation();
+        if (newsProgressBar != null) newsProgressBar.setProgress(v);
+    }
+
+    private void cancelNewsSnapAnimation() {
+        if (newsSnapTimeline != null) { newsSnapTimeline.stop(); newsSnapTimeline = null; }
+    }
+
+    private void applyNewsOrangeStyle() {
+        if (newsProgressBar == null) return;
+        newsProgressBar.setStyle(ORANGE_STYLE);
+        if (!newsProgressBar.getStyleClass().contains("sms-toast-progress-news"))
+            newsProgressBar.getStyleClass().add("sms-toast-progress-news");
+    }
+
+    private void resetNewsBarStyle() {
+        if (newsProgressBar == null) return;
+        newsProgressBar.setStyle("");
+        newsProgressBar.getStyleClass().remove("sms-toast-progress-news");
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // NEWS ACTIVITY PANE (log / dots / streaming)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private VBox buildNewsActivityPane(String topic) {
         VBox pane = new VBox(8);
         pane.setFillWidth(true);
         pane.setMaxWidth(Double.MAX_VALUE);
@@ -398,7 +526,7 @@ public class MainFrameController {
                 "-fx-text-fill: rgba(255,255,255,0.50); " +
                         "-fx-font-size: 11px; -fx-font-style: italic;");
 
-        // Dots row
+        // Dots
         newsDotBar = new HBox(6);
         newsDotBar.setAlignment(Pos.CENTER_LEFT);
         for (int i = 0; i < 5; i++) {
@@ -410,12 +538,11 @@ public class MainFrameController {
             newsDotBar.getChildren().add(dot);
         }
         newsCountLabel = new Label("0 of 5 items found");
-        newsCountLabel.setStyle(
-                "-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
+        newsCountLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
         dotRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Log box
+        // Log
         newsLogBox = new VBox(3);
         newsLogBox.setFillWidth(true);
         newsLogBox.setPadding(new Insets(6, 8, 6, 8));
@@ -436,13 +563,50 @@ public class MainFrameController {
         return pane;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Log row management
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Status handlers ───────────────────────────────────────────────────────
+
+    private void handleGroundingEvent(String header) {
+        String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
+        updateTickLabel(header);
+        if (!rowText.equals(lastGroundingRowText())) {
+            clearStreamingLabel(); clearTickLabel();
+            RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
+            appendRowTypewriter(rowText, kind);
+        }
+    }
+
+    private void handleItemConfirmed(String header, String streamTail) {
+        int n = 0;
+        try { n = Integer.parseInt(header.split(" ")[0]); } catch (NumberFormatException ignored) {}
+
+        if (streamTail != null) {
+            commitStreamingLabel(); clearTickLabel();
+            for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
+            confirmedNewsCount = n;
+            if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
+            newsFooterText = n + " of 5 items found";
+            if (newsMinimized) refreshFooter();
+            appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
+            updateStreamingLabel(streamTail);
+        } else {
+            updateTickLabel(header);
+        }
+    }
+
+    private void handleDone(String header) {
+        commitStreamingLabel(); clearTickLabel(); stopPulse();
+        appendRow("🎉 " + header, RowKind.ITEM);
+        for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
+        confirmedNewsCount = 5;
+        if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
+        newsFooterText = "5 of 5 items found ✓";
+        if (newsMinimized) refreshFooter();
+    }
+
+    // ── Log rows ──────────────────────────────────────────────────────────────
 
     private enum RowKind { SEARCH, PAGE, ITEM, INFO }
 
-    /** Append a permanent row, fading it in. Trims list to MAX_LOG_ROWS. */
     private void appendRow(String text, RowKind kind) {
         if (newsLogBox == null) return;
         ensureLogCapacity();
@@ -454,7 +618,6 @@ public class MainFrameController {
         scrollBottom();
     }
 
-    /** Append a permanent row with a typewriter reveal animation. */
     private void appendRowTypewriter(String fullText, RowKind kind) {
         if (newsLogBox == null || fullText == null || fullText.isBlank()) return;
         ensureLogCapacity();
@@ -466,12 +629,9 @@ public class MainFrameController {
         int[] idx = {0};
         Timeline tw = new Timeline(new KeyFrame(Duration.millis(28), e -> {
             idx[0]++;
-            row.setText(idx[0] < totalChars
-                    ? fullText.substring(0, idx[0]) + "▌"
-                    : fullText);
+            row.setText(idx[0] < totalChars ? fullText.substring(0, idx[0]) + "▌" : fullText);
         }));
         tw.setCycleCount(totalChars);
-        // Tiny pause before starting, to let the pane lay out
         PauseTransition pause = new PauseTransition(Duration.millis(60));
         pause.setOnFinished(e -> tw.play());
         pause.play();
@@ -479,7 +639,6 @@ public class MainFrameController {
 
     private void ensureLogCapacity() {
         if (newsLogBox == null) return;
-        // Never remove the special tick/streaming labels — only remove real rows
         while (newsLogBox.getChildren().size() >= MAX_LOG_ROWS) {
             boolean removed = false;
             for (int i = 0; i < newsLogBox.getChildren().size(); i++) {
@@ -490,7 +649,7 @@ public class MainFrameController {
                     break;
                 }
             }
-            if (!removed) break; // only special labels left — stop trimming
+            if (!removed) break;
         }
     }
 
@@ -509,7 +668,6 @@ public class MainFrameController {
 
     // ── Streaming label ───────────────────────────────────────────────────────
 
-    /** Update (or create) the single streaming preview label at the bottom of the log. */
     private void updateStreamingLabel(String tail) {
         if (newsLogBox == null || tail == null || tail.isBlank()) return;
         if (streamingLabel == null) {
@@ -522,23 +680,14 @@ public class MainFrameController {
                             "-fx-font-size: 10.5px; -fx-font-style: italic;");
             newsLogBox.getChildren().add(streamingLabel);
         } else {
-            // Ensure it stays at the bottom (tick label may be below it — re-anchor)
             reorderSpecialLabels();
         }
         streamingLabel.setText(tail);
         scrollBottom();
     }
 
-    /**
-     * "Promote" the streaming label to a permanent entry by clearing the reference.
-     * The label node itself stays in the list but loses its special status, so the
-     * next chunk will create a NEW streaming label below it.
-     */
-    private void commitStreamingLabel() {
-        streamingLabel = null;  // orphan the node — next update creates a new one below
-    }
+    private void commitStreamingLabel() { streamingLabel = null; }
 
-    /** Remove the streaming label from the log entirely. */
     private void clearStreamingLabel() {
         if (streamingLabel != null && newsLogBox != null) {
             newsLogBox.getChildren().remove(streamingLabel);
@@ -548,7 +697,6 @@ public class MainFrameController {
 
     // ── Tick label ────────────────────────────────────────────────────────────
 
-    /** Update (or create) the single elapsed-seconds ticker label at the bottom. */
     private void updateTickLabel(String text) {
         if (newsLogBox == null) return;
         if (tickLabel == null) {
@@ -556,8 +704,7 @@ public class MainFrameController {
             tickLabel = new Label();
             tickLabel.setWrapText(false);
             tickLabel.setMaxWidth(Double.MAX_VALUE);
-            tickLabel.setStyle(
-                    "-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 11px;");
+            tickLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 11px;");
             newsLogBox.getChildren().add(tickLabel);
         } else {
             reorderSpecialLabels();
@@ -566,7 +713,6 @@ public class MainFrameController {
         scrollBottom();
     }
 
-    /** Remove the tick label. */
     private void clearTickLabel() {
         if (tickLabel != null && newsLogBox != null) {
             newsLogBox.getChildren().remove(tickLabel);
@@ -574,17 +720,12 @@ public class MainFrameController {
         }
     }
 
-    /**
-     * Ensure special labels (tick, streaming) are always at the very bottom
-     * of the log, in the order: [permanent rows…] [tickLabel] [streamingLabel].
-     */
     private void reorderSpecialLabels() {
         if (newsLogBox == null) return;
         if (tickLabel      != null) { newsLogBox.getChildren().remove(tickLabel);      newsLogBox.getChildren().add(tickLabel); }
         if (streamingLabel != null) { newsLogBox.getChildren().remove(streamingLabel); newsLogBox.getChildren().add(streamingLabel); }
     }
 
-    /** Returns the text of the last SEARCH or PAGE row (excluding special labels). */
     private String lastGroundingRowText() {
         if (newsLogBox == null) return null;
         for (int i = newsLogBox.getChildren().size() - 1; i >= 0; i--) {
@@ -603,9 +744,7 @@ public class MainFrameController {
         Platform.runLater(() -> { if (newsLogScroll != null) newsLogScroll.setVvalue(1.0); });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Dot + pulse
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Dots + pulse ──────────────────────────────────────────────────────────
 
     private void fillDot(int i) {
         if (newsDotBar == null || i < 0 || i >= newsDotBar.getChildren().size()) return;
@@ -637,144 +776,41 @@ public class MainFrameController {
         if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // SMS bulk progress (unchanged public API)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public void showSmsProgress(String title, int total) {
-        Platform.runLater(() -> {
-            smsMinimized = false;
-            resetBarStyle();
-            setProgressMessageVisible(true);
-            if (smsProgressTitle != null) smsProgressTitle.setText(title != null ? title : "Sending SMS");
-            setSmsCount(0, total);
-            showToast();
-            hideFooter();
-        });
+    private void resetNewsLogState() {
+        confirmedNewsCount = 0;
+        newsLogBox         = null;
+        newsLogScroll      = null;
+        newsDotBar         = null;
+        newsCountLabel     = null;
+        streamingLabel     = null;
+        tickLabel          = null;
     }
 
-    public void setSmsCount(int sent, int total) {
-        Platform.runLater(() -> {
-            String msg = "Sending " + sent + " of " + total;
-            if (smsProgressMessage != null) smsProgressMessage.setText(msg);
-            if (smsProgressBar     != null) smsProgressBar.setProgress(total <= 0 ? 0 : sent / (double) total);
-            if (smsMinimized) showFooterText(msg);
-            else if (footerStatusLabel != null) footerStatusLabel.setText(msg);
-        });
+    // ═════════════════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private static void setNodeVisible(VBox node, boolean visible) {
+        if (node == null) return;
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
-    public void bindSmsTask(Task<?> task) {
-        Platform.runLater(() -> {
-            currentSmsTask = task;
-            if (task == null) return;
-            task.setOnSucceeded(e -> hideSmsProgress());
-            task.setOnFailed(e    -> hideSmsProgress());
-            task.setOnCancelled(e -> hideSmsProgress());
-        });
+    private static void setNodeVisible(Label node, boolean visible) {
+        if (node == null) return;
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
-    public void hideSmsProgress() {
-        Platform.runLater(() -> {
-            smsMinimized = false; currentSmsTask = null;
-            cancelSnapAnimation(); resetBarStyle();
-            if (smsProgressToast != null) {
-                smsProgressToast.setVisible(false);
-                smsProgressToast.setManaged(false);
-            }
-            hideFooter();
-        });
+    private static void setPillVisible(HBox pill, boolean visible) {
+        if (pill == null) return;
+        pill.setVisible(visible);
+        pill.setManaged(visible);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Progress bar helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void animateBarTo(double target) {
-        if (smsProgressBar == null) return;
-        cancelSnapAnimation();
-        double cur = smsProgressBar.getProgress();
-        if (cur < 0) cur = 0;
-        snapTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,        new KeyValue(smsProgressBar.progressProperty(), cur)),
-                new KeyFrame(Duration.millis(180),  new KeyValue(smsProgressBar.progressProperty(), target)));
-        snapTimeline.play();
-    }
-
-    private void setBarRaw(double v)    { cancelSnapAnimation(); if (smsProgressBar != null) smsProgressBar.setProgress(v); }
-    private void cancelSnapAnimation()  { if (snapTimeline != null) { snapTimeline.stop(); snapTimeline = null; } }
-
-    private void applyOrangeStyle() {
-        if (smsProgressBar == null) return;
-        smsProgressBar.setStyle(ORANGE_STYLE);
-        if (!smsProgressBar.getStyleClass().contains("sms-toast-progress-news"))
-            smsProgressBar.getStyleClass().add("sms-toast-progress-news");
-    }
-
-    private void resetBarStyle() {
-        if (smsProgressBar == null) return;
-        smsProgressBar.setStyle("");
-        smsProgressBar.getStyleClass().remove("sms-toast-progress-news");
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Toast show/hide/minimize
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void showToast() {
-        if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
-        if (smsMinimizeBtn   != null) { smsMinimizeBtn.setVisible(true);   smsMinimizeBtn.setManaged(true); }
-        if (smsProgressToast != null) { smsProgressToast.setVisible(true); smsProgressToast.setManaged(true); }
-    }
-
-    private void minimizeToFooter() {
-        if (smsMinimized) return;
-        smsMinimized = true;
-        if (smsToastBody     != null) { smsToastBody.setVisible(false);     smsToastBody.setManaged(false); }
-        if (smsProgressToast != null) { smsProgressToast.setVisible(false); smsProgressToast.setManaged(false); }
-        String footerText = newsCountLabel != null ? newsCountLabel.getText() : "Working…";
-        showFooterText(footerText);
-    }
-
-    private void restoreFromFooter() {
-        if (!smsMinimized) return;
-        smsMinimized = false;
-        if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
-        if (smsProgressToast != null) { smsProgressToast.setVisible(true); smsProgressToast.setManaged(true); }
-        hideFooter();
-    }
-
-    private void showFooterText(String t) {
-        if (footerStatusLabel != null) footerStatusLabel.setText(t != null ? t : "Working…");
-        if (footerBar != null) { footerBar.setVisible(true); footerBar.setManaged(true); }
-    }
-
-    private void hideFooter() {
-        if (footerBar != null) { footerBar.setVisible(false); footerBar.setManaged(false); }
-    }
-
-    private void setProgressMessageVisible(boolean visible) {
-        if (smsProgressMessage != null) {
-            smsProgressMessage.setVisible(visible);
-            smsProgressMessage.setManaged(visible);
-            if (visible) smsProgressMessage.setWrapText(false);
-        }
-    }
-
-    /** Reset all news-toast tracking state (does NOT touch FXML nodes). */
-    private void resetNewsState() {
-        smsMinimized        = false;
-        confirmedNewsCount  = 0;
-        newsLogBox          = null;
-        newsLogScroll       = null;
-        newsDotBar          = null;
-        newsCountLabel      = null;
-        streamingLabel      = null;
-        tickLabel           = null;
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Navigation
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // NAVIGATION
+    // ═════════════════════════════════════════════════════════════════════════
 
     private void wireNavButtons() {
         EventHandler<ActionEvent> nav = this::handleActions;

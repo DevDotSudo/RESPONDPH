@@ -16,37 +16,48 @@ public class SMSSender {
     private static SMSSender instance;
     private GSMDongle dongle;
 
-    private final CopyOnWriteArrayList<Consumer<SendResult>> sendResultListeners = new CopyOnWriteArrayList<>();
+    // ── Cancel flag — volatile so background thread sees writes immediately ───
+    private volatile boolean cancelRequested = false;
+
+    private final CopyOnWriteArrayList<Consumer<SendResult>> sendResultListeners
+            = new CopyOnWriteArrayList<>();
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SendResult
+    // ─────────────────────────────────────────────────────────────────────────
 
     public static class SendResult {
-        private final String phoneNumber;
-        private final String fullname;
-        private final String message;
+        private final String  phoneNumber;
+        private final String  fullname;
+        private final String  message;
         private final boolean success;
-        private final int beneficiaryId;
-        private final long timestamp;
-        private final String errorMessage;
+        private final int     beneficiaryId;
+        private final long    timestamp;
+        private final String  errorMessage;
 
         public SendResult(String phoneNumber, String fullname, String message,
                           boolean success, int beneficiaryId, String errorMessage) {
-            this.phoneNumber = phoneNumber;
-            this.fullname = fullname;
-            this.message = message;
-            this.success = success;
+            this.phoneNumber   = phoneNumber;
+            this.fullname      = fullname;
+            this.message       = message;
+            this.success       = success;
             this.beneficiaryId = beneficiaryId;
-            this.timestamp = System.currentTimeMillis();
-            this.errorMessage = errorMessage;
+            this.timestamp     = System.currentTimeMillis();
+            this.errorMessage  = errorMessage;
         }
 
-        // Getters
-        public String getPhoneNumber() { return phoneNumber; }
-        public String getFullname() { return fullname; }
-        public String getMessage() { return message; }
-        public boolean isSuccess() { return success; }
-        public int getBeneficiaryId() { return beneficiaryId; }
-        public long getTimestamp() { return timestamp; }
-        public String getErrorMessage() { return errorMessage; }
+        public String  getPhoneNumber()  { return phoneNumber; }
+        public String  getFullname()     { return fullname; }
+        public String  getMessage()      { return message; }
+        public boolean isSuccess()       { return success; }
+        public int     getBeneficiaryId(){ return beneficiaryId; }
+        public long    getTimestamp()    { return timestamp; }
+        public String  getErrorMessage() { return errorMessage; }
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Singleton
+    // ─────────────────────────────────────────────────────────────────────────
 
     private SMSSender() {}
 
@@ -55,9 +66,20 @@ public class SMSSender {
         return instance;
     }
 
-    /**
-     * Add a listener to be notified when SMS send operations complete
-     */
+    public void requestCancel() {
+        cancelRequested = true;
+        System.out.println("[SMSSender] Cancel requested.");
+    }
+
+    /** Reset the cancel flag — must be called before every new bulk send. */
+    public void resetCancel() {
+        cancelRequested = false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Listeners
+    // ─────────────────────────────────────────────────────────────────────────
+
     public void addSendResultListener(Consumer<SendResult> listener) {
         if (listener != null) sendResultListeners.addIfAbsent(listener);
     }
@@ -67,6 +89,7 @@ public class SMSSender {
     }
 
     private void notifyListeners(SendResult result) {
+        // Fire on the JavaFX thread so listeners can safely touch UI / DAO
         Platform.runLater(() -> {
             for (Consumer<SendResult> listener : sendResultListeners) {
                 try {
@@ -78,68 +101,61 @@ public class SMSSender {
         });
     }
 
-    /**
-     * GSM Dongle wrapper for serial communication
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // GSM Dongle (inner class)
+    // ─────────────────────────────────────────────────────────────────────────
+
     private static class GSMDongle {
-        private final SerialPort serialPort;
-        private final InputStream in;
+        private final SerialPort   serialPort;
+        private final InputStream  in;
         private final OutputStream out;
         private int consecutiveFails = 0;
 
         public GSMDongle(SerialPort sp) {
             this.serialPort = sp;
-            this.in = sp.getInputStream();
+            this.in  = sp.getInputStream();
             this.out = sp.getOutputStream();
         }
 
-        public SerialPort getSerialPort() {
-            return serialPort;
-        }
+        public SerialPort getSerialPort() { return serialPort; }
 
         public void connect() throws Exception {
-            serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 5000, 5000);
+            serialPort.setComPortParameters(9600, 8,
+                    SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+            serialPort.setComPortTimeouts(
+                    SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 5000, 5000);
 
-            if (!serialPort.openPort()) {
-                throw new IllegalStateException("Failed to open port: " + serialPort.getSystemPortName());
-            }
+            if (!serialPort.openPort())
+                throw new IllegalStateException(
+                        "Failed to open port: " + serialPort.getSystemPortName());
 
-            // Initialize modem
-            sendAT("ATE0", 500);           // Echo off
-            sendAT("AT+CMGF=1", 500);      // Text mode
-            sendAT("AT+CNMI=2,2,0,0,0", 500); // New message indication
+            sendAT("ATE0",              500);   // Echo off
+            sendAT("AT+CMGF=1",         500);   // Text mode
+            sendAT("AT+CNMI=2,2,0,0,0", 500);   // New message indication
         }
 
         public void disconnect() {
-            if (serialPort != null && serialPort.isOpen()) {
+            if (serialPort != null && serialPort.isOpen())
                 serialPort.closePort();
-            }
         }
 
         public boolean sendMessage(String phoneNumber, String message) throws Exception {
             try {
-                // Request to send SMS
                 String resp = sendAT("AT+CMGS=\"" + phoneNumber + "\"", 2000);
                 if (resp == null || !resp.contains(">")) {
                     consecutiveFails++;
                     return false;
                 }
 
-                // Send message content + Ctrl+Z
                 out.write((message + "\u001A").getBytes());
                 out.flush();
 
-                // Wait for confirmation
                 String finalResponse = readResponse(15000);
                 boolean success = finalResponse != null &&
                         (finalResponse.contains("OK") || finalResponse.contains("+CMGS"));
 
-                if (success) {
-                    consecutiveFails = 0;
-                } else {
-                    consecutiveFails++;
-                }
+                if (success) consecutiveFails = 0;
+                else         consecutiveFails++;
 
                 return success;
             } catch (Exception e) {
@@ -148,9 +164,7 @@ public class SMSSender {
             }
         }
 
-        public int getConsecutiveFails() {
-            return consecutiveFails;
-        }
+        public int getConsecutiveFails() { return consecutiveFails; }
 
         private String sendAT(String cmd, int timeoutMs) throws Exception {
             out.write((cmd + "\r").getBytes());
@@ -159,70 +173,53 @@ public class SMSSender {
         }
 
         private String readResponse(int timeoutMs) throws IOException, InterruptedException {
-            StringBuilder response = new StringBuilder();
-            long startTime = System.currentTimeMillis();
+            StringBuilder response  = new StringBuilder();
+            long          startTime = System.currentTimeMillis();
 
             while (System.currentTimeMillis() - startTime < timeoutMs) {
-                while (in.available() > 0) {
-                    response.append((char) in.read());
-                }
+                while (in.available() > 0) response.append((char) in.read());
 
                 String respText = response.toString();
-                if (respText.contains("OK") || respText.contains("ERROR") || respText.contains(">")) {
+                if (respText.contains("OK") || respText.contains("ERROR")
+                        || respText.contains(">"))
                     return respText;
-                }
 
                 Thread.sleep(50);
             }
-
             return response.toString();
         }
     }
 
-    /**
-     * Get list of available serial ports
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Port management
+    // ─────────────────────────────────────────────────────────────────────────
+
     public synchronized List<String> getAvailablePorts() {
         SerialPort[] ports = SerialPort.getCommPorts();
         List<String> names = new ArrayList<>();
-        for (SerialPort p : ports) {
-            names.add(p.getSystemPortName());
-        }
+        for (SerialPort p : ports) names.add(p.getSystemPortName());
         return names;
     }
 
-    /**
-     * Connect to a specific serial port
-     */
     public synchronized boolean connectToPort(String portName, int timeoutMs) {
         if (portName == null || portName.trim().isEmpty()) {
             System.err.println("connectToPort: invalid port name");
             return false;
         }
-
         try {
-            // Disconnect existing connection
-            if (dongle != null) {
-                dongle.disconnect();
-                dongle = null;
-            }
+            if (dongle != null) { dongle.disconnect(); dongle = null; }
 
             SerialPort sp = SerialPort.getCommPort(portName);
             if (sp == null) {
                 System.err.println("connectToPort: port not found: " + portName);
                 return false;
             }
-
-            if (sp.isOpen()) {
-                sp.closePort();
-            }
+            if (sp.isOpen()) sp.closePort();
 
             this.dongle = new GSMDongle(sp);
             this.dongle.connect();
-
             System.out.println("Successfully connected to " + portName);
             return true;
-
         } catch (Exception e) {
             System.err.println("Failed to connect to " + portName + ": " + e.getMessage());
             e.printStackTrace();
@@ -231,52 +228,38 @@ public class SMSSender {
         }
     }
 
-    /**
-     * Disconnect from current port
-     */
     public synchronized void disconnect() {
-        if (dongle != null) {
-            dongle.disconnect();
-            dongle = null;
-        }
+        if (dongle != null) { dongle.disconnect(); dongle = null; }
     }
 
-    /**
-     * Check if modem is connected
-     */
     public synchronized boolean isConnected() {
         return dongle != null && dongle.getSerialPort().isOpen();
     }
 
-    /**
-     * Get the currently connected port name
-     */
     public synchronized String getConnectedPort() {
-        if (dongle != null && dongle.getSerialPort() != null) {
-            return dongle.getSerialPort().getSystemPortName();
-        }
-        return null;
+        return (dongle != null && dongle.getSerialPort() != null)
+                ? dongle.getSerialPort().getSystemPortName() : null;
     }
 
-    /**
-     * Send a single SMS message
-     * @return true if sent successfully
-     */
-    public synchronized boolean sendSingleMessage(String phoneNumber, String message) throws Exception {
-        if (!isConnected()) {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Single send
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public synchronized boolean sendSingleMessage(String phoneNumber,
+                                                  String message) throws Exception {
+        if (!isConnected())
             throw new IllegalStateException("No connected GSM modem");
-        }
-
-        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty())
             throw new IllegalArgumentException("Phone number cannot be empty");
-        }
-
-        if (message == null || message.trim().isEmpty()) {
+        if (message == null || message.trim().isEmpty())
             throw new IllegalArgumentException("Message cannot be empty");
-        }
 
         return dongle.sendMessage(phoneNumber, message);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Bulk send
+    // ─────────────────────────────────────────────────────────────────────────
 
     public int sendBulkSMS(List<String> recipients, List<String> fullnames,
                            List<Integer> beneficiaryIds, String message,
@@ -286,67 +269,77 @@ public class SMSSender {
             System.err.println("sendBulkSMS: No recipients provided");
             return 0;
         }
-
-        if (!isConnected()) {
+        if (!isConnected())
             throw new IllegalStateException("No connected GSM modem");
-        }
+
+        // Always start clean — SmsServiceImpl.sendBulkSMS already called resetCancel(),
+        // but a direct caller might not, so we reset here too.
+        cancelRequested = false;
 
         int successCount = 0;
 
         for (int i = 0; i < recipients.size(); i++) {
-            String phone = recipients.get(i);
-            String fullname = (fullnames != null && fullnames.size() > i) ? fullnames.get(i) : "";
-            int beneficiaryId = (beneficiaryIds != null && beneficiaryIds.size() > i && beneficiaryIds.get(i) != null)
-                    ? beneficiaryIds.get(i) : 0;
 
-            if (phone == null || phone.trim().isEmpty()) {
-                continue;
+            if (cancelRequested) {
+                System.out.println("[SMSSender] Bulk send cancelled after "
+                        + successCount + " of " + recipients.size() + " messages.");
+                break;
             }
 
-            boolean sent = false;
-            String errorMessage = null;
-            int attempts = 0;
+            String phone = recipients.get(i);
+            String fullname = (fullnames != null && fullnames.size() > i)
+                    ? fullnames.get(i) : "";
+            int beneficiaryId = (beneficiaryIds != null && beneficiaryIds.size() > i
+                    && beneficiaryIds.get(i) != null)
+                    ? beneficiaryIds.get(i) : 0;
+
+            if (phone == null || phone.trim().isEmpty()) continue;
+
+            boolean sent         = false;
+            String  errorMessage = null;
+            int     attempts     = 0;
 
             while (attempts < maxRetriesPerRecipient && !sent) {
+                // ── Also check cancel inside the retry loop ───────────────────
+                if (cancelRequested) {
+                    errorMessage = "Cancelled";
+                    break;
+                }
+
                 attempts++;
                 try {
                     sent = sendSingleMessage(phone.trim(), message);
-                    if (!sent) {
-                        errorMessage = "Send failed (attempt " + attempts + ")";
-                    }
+                    if (!sent) errorMessage = "Send failed (attempt " + attempts + ")";
                 } catch (Exception e) {
                     errorMessage = e.getMessage();
-                    System.err.println("sendBulkSMS: error sending to " + phone +
-                            " (attempt " + attempts + "): " + e.getMessage());
+                    System.err.println("[SMSSender] Error sending to " + phone
+                            + " (attempt " + attempts + "): " + e.getMessage());
                 }
 
-                if (!sent && attempts < maxRetriesPerRecipient) {
-                    try {
-                        Thread.sleep(500); // Wait before retry
-                    } catch (InterruptedException ignored) {
+                if (!sent && attempts < maxRetriesPerRecipient && !cancelRequested) {
+                    try { Thread.sleep(500); }
+                    catch (InterruptedException ignored) {
                         Thread.currentThread().interrupt();
                         break;
                     }
                 }
             }
 
-            if (sent) {
-                successCount++;
-            }
+            if (sent) successCount++;
 
-            SendResult result = new SendResult(phone, fullname, message, sent, beneficiaryId, errorMessage);
-            notifyListeners(result);
+            notifyListeners(new SendResult(
+                    phone, fullname, message, sent, beneficiaryId, errorMessage));
 
-            if (i < recipients.size() - 1) {
-                try {
-                    Thread.sleep(Math.max(0, delayMsBetween));
-                } catch (InterruptedException ignored) {
+            if (!cancelRequested && i < recipients.size() - 1) {
+                try { Thread.sleep(Math.max(0, delayMsBetween)); }
+                catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     break;
                 }
             }
         }
 
+        cancelRequested = false;
         return successCount;
     }
 

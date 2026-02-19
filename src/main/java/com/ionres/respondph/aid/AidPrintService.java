@@ -1,6 +1,7 @@
 package com.ionres.respondph.aid;
 
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.SessionManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.print.*;
@@ -380,7 +381,7 @@ public class AidPrintService {
         Label republic = new Label("Republic of the Philippines");
         republic.setStyle("-fx-font-size: 9; -fx-text-fill: #555; -fx-alignment: center;");
 
-        Label title = new Label("BARANGAY DISASTER RISK REDUCTION AND MANAGEMENT");
+        Label title = new Label("MUNICIPAL OF BANATE DISASTER RISK REDUCTION AND MANAGEMENT");
         title.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-alignment: center;");
 
         Label reportTypeLabel = new Label(reportTitle);
@@ -564,9 +565,7 @@ public class AidPrintService {
         return table;
     }
 
-    /**
-     * Create table header text
-     */
+
     private Text createTableHeaderText(String content, double width) {
         Text text = new Text(content);
         text.setFont(Font.font("Arial", FontWeight.BOLD, 9));
@@ -575,9 +574,7 @@ public class AidPrintService {
         return text;
     }
 
-    /**
-     * Create table cell text
-     */
+
     private Text createTableCellText(String content, double width) {
         Text text = new Text(content);
         text.setFont(Font.font("Arial", FontWeight.NORMAL, 8));
@@ -586,9 +583,6 @@ public class AidPrintService {
         return text;
     }
 
-    /**
-     * Create summary section
-     */
     private VBox createSummarySection(List<AidModel> aidRecords) {
         VBox summary = new VBox(8);
         summary.setPrefWidth(CONTENT_WIDTH);
@@ -622,9 +616,7 @@ public class AidPrintService {
         return summary;
     }
 
-    /**
-     * Create cost bar visualization
-     */
+
     private StackPane createCostBar(double barWidth, double totalCost) {
         StackPane bar = new StackPane();
         bar.setMaxWidth(barWidth);
@@ -648,9 +640,7 @@ public class AidPrintService {
         return bar;
     }
 
-    /**
-     * Build footer
-     */
+
     private HBox buildFooter(int totalRecords) {
         HBox footer = new HBox();
         footer.setAlignment(Pos.CENTER);
@@ -662,16 +652,16 @@ public class AidPrintService {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label right = new Label("Prepared by BDRRMC  |  RespondPH System");
+        String addedBy = SessionManager.getInstance().getCurrentAdminFullName();
+
+        Label right = new Label("Prepared by : " + addedBy);
         right.setStyle("-fx-font-size: 9; -fx-text-fill: #555; -fx-alignment: center;");
 
         footer.getChildren().addAll(left, spacer, right);
         return footer;
     }
 
-    /**
-     * Create page number label
-     */
+
     private Label createPageNumber(int page) {
         Label lbl = new Label("Page " + page);
         lbl.setStyle("-fx-font-size: 8; -fx-text-fill: #aaa; -fx-alignment: center;");
@@ -680,9 +670,7 @@ public class AidPrintService {
         return lbl;
     }
 
-    /**
-     * Create separator line
-     */
+
     private Region createSeparator() {
         Region sep = new Region();
         sep.setMinHeight(1);
@@ -693,9 +681,7 @@ public class AidPrintService {
         return sep;
     }
 
-    /**
-     * Create page break spacer
-     */
+
     private Region createPageBreak() {
         Region spacer = new Region();
         spacer.setPrefHeight(30);

@@ -17,14 +17,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.print.Printer;
-import javafx.print.PrinterJob;
+import javafx.print.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -450,11 +447,17 @@ public class DisasterDamageController {
                 return;
             }
 
-            if (!job.showPrintDialog(null)) return;
+            PageLayout pageLayout = printer.createPageLayout(
+                    Paper.A4, PageOrientation.LANDSCAPE, 36, 36, 36, 36);
+            job.getJobSettings().setPageLayout(pageLayout);
+
+            int rowsPerPage = Math.max(1, (int)((pageLayout.getPrintableHeight() - 150) / 22));
+            int actualPageCount = Math.max(1, (int) Math.ceil((double) records.size() / rowsPerPage));
+            job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
 
             VBox content = createPrintContent(records, disaster);
 
-            if (job.printPage(content)) {
+            if (job.printPage(pageLayout, content)) {
                 job.endJob();
                 AlertDialogManager.showInfo("Print Success",
                         "Document sent to printer: " + job.getPrinter().getName());
@@ -467,58 +470,154 @@ public class DisasterDamageController {
         }
     }
 
-    /**
-     * Create print content as VBox
-     */
     private VBox createPrintContent(List<DisasterDamageModel> records, DisasterItem disaster) {
-        VBox content = new VBox(8);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: white; -fx-font-family: 'Courier New';");
+        VBox root = new VBox(0);
+        root.setStyle("-fx-background-color: white;");
+        root.setPrefWidth(900);
 
-        // Title
-        Label title = new Label("DISASTER DAMAGE ASSESSMENT REPORT");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        title.setAlignment(Pos.CENTER);
-        title.setStyle("-fx-padding: 0 0 10 0;");
-        content.getChildren().add(title);
-
-        // Disaster info
+        String timestamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
         String disasterInfo = disaster.getDisasterId() == 0
                 ? "All Disasters"
                 : disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
-        content.getChildren().add(new Label("Disaster: " + disasterInfo));
 
-        // Date generated
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a"));
-        content.getChildren().add(new Label("Generated: " + date));
+        HBox header = new HBox();
+        header.setStyle("-fx-background-color: #2c3e50; -fx-padding: 14 18 14 18;");
+        header.setAlignment(Pos.CENTER_LEFT);
 
-        // Total records
-        content.getChildren().add(new Label("Total Records: " + records.size()));
-        content.getChildren().add(new Label(""));
+        VBox headerLeft = new VBox(3);
+        Label reportTitle = new Label("DISASTER DAMAGE ASSESSMENT REPORT");
+        reportTitle.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: white;");
+        Label subTitle = new Label("Municipal of Banate Disaster Risk Reduction and Management");
+        subTitle.setStyle("-fx-font-size: 10; -fx-text-fill: #bdd7ee;");
+        headerLeft.getChildren().addAll(reportTitle, subTitle);
 
-        // Table headers
-        String format = "%-6s %-25s %-20s %-15s %-12s %-12s %-12s";
-        content.getChildren().add(new Label(String.format(format,
-                "ID", "Beneficiary", "Disaster", "Severity", "Assessment", "Verified", "Reg Date")));
-        content.getChildren().add(new Label(String.format(format,
-                "------", "-------------------------", "--------------------",
-                "---------------", "------------", "------------", "------------")));
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Records
+        VBox headerRight = new VBox(3);
+        headerRight.setAlignment(Pos.CENTER_RIGHT);
+        Label systemName = new Label("RespondPH");
+        systemName.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: white;");
+        Label tsLabel = new Label(timestamp);
+        tsLabel.setStyle("-fx-font-size: 8; -fx-text-fill: #bdd7ee;");
+        headerRight.getChildren().addAll(systemName, tsLabel);
+
+        header.getChildren().addAll(headerLeft, spacer, headerRight);
+        root.getChildren().add(header);
+
+        // ── Metadata box ──────────────────────────────────────────────────────
+        GridPane meta = new GridPane();
+        meta.setStyle("-fx-background-color: #f0f4f8; -fx-border-color: #bed2e6; -fx-border-width: 1; -fx-padding: 0;");
+        meta.setHgap(0);
+        meta.setVgap(0);
+        ColumnConstraints col1 = new ColumnConstraints(); col1.setPercentWidth(25);
+        ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(25);
+        ColumnConstraints col3 = new ColumnConstraints(); col3.setPercentWidth(25);
+        ColumnConstraints col4 = new ColumnConstraints(); col4.setPercentWidth(25);
+        meta.getColumnConstraints().addAll(col1, col2, col3, col4);
+
+        addMetaCell(meta, "Disaster Event",  disasterInfo,                   0, 0);
+        addMetaCell(meta, "Disaster Type",   disaster.getDisasterType(),      1, 0);
+        addMetaCell(meta, "Total Records",   records.size() + " records",     2, 0);
+        addMetaCell(meta, "Generated On",    timestamp,                       3, 0);
+
+        VBox.setMargin(meta, new Insets(10, 0, 14, 0));
+        root.getChildren().add(meta);
+
+        // ── Table header row ──────────────────────────────────────────────────
+        HBox tableHeader = new HBox(0);
+        tableHeader.setStyle("-fx-background-color: #2c3e50; -fx-padding: 5 6 5 6;");
+        tableHeader.getChildren().addAll(
+                colHeaderCell("#",               50),
+                colHeaderCell("Beneficiary",    200),
+                colHeaderCell("Disaster",       160),
+                colHeaderCell("Severity",       120),
+                colHeaderCell("Assessment Date",120),
+                colHeaderCell("Verified By",    120),
+                colHeaderCell("Reg Date",       100)
+        );
+        root.getChildren().add(tableHeader);
+
+        // ── Data rows ─────────────────────────────────────────────────────────
+        boolean alt = false;
+        int rowNum = 1;
         for (DisasterDamageModel d : records) {
-            content.getChildren().add(new Label(String.format(format,
-                    d.getBeneficiaryDisasterDamageId(),
-                    truncate(d.getBeneficiaryFirstname(), 25),
-                    truncate(d.getDisasterName(), 20),
-                    truncate(d.getHouseDamageSeverity(), 15),
-                    truncate(d.getAssessmentDate(), 12),
-                    truncate(d.getVerifiedBy(), 12),
-                    truncate(d.getRegDate(), 12)
-            )));
+            String rowBg = alt ? "#f5f8fc" : "#ffffff";
+            alt = !alt;
+
+            HBox row = new HBox(0);
+            row.setStyle("-fx-background-color: " + rowBg + "; -fx-padding: 4 6 4 6; " +
+                    "-fx-border-color: transparent transparent #dce1e6 transparent; -fx-border-width: 0.5;");
+
+            row.getChildren().addAll(
+                    colDataCell(String.valueOf(rowNum++),                          50,  true),
+                    colDataCell(nvl(d.getBeneficiaryFirstname()),                  200, false),
+                    colDataCell(nvl(d.getDisasterName()),                          160, false),
+                    colDataCell(nvl(d.getHouseDamageSeverity()),                   120, false),
+                    colDataCell(nvl(d.getAssessmentDate()),                        120, false),
+                    colDataCell(nvl(d.getVerifiedBy()),                            120, false),
+                    colDataCell(nvl(d.getRegDate()),                               100, false)
+            );
+            root.getChildren().add(row);
         }
 
-        return content;
+        // ── Totals row ────────────────────────────────────────────────────────
+        HBox totalRow = new HBox();
+        totalRow.setStyle("-fx-background-color: #e8f0f8; -fx-padding: 5 6 5 6;");
+        Label totalLabel = new Label("Total Records: " + records.size());
+        totalLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        totalRow.getChildren().add(totalLabel);
+        VBox.setMargin(totalRow, new Insets(0, 0, 10, 0));
+        root.getChildren().add(totalRow);
+
+        // ── Closing note ──────────────────────────────────────────────────────
+        Label note = new Label("This report was generated automatically by RespondPH. " +
+                "Data reflects the latest disaster damage assessment records.");
+        note.setStyle("-fx-font-size: 8; -fx-text-fill: #888; -fx-padding: 8 0 0 0;");
+        note.setAlignment(Pos.CENTER);
+        note.setMaxWidth(Double.MAX_VALUE);
+        root.getChildren().add(note);
+
+        return root;
     }
+
+// ── Print layout helper cells ─────────────────────────────────────────────────
+
+    private void addMetaCell(GridPane grid, String label, String value, int col, int row) {
+        VBox cell = new VBox(2);
+        String labelBg = "#e1ebf5";
+        String valueBg = "#f5f8fc";
+        cell.setStyle("-fx-background-color: " + valueBg + "; -fx-padding: 6 8 6 8; " +
+                "-fx-border-color: #bed2e6; -fx-border-width: 0.5;");
+        Label lbl = new Label(label);
+        lbl.setStyle("-fx-font-size: 9; -fx-font-weight: bold; -fx-text-fill: #283c5a; " +
+                "-fx-background-color: " + labelBg + "; -fx-padding: 1 3 1 3;");
+        Label val = new Label(value != null ? value : "—");
+        val.setStyle("-fx-font-size: 9; -fx-text-fill: #283c5a;");
+        val.setWrapText(true);
+        cell.getChildren().addAll(lbl, val);
+        grid.add(cell, col, row);
+    }
+
+    private Label colHeaderCell(String text, double width) {
+        Label lbl = new Label(text);
+        lbl.setMinWidth(width); lbl.setMaxWidth(width);
+        lbl.setStyle("-fx-font-size: 9; -fx-font-weight: bold; -fx-text-fill: white;");
+        lbl.setWrapText(false);
+        return lbl;
+    }
+
+    private Label colDataCell(String text, double width, boolean centered) {
+        Label lbl = new Label(text);
+        lbl.setMinWidth(width); lbl.setMaxWidth(width);
+        lbl.setStyle("-fx-font-size: 9; -fx-text-fill: #283c3c;");
+        lbl.setWrapText(false);
+        if (centered) lbl.setAlignment(Pos.CENTER);
+        return lbl;
+    }
+
+    private String nvl(String s) { return (s == null || s.isBlank()) ? "—" : s; }
 
     private String truncate(String s, int maxLength) {
         if (s == null) return "";
@@ -643,53 +742,143 @@ public class DisasterDamageController {
 
     private boolean isPrinterActive(Printer printer) {
         if (printer == null) return false;
-
-        // Skip virtual printers
         if (isVirtualPrinter(printer.getName())) return false;
-
         String os = System.getProperty("os.name", "").toLowerCase();
-        if (os.contains("win")) {
-            return isPrinterActiveWindows(printer.getName());
-        }
-        return true; // Assume active on non-Windows
+        return os.contains("win")
+                ? isPrinterActiveWindows(printer.getName())
+                : isPrinterActiveUnix(printer);
     }
 
-    private boolean isVirtualPrinter(String printerName) {
-        if (printerName == null) return false;
-        String lower = printerName.toLowerCase();
-        return lower.contains("pdf") || lower.contains("fax") || lower.contains("xps") ||
-                lower.contains("onenote") || lower.contains("microsoft print") ||
-                lower.contains("send to") || lower.contains("snagit") ||
-                lower.contains("cutepdf") || lower.contains("bullzip") ||
-                lower.contains("dopdf") || lower.contains("nitro") ||
-                lower.contains("foxit") || lower.contains("pdfcreator") ||
-                lower.contains("primopdf") || lower.contains("pdf24") ||
-                lower.contains("adobe pdf");
+    private boolean isVirtualPrinter(String name) {
+        if (name == null) return false;
+        String l = name.toLowerCase();
+        return l.contains("pdf")
+                || l.contains("fax")
+                || l.contains("xps")
+                || l.contains("onenote")
+                || l.contains("microsoft print")
+                || l.contains("microsoft document")
+                || l.contains("send to")
+                || l.contains("snagit")
+                || l.contains("cutepdf")
+                || l.contains("cute pdf")
+                || l.contains("bullzip")
+                || l.contains("dopdf")
+                || l.contains("nitro")
+                || l.contains("foxit")
+                || l.contains("pdfcreator")
+                || l.contains("primopdf")
+                || l.contains("pdf24")
+                || l.contains("adobe pdf");
     }
 
     private boolean isPrinterActiveWindows(String printerName) {
         try {
             String safeName = printerName.replace("'", "''");
             String[] cmd = {
-                    "powershell",
-                    "-NoProfile",
-                    "-NonInteractive",
-                    "-Command",
+                    "powershell", "-NoProfile", "-NonInteractive", "-Command",
                     "(Get-Printer -Name '" + safeName + "').IsOnline"
             };
-
             Process proc = Runtime.getRuntime().exec(cmd);
             String output;
             try (java.io.BufferedReader reader = new java.io.BufferedReader(
                     new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
-                output = reader.lines().collect(Collectors.joining()).trim();
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line.trim());
+                output = sb.toString().trim();
+            }
+            try (java.io.InputStream err = proc.getErrorStream()) {
+                err.transferTo(java.io.OutputStream.nullOutputStream());
             }
             proc.waitFor();
 
-            return "True".equalsIgnoreCase(output);
+            if ("True".equalsIgnoreCase(output))  return true;
+            if ("False".equalsIgnoreCase(output)) return false;
+            return isPrinterActiveWindowsWmic(printerName); // fallback
         } catch (Exception e) {
-            return false;
+            return isPrinterActiveWindowsWmic(printerName);
         }
+    }
+
+    private boolean isPrinterActiveWindowsWmic(String printerName) {
+        try {
+            String[] cmd = {
+                    "wmic", "printer",
+                    "where", "Name='" + printerName.replace("'", "\\'") + "'",
+                    "get", "PrinterStatus,WorkOffline",
+                    "/format:csv"
+            };
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line).append("\n");
+                output = sb.toString();
+            }
+            try (java.io.InputStream err = proc.getErrorStream()) {
+                err.transferTo(java.io.OutputStream.nullOutputStream());
+            }
+            proc.waitFor();
+
+            for (String line : output.split("\n")) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("Node") || line.startsWith("\r")) continue;
+                String[] parts = line.split(",");
+                if (parts.length < 3) continue;
+                String statusStr   = parts[parts.length - 2].trim();
+                String workOffline = parts[parts.length - 1].trim();
+                if ("TRUE".equalsIgnoreCase(workOffline)) return false;
+                try {
+                    int status = Integer.parseInt(statusStr);
+                    return (status == 3 || status == 4 || status == 5);
+                } catch (NumberFormatException ex) { return false; }
+            }
+            return false;
+        } catch (Exception e) { return false; }
+    }
+
+    private boolean isPrinterActiveUnix(Printer printer) {
+        if (printer == null) return false;
+        try {
+            Process proc = Runtime.getRuntime().exec(
+                    new String[]{ "lpstat", "-p", printer.getName() });
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line).append(" ");
+                output = sb.toString().toLowerCase();
+            }
+            proc.waitFor();
+            if (output.contains("enabled"))  return true;
+            if (output.contains("disabled")) return false;
+        } catch (Exception ignored) { }
+
+        try {
+            for (javax.print.PrintService svc :
+                    javax.print.PrintServiceLookup.lookupPrintServices(null, null)) {
+                if (!svc.getName().equalsIgnoreCase(printer.getName())) continue;
+                javax.print.attribute.PrintServiceAttributeSet attrs = svc.getAttributes();
+                javax.print.attribute.standard.PrinterIsAcceptingJobs acc =
+                        (javax.print.attribute.standard.PrinterIsAcceptingJobs)
+                                attrs.get(javax.print.attribute.standard.PrinterIsAcceptingJobs.class);
+                if (acc != null && acc ==
+                        javax.print.attribute.standard.PrinterIsAcceptingJobs.NOT_ACCEPTING_JOBS)
+                    return false;
+                javax.print.attribute.standard.PrinterState state =
+                        (javax.print.attribute.standard.PrinterState)
+                                attrs.get(javax.print.attribute.standard.PrinterState.class);
+                if (state != null)
+                    return state == javax.print.attribute.standard.PrinterState.IDLE
+                            || state == javax.print.attribute.standard.PrinterState.PROCESSING;
+                break;
+            }
+        } catch (Exception ignored) { }
+        return false;
     }
 
 

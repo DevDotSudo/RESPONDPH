@@ -19,6 +19,7 @@ c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\Aid
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\AidService.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\AidServiceImpl.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\dialogs_controller\AddAidController.java
+c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\dialogs_controller\PreviewDistributionController.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\dialogs_controller\PrintAidDialogController.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\FCMAidDistribution.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\aid\KMeansAidDistribution.java
@@ -59,10 +60,12 @@ c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\model\EvacSiteMappingModel.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\model\EvacSiteMarker.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\model\EvacSiteModel.java
+c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\model\FamilyMemberModel.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\services\EvacSiteMappingServiceImpl.java
+c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\services\NewsETAEstimator.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\services\NewsGeneratorService.java
+c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\common\services\NewsItem.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\dashboard\BeneficiariesMappingModel.java
-c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\dashboard\BeneficiariesMappingService.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\dashboard\DashboardController.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\dashboard\DashBoardDAO.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\dashboard\DashBoardDAOImpl.java
@@ -138,6 +141,8 @@ c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\main\Ma
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\RESPONDPH.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\BeneficiaryDAO.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\BeneficiaryDAOImpl.java
+c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\CustomEvacMessageDAO.java
+c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\CustomEvacMessageDAOImpl.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\dialogs_controller\BeneficiarySelectionDialogController.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\DisasterDAO.java
 c:\Users\Davie\IdeaProjects\RESPONDPH\src\main\java\com\ionres\respondph\sendsms\DisasterDAOImpl.java

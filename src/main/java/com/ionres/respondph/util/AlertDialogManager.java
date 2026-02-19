@@ -2,11 +2,7 @@ package com.ionres.respondph.util;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
+import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -56,6 +52,143 @@ public class AlertDialogManager {
         applyDialogPaneStyle(dialogPane, resolvedType);
         applyWindowStyle(dialogPane);
         makeDraggable(dialogPane);
+    }
+
+    // =========================================================================
+    //  showInfoWithContent
+    //  — sized to content: no fixed width class, resizable, DialogPane uses
+    //    computed size so the content node drives the dialog's dimensions.
+    // =========================================================================
+    public static void showInfoWithContent(String title, String header, javafx.scene.Node content) {
+        Alert alert = new Alert(getJavaFXAlertType(AlertType.INFO), "", ButtonType.OK);
+        alert.setTitle("");
+        alert.setHeaderText(header);
+        alert.setContentText(null);
+        alert.setResizable(true);                         // allow window to grow
+
+        DialogPane dp = alert.getDialogPane();
+        dp.setContent(content);
+        dp.setMinWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxWidth(Double.MAX_VALUE);
+        dp.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxHeight(Double.MAX_VALUE);
+
+        styleAlert(alert, AlertType.INFO);
+        alert.showAndWait();
+    }
+    // =========================================================================
+
+    public static boolean showConfirmationWithContent(String title, String header, String message,
+                                                      ButtonType confirmBtn, ButtonType cancelBtn) {
+        Alert alert = new Alert(getJavaFXAlertType(AlertType.CONFIRMATION), message, confirmBtn, cancelBtn);
+        alert.setTitle("");
+        alert.setHeaderText(header);
+        alert.setResizable(true);
+
+        DialogPane dp = alert.getDialogPane();
+        dp.setMinWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxWidth(Double.MAX_VALUE);
+        dp.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxHeight(Double.MAX_VALUE);
+
+        styleAlert(alert, AlertType.CONFIRMATION);
+        return alert.showAndWait().filter(r -> r == confirmBtn).isPresent();
+    }
+
+    // =========================================================================
+    //  showSuccessWithContent
+    //  — sized to content: no fixed width, resizable, computed size on pane.
+    // =========================================================================
+    public static void showSuccessWithContent(String title, String header, String message) {
+        Alert alert = new Alert(getJavaFXAlertType(AlertType.SUCCESS), "", ButtonType.OK);
+        alert.setTitle("");
+        alert.setHeaderText(header);
+        alert.setResizable(true);
+
+        TextArea ta = buildMonoTextArea(message, false, 0, 0);
+
+        DialogPane dp = alert.getDialogPane();
+        dp.setContent(ta);
+        dp.setMinWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxWidth(Double.MAX_VALUE);
+        dp.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxHeight(Double.MAX_VALUE);
+
+        styleAlert(alert, AlertType.SUCCESS);
+        alert.showAndWait();
+    }
+    // =========================================================================
+
+    // =========================================================================
+    //  showExpandableInfo
+    //  — sized to content: resizable, computed pane size, expandable area
+    //    also lets the window grow freely.
+    // =========================================================================
+    public static void showExpandableInfo(String title, String header, String message, String expandableText) {
+        Alert alert = new Alert(getJavaFXAlertType(AlertType.INFO), message, ButtonType.OK);
+        alert.setTitle("");
+        alert.setHeaderText(header);
+        alert.setResizable(true);
+
+        TextArea ta = buildProseTextArea(expandableText, true, 0, 0);
+
+        DialogPane dp = alert.getDialogPane();
+        dp.setExpandableContent(ta);
+        dp.setExpanded(true);
+        dp.setMinWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxWidth(Double.MAX_VALUE);
+        dp.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dp.setMaxHeight(Double.MAX_VALUE);
+
+        styleAlert(alert, AlertType.INFO);
+        alert.showAndWait();
+    }
+    // =========================================================================
+
+    // ── Private TextArea builders — all styling via CSS class ─────────────────
+
+    /**
+     * Monospace TextArea (clustering preview, success detail).
+     * When prefRows / prefCols are 0, the TextArea sizes to its content
+     * (the dialog / Stage will expand to fit).
+     */
+    public static TextArea buildMonoTextArea(String text, boolean wrapText,
+                                             int prefRows, int prefCols) {
+        TextArea ta = new TextArea(text);
+        ta.setEditable(false);
+        ta.setWrapText(wrapText);
+        ta.setMaxWidth(Double.MAX_VALUE);
+        ta.setMaxHeight(Double.MAX_VALUE);
+        // Only constrain if the caller explicitly requests fixed dimensions
+        if (prefRows > 0) ta.setPrefRowCount(prefRows);
+        if (prefCols > 0) ta.setPrefColumnCount(prefCols);
+        ta.getStyleClass().add("alert-text-area");
+        return ta;
+    }
+
+    /**
+     * Prose TextArea (expandable URL display, notes).
+     * When prefRows / prefCols are 0, sizes to content.
+     */
+    public static TextArea buildProseTextArea(String text, boolean wrapText,
+                                              int prefRows, int prefCols) {
+        TextArea ta = new TextArea(text);
+        ta.setEditable(false);
+        ta.setWrapText(wrapText);
+        ta.setMaxWidth(Double.MAX_VALUE);
+        ta.setMaxHeight(Double.MAX_VALUE);
+        if (prefRows > 0) ta.setPrefRowCount(prefRows);
+        if (prefCols > 0) ta.setPrefColumnCount(prefCols);
+        ta.getStyleClass().add("alert-text-area-prose");
+        return ta;
     }
 
     public static void styleDialog(Dialog<?> dialog, AlertType type) {
@@ -125,7 +258,7 @@ public class AlertDialogManager {
             try {
                 stage.initStyle(StageStyle.TRANSPARENT);
             } catch (IllegalStateException ignored) {
-                // Stage style can only be initialized once before showing.
+
             }
             stage.centerOnScreen();
         }
@@ -134,7 +267,6 @@ public class AlertDialogManager {
     private static void setIcon(DialogPane dialogPane, AlertType type) {
         FontAwesomeIconView icon = new FontAwesomeIconView(type.icon);
 
-        // Use orange for info and confirmation to match theme
         String iconColor;
         switch (type) {
             case SUCCESS:
@@ -149,12 +281,12 @@ public class AlertDialogManager {
             case INFO:
             case CONFIRMATION:
             default:
-                iconColor = "#f97316"; // Orange accent
+                iconColor = "#f97316";
                 break;
         }
 
         icon.setFill(Color.web(iconColor));
-        icon.setSize("32px"); // Slightly smaller icon
+        icon.setSize("32px");
         icon.getStyleClass().add("custom-alert-icon");
         dialogPane.setGraphic(icon);
     }
@@ -178,7 +310,6 @@ public class AlertDialogManager {
                 }
                 button.setText(buttonType == ButtonType.OK ? "OK" : "YES");
             } else if (buttonType == ButtonType.CANCEL || buttonType == ButtonType.NO) {
-                // Use cancel-button for error/warning, secondary-button for others
                 if (type == AlertType.ERROR || type == AlertType.WARNING) {
                     button.getStyleClass().add("cancel-button");
                     if (!isConfirmation) {
@@ -215,7 +346,7 @@ public class AlertDialogManager {
 
     private static FontAwesomeIconView createButtonIcon(FontAwesomeIcon icon, String color) {
         FontAwesomeIconView iconView = new FontAwesomeIconView(icon);
-        iconView.setSize("12px"); // Smaller icon
+        iconView.setSize("12px");
         iconView.setGlyphStyle("-fx-font-family: 'FontAwesome'");
         iconView.setFill(Color.web(color));
         return iconView;

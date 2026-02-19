@@ -7,7 +7,10 @@ import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.DialogManager;
 import com.itextpdf.layout.element.Cell;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,6 +22,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -52,10 +57,8 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import java.util.Optional;
 
-// ─── CHANGED: added import for PauseTransition and Duration ───────────────────
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
-// ─────────────────────────────────────────────────────────────────────────────
 
 public class AddAidController {
 
@@ -104,17 +107,9 @@ public class AddAidController {
     private AidController  aidController;
     private Stage          dialogStage;
 
-    // ─── CHANGED: added ProgressIndicator field for summary spinner ───────────
     private ProgressIndicator summaryProgressIndicator;
-    // ─────────────────────────────────────────────────────────────────────────
-
-    // ─── CHANGED: added PauseTransition for debouncing cluster schedule ───────
     private PauseTransition clusterDebounce;
-    // ─────────────────────────────────────────────────────────────────────────
-
-    // ─── CHANGED: flag to suppress barangay listener during programmatic load ─
     private boolean suppressBarangayListener = false;
-    // ─────────────────────────────────────────────────────────────────────────
 
     private ToggleGroup algorithmGroup;
     private ToggleGroup barangayModeGroup;
@@ -196,14 +191,11 @@ public class AddAidController {
                 simpleDistributionWarning.setVisible(false);
                 simpleDistributionWarning.setManaged(false);
             }
-            // ─── CHANGED: clear result before rescheduling ────────────────
             lastPreviewResult = new ArrayList<>();
-            // ─────────────────────────────────────────────────────────────
             scheduleBackgroundCluster();
         });
     }
 
-    // ─── CHANGED: removed updateSelectionSummary() call; scheduleBackgroundCluster handles it ─
     private void setupGeneralAidOption() {
         if (generalAidCheckbox != null) {
             generalAidCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
@@ -215,9 +207,7 @@ public class AddAidController {
             });
         }
     }
-    // ──────────────────────────────────────────────────────────────────────────
 
-    // ─── CHANGED: removed updateSelectionSummary() calls; scheduleBackgroundCluster handles it ─
     private void setupBarangayMode() {
         barangayModeGroup = new ToggleGroup();
         singleBarangayRadio.setToggleGroup(barangayModeGroup);
@@ -242,7 +232,6 @@ public class AddAidController {
         barangaySelectionContainer.setVisible(false);
         barangaySelectionContainer.setManaged(false);
     }
-    // ──────────────────────────────────────────────────────────────────────────
 
     private void setupDefaultValues() {
         useKMeansRadio.setSelected(true);
@@ -250,7 +239,6 @@ public class AddAidController {
         generalAidCheckbox.setSelected(false);
     }
 
-    // ─── CHANGED: removed updateSelectionSummary() calls; added suppressBarangayListener guard ─
     private void setupComboBoxListeners() {
         aidTypeComboBox.setOnAction(e -> {
             lastPreviewResult = new ArrayList<>();
@@ -264,14 +252,11 @@ public class AddAidController {
             scheduleBackgroundCluster();
         });
         barangayComboBox.setOnAction(e -> {
-            // ─── CHANGED: guard against programmatic changes during loadBarangays() ─
             if (suppressBarangayListener) return;
-            // ──────────────────────────────────────────────────────────────────────
             lastPreviewResult = new ArrayList<>();
             scheduleBackgroundCluster();
         });
     }
-    // ──────────────────────────────────────────────────────────────────────────
 
     private void setupEventHandlers() {
         saveAidBtn.setOnAction(this::handleSave);
@@ -282,51 +267,33 @@ public class AddAidController {
     }
 
     // =========================================================================
-    //  CHANGED: scheduleBackgroundCluster — debounced with PauseTransition
-    //           so the spinner renders before the DB query fires.
-    //           Labels indicate each change within.
+    //  scheduleBackgroundCluster — debounced with PauseTransition
     // =========================================================================
     private void scheduleBackgroundCluster() {
-        // ─── CHANGED: clear stale result immediately ──────────────────────────
         lastPreviewResult = new ArrayList<>();
-        // ─────────────────────────────────────────────────────────────────────
 
         if (!isPreviewSelectionReady()) {
             previewLoading = false;
-            // ─── CHANGED: stop any pending debounce ──────────────────────────
             if (clusterDebounce != null) clusterDebounce.stop();
-            // ─────────────────────────────────────────────────────────────────
             hideInlinePanel();
             updatePreviewButtonState();
-            // ─── CHANGED: pass -2 to hide the box entirely ───────────────────
             updateSelectionSummaryWithCount(-2);
-            // ─────────────────────────────────────────────────────────────────
             return;
         }
 
-        // ─── CHANGED: show spinner IMMEDIATELY on FX thread so it renders ─────
-        //             before the 300ms debounce fires the DB call
         updateSelectionSummaryWithCount(-1);
         showInlinePanelLoading();
         previewLoading = true;
         updatePreviewButtonState();
-        // ─────────────────────────────────────────────────────────────────────
 
-        // ─── CHANGED: cancel previous debounce (user still changing selections) ─
         if (clusterDebounce != null) clusterDebounce.stop();
-        // ─────────────────────────────────────────────────────────────────────
 
-        // ─── CHANGED: increment generation NOW so any in-flight task is invalid ─
         final long myGen = ++previewGeneration;
-        // ─────────────────────────────────────────────────────────────────────
 
-        // ─── CHANGED: 300ms debounce — DB query only fires after user stops ────
         clusterDebounce = new PauseTransition(Duration.millis(300));
         clusterDebounce.setOnFinished(ev -> {
 
-            // ─── CHANGED: double-check selection still valid after delay ──────
             if (!isPreviewSelectionReady() || myGen != previewGeneration) return;
-            // ─────────────────────────────────────────────────────────────────
 
             final int aidTypeId  = aidTypeComboBox.getValue().getAidTypeId();
             final int disasterId = getSelectedDisasterId();
@@ -338,17 +305,13 @@ public class AddAidController {
             };
 
             task.setOnSucceeded(e -> {
-                // ─── CHANGED: generation guard — discard stale results ────────
                 if (myGen != previewGeneration) return;
-                // ─────────────────────────────────────────────────────────────
                 List<BeneficiaryCluster> result = task.getValue();
                 lastPreviewResult = result != null ? result : new ArrayList<>();
                 previewLoading    = false;
                 updatePreviewButtonState();
                 renderInlinePanel(lastPreviewResult);
-                // ─── CHANGED: show real count once ready ─────────────────────
                 updateSelectionSummaryWithCount(lastPreviewResult.size());
-                // ─────────────────────────────────────────────────────────────
             });
 
             task.setOnFailed(e -> {
@@ -357,9 +320,7 @@ public class AddAidController {
                 previewLoading    = false;
                 updatePreviewButtonState();
                 showInlinePanelError("Clustering failed. Click Preview to retry.");
-                // ─── CHANGED: show 0 on failure instead of leaving spinner ────
                 updateSelectionSummaryWithCount(0);
-                // ─────────────────────────────────────────────────────────────
             });
 
             Thread t = new Thread(task);
@@ -367,7 +328,6 @@ public class AddAidController {
             t.start();
         });
         clusterDebounce.play();
-        // ─────────────────────────────────────────────────────────────────────
     }
     // =========================================================================
 
@@ -440,66 +400,78 @@ public class AddAidController {
         t.start();
     }
 
+    // =========================================================================
+    //  CHANGED: showPreviewDialog — uses AlertDialogManager.showInfoWithContent
+    //           + buildMonoTextArea instead of a raw Alert
+    // =========================================================================
+//    private void showPreviewDialog(List<BeneficiaryCluster> preview) {
+//        String algorithm = isFCMSelected()
+//                ? "Fuzzy C-Means (FCM) — 3 Clusters"
+//                : "K-Means — 3 Clusters";
+//
+//        List<Integer> ids = preview.stream().map(BeneficiaryCluster::getBeneficiaryId).collect(Collectors.toList());
+//        Map<Integer, String> nameMap = aidDAO.getBeneficiaryNames(ids);
+//
+//        Map<Integer, String>  clusterToPriority = buildClusterPriorityMap(preview);
+//        Map<Integer, Double>  clusterSums   = new HashMap<>();
+//        Map<Integer, Integer> clusterCounts = new HashMap<>();
+//        for (BeneficiaryCluster b : preview) {
+//            int c = b.getCluster();
+//            clusterSums.put(c,   clusterSums.getOrDefault(c,   0.0) + b.getFinalScore());
+//            clusterCounts.put(c, clusterCounts.getOrDefault(c, 0)   + 1);
+//        }
+//        Map<Integer, Double> clusterAvg = new HashMap<>();
+//        for (Integer c : clusterSums.keySet()) clusterAvg.put(c, clusterSums.get(c) / clusterCounts.get(c));
+//
+//        List<Integer> sortedClusters = new ArrayList<>(clusterAvg.keySet());
+//        sortedClusters.sort((a, b) -> Double.compare(clusterAvg.get(b), clusterAvg.get(a)));
+//
+//        Map<Integer, List<BeneficiaryCluster>> byCluster = new HashMap<>();
+//        for (BeneficiaryCluster b : preview)
+//            byCluster.computeIfAbsent(b.getCluster(), k -> new ArrayList<>()).add(b);
+//
+//        StringBuilder msg = new StringBuilder();
+//        msg.append("Scope   : ").append(getDistributionScopeText()).append("\n");
+//        msg.append("Method  : ").append(algorithm).append("\n");
+//        msg.append("Total   : ").append(preview.size()).append(" beneficiaries\n\n");
+//        msg.append("=== Clustering Result (3 Clusters) ===\n\n");
+//
+//        int overallRank = 1;
+//        for (Integer clusterNum : sortedClusters) {
+//            String priorityName = clusterToPriority.getOrDefault(clusterNum, "Low Priority");
+//            List<BeneficiaryCluster> members = byCluster.getOrDefault(clusterNum, new ArrayList<>());
+//            if (members.isEmpty()) continue;
+//            members.sort((b1, b2) -> Double.compare(b2.getFinalScore(), b1.getFinalScore()));
+//            msg.append(String.format(
+//                    "--- %s  |  Cluster %d  |  %d beneficiaries  |  Avg Score: %.3f ---\n",
+//                    priorityName, clusterNum, members.size(), clusterAvg.get(clusterNum)));
+//            for (BeneficiaryCluster b : members) {
+//                String name = nameMap.getOrDefault(b.getBeneficiaryId(), "Unknown");
+//                msg.append(String.format("%3d.  %-30s  (ID: %-6d)  Score: %.3f\n",
+//                        overallRank++, name, b.getBeneficiaryId(), b.getFinalScore()));
+//            }
+//            msg.append("\n");
+//        }
+//
+//        TextArea ta = AlertDialogManager.buildMonoTextArea(msg.toString(), false, 24, 70);
+//        AlertDialogManager.showInfoWithContent(
+//                "Clustering Preview",
+//                "Beneficiary Priority Clustering — " + algorithm,
+//                ta);
+//    }
+    // =========================================================================
+
     private void showPreviewDialog(List<BeneficiaryCluster> preview) {
-        String algorithm = isFCMSelected()
-                ? "Fuzzy C-Means (FCM) — 3 Clusters"
-                : "K-Means — 3 Clusters";
+        try {
+            PreviewDistributionController controller = DialogManager.getController("preview", PreviewDistributionController.class);
+            controller.initData(preview, getDistributionScopeText(), isFCMSelected(), dialogStage);
+            DialogManager.show("preview");
 
-        List<Integer> ids = preview.stream().map(BeneficiaryCluster::getBeneficiaryId).collect(Collectors.toList());
-        Map<Integer, String> nameMap = aidDAO.getBeneficiaryNames(ids);
-
-        Map<Integer, String>  clusterToPriority = buildClusterPriorityMap(preview);
-        Map<Integer, Double>  clusterSums   = new HashMap<>();
-        Map<Integer, Integer> clusterCounts = new HashMap<>();
-        for (BeneficiaryCluster b : preview) {
-            int c = b.getCluster();
-            clusterSums.put(c,   clusterSums.getOrDefault(c,   0.0) + b.getFinalScore());
-            clusterCounts.put(c, clusterCounts.getOrDefault(c, 0)   + 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Preview Error",
+                    "Could not open preview dialog:\n" + e.getMessage());
         }
-        Map<Integer, Double> clusterAvg = new HashMap<>();
-        for (Integer c : clusterSums.keySet()) clusterAvg.put(c, clusterSums.get(c) / clusterCounts.get(c));
-
-        List<Integer> sortedClusters = new ArrayList<>(clusterAvg.keySet());
-        sortedClusters.sort((a, b) -> Double.compare(clusterAvg.get(b), clusterAvg.get(a)));
-
-        Map<Integer, List<BeneficiaryCluster>> byCluster = new HashMap<>();
-        for (BeneficiaryCluster b : preview)
-            byCluster.computeIfAbsent(b.getCluster(), k -> new ArrayList<>()).add(b);
-
-        StringBuilder msg = new StringBuilder();
-        msg.append("Scope   : ").append(getDistributionScopeText()).append("\n");
-        msg.append("Method  : ").append(algorithm).append("\n");
-        msg.append("Total   : ").append(preview.size()).append(" beneficiaries\n\n");
-        msg.append("=== Clustering Result (3 Clusters) ===\n\n");
-
-        int overallRank = 1;
-        for (Integer clusterNum : sortedClusters) {
-            String priorityName = clusterToPriority.getOrDefault(clusterNum, "Low Priority");
-            List<BeneficiaryCluster> members = byCluster.getOrDefault(clusterNum, new ArrayList<>());
-            if (members.isEmpty()) continue;
-            members.sort((b1, b2) -> Double.compare(b2.getFinalScore(), b1.getFinalScore()));
-            msg.append(String.format(
-                    "--- %s  |  Cluster %d  |  %d beneficiaries  |  Avg Score: %.3f ---\n",
-                    priorityName, clusterNum, members.size(), clusterAvg.get(clusterNum)));
-            for (BeneficiaryCluster b : members) {
-                String name = nameMap.getOrDefault(b.getBeneficiaryId(), "Unknown");
-                msg.append(String.format("%3d.  %-30s  (ID: %-6d)  Score: %.3f\n",
-                        overallRank++, name, b.getBeneficiaryId(), b.getFinalScore()));
-            }
-            msg.append("\n");
-        }
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Clustering Preview");
-        alert.setHeaderText("Beneficiary Priority Clustering — " + algorithm);
-        TextArea ta = new TextArea(msg.toString());
-        ta.setEditable(false); ta.setWrapText(false);
-        ta.setMaxWidth(Double.MAX_VALUE); ta.setMaxHeight(Double.MAX_VALUE);
-        ta.setPrefRowCount(24); ta.setPrefColumnCount(70);
-        ta.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
-        alert.getDialogPane().setContent(ta);
-        alert.getDialogPane().setPrefWidth(750);
-        alert.showAndWait();
     }
 
     private void hideInlinePanel() {
@@ -643,10 +615,6 @@ public class AddAidController {
         }
     }
 
-    // =========================================================================
-    //  PRINT CUSTOM
-    // =========================================================================
-
     @FXML
     private void handlePrintCustom(ActionEvent event) {
         if (aidTypeComboBox.getValue() == null) {
@@ -664,139 +632,408 @@ public class AddAidController {
     private void showPrintCustomDialog(List<BeneficiaryCluster> preview) {
         Map<String, List<BeneficiaryCluster>> groups = groupBeneficiariesByPriority(preview);
 
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Print Custom");
-        dialog.setHeaderText("Choose priority levels and output format:");
+        // ── Stage setup ──────────────────────────────────────────────
+        Stage printStage = new Stage();
+        printStage.initModality(Modality.WINDOW_MODAL);
+        printStage.initOwner(dialogStage);
+        printStage.initStyle(StageStyle.UNDECORATED);
+        printStage.setTitle("Print Custom");
 
-        VBox content = new VBox(14);
-        content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        // ── Root card ────────────────────────────────────────────────
+        VBox card = new VBox(0);
+        card.setPrefWidth(500);
+        card.setStyle(
+                "-fx-background-color: #0b1220;" +
+                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+        );
 
-        Label priorityLbl = new Label("Priority Levels to Include:");
-        priorityLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        // ── HEADER ───────────────────────────────────────────────────
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(18, 22, 18, 22));
+        header.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.025);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 0 0 1 0;" +
+                        "-fx-background-radius: 10 10 0 0;"
+        );
 
-        CheckBox highCheck = new CheckBox("High Priority ("
-                + groups.getOrDefault("High Priority",     new ArrayList<>()).size() + " beneficiaries)");
-        CheckBox medCheck  = new CheckBox("Moderate Priority ("
-                + groups.getOrDefault("Moderate Priority", new ArrayList<>()).size() + " beneficiaries)");
-        CheckBox lowCheck  = new CheckBox("Low Priority ("
-                + groups.getOrDefault("Low Priority",      new ArrayList<>()).size() + " beneficiaries)");
+        FontAwesomeIconView printIcon = new FontAwesomeIconView(FontAwesomeIcon.PRINT);
+        printIcon.setSize("20");
+        printIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.95);");
 
-        highCheck.setSelected(!groups.getOrDefault("High Priority",     new ArrayList<>()).isEmpty());
-        medCheck.setSelected( !groups.getOrDefault("Moderate Priority", new ArrayList<>()).isEmpty());
-        lowCheck.setSelected( !groups.getOrDefault("Low Priority",      new ArrayList<>()).isEmpty());
-        if (groups.getOrDefault("High Priority",     new ArrayList<>()).isEmpty()) highCheck.setDisable(true);
-        if (groups.getOrDefault("Moderate Priority", new ArrayList<>()).isEmpty()) medCheck.setDisable(true);
-        if (groups.getOrDefault("Low Priority",      new ArrayList<>()).isEmpty()) lowCheck.setDisable(true);
+        VBox titleBlock = new VBox(3);
+        Label titleLabel = new Label("Print Custom");
+        titleLabel.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-font-weight: 900;"
+        );
+        Label subtitleLabel = new Label("Choose priority levels and output format");
+        subtitleLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 600;"
+        );
+        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
 
-        Separator sep1 = new Separator();
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
 
-        Label outputLbl = new Label("Output Format:");
-        outputLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        Button headerCloseBtn = new Button();
+        FontAwesomeIconView timesIcon = new FontAwesomeIconView(FontAwesomeIcon.TIMES);
+        timesIcon.setSize("13");
+        timesIcon.setGlyphStyle("-fx-fill: rgba(248,250,252,0.95);");
+        headerCloseBtn.setGraphic(timesIcon);
+        headerCloseBtn.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.03);" +
+                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 8 12 8 12;" +
+                        "-fx-cursor: hand;"
+        );
+
+        header.getChildren().addAll(printIcon, titleBlock, headerSpacer, headerCloseBtn);
+
+        // ── BODY ─────────────────────────────────────────────────────
+        VBox body = new VBox(20);
+        body.setPadding(new Insets(22, 22, 24, 22));
+        body.setStyle("-fx-background-color: transparent;");
+
+        // ── SECTION: Priority Levels ──────────────────────────────────
+        VBox prioritySection = buildSection(
+                FontAwesomeIcon.FLAG, "Priority Levels to Include",
+                "Select which groups to include in the output"
+        );
+
+        List<BeneficiaryCluster> highList = groups.getOrDefault("High Priority",     new ArrayList<>());
+        List<BeneficiaryCluster> medList  = groups.getOrDefault("Moderate Priority", new ArrayList<>());
+        List<BeneficiaryCluster> lowList  = groups.getOrDefault("Low Priority",      new ArrayList<>());
+
+        CheckBox highCheck = buildCheckBox(
+                "HIGH PRIORITY",  highList.size(), "rgba(41,128,185,0.90)",  "rgba(41,128,185,0.25)",  "rgba(41,128,185,0.50)",  highList.isEmpty());
+        CheckBox medCheck  = buildCheckBox(
+                "MODERATE PRIORITY", medList.size(), "rgba(243,156,18,0.90)", "rgba(243,156,18,0.22)",  "rgba(243,156,18,0.48)",  medList.isEmpty());
+        CheckBox lowCheck  = buildCheckBox(
+                "LOW PRIORITY",  lowList.size(),  "rgba(149,165,166,0.90)", "rgba(149,165,166,0.18)", "rgba(149,165,166,0.40)", lowList.isEmpty());
+
+        highCheck.setSelected(!highList.isEmpty());
+        medCheck.setSelected(!medList.isEmpty());
+        lowCheck.setSelected(!lowList.isEmpty());
+
+        VBox checksBox = new VBox(8);
+        checksBox.getChildren().addAll(highCheck, medCheck, lowCheck);
+        prioritySection.getChildren().add(checksBox);
+
+        // ── SECTION: Output Format ────────────────────────────────────
+        VBox outputSection = buildSection(
+                FontAwesomeIcon.SHARE_SQUARE_ALT, "Output Format",
+                "Choose how to export the beneficiary list"
+        );
 
         ToggleGroup outputGroup  = new ToggleGroup();
-        RadioButton pdfRadio     = new RadioButton("Save as PDF");
-        RadioButton printerRadio = new RadioButton("Send to Printer");
-        pdfRadio.setToggleGroup(outputGroup);
-        printerRadio.setToggleGroup(outputGroup);
+        RadioButton pdfRadio     = buildRadioCard("Save as PDF",      FontAwesomeIcon.FILE_PDF_ALT,   outputGroup);
+        RadioButton printerRadio = buildRadioCard("Send to Printer",  FontAwesomeIcon.PRINT,          outputGroup);
         pdfRadio.setSelected(true);
+
+        HBox radioRow = new HBox(10);
+        radioRow.getChildren().addAll(pdfRadio, printerRadio);
+        outputSection.getChildren().add(radioRow);
+
+        // ── SECTION: Printer selection (hidden by default) ────────────
+        VBox printerSection = new VBox(10);
+        printerSection.setVisible(false);
+        printerSection.setManaged(false);
+
+        VBox printerCard = buildSection(
+                FontAwesomeIcon.DESKTOP, "Select Printer",
+                "Only connected printers are shown"
+        );
 
         ObservableList<PrinterEntry> allEntries    = buildPrinterEntries();
         ObservableList<PrinterEntry> activeEntries = FXCollections.observableArrayList(
                 allEntries.filtered(PrinterEntry::isActive));
 
         ComboBox<PrinterEntry> printerComboBox = new ComboBox<>(activeEntries);
-        printerComboBox.setPrefWidth(440);
         printerComboBox.setMaxWidth(Double.MAX_VALUE);
+        printerComboBox.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.04);" +
+                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 4 10 4 10;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 700;"
+        );
 
         Callback<ListView<PrinterEntry>, ListCell<PrinterEntry>> nameOnlyFactory =
                 lv -> new ListCell<>() {
                     @Override
                     protected void updateItem(PrinterEntry item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (empty || item == null) {
-                            setText(null); setGraphic(null);
-                        } else {
+                        if (empty || item == null) { setText(null); setGraphic(null); }
+                        else {
                             setText(item.getPrinterName());
-                            setStyle("-fx-font-size: 12px; -fx-text-fill: #2c3e50;");
-                            setGraphic(null);
+                            setStyle(
+                                    "-fx-font-size: 13px;" +
+                                            "-fx-font-weight: 700;" +
+                                            "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                            "-fx-background-color: transparent;" +
+                                            "-fx-padding: 10 12 10 12;"
+                            );
                         }
                     }
                 };
-
         printerComboBox.setCellFactory(nameOnlyFactory);
         printerComboBox.setButtonCell(nameOnlyFactory.call(null));
 
         activeEntries.stream()
-                .filter(PrinterEntry::isDefault)
-                .findFirst()
+                .filter(PrinterEntry::isDefault).findFirst()
                 .or(() -> activeEntries.isEmpty() ? Optional.empty() : Optional.of(activeEntries.get(0)))
                 .ifPresent(printerComboBox::setValue);
 
-        Separator sep2 = new Separator();
-        Label printerLbl = new Label("Select Printer:");
-        printerLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        printerCard.getChildren().add(printerComboBox);
+        printerSection.getChildren().add(printerCard);
 
-        VBox printerSection = new VBox(7);
-        printerSection.getChildren().addAll(sep2, printerLbl, printerComboBox);
-        printerSection.setVisible(false);
-        printerSection.setManaged(false);
-
+        // Show/hide printer section when toggle changes
         outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == printerRadio) {
                 if (activeEntries.isEmpty()) {
                     pdfRadio.setSelected(true);
-                    Alert notConnected = new Alert(Alert.AlertType.ERROR);
-                    notConnected.setTitle("Printer Not Connected");
-                    notConnected.setHeaderText("Not Connected in printer");
-                    notConnected.setContentText(
+                    AlertDialogManager.showError(
+                            "No Printer Connected",
                             "No connected printer was detected on this system.\n\nPlease connect a printer and try again.");
-                    notConnected.showAndWait();
                 } else {
                     printerSection.setVisible(true);
                     printerSection.setManaged(true);
-                    dialog.getDialogPane().getScene().getWindow().sizeToScene();
+                    printStage.sizeToScene();
                 }
             } else {
                 printerSection.setVisible(false);
                 printerSection.setManaged(false);
-                dialog.getDialogPane().getScene().getWindow().sizeToScene();
+                printStage.sizeToScene();
             }
         });
 
-        content.getChildren().addAll(
-                priorityLbl, highCheck, medCheck, lowCheck,
-                sep1, outputLbl, pdfRadio, printerRadio, printerSection);
+        body.getChildren().addAll(prioritySection, outputSection, printerSection);
 
-        dialog.getDialogPane().setContent(content);
+        // ── FOOTER ───────────────────────────────────────────────────
+        HBox footer = new HBox(10);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(16, 22, 18, 22));
+        footer.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.02);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 1 0 0 0;" +
+                        "-fx-background-radius: 0 0 10 10;"
+        );
 
-        ButtonType generateBtn = new ButtonType("Generate", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(generateBtn, ButtonType.CANCEL);
+        Button cancelBtn  = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false);
+        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true);
 
-        dialog.showAndWait().ifPresent(result -> {
-            if (result == generateBtn) {
-                List<BeneficiaryCluster> selected = new ArrayList<>();
-                if (highCheck.isSelected()) selected.addAll(groups.getOrDefault("High Priority",     new ArrayList<>()));
-                if (medCheck.isSelected())  selected.addAll(groups.getOrDefault("Moderate Priority", new ArrayList<>()));
-                if (lowCheck.isSelected())  selected.addAll(groups.getOrDefault("Low Priority",      new ArrayList<>()));
+        footer.getChildren().addAll(cancelBtn, generateBtn);
+        card.getChildren().addAll(header, body, footer);
 
-                if (selected.isEmpty()) {
-                    AlertDialogManager.showWarning("No Selection", "Please select at least one priority level.");
+        // ── Wire close actions ────────────────────────────────────────
+        headerCloseBtn.setOnAction(e -> printStage.close());
+        cancelBtn.setOnAction(e -> printStage.close());
+
+        generateBtn.setOnAction(e -> {
+            List<BeneficiaryCluster> selected = new ArrayList<>();
+            if (highCheck.isSelected()) selected.addAll(highList);
+            if (medCheck.isSelected())  selected.addAll(medList);
+            if (lowCheck.isSelected())  selected.addAll(lowList);
+
+            if (selected.isEmpty()) {
+                AlertDialogManager.showWarning("No Selection",
+                        "Please select at least one priority level.");
+                return;
+            }
+
+            printStage.close();
+
+            if (pdfRadio.isSelected()) {
+                generateAndSavePDF(selected);
+            } else {
+                PrinterEntry chosenEntry = printerComboBox.getValue();
+                if (chosenEntry == null) {
+                    AlertDialogManager.showWarning("No Printer Selected",
+                            "Please select a printer from the list.");
                     return;
                 }
-
-                if (pdfRadio.isSelected()) {
-                    generateAndSavePDF(selected);
-                } else {
-                    PrinterEntry chosenEntry = printerComboBox.getValue();
-                    if (chosenEntry == null) {
-                        AlertDialogManager.showWarning("No Printer Selected", "Please select a printer from the list.");
-                        return;
-                    }
-                    printBeneficiaryList(selected, chosenEntry.getPrinter());
-                }
+                printBeneficiaryList(selected, chosenEntry.getPrinter());
             }
         });
+
+        Scene scene = new Scene(card);
+        scene.setFill(null);
+        printStage.setScene(scene);
+
+        // Center on owner
+        if (dialogStage != null) {
+            printStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 500) / 2);
+            printStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 500) / 2);
+        }
+
+        printStage.show();
+    }
+
+// ── Builder helpers ───────────────────────────────────────────────
+
+    /** Dark card section with an icon, title and subtitle. Returns the VBox so
+     *  callers can append their own controls into it. */
+    private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle) {
+        VBox section = new VBox(12);
+        section.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.025);" +
+                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 7;" +
+                        "-fx-border-radius: 7;" +
+                        "-fx-padding: 16 16 16 16;"
+        );
+
+        HBox sectionHdr = new HBox(10);
+        sectionHdr.setAlignment(Pos.CENTER_LEFT);
+        sectionHdr.setStyle(
+                "-fx-border-color: rgba(148,163,184,0.10);" +
+                        "-fx-border-width: 0 0 1 0;" +
+                        "-fx-padding: 0 0 10 0;"
+        );
+
+        FontAwesomeIconView ico = new FontAwesomeIconView(icon);
+        ico.setSize("14");
+        ico.setGlyphStyle("-fx-fill: rgba(249,115,22,0.90);");
+
+        VBox lblBlock = new VBox(2);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                        "-fx-font-size: 13.5px;" +
+                        "-fx-font-weight: 900;"
+        );
+        Label subLbl = new Label(subtitle);
+        subLbl.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.75);" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-font-weight: 600;"
+        );
+        lblBlock.getChildren().addAll(titleLbl, subLbl);
+        sectionHdr.getChildren().addAll(ico, lblBlock);
+        section.getChildren().add(sectionHdr);
+        return section;
+    }
+
+    /** Styled checkbox with a coloured left-border badge feel. */
+    private CheckBox buildCheckBox(String label, int count,
+                                   String textColor, String bgColor,
+                                   String borderColor, boolean disabled) {
+        CheckBox cb = new CheckBox(label + "  (" + count + " beneficiari" + (count == 1 ? "y" : "ies") + ")");
+        cb.setDisable(disabled);
+        cb.setStyle(
+                "-fx-text-fill: " + (disabled ? "rgba(148,163,184,0.40)" : textColor) + ";" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 800;" +
+                        "-fx-background-color: " + (disabled ? "rgba(255,255,255,0.01)" : bgColor) + ";" +
+                        "-fx-border-color: " + (disabled ? "rgba(148,163,184,0.12)" : borderColor) + ";" +
+                        "-fx-border-width: 0 0 0 3;" +
+                        "-fx-background-radius: 0 5 5 0;" +
+                        "-fx-border-radius: 0 5 5 0;" +
+                        "-fx-padding: 10 14 10 14;" +
+                        "-fx-max-width: 99999;" +
+                        "-fx-pref-width: 99999;"
+        );
+        return cb;
+    }
+
+    /** Styled radio button rendered as a selectable card tile. */
+    private RadioButton buildRadioCard(String label, FontAwesomeIcon icon, ToggleGroup group) {
+        FontAwesomeIconView ico = new FontAwesomeIconView(icon);
+        ico.setSize("14");
+        ico.setGlyphStyle("-fx-fill: rgba(226,232,240,0.85);");
+
+        RadioButton rb = new RadioButton(label);
+        rb.setToggleGroup(group);
+        rb.setGraphic(ico);
+        rb.setContentDisplay(ContentDisplay.LEFT);
+        rb.setStyle(
+                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 700;" +
+                        "-fx-background-color: rgba(255,255,255,0.04);" +
+                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 10 20 10 14;" +
+                        "-fx-cursor: hand;"
+        );
+        rb.selectedProperty().addListener((obs, wasSelected, isSelected) ->
+                rb.setStyle(
+                        "-fx-text-fill: rgba(248,250,252,0.98);" +
+                                "-fx-font-size: 13px;" +
+                                "-fx-font-weight: 800;" +
+                                "-fx-background-color: " + (isSelected ? "rgba(249,115,22,0.14)" : "rgba(255,255,255,0.04)") + ";" +
+                                "-fx-border-color: " + (isSelected ? "rgba(249,115,22,0.65)" : "rgba(148,163,184,0.20)") + ";" +
+                                "-fx-border-width: 1;" +
+                                "-fx-background-radius: 6;" +
+                                "-fx-border-radius: 6;" +
+                                "-fx-padding: 10 20 10 14;" +
+                                "-fx-cursor: hand;"
+                )
+        );
+        HBox.setHgrow(rb, Priority.ALWAYS);
+        rb.setMaxWidth(Double.MAX_VALUE);
+        return rb;
+    }
+
+    /** Primary or secondary footer button. */
+    private Button buildFooterButton(String text, FontAwesomeIcon icon, boolean primary) {
+        FontAwesomeIconView ico = new FontAwesomeIconView(icon);
+        ico.setSize("14");
+        ico.setGlyphStyle(primary
+                ? "-fx-fill: rgba(255,255,255,0.98);"
+                : "-fx-fill: rgba(226,232,240,0.96);");
+
+        Button btn = new Button(text, ico);
+        btn.setContentDisplay(ContentDisplay.LEFT);
+        btn.setGraphicTextGap(8);
+        btn.setAlignment(Pos.CENTER);
+        btn.setMinWidth(126);
+        btn.setMinHeight(40);
+        btn.setStyle(primary
+                ? "-fx-background-color: rgba(249,115,22,0.92);" +
+                "-fx-border-color: rgba(249,115,22,0.40);" +
+                "-fx-border-width: 1;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-radius: 6;" +
+                "-fx-padding: 10 22 10 22;" +
+                "-fx-text-fill: rgba(255,255,255,0.98);" +
+                "-fx-font-size: 13.5px;" +
+                "-fx-font-weight: 900;" +
+                "-fx-cursor: hand;" +
+                "-fx-min-height: 40;" +
+                "-fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 10, 0, 0, 3);"
+                : "-fx-background-color: rgba(255,255,255,0.10);" +
+                "-fx-border-color: rgba(148,163,184,0.38);" +
+                "-fx-border-width: 1;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-radius: 6;" +
+                "-fx-padding: 10 22 10 22;" +
+                "-fx-text-fill: rgba(226,232,240,0.96);" +
+                "-fx-font-size: 13.5px;" +
+                "-fx-font-weight: 800;" +
+                "-fx-cursor: hand;" +
+                "-fx-min-height: 40;"
+        );
+        return btn;
     }
 
     private static class PrinterEntry {
@@ -1311,17 +1548,15 @@ public class AddAidController {
     }
 
     // =========================================================================
-    //  CHANGED: updateSelectionSummary — delegates to updateSelectionSummaryWithCount
-    //           using -2 when not ready, -1 when loading
+    //  updateSelectionSummary — delegates to updateSelectionSummaryWithCount
     // =========================================================================
     private void updateSelectionSummary() {
         boolean ready = isPreviewSelectionReady();
         updateSelectionSummaryWithCount(ready ? -1 : -2);
     }
-    // =========================================================================
 
     // =========================================================================
-    //  CHANGED: updateSelectionSummaryWithCount
+    //  updateSelectionSummaryWithCount
     //    -2  = hide the summary box entirely (selection not ready)
     //    -1  = show spinner (loading)
     //    >=0 = show real count (done)
@@ -1331,7 +1566,6 @@ public class AddAidController {
         boolean               isGen   = generalAidCheckbox != null && generalAidCheckbox.isSelected();
         DisasterModelComboBox disaster = disasterComboBox.getValue();
 
-        // ─── CHANGED: -2 or missing selection → hide box ─────────────────────
         if (eligibleCount == -2 || aidType == null || (!isGen && disaster == null)) {
             selectionSummaryBox.setVisible(false);
             selectionSummaryBox.setManaged(false);
@@ -1339,7 +1573,6 @@ public class AddAidController {
             infoLabel.setText("Select aid type and choose disaster or general aid option");
             return;
         }
-        // ─────────────────────────────────────────────────────────────────────
 
         selectionSummaryBox.setVisible(true);
         selectionSummaryBox.setManaged(true);
@@ -1349,19 +1582,15 @@ public class AddAidController {
                 : "Disaster: " + disaster.getDisasterName();
 
         if (eligibleCount < 0) {
-            // ─── CHANGED: loading state — show spinner next to label ──────────
             selectionSummaryLabel.setText(String.format(
                     "Aid Type: %s | %s%s | Eligible: ",
                     aidType.getAidName(), disasterInfo, barangayInfo));
             showSummarySpinner();
-            // ─────────────────────────────────────────────────────────────────
         } else {
-            // ─── CHANGED: done — remove spinner, display real count ───────────
             removeSummarySpinner();
             selectionSummaryLabel.setText(String.format(
                     "Aid Type: %s | %s%s | Eligible: %d",
                     aidType.getAidName(), disasterInfo, barangayInfo, eligibleCount));
-            // ─────────────────────────────────────────────────────────────────
         }
 
         infoLabel.setText(String.format("Distributing %s%s%s",
@@ -1369,9 +1598,7 @@ public class AddAidController {
                 isGen ? " (General Aid)" : " for " + disaster.getDisasterName() + " disaster",
                 barangayInfo));
     }
-    // =========================================================================
 
-    // ─── CHANGED: showSummarySpinner — creates and adds ProgressIndicator ────
     private void showSummarySpinner() {
         if (summaryProgressIndicator == null) {
             summaryProgressIndicator = new ProgressIndicator();
@@ -1382,18 +1609,15 @@ public class AddAidController {
         }
         if (!selectionSummaryBox.getChildren().contains(summaryProgressIndicator)) {
             selectionSummaryBox.getChildren().add(summaryProgressIndicator);
-            selectionSummaryBox.layout(); // force immediate layout pass
+            selectionSummaryBox.layout();
         }
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
-    // ─── CHANGED: removeSummarySpinner — removes ProgressIndicator safely ────
     private void removeSummarySpinner() {
         if (summaryProgressIndicator != null) {
             selectionSummaryBox.getChildren().remove(summaryProgressIndicator);
         }
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
     private String getBarangayInfoText() {
         if (!useBarangayFilterCheckbox.isSelected()) return "";
@@ -1463,7 +1687,6 @@ public class AddAidController {
         return true;
     }
 
-    // ─── CHANGED: loadBarangays — wraps setItems/selectFirst with suppressBarangayListener ─
     private void loadBarangays() {
         int aidTypeId = aidTypeComboBox.getValue() != null
                 ? aidTypeComboBox.getValue().getAidTypeId() : 0;
@@ -1479,7 +1702,6 @@ public class AddAidController {
         if (!barangays.isEmpty()) barangayComboBox.getSelectionModel().selectFirst();
         suppressBarangayListener = false;
     }
-    // ──────────────────────────────────────────────────────────────────────────
 
     private int getSelectedDisasterId() {
         if (generalAidCheckbox != null && generalAidCheckbox.isSelected()) return 0;
@@ -1625,38 +1847,46 @@ public class AddAidController {
         return true;
     }
 
+    // =========================================================================
+    //  CHANGED: showConfirmationDialog — uses AlertDialogManager.showConfirmationWithContent
+    // =========================================================================
     private boolean showConfirmationDialog() {
         int    qty  = Integer.parseInt(quantityFld.getText().trim());
         double cost = Double.parseDouble(costFld.getText().trim());
-        Alert  alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm Distribution");
-        alert.setHeaderText("Distribute Aid to Beneficiaries");
-        alert.setContentText(String.format(
-                "Aid      : %s\nAid Type : %s\nScope    : %s\n"
-                        + "Quantity : %s units\nUnit Cost: ₱%s\nTotal    : ₱%.2f\n"
-                        + "Provider : %s\nMethod   : %s (3 Clusters)",
-                nameFld.getText().trim(),
-                aidTypeComboBox.getValue().getAidName(),
-                getDistributionScopeText(),
-                quantityFld.getText().trim(), costFld.getText().trim(), qty * cost,
-                providerFld.getText().trim(),
-                isFCMSelected() ? "Fuzzy C-Means (FCM)" : "K-Means"));
-        return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
+        return AlertDialogManager.showConfirmationWithContent(
+                "Confirm Distribution",
+                "Distribute Aid to Beneficiaries",
+                String.format(
+                        "Aid      : %s\nAid Type : %s\nScope    : %s\n"
+                                + "Quantity : %s units\nUnit Cost: ₱%s\nTotal    : ₱%.2f\n"
+                                + "Provider : %s\nMethod   : %s (3 Clusters)",
+                        nameFld.getText().trim(),
+                        aidTypeComboBox.getValue().getAidName(),
+                        getDistributionScopeText(),
+                        quantityFld.getText().trim(), costFld.getText().trim(), qty * cost,
+                        providerFld.getText().trim(),
+                        isFCMSelected() ? "Fuzzy C-Means (FCM)" : "K-Means"),
+                ButtonType.OK,
+                ButtonType.CANCEL);
     }
+    // =========================================================================
 
+    // =========================================================================
+    //  CHANGED: showSuccessDialog — uses AlertDialogManager.showSuccessWithContent
+    // =========================================================================
     private void showSuccessDialog(String aidName, int count, int qtyPerBeneficiary, double costPerUnit) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Distribution Successful");
-        alert.setHeaderText("✓ Aid Distribution Complete");
-        alert.setContentText(String.format(
-                "Aid Type             : %s\nScope                : %s\n"
-                        + "Beneficiaries Served : %d\nTotal Quantity       : %d units\n"
-                        + "Total Cost           : ₱%.2f\nMethod               : %s",
-                aidName, getDistributionScopeText(), count, count * qtyPerBeneficiary,
-                (double) count * qtyPerBeneficiary * costPerUnit,
-                isFCMSelected() ? "Fuzzy C-Means (FCM) (3 Clusters)" : "K-Means (3 Clusters)"));
-        alert.showAndWait();
+        AlertDialogManager.showSuccessWithContent(
+                "Distribution Successful",
+                "Aid Distribution Complete",
+                String.format(
+                        "Aid Type             : %s\nScope                : %s\n"
+                                + "Beneficiaries Served : %d\nTotal Quantity       : %d units\n"
+                                + "Total Cost           : ₱%.2f\nMethod               : %s",
+                        aidName, getDistributionScopeText(), count, count * qtyPerBeneficiary,
+                        (double) count * qtyPerBeneficiary * costPerUnit,
+                        isFCMSelected() ? "Fuzzy C-Means (FCM) (3 Clusters)" : "K-Means (3 Clusters)"));
     }
+    // =========================================================================
 
     private void showNoDistributionWarning() {
         AlertDialogManager.showWarning("No Distribution",
@@ -1689,17 +1919,17 @@ public class AddAidController {
         }
     }
 
+    // =========================================================================
+    //  CHANGED: showBrowserUnavailableWarning — uses AlertDialogManager.showExpandableInfo
+    // =========================================================================
     private void showBrowserUnavailableWarning(String url) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Browser Unavailable");
-        alert.setHeaderText("Cannot Open Browser Automatically");
-        alert.setContentText("Please copy and paste this URL into your browser:\n\n" + url);
-        TextArea ta = new TextArea(url);
-        ta.setEditable(false); ta.setWrapText(true); ta.setPrefRowCount(2);
-        alert.getDialogPane().setExpandableContent(ta);
-        alert.getDialogPane().setExpanded(true);
-        alert.showAndWait();
+        AlertDialogManager.showExpandableInfo(
+                "Browser Unavailable",
+                "Cannot Open Browser Automatically",
+                "Please copy and paste this URL into your browser:",
+                url);
     }
+    // =========================================================================
 
     @FXML private void handleClose(ActionEvent event) { closeDialog(); }
 
@@ -1717,9 +1947,7 @@ public class AddAidController {
         if (fcmInfoBox    != null) { fcmInfoBox.setVisible(false);    fcmInfoBox.setManaged(false);    }
         lastPreviewResult = new ArrayList<>();
         previewLoading    = false;
-        // ─── CHANGED: stop debounce on clear so no leftover task fires ────────
         if (clusterDebounce != null) clusterDebounce.stop();
-        // ─────────────────────────────────────────────────────────────────────
         hideInlinePanel();
         updatePreviewButtonState();
         updateSelectionSummary();
@@ -1795,27 +2023,129 @@ public class AddAidController {
         progressStage.initStyle(StageStyle.UNDECORATED);
         progressStage.setAlwaysOnTop(true);
 
-        VBox vbox = new VBox(15);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;");
+        // ── Outer wrapper (dark card) ────────────────────────────────
+        VBox card = new VBox(0);
+        card.setPrefWidth(420);
+        card.setStyle(
+                "-fx-background-color: #0b1220;" +
+                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+        );
 
+        // ── Header ───────────────────────────────────────────────────
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(18, 22, 18, 22));
+        header.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.025);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 0 0 1 0;" +
+                        "-fx-background-radius: 10 10 0 0;"
+        );
+
+        // Spinner icon (ProgressIndicator used as a spinner)
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(22, 22);
+        spinner.setMaxSize(22, 22);
+        spinner.setMinSize(22, 22);
+        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
+
+        VBox titleBlock = new VBox(3);
         Label titleLabel = new Label("Please Wait");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        titleLabel.setStyle("-fx-text-fill: #2c3e50;");
+        titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
+        titleLabel.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-weight: 900;"
+        );
+        Label subtitleLabel = new Label("Processing your request…");
+        subtitleLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 600;"
+        );
+        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
+        header.getChildren().addAll(spinner, titleBlock);
 
+        // ── Body ─────────────────────────────────────────────────────
+        VBox body = new VBox(14);
+        body.setPadding(new Insets(22, 22, 24, 22));
+        body.setAlignment(Pos.CENTER_LEFT);
+        body.setStyle("-fx-background-color: transparent;");
+
+        // Status message label
         progressLabel = new Label(initialMessage);
-        progressLabel.setFont(Font.font("Arial", 12));
-        progressLabel.setStyle("-fx-text-fill: #555;");
+        progressLabel.setWrapText(true);
+        progressLabel.setMaxWidth(Double.MAX_VALUE);
+        progressLabel.setStyle(
+                "-fx-text-fill: rgba(226,232,240,0.85);" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 600;"
+        );
+
+        // Progress bar track wrapper
+        VBox barWrapper = new VBox(0);
+        barWrapper.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.06);" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 0;"
+        );
 
         progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(300);
-        progressBar.setPrefHeight(20);
+        progressBar.setPrefWidth(Double.MAX_VALUE);
+        progressBar.setPrefHeight(10);
+        progressBar.setMaxWidth(Double.MAX_VALUE);
+        progressBar.setStyle(
+                "-fx-accent: rgba(249,115,22,0.95);" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;"
+        );
+        barWrapper.getChildren().add(progressBar);
 
-        vbox.getChildren().addAll(titleLabel, progressLabel, progressBar);
+        // Percentage label (right-aligned)
+        Label pctLabel = new Label("0%");
+        pctLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-font-weight: 700;"
+        );
+        HBox pctRow = new HBox();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        pctRow.getChildren().addAll(spacer, pctLabel);
 
-        Scene scene = new Scene(vbox);
+        // Update pct label when progress changes
+        progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
+            double pct = newVal.doubleValue();
+            if (pct < 0) {
+                pctLabel.setText("…");
+            } else {
+                pctLabel.setText(String.format("%.0f%%", pct * 100));
+            }
+        });
+
+        body.getChildren().addAll(progressLabel, barWrapper, pctRow);
+
+        card.getChildren().addAll(header, body);
+
+        Scene scene = new Scene(card);
+        scene.setFill(null); // transparent scene background
         progressStage.setScene(scene);
+
+        // Center on owner if available
+        if (dialogStage != null) {
+            progressStage.initOwner(dialogStage);
+            progressStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 420) / 2);
+            progressStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 160) / 2);
+        }
+
         progressStage.show();
     }
 

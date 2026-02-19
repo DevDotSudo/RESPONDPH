@@ -6,15 +6,12 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Implementation of CustomEvacMessageDAO for database operations
- */
 public class CustomEvacMessageDAOImpl implements CustomEvacMessageDAO {
 
     private static final Logger LOGGER = Logger.getLogger(CustomEvacMessageDAOImpl.class.getName());
 
     private static final String DEFAULT_MESSAGE =
-            "Dear {name}, you have been assigned to {evacSite} evacuation center. Please proceed immediately for your safety.";
+            "{name}, gin-assign ka sa {evacSite} nga evacuation center. Palihog magpadulong dayon didto para sa imo kasiguraduhan. Upda imo pamilya.";
 
     @Override
     public boolean saveCustomMessage(String messageTemplate) {

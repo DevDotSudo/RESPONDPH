@@ -5,7 +5,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="824.0" prefWidth="321.0" styleClass="dashboard-root" stylesheets="@/styles/main/mainframe.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.main.MainFrameController">
+<BorderPane prefHeight="824.0" prefWidth="321.0" styleClass="dashboard-root"
+            stylesheets="@/styles/main/mainframe.css"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ionres.respondph.main.MainFrameController">
 
     <left>
         <VBox styleClass="sidebar">
@@ -19,7 +23,8 @@
                 <Label styleClass="brand-subtitle" text="Disaster Response System" />
             </VBox>
 
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="nav-scroll-pane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="nav-scroll-pane"
+                        vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
                 <VBox styleClass="nav-menu">
 
                     <Button fx:id="dashboardBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button">
@@ -41,7 +46,6 @@
                                 </HBox>
                             </graphic>
                         </Button>
-
                         <VBox fx:id="managementSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="manageAdminBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
@@ -51,7 +55,6 @@
                                     </HBox>
                                 </graphic>
                             </Button>
-
                             <Button fx:id="manageBeneficiariesBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
@@ -60,7 +63,6 @@
                                     </HBox>
                                 </graphic>
                             </Button>
-
                             <Button fx:id="familyMembersBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
@@ -82,7 +84,6 @@
                                 </HBox>
                             </graphic>
                         </Button>
-
                         <VBox fx:id="disasterSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="disasterBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
@@ -92,7 +93,6 @@
                                     </HBox>
                                 </graphic>
                             </Button>
-
                             <Button fx:id="disasterMappingBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
@@ -101,7 +101,6 @@
                                     </HBox>
                                 </graphic>
                             </Button>
-
                             <Button fx:id="disasterDamageBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
@@ -123,7 +122,6 @@
                                 </HBox>
                             </graphic>
                         </Button>
-
                         <VBox fx:id="aidsSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="aidBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
@@ -133,7 +131,6 @@
                                     </HBox>
                                 </graphic>
                             </Button>
-
                             <Button fx:id="aidTypeBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
@@ -155,7 +152,6 @@
                                 </HBox>
                             </graphic>
                         </Button>
-
                         <VBox fx:id="evacSectionContent" managed="false" styleClass="tree-section-content" visible="false">
                             <Button fx:id="evacBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
@@ -165,7 +161,6 @@
                                     </HBox>
                                 </graphic>
                             </Button>
-
                             <Button fx:id="evacPlanBtn" maxWidth="1.7976931348623157E308" styleClass="nav-button-child">
                                 <graphic>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
@@ -218,38 +213,89 @@
         <StackPane fx:id="contentShell" styleClass="content-shell">
             <VBox fx:id="contentArea" styleClass="content-area" />
 
-            <VBox fx:id="smsProgressToast" fillWidth="true" managed="false" maxHeight="-1" maxWidth="-1" spacing="0" styleClass="sms-toast" visible="true" StackPane.alignment="BOTTOM_RIGHT">
+            <VBox spacing="8"
+                  fillWidth="false"
+                  alignment="BOTTOM_RIGHT"
+                  pickOnBounds="false"
+                  mouseTransparent="false"
+                  StackPane.alignment="BOTTOM_RIGHT">
 
-                <!-- HEADER -->
-                <HBox fx:id="smsToastHeader" alignment="CENTER_LEFT" maxWidth="-1" spacing="8" styleClass="sms-toast-header">
+                <!-- SMS PROGRESS TOAST -->
+                <VBox fx:id="smsProgressToast"
+                      fillWidth="true" managed="false" visible="false"
+                      pickOnBounds="false"
+                      maxHeight="-1" maxWidth="-1"
+                      spacing="0" styleClass="sms-toast">
 
-                    <Label fx:id="smsProgressTitle" maxWidth="1.7976931348623157E308" styleClass="sms-toast-title" text="Sending SMS (API)" HBox.hgrow="ALWAYS" />
-
-                    <HBox alignment="CENTER_RIGHT" spacing="6">
-                        <Button fx:id="smsMinimizeBtn" styleClass="sms-icon-btn" text="–" />
-                        <Button fx:id="smsCloseBtn" styleClass="sms-icon-btn" text="✕" />
+                    <HBox alignment="CENTER_LEFT" maxWidth="-1" spacing="8" styleClass="sms-toast-header">
+                        <Label fx:id="smsProgressTitle" maxWidth="1.7976931348623157E308"
+                               styleClass="sms-toast-title" text="Sending SMS"
+                               HBox.hgrow="ALWAYS" />
+                        <HBox alignment="CENTER_RIGHT" spacing="6">
+                            <Button fx:id="smsMinimizeBtn" styleClass="sms-icon-btn" text="–" />
+                            <Button fx:id="smsCloseBtn"    styleClass="sms-icon-btn" text="✕" />
+                        </HBox>
                     </HBox>
-                </HBox>
 
-                <!-- BODY -->
-                <VBox fx:id="smsToastBody" fillWidth="true" maxHeight="-1" maxWidth="-1" spacing="6" styleClass="sms-toast-body">
+                    <VBox fx:id="smsToastBody" fillWidth="true" maxHeight="-1" maxWidth="-1"
+                          spacing="6" styleClass="sms-toast-body">
+                        <Label fx:id="smsProgressMessage" maxWidth="1.7976931348623157E308"
+                               styleClass="sms-toast-subtitle" text="Sending 0 of 0" wrapText="true" />
+                        <ProgressBar fx:id="smsProgressBar" maxWidth="1.7976931348623157E308"
+                                     styleClass="sms-toast-progress" />
+                    </VBox>
 
-                    <Label fx:id="smsProgressMessage" maxWidth="1.7976931348623157E308" styleClass="sms-toast-subtitle" text="Sending 1 of 200" wrapText="true" />
+                </VBox>
 
-                    <ProgressBar fx:id="smsProgressBar" maxWidth="1.7976931348623157E308" styleClass="sms-toast-progress" />
+                <VBox fx:id="newsProgressToast"
+                      fillWidth="true" managed="false" visible="false"
+                      pickOnBounds="false"
+                      maxHeight="-1" maxWidth="-1"
+                      spacing="0" styleClass="sms-toast">
+
+                    <HBox alignment="CENTER_LEFT" maxWidth="-1" spacing="8" styleClass="sms-toast-header">
+                        <Label fx:id="newsProgressTitle" maxWidth="1.7976931348623157E308"
+                               styleClass="sms-toast-title" text="AI News Generator"
+                               HBox.hgrow="ALWAYS" />
+                        <HBox alignment="CENTER_RIGHT" spacing="6">
+                            <Button fx:id="newsMinimizeBtn" styleClass="sms-icon-btn" text="–" />
+                            <Button fx:id="newsCloseBtn"    styleClass="sms-icon-btn" text="✕" />
+                        </HBox>
+                    </HBox>
+
+                    <VBox fx:id="newsToastBody" fillWidth="true" maxHeight="-1" maxWidth="-1"
+                          spacing="6" styleClass="sms-toast-body">
+                        <ProgressBar fx:id="newsProgressBar" maxWidth="1.7976931348623157E308"
+                                     styleClass="sms-toast-progress" />
+                    </VBox>
+
                 </VBox>
 
             </VBox>
-
         </StackPane>
     </center>
 
     <bottom>
-        <HBox fx:id="footerBar" alignment="CENTER_RIGHT" managed="false" spacing="10" styleClass="main-footer" visible="false">
+        <HBox fx:id="footerBar" alignment="CENTER_RIGHT" managed="false"
+              styleClass="main-footer" visible="false">
 
-            <Label fx:id="footerStatusLabel" styleClass="footer-text" text="SMS sending in background..." />
+            <Region HBox.hgrow="ALWAYS" />
 
-            <Button fx:id="btnShowProgress" styleClass="footer-link-button" text="Show progress" />
+            <HBox fx:id="smsFooterPill" alignment="CENTER_LEFT" managed="false"
+                  spacing="8" styleClass="footer-pill" visible="false">
+                <Label fx:id="footerSmsLabel" styleClass="footer-text" text="📨 Sending…" />
+                <Button fx:id="btnShowSmsProgress" styleClass="footer-link-button" text="Show" />
+            </HBox>
+
+            <Label fx:id="footerDivider" managed="false" styleClass="footer-divider"
+                   text=" · " visible="false" />
+
+            <HBox fx:id="newsFooterPill" alignment="CENTER_LEFT" managed="false"
+                  spacing="8" styleClass="footer-pill" visible="false">
+                <Label fx:id="footerNewsLabel" styleClass="footer-text" text="🤖 AI generating…" />
+                <Button fx:id="btnShowNewsProgress" styleClass="footer-link-button" text="Show" />
+            </HBox>
+
         </HBox>
     </bottom>
 

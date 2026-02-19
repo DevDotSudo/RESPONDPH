@@ -4,8 +4,10 @@ import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.common.model.BeneficiaryMarker;
 import com.ionres.respondph.common.model.EvacSiteMarker;
 import com.ionres.respondph.common.model.FamilyMemberModel;
-import com.ionres.respondph.main.MainFrameController;
-import com.ionres.respondph.util.*;
+import com.ionres.respondph.util.AppContext;
+import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Mapping;
+import com.ionres.respondph.util.SessionManager;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -15,7 +17,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -52,10 +53,6 @@ public class DashboardController {
     @FXML private Button           searchToggleBtn;
     @FXML private ComboBox<String> beneficiarySearchBox;
     @FXML private HBox             searchOverlay;
-    @FXML private StackPane cardBeneficiary;
-    @FXML private StackPane cardDisasters;
-    @FXML private StackPane cardAids;
-    @FXML private StackPane cardEvacuationSite;
 
     // ── Marker images ─────────────────────────────────────────────────────────
     private Image personMarker;
@@ -188,7 +185,6 @@ public class DashboardController {
             loadDashBoardData();
             loadBeneficiariesFromDb();
             loadEvacSitesFromDb();
-            wireCardListeners();
 
             Timeline centerDelay = new Timeline(
                     new KeyFrame(Duration.millis(100), e -> centerMapOnBoundary()));
@@ -224,88 +220,13 @@ public class DashboardController {
         searchToggleBtn.setOnAction(e -> searchToggle());
     }
 
-    private void wireCardListeners() {
-        cardBeneficiary.setCursor(javafx.scene.Cursor.HAND);
-        cardBeneficiary.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
-                onBeneficiaryCardClicked();
-            }
-        });
-
-        cardDisasters.setCursor(javafx.scene.Cursor.HAND);
-        cardDisasters.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
-                onDisastersCardClicked();
-            }
-        });
-
-        cardAids.setCursor(javafx.scene.Cursor.HAND);
-        cardAids.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
-                onAidsCardClicked();
-            }
-        });
-
-        cardEvacuationSite.setCursor(javafx.scene.Cursor.HAND);
-        cardEvacuationSite.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
-                onEvacuationSiteCardClicked();
-            }
-        });
-    }
-
-    private void activeButton(Button btn) {
-        MainFrameController frame = MainFrameController.getInstance();
-        if (btn == null || frame == null) return;
-        if (frame.activeBtn != null) {
-            frame.activeBtn.getStyleClass().remove("nav-button-active");
-            frame.activeBtn.getStyleClass().remove("nav-button-child-active");
-        }
-        frame.activeBtn = btn;
-        String cls = btn.getStyleClass().contains("nav-button-child")
-                ? "nav-button-child-active" : "nav-button-active";
-        if (!frame.activeBtn.getStyleClass().contains(cls))
-            frame.activeBtn.getStyleClass().add(cls);
-    }
-
-    private void onBeneficiaryCardClicked() {
-        MainFrameController.getInstance().openManagementSection();
-        loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
-        activeButton(MainFrameController.getInstance().manageBeneficiariesBtn);
-    }
-
-    private void onDisastersCardClicked() {
-        MainFrameController.getInstance().openDisasterSection();
-        loadPage("/view/disaster/Disaster.fxml");
-        activeButton(MainFrameController.getInstance().disasterBtn);
-    }
-
-    private void onAidsCardClicked() {
-        MainFrameController.getInstance().openAidsSection();
-        loadPage("/view/aid/Aid.fxml");
-        activeButton(MainFrameController.getInstance().aidBtn);
-    }
-
-    private void onEvacuationSiteCardClicked() {
-        MainFrameController.getInstance().openEvacSection();
-        loadPage("/view/evac_site/EvacSite.fxml");
-        activeButton(MainFrameController.getInstance().evacBtn);
-    }
-
-    private void loadPage(String fxml) {
-        MainFrameController frame = MainFrameController.getInstance();
-        if (frame == null) return;
-
-        SceneManager.SceneEntry<?> e = SceneManager.load(fxml);
-        Parent root = e.getRoot();
-        if (root instanceof Region r) {
-            r.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            VBox.setVgrow(r, Priority.ALWAYS);
-            HBox.setHgrow(r, Priority.ALWAYS);
-        }
-        frame.contentArea.getChildren().setAll(root); // ← use frame.contentArea
-    }
-
+    // ═════════════════════════════════════════════════════════════════════════
+    // Combobox
+    // FIX 2: call hide() BEFORE every searchItems.setAll() to prevent the
+    //   ReadOnlyUnbackedObservableList.subList IndexOutOfBoundsException that
+    //   fires when the ListView tries to compute getAddedSubList() on a list
+    //   that was just cleared while the popup was still open.
+    // ═════════════════════════════════════════════════════════════════════════
     private void wireSearchComboBox() {
         beneficiarySearchBox.setItems(searchItems);
 

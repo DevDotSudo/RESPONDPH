@@ -109,6 +109,8 @@
 
     -fx-control-inner-background: rgba(255,255,255,0.03);
     -fx-control-inner-background-alt: rgba(255,255,255,0.02);
+
+    -fx-table-cell-border-color: transparent;
 }
 
 /* Remove default white empty area */
@@ -163,11 +165,11 @@
     -fx-text-fill: rgba(226,232,240,0.95);
     -fx-font-size: 15px;
     -fx-font-weight: 700;
-
     -fx-padding: 14px;
     -fx-alignment: CENTER;
-
     -fx-background-color: transparent;
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 1px 0 0;
 }
 
 .family-table .corner {

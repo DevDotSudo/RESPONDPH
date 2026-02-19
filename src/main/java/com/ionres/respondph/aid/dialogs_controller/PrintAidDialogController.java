@@ -639,86 +639,21 @@ public class PrintAidDialogController {
                     return;
                 }
                 configurePrintService();
-                sendToPrinterSilently(records, disasterName, aidName, chosen.getPrinter());
+                boolean success = distributionSummaryRadio.isSelected()
+                        ? printService.printDistributionSummary(disasterName, aidName, records)
+                        : printService.printBeneficiaryList(disasterName, aidName, records);
+                if (success) closeDialog();
             }
         });
     }
 
-    private void sendToPrinterSilently(List<AidModel> records,
-                                       String disasterName,
-                                       String aidName,
-                                       Printer targetPrinter) {
-        configurePrintService();
+    // =========================================================================
+    //  PDF GENERATION  (iText 7)
+    // =========================================================================
 
-        // Build the JavaFX content node
-        VBox content = distributionSummaryRadio.isSelected()
-                ? printService.buildDistributionSummary(disasterName, aidName, records)
-                : printService.buildBeneficiaryList(disasterName, aidName, records);
-
-        if (content == null) {
-            AlertDialogManager.showError("Print Error", "Failed to build report content.");
-            return;
-        }
-
-        PrinterJob job = (targetPrinter != null)
-                ? PrinterJob.createPrinterJob(targetPrinter)
-                : PrinterJob.createPrinterJob();
-
-        if (job == null) {
-            AlertDialogManager.showError("Print Error",
-                    "Could not create a print job for the selected printer.\n"
-                            + "Please check that the printer is connected and try again.");
-            return;
-        }
-
-        Printer         printer     = job.getPrinter();
-        Paper           paper       = resolvePaper(printer);
-        PageOrientation orientation = landscapeRadio.isSelected()
-                ? PageOrientation.LANDSCAPE : PageOrientation.PORTRAIT;
-        double margin = 36;
-        PageLayout pageLayout = printer.createPageLayout(
-                paper, orientation, margin, margin, margin, margin);
-        job.getJobSettings().setPageLayout(pageLayout);
-
-        int copies = copiesSpinner.getValue();
-        job.getJobSettings().setCopies(copies);
-
-        int actualPageCount = calculatePageCount(records, pageLayout);
-        job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
-
-        if (job.printPage(pageLayout, content)) {
-            job.endJob();
-            AlertDialogManager.showInfo("Print Successful",
-                    String.format("Document sent to: %s%n%d page(s) × %d %s printed successfully.",
-                            job.getPrinter().getName(),
-                            actualPageCount,
-                            copies, copies == 1 ? "copy" : "copies"));
-            closeDialog();
-        } else {
-            AlertDialogManager.showError("Print Error",
-                    "An error occurred while printing. Please try again.");
-        }
-    }
-
-    private Paper resolvePaper(Printer printer) {
-        String selected = bondPaperSizeComboBox.getValue();
-        if (selected == null) return Paper.A4;
-        if (selected.startsWith("Letter")) return Paper.NA_LETTER;
-        if (selected.startsWith("Legal"))  return Paper.LEGAL;
-        return Paper.A4;
-    }
-
-    private int calculatePageCount(List<AidModel> records, PageLayout pageLayout) {
-        if (records == null || records.isEmpty()) return 1;
-
-        double usableHeight = pageLayout.getPrintableHeight() - 150;
-        int    rowHeight    = 22; // each beneficiary row ~22px
-        int    rowsPerPage  = Math.max(1, (int) (usableHeight / rowHeight));
-
-        return Math.max(1, (int) Math.ceil((double) records.size() / rowsPerPage));
-    }
-
-
+    /**
+     * Opens FileChooser → writes a professional A4 PDF using iText 7.
+     */
     private void generateAndSavePDF(List<AidModel> records,
                                     String disasterName,
                                     String aidName) {
@@ -753,6 +688,16 @@ public class PrintAidDialogController {
         }
     }
 
+    /**
+     * iText 7 PDF builder.
+     *
+     * Layout:
+     *   • Dark-navy header bar  (Aid Report | RespondPH + timestamp)
+     *   • Metadata table        (Aid Name, Disaster, Barangay, Total, Generated On)
+     *   • Beneficiary table     (alternating rows, priority-colour accent)
+     *   • Distribution summary  (score statistics)
+     *   • Page-number footer
+     */
     private void buildPDF(File file,
                           List<AidModel> records,
                           String disasterName,

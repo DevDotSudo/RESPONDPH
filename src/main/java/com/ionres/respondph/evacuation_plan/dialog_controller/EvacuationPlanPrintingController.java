@@ -8,7 +8,8 @@ import com.ionres.respondph.evac_site.EvacSiteDAO;
 import com.ionres.respondph.evac_site.EvacSiteDAOServiceImpl;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.SessionManager;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -44,7 +45,6 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -54,10 +54,12 @@ import java.util.stream.Collectors;
 
 public class EvacuationPlanPrintingController {
 
+    // ── Page Layout Constants ───────────────────────────────────────────────
     private static final double PAGE_WIDTH    = 612;
     private static final double MARGIN        = 36;
     private static final double CONTENT_WIDTH = PAGE_WIDTH - (2 * MARGIN);
 
+    // ── PDF color palette ─────────────────────────────────────────────────────
     private static final DeviceRgb PDF_HEADER_BG = new DeviceRgb(44,  62,  80);
     private static final DeviceRgb PDF_WHITE     = new DeviceRgb(255, 255, 255);
     private static final DeviceRgb PDF_BLUE      = new DeviceRgb(41,  128, 185);
@@ -65,20 +67,14 @@ public class EvacuationPlanPrintingController {
     private static final DeviceRgb PDF_RED       = new DeviceRgb(192,  57,  43);
     private static final DeviceRgb PDF_ORANGE    = new DeviceRgb(230, 126,  34);
 
-    // ── Disaster selection ──────────────────────────────────────────────────
+    // ── FXML fields ──────────────────────────────────────────────────────────
     @FXML private ComboBox<String> disasterComboBox;
-
-    // ── Evacuation site selection ───────────────────────────────────────────
     @FXML private ComboBox<String> evacuationSiteComboBox;
     @FXML private HBox             capacitySummary;
     @FXML private Label            capacityLabel;
-
-    // ── Report type ─────────────────────────────────────────────────────────
-    @FXML private RadioButton beneficiaryListRadio;
-    @FXML private RadioButton evacuationPlanRadio;
-    @FXML private RadioButton capacityReportRadio;
-
-    // ── Print settings ───────────────────────────────────────────────────────
+    @FXML private RadioButton      beneficiaryListRadio;
+    @FXML private RadioButton      evacuationPlanRadio;
+    @FXML private RadioButton      capacityReportRadio;
     @FXML private ComboBox<String> bondPaperSizeComboBox;
     @FXML private RadioButton      portraitRadio;
     @FXML private RadioButton      landscapeRadio;
@@ -86,20 +82,20 @@ public class EvacuationPlanPrintingController {
     @FXML private CheckBox         includeHeaderCheckbox;
     @FXML private CheckBox         includeFooterCheckbox;
     @FXML private CheckBox         includePageNumbersCheckbox;
+    @FXML private Button           previewBtn;
+    @FXML private Button           cancelBtn;
+    @FXML private Button           printBtn;
+    @FXML private Button           closeBtn;
 
-    @FXML private Button previewBtn;
-    @FXML private Button cancelBtn;
-    @FXML private Button printBtn;
-    @FXML private Button closeBtn;
-
-    private Stage progressStage;
+    // ── Progress dialog ───────────────────────────────────────────────────────
+    private Stage       progressStage;
     private ProgressBar progressBar;
-    private Label progressLabel;
+    private Label       progressLabel;
 
+    private Stage dialogStage;
 
     private final EvacuationPlanService service =
             new EvacuationPlanServiceImpl(DBConnection.getInstance());
-
     private final EvacSiteDAO evacSiteDAO =
             new EvacSiteDAOServiceImpl(DBConnection.getInstance());
 
@@ -112,6 +108,7 @@ public class EvacuationPlanPrintingController {
     private final ToggleGroup reportTypeGroup  = new ToggleGroup();
     private final ToggleGroup orientationGroup = new ToggleGroup();
 
+    // ── Inner data class ──────────────────────────────────────────────────────
     private static class PrintDialogData {
         List<EvacuationPlanModel> filteredPlans;
         String disasterName;
@@ -120,8 +117,12 @@ public class EvacuationPlanPrintingController {
         int siteId;
     }
 
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
+    }
+
     // =========================================================================
-    //  INIT
+    // INIT
     // =========================================================================
 
     @FXML
@@ -171,12 +172,11 @@ public class EvacuationPlanPrintingController {
         closeBtn  .setOnAction(e -> closeDialog());
         cancelBtn .setOnAction(e -> closeDialog());
         previewBtn.setOnAction(e -> handlePreview());
-        // printBtn now opens the output-format dialog (PDF or Printer)
-        printBtn.setOnAction(e -> showProgressAndOpenDialog());
+        printBtn  .setOnAction(e -> showProgressAndOpenDialog());
     }
 
     // =========================================================================
-    //  DATA LOADING  (unchanged)
+    // DATA LOADING
     // =========================================================================
 
     private void loadData() {
@@ -196,9 +196,10 @@ public class EvacuationPlanPrintingController {
         new Thread(task).start();
     }
 
-    /**
-     * Show progress bar while loading data for print/PDF dialog
-     */
+    // =========================================================================
+    // PROGRESS + BACKGROUND TASK
+    // =========================================================================
+
     private void showProgressAndOpenDialog() {
         if (!validate()) return;
 
@@ -212,7 +213,6 @@ public class EvacuationPlanPrintingController {
             return;
         }
 
-        // Create and show progress dialog
         createProgressDialog("Preparing data for printing/export...");
 
         Task<PrintDialogData> task = new Task<>() {
@@ -220,12 +220,12 @@ public class EvacuationPlanPrintingController {
             protected PrintDialogData call() throws Exception {
                 PrintDialogData dialogData = new PrintDialogData();
 
-                // Step 1: Filter plans (0-40%)
                 updateProgress(0, 100);
                 updateMessage("Filtering evacuation plans...");
 
                 List<EvacuationPlanModel> filtered = allPlans.stream()
-                        .filter(p -> disasterId.equals(p.getDisasterId()) && siteId.equals(p.getEvacSiteId()))
+                        .filter(p -> disasterId.equals(p.getDisasterId())
+                                && siteId.equals(p.getEvacSiteId()))
                         .sorted(Comparator.comparing(EvacuationPlanModel::getBeneficiaryName))
                         .collect(Collectors.toList());
 
@@ -234,29 +234,21 @@ public class EvacuationPlanPrintingController {
                 }
 
                 dialogData.filteredPlans = filtered;
-                dialogData.disasterName = disasterName;
-                dialogData.siteName = siteName;
-                dialogData.disasterId = disasterId;
-                dialogData.siteId = siteId;
+                dialogData.disasterName  = disasterName;
+                dialogData.siteName      = siteName;
+                dialogData.disasterId    = disasterId;
+                dialogData.siteId        = siteId;
 
                 updateProgress(40, 100);
-
-                // Step 2: Detect printers (40-70%)
                 updateMessage("Detecting connected printers...");
-                Thread.sleep(300); // Small delay for visual feedback
+                Thread.sleep(300);
 
-                // Just trigger printer detection - will be used later
-                ObservableList<PrinterEntry> activePrinters = buildPrinterEntries()
-                        .filtered(PrinterEntry::isActive);
+                buildPrinterEntries().filtered(PrinterEntry::isActive);
 
                 updateProgress(70, 100);
-
-                // Step 3: Prepare dialog data (70-90%)
                 updateMessage("Preparing dialog components...");
                 Thread.sleep(300);
                 updateProgress(90, 100);
-
-                // Step 4: Finalize (90-100%)
                 updateMessage("Ready to open dialog...");
                 Thread.sleep(200);
                 updateProgress(100, 100);
@@ -267,30 +259,25 @@ public class EvacuationPlanPrintingController {
 
         task.setOnSucceeded(e -> {
             closeProgressDialog();
-            PrintDialogData dialogData = task.getValue();
+            PrintDialogData data = task.getValue();
             showOutputFormatDialog(
-                    dialogData.filteredPlans,
-                    dialogData.disasterName,
-                    dialogData.siteName,
-                    dialogData.disasterId,
-                    dialogData.siteId
-            );
+                    data.filteredPlans, data.disasterName,
+                    data.siteName, data.disasterId, data.siteId);
         });
 
         task.setOnFailed(e -> {
             closeProgressDialog();
-            Throwable exception = task.getException();
-            if (exception != null && exception.getMessage() != null) {
-                if (exception.getMessage().contains("No records found")) {
-                    AlertDialogManager.showWarning("No Data", exception.getMessage());
+            Throwable ex = task.getException();
+            if (ex != null && ex.getMessage() != null) {
+                if (ex.getMessage().contains("No records found")) {
+                    AlertDialogManager.showWarning("No Data", ex.getMessage());
                 } else {
-                    AlertDialogManager.showError("Error",
-                            "Failed to load data: " + exception.getMessage());
+                    AlertDialogManager.showError("Error", "Failed to load data: " + ex.getMessage());
                 }
             } else {
                 AlertDialogManager.showError("Error", "An unknown error occurred.");
             }
-            exception.printStackTrace();
+            if (ex != null) ex.printStackTrace();
         });
 
         progressBar.progressProperty().bind(task.progressProperty());
@@ -301,40 +288,124 @@ public class EvacuationPlanPrintingController {
         thread.start();
     }
 
-
     private void createProgressDialog(String initialMessage) {
         progressStage = new Stage();
         progressStage.initModality(Modality.APPLICATION_MODAL);
         progressStage.initStyle(StageStyle.UNDECORATED);
         progressStage.setAlwaysOnTop(true);
 
-        VBox vbox = new VBox(15);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;");
+        VBox card = new VBox(0);
+        card.setPrefWidth(420);
+        card.setStyle(
+                "-fx-background-color: #0b1220;" +
+                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+        );
 
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(18, 22, 18, 22));
+        header.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.025);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 0 0 1 0;" +
+                        "-fx-background-radius: 10 10 0 0;"
+        );
+
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(22, 22);
+        spinner.setMaxSize(22, 22);
+        spinner.setMinSize(22, 22);
+        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
+
+        VBox titleBlock = new VBox(3);
         Label titleLabel = new Label("Please Wait");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        titleLabel.setStyle("-fx-text-fill: #2c3e50;");
+        titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
+        titleLabel.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-weight: 900;"
+        );
+        Label subtitleLabel = new Label("Processing your request…");
+        subtitleLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 600;"
+        );
+        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
+        header.getChildren().addAll(spinner, titleBlock);
+
+        VBox body = new VBox(14);
+        body.setPadding(new Insets(22, 22, 24, 22));
+        body.setAlignment(Pos.CENTER_LEFT);
+        body.setStyle("-fx-background-color: transparent;");
 
         progressLabel = new Label(initialMessage);
-        progressLabel.setFont(Font.font("Arial", 12));
-        progressLabel.setStyle("-fx-text-fill: #555;");
+        progressLabel.setWrapText(true);
+        progressLabel.setMaxWidth(Double.MAX_VALUE);
+        progressLabel.setStyle(
+                "-fx-text-fill: rgba(226,232,240,0.85);" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 600;"
+        );
+
+        VBox barWrapper = new VBox(0);
+        barWrapper.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.06);" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 0;"
+        );
 
         progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(300);
-        progressBar.setPrefHeight(20);
+        progressBar.setPrefWidth(Double.MAX_VALUE);
+        progressBar.setPrefHeight(10);
+        progressBar.setMaxWidth(Double.MAX_VALUE);
+        progressBar.setStyle(
+                "-fx-accent: rgba(249,115,22,0.95);" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;"
+        );
+        barWrapper.getChildren().add(progressBar);
 
-        vbox.getChildren().addAll(titleLabel, progressLabel, progressBar);
+        Label pctLabel = new Label("0%");
+        pctLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-font-weight: 700;"
+        );
+        HBox pctRow = new HBox();
+        Region pctSpacer = new Region();
+        HBox.setHgrow(pctSpacer, Priority.ALWAYS);
+        pctRow.getChildren().addAll(pctSpacer, pctLabel);
 
-        Scene scene = new Scene(vbox);
+        progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
+            double pct = newVal.doubleValue();
+            pctLabel.setText(pct < 0 ? "…" : String.format("%.0f%%", pct * 100));
+        });
+
+        body.getChildren().addAll(progressLabel, barWrapper, pctRow);
+        card.getChildren().addAll(header, body);
+
+        Scene scene = new Scene(card);
+        scene.setFill(null);
         progressStage.setScene(scene);
+
+        if (dialogStage != null) {
+            progressStage.initOwner(dialogStage);
+            progressStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 420) / 2);
+            progressStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 160) / 2);
+        }
+
         progressStage.show();
     }
 
-    /**
-     * Close progress dialog
-     */
     private void closeProgressDialog() {
         if (progressStage != null) {
             Platform.runLater(() -> {
@@ -344,157 +415,9 @@ public class EvacuationPlanPrintingController {
         }
     }
 
-    private void populateDisasterCombo() {
-        disasterNameToId.clear();
-        allPlans.stream()
-                .filter(p -> p.getDisasterName() != null)
-                .sorted(Comparator.comparing(EvacuationPlanModel::getDisasterName))
-                .forEach(p -> disasterNameToId.put(p.getDisasterName(), p.getDisasterId()));
-
-        ObservableList<String> names =
-                FXCollections.observableArrayList(disasterNameToId.keySet());
-        disasterComboBox.setItems(names);
-        if (!names.isEmpty()) disasterComboBox.getSelectionModel().selectFirst();
-    }
-
-    private void populateEvacSiteComboForDisaster(String disasterName) {
-        evacuationSiteComboBox.getItems().clear();
-        evacSiteNameToId.clear();
-        evacSiteCapacities.clear();
-        hideCapacitySummary();
-
-        Integer disasterId = disasterNameToId.get(disasterName);
-        if (disasterId == null) return;
-
-        Task<Map<String, Integer>> task = new Task<>() {
-            @Override protected Map<String, Integer> call() {
-                return allPlans.stream()
-                        .filter(p -> disasterId.equals(p.getDisasterId()))
-                        .filter(p -> p.getEvacSiteName() != null)
-                        .collect(Collectors.toMap(
-                                EvacuationPlanModel::getEvacSiteName,
-                                EvacuationPlanModel::getEvacSiteId,
-                                (a, b) -> a,
-                                LinkedHashMap::new));
-            }
-            @Override protected void succeeded() {
-                Map<String, Integer> siteMap = getValue();
-                evacSiteNameToId.putAll(siteMap);
-
-                siteMap.forEach((siteName, siteId) -> {
-                    EvacSiteModel model = evacSiteDAO.getById(siteId);
-                    if (model != null) {
-                        try {
-                            evacSiteCapacities.put(siteName,
-                                    Integer.parseInt(model.getCapacity()));
-                        } catch (NumberFormatException ignored) {
-                            evacSiteCapacities.put(siteName, 0);
-                        }
-                    }
-                });
-
-                ObservableList<String> sorted = FXCollections.observableArrayList(
-                        siteMap.keySet().stream().sorted().collect(Collectors.toList()));
-                evacuationSiteComboBox.setItems(sorted);
-                if (!sorted.isEmpty()) evacuationSiteComboBox.getSelectionModel().selectFirst();
-            }
-            @Override protected void failed() {
-                AlertDialogManager.showError("Error",
-                        "Failed to load evacuation sites: " + getException().getMessage());
-            }
-        };
-        new Thread(task).start();
-    }
-
-    private void updateCapacitySummary(String siteName) {
-        String  disasterName = disasterComboBox.getValue();
-        Integer disasterId   = disasterNameToId.get(disasterName);
-        Integer siteId       = evacSiteNameToId.get(siteName);
-        if (disasterId == null || siteId == null) { hideCapacitySummary(); return; }
-
-        long    occupied = allPlans.stream()
-                .filter(p -> disasterId.equals(p.getDisasterId()) && siteId.equals(p.getEvacSiteId()))
-                .count();
-        Integer capacity = evacSiteCapacities.getOrDefault(siteName, 0);
-        capacityLabel.setText(String.format("Capacity: %d / %d  (%.0f%% occupied)",
-                occupied, capacity,
-                capacity > 0 ? (occupied * 100.0 / capacity) : 0.0));
-        capacitySummary.setVisible(true);
-        capacitySummary.setManaged(true);
-    }
-
-    private void hideCapacitySummary() {
-        capacitySummary.setVisible(false);
-        capacitySummary.setManaged(false);
-    }
-
     // =========================================================================
-    //  VALIDATION  (unchanged)
+    // OUTPUT FORMAT DIALOG  (dark-card design)
     // =========================================================================
-
-    private boolean validate() {
-        if (disasterComboBox.getValue() == null) {
-            AlertDialogManager.showWarning("Validation", "Please select a disaster event.");
-            return false;
-        }
-        if (evacuationSiteComboBox.getValue() == null) {
-            AlertDialogManager.showWarning("Validation", "Please select an evacuation site.");
-            return false;
-        }
-        if (bondPaperSizeComboBox.getValue() == null) {
-            AlertDialogManager.showWarning("Validation", "Please select a paper size.");
-            return false;
-        }
-        return true;
-    }
-
-    // =========================================================================
-    //  PREVIEW  (unchanged)
-    // =========================================================================
-
-    private void handlePreview() {
-        if (!validate()) return;
-        VBox content = buildReportContent(getSelectedReportType());
-        if (content == null) return;
-
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20;");
-
-        Stage previewStage = new Stage();
-        previewStage.initModality(Modality.APPLICATION_MODAL);
-        previewStage.setTitle("Preview – " + getSelectedReportType());
-        previewStage.setScene(new Scene(scrollPane, 650, 900));
-        previewStage.show();
-    }
-
-
-    private void handlePrintOrExport() {
-        if (!validate()) return;
-
-        String  disasterName = disasterComboBox.getValue();
-        String  siteName     = evacuationSiteComboBox.getValue();
-        Integer disasterId   = disasterNameToId.get(disasterName);
-        Integer siteId       = evacSiteNameToId.get(siteName);
-
-        if (disasterId == null || siteId == null) {
-            AlertDialogManager.showWarning("No Selection", "Please select a disaster and site.");
-            return;
-        }
-
-        List<EvacuationPlanModel> filtered = allPlans.stream()
-                .filter(p -> disasterId.equals(p.getDisasterId()) && siteId.equals(p.getEvacSiteId()))
-                .sorted(Comparator.comparing(EvacuationPlanModel::getBeneficiaryName))
-                .collect(Collectors.toList());
-
-        if (filtered.isEmpty()) {
-            AlertDialogManager.showWarning("No Data",
-                    "No records found for the selected disaster and evacuation site.");
-            return;
-        }
-
-        showOutputFormatDialog(filtered, disasterName, siteName, disasterId, siteId);
-    }
 
     private void showOutputFormatDialog(List<EvacuationPlanModel> filtered,
                                         String disasterName, String siteName,
@@ -505,100 +428,225 @@ public class EvacuationPlanPrintingController {
             return;
         }
 
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Export / Print");
-        dialog.setHeaderText("Choose output format:");
+        // ── Stage ────────────────────────────────────────────────────────────
+        Stage outputStage = new Stage();
+        outputStage.initModality(Modality.APPLICATION_MODAL);
+        outputStage.initStyle(StageStyle.UNDECORATED);
+        if (dialogStage != null) outputStage.initOwner(dialogStage);
 
-        VBox content = new VBox(14);
-        content.setPadding(new Insets(20));
-        content.setPrefWidth(460);
+        // ── Root card ────────────────────────────────────────────────────────
+        VBox card = new VBox(0);
+        card.setPrefWidth(500);
+        card.setStyle(
+                "-fx-background-color: #0b1220;" +
+                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+        );
 
-        // ── Output format radios ──────────────────────────────────────────────
-        Label outputLbl = new Label("Output Format:");
-        outputLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        // ── HEADER ───────────────────────────────────────────────────────────
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(18, 22, 18, 22));
+        header.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.025);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 0 0 1 0;" +
+                        "-fx-background-radius: 10 10 0 0;"
+        );
+
+        FontAwesomeIconView headerIcon = new FontAwesomeIconView(FontAwesomeIcon.SHARE_SQUARE_ALT);
+        headerIcon.setSize("20");
+        headerIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.95);");
+
+        VBox titleBlock = new VBox(3);
+        Label titleLabel = new Label("Export / Print");
+        titleLabel.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-font-weight: 900;"
+        );
+        Label subtitleLabel = new Label("Choose how to output the evacuation report");
+        subtitleLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 600;"
+        );
+        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
+
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+
+        Button headerCloseBtn = new Button();
+        FontAwesomeIconView timesIcon = new FontAwesomeIconView(FontAwesomeIcon.TIMES);
+        timesIcon.setSize("13");
+        timesIcon.setGlyphStyle("-fx-fill: rgba(248,250,252,0.95);");
+        headerCloseBtn.setGraphic(timesIcon);
+        headerCloseBtn.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.03);" +
+                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 8 12 8 12;" +
+                        "-fx-cursor: hand;"
+        );
+
+        header.getChildren().addAll(headerIcon, titleBlock, headerSpacer, headerCloseBtn);
+
+        // ── BODY ─────────────────────────────────────────────────────────────
+        VBox body = new VBox(20);
+        body.setPadding(new Insets(22, 22, 24, 22));
+        body.setStyle("-fx-background-color: transparent;");
+
+        // ── SECTION: Output Format ────────────────────────────────────────────
+        VBox outputSection = buildSection(
+                FontAwesomeIcon.SHARE_SQUARE_ALT, "Output Format",
+                "Choose how to export the evacuation report"
+        );
 
         ToggleGroup outputGroup  = new ToggleGroup();
-        RadioButton pdfRadio     = new RadioButton("Save as PDF");
-        RadioButton printerRadio = new RadioButton("Send to Printer");
-        pdfRadio.setToggleGroup(outputGroup);
-        printerRadio.setToggleGroup(outputGroup);
+        RadioButton pdfRadio     = buildRadioCard("Save as PDF",     FontAwesomeIcon.FILE_PDF_ALT, outputGroup);
+        RadioButton printerRadio = buildRadioCard("Send to Printer", FontAwesomeIcon.PRINT,        outputGroup);
         pdfRadio.setSelected(true);
 
-        // ── Build active-only printer list ────────────────────────────────────
+        HBox radioRow = new HBox(10);
+        radioRow.getChildren().addAll(pdfRadio, printerRadio);
+        outputSection.getChildren().add(radioRow);
+
+        // ── SECTION: Printer (hidden by default) ──────────────────────────────
+        VBox printerSection = new VBox(10);
+        printerSection.setVisible(false);
+        printerSection.setManaged(false);
+
+        VBox printerCard = buildSection(
+                FontAwesomeIcon.DESKTOP, "Select Printer",
+                "Only connected printers are shown"
+        );
+
         ObservableList<PrinterEntry> allEntries    = buildPrinterEntries();
         ObservableList<PrinterEntry> activeEntries = FXCollections.observableArrayList(
                 allEntries.filtered(PrinterEntry::isActive));
 
-        // ── Printer ComboBox — name only, no badges ───────────────────────────
         ComboBox<PrinterEntry> printerComboBox = new ComboBox<>(activeEntries);
-        printerComboBox.setPrefWidth(420);
         printerComboBox.setMaxWidth(Double.MAX_VALUE);
+        printerComboBox.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.04);" +
+                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 4 10 4 10;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 700;"
+        );
 
-        Callback<ListView<PrinterEntry>, ListCell<PrinterEntry>> nameOnlyFactory =
-                lv -> new ListCell<>() {
-                    @Override
-                    protected void updateItem(PrinterEntry item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty || item == null) { setText(null); setGraphic(null); }
-                        else {
-                            setText(item.getPrinterName());
-                            setStyle("-fx-font-size: 12px; -fx-text-fill: #2c3e50;");
-                            setGraphic(null);
-                        }
+        Callback<ListView<PrinterEntry>, ListCell<PrinterEntry>> printerCellFactory =
+                lv -> {
+                    if (lv != null) {
+                        lv.setStyle(
+                                "-fx-background-color: #0b1220;" +
+                                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                                        "-fx-border-width: 1;" +
+                                        "-fx-border-radius: 6;" +
+                                        "-fx-background-radius: 6;"
+                        );
                     }
+                    return new ListCell<>() {
+                        @Override
+                        protected void updateItem(PrinterEntry item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                                setGraphic(null);
+                                setStyle("-fx-background-color: transparent;");
+                            } else {
+                                setText(item.getPrinterName());
+                                setStyle(
+                                        "-fx-font-size: 13px;" +
+                                                "-fx-font-weight: 700;" +
+                                                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                                "-fx-background-color: transparent;" +
+                                                "-fx-padding: 10 12 10 12;"
+                                );
+                                setOnMouseEntered(e -> setStyle(
+                                        "-fx-font-size: 13px;" +
+                                                "-fx-font-weight: 700;" +
+                                                "-fx-text-fill: rgba(249,115,22,0.95);" +
+                                                "-fx-background-color: rgba(249,115,22,0.10);" +
+                                                "-fx-padding: 10 12 10 12;"
+                                ));
+                                setOnMouseExited(e -> setStyle(
+                                        "-fx-font-size: 13px;" +
+                                                "-fx-font-weight: 700;" +
+                                                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                                "-fx-background-color: transparent;" +
+                                                "-fx-padding: 10 12 10 12;"
+                                ));
+                            }
+                        }
+                    };
                 };
-        printerComboBox.setCellFactory(nameOnlyFactory);
-        printerComboBox.setButtonCell(nameOnlyFactory.call(null));
+        printerComboBox.setCellFactory(printerCellFactory);
+        printerComboBox.setButtonCell(printerCellFactory.call(null));
 
-        // Pre-select: default active printer → first active printer
         activeEntries.stream()
                 .filter(PrinterEntry::isDefault).findFirst()
                 .or(() -> activeEntries.isEmpty()
                         ? Optional.empty() : Optional.of(activeEntries.get(0)))
                 .ifPresent(printerComboBox::setValue);
 
-        // ── Printer section (hidden until "Send to Printer" chosen) ───────────
-        Separator  sep        = new Separator();
-        Label      printerLbl = new Label("Select Printer:");
-        printerLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        printerCard.getChildren().add(printerComboBox);
+        printerSection.getChildren().add(printerCard);
 
-        VBox printerSection = new VBox(7);
-        printerSection.getChildren().addAll(sep, printerLbl, printerComboBox);
-        printerSection.setVisible(false);
-        printerSection.setManaged(false);
-
-        // ── Radio toggle: show ComboBox or fire "Not Connected" alert ─────────
+        // ── Toggle: show/hide printer section ────────────────────────────────
         outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == printerRadio) {
                 if (activeEntries.isEmpty()) {
                     pdfRadio.setSelected(true);
-                    Alert notConnected = new Alert(Alert.AlertType.ERROR);
-                    notConnected.setTitle("Printer Not Connected");
-                    notConnected.setHeaderText("Not Connected in printer");
-                    notConnected.setContentText(
-                            "No connected printer was detected on this system.\n\n"
-                                    + "Please connect a printer and try again.");
-                    notConnected.showAndWait();
+                    AlertDialogManager.showError(
+                            "No Printer Connected",
+                            "No connected printer was detected on this system.\n\n" +
+                                    "Please connect a printer and try again.");
                 } else {
                     printerSection.setVisible(true);
                     printerSection.setManaged(true);
-                    dialog.getDialogPane().getScene().getWindow().sizeToScene();
+                    outputStage.sizeToScene();
                 }
             } else {
                 printerSection.setVisible(false);
                 printerSection.setManaged(false);
-                dialog.getDialogPane().getScene().getWindow().sizeToScene();
+                outputStage.sizeToScene();
             }
         });
 
-        content.getChildren().addAll(outputLbl, pdfRadio, printerRadio, printerSection);
-        dialog.getDialogPane().setContent(content);
+        body.getChildren().addAll(outputSection, printerSection);
 
-        ButtonType okBtn = new ButtonType("Generate", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
+        // ── FOOTER ───────────────────────────────────────────────────────────
+        HBox footer = new HBox(10);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(16, 22, 18, 22));
+        footer.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.02);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 1 0 0 0;" +
+                        "-fx-background-radius: 0 0 10 10;"
+        );
 
-        dialog.showAndWait().ifPresent(result -> {
-            if (result != okBtn) return;
+        Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false);
+        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true);
+        footer.getChildren().addAll(cancelBtn, generateBtn);
+
+        card.getChildren().addAll(header, body, footer);
+
+        // ── Wire actions ──────────────────────────────────────────────────────
+        headerCloseBtn.setOnAction(e -> outputStage.close());
+        cancelBtn.setOnAction(e -> outputStage.close());
+
+        generateBtn.setOnAction(e -> {
+            outputStage.close();
             if (pdfRadio.isSelected()) {
                 generateAndSavePDF(filtered, disasterName, siteName);
             } else {
@@ -611,9 +659,178 @@ public class EvacuationPlanPrintingController {
                 sendToPrinter(filtered, chosen.getPrinter());
             }
         });
+
+        Scene scene = new Scene(card);
+        scene.setFill(null);
+        outputStage.setScene(scene);
+
+        // Center on owner
+        if (dialogStage != null) {
+            outputStage.setX(dialogStage.getX() + (dialogStage.getWidth()  - 500) / 2);
+            outputStage.setY(dialogStage.getY() + (dialogStage.getHeight() - 400) / 2);
+        } else {
+            outputStage.setOnShown(e -> {
+                javafx.geometry.Rectangle2D screen =
+                        javafx.stage.Screen.getPrimary().getVisualBounds();
+                outputStage.setX((screen.getWidth()  - card.getWidth())  / 2);
+                outputStage.setY((screen.getHeight() - card.getHeight()) / 2);
+            });
+        }
+
+        outputStage.show();
     }
 
+    // =========================================================================
+    // SHARED DARK-CARD HELPERS
+    // =========================================================================
 
+    private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle) {
+        VBox section = new VBox(10);
+        section.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.03);" +
+                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-border-radius: 8;" +
+                        "-fx-padding: 14 16 14 16;"
+        );
+
+        HBox sectionHeader = new HBox(10);
+        sectionHeader.setAlignment(Pos.CENTER_LEFT);
+
+        FontAwesomeIconView sectionIcon = new FontAwesomeIconView(icon);
+        sectionIcon.setSize("14");
+        sectionIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.90);");
+
+        VBox sectionTitleBlock = new VBox(2);
+        Label sectionTitle = new Label(title);
+        sectionTitle.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.95);" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 800;"
+        );
+        Label sectionSubtitle = new Label(subtitle);
+        sectionSubtitle.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-font-weight: 600;"
+        );
+        sectionTitleBlock.getChildren().addAll(sectionTitle, sectionSubtitle);
+        sectionHeader.getChildren().addAll(sectionIcon, sectionTitleBlock);
+        section.getChildren().add(sectionHeader);
+
+        return section;
+    }
+
+    private RadioButton buildRadioCard(String label, FontAwesomeIcon icon, ToggleGroup group) {
+        RadioButton radio = new RadioButton(label);
+        radio.setToggleGroup(group);
+
+        FontAwesomeIconView radioIcon = new FontAwesomeIconView(icon);
+        radioIcon.setSize("13");
+        radioIcon.setGlyphStyle("-fx-fill: rgba(226,232,240,0.80);");
+        radio.setGraphic(radioIcon);
+
+        String baseStyle =
+                "-fx-background-color: rgba(255,255,255,0.04);" +
+                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 7;" +
+                        "-fx-border-radius: 7;" +
+                        "-fx-padding: 10 16 10 16;" +
+                        "-fx-text-fill: rgba(226,232,240,0.90);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 700;" +
+                        "-fx-cursor: hand;";
+
+        String selectedStyle =
+                "-fx-background-color: rgba(249,115,22,0.12);" +
+                        "-fx-border-color: rgba(249,115,22,0.60);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 7;" +
+                        "-fx-border-radius: 7;" +
+                        "-fx-padding: 10 16 10 16;" +
+                        "-fx-text-fill: rgba(249,115,22,0.95);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 700;" +
+                        "-fx-cursor: hand;";
+
+        radio.setStyle(baseStyle);
+        radio.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            radio.setStyle(isSelected ? selectedStyle : baseStyle);
+            radioIcon.setStyle(isSelected
+                    ? "-fx-fill: rgba(249,115,22,0.95);"
+                    : "-fx-fill: rgba(226,232,240,0.80);");
+        });
+
+        return radio;
+    }
+
+    private Button buildFooterButton(String label, FontAwesomeIcon icon, boolean isPrimary) {
+        FontAwesomeIconView btnIcon = new FontAwesomeIconView(icon);
+        btnIcon.setSize("13");
+        btnIcon.setGlyphStyle(isPrimary
+                ? "-fx-fill: rgba(255,255,255,0.95);"
+                : "-fx-fill: rgba(226,232,240,0.96);");
+
+        Button btn = new Button(label, btnIcon);
+        btn.setMinWidth(126);
+        btn.setMinHeight(40);
+
+        String normalStyle = isPrimary
+                ? "-fx-background-color: rgba(249,115,22,0.92);" +
+                "-fx-border-color: rgba(249,115,22,0.70);" +
+                "-fx-border-width: 1;" +
+                "-fx-background-radius: 7;" +
+                "-fx-border-radius: 7;" +
+                "-fx-padding: 9 20 9 20;" +
+                "-fx-text-fill: rgba(255,255,255,0.95);" +
+                "-fx-font-size: 13px;" +
+                "-fx-font-weight: 800;" +
+                "-fx-cursor: hand;"
+                : "-fx-background-color: rgba(255,255,255,0.10);" +
+                "-fx-border-color: rgba(148,163,184,0.38);" +
+                "-fx-border-width: 1;" +
+                "-fx-background-radius: 7;" +
+                "-fx-border-radius: 7;" +
+                "-fx-padding: 9 20 9 20;" +
+                "-fx-text-fill: rgba(226,232,240,0.96);" +
+                "-fx-font-size: 13px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-cursor: hand;";
+
+        String hoverStyle = isPrimary
+                ? "-fx-background-color: rgba(249,115,22,1.0);" +
+                "-fx-border-color: rgba(249,115,22,0.90);" +
+                "-fx-border-width: 1;" +
+                "-fx-background-radius: 7;" +
+                "-fx-border-radius: 7;" +
+                "-fx-padding: 9 20 9 20;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 13px;" +
+                "-fx-font-weight: 800;" +
+                "-fx-cursor: hand;"
+                : "-fx-background-color: rgba(255,255,255,0.15);" +
+                "-fx-border-color: rgba(148,163,184,0.50);" +
+                "-fx-border-width: 1;" +
+                "-fx-background-radius: 7;" +
+                "-fx-border-radius: 7;" +
+                "-fx-padding: 9 20 9 20;" +
+                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                "-fx-font-size: 13px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-cursor: hand;";
+
+        btn.setStyle(normalStyle);
+        btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
+        btn.setOnMouseExited(e -> btn.setStyle(normalStyle));
+
+        return btn;
+    }
+
+    // =========================================================================
+    // PRINT / PDF
+    // =========================================================================
 
     private void sendToPrinter(List<EvacuationPlanModel> filtered, Printer targetPrinter) {
         String reportType = getSelectedReportType();
@@ -626,33 +843,27 @@ public class EvacuationPlanPrintingController {
 
         if (job == null) {
             AlertDialogManager.showError("Print Error",
-                    "Could not create a print job for the selected printer.\n"
-                            + "Please check that the printer is connected and try again.");
+                    "Could not create a print job for the selected printer.\n" +
+                            "Please check that the printer is connected and try again.");
             return;
         }
 
-        // Apply paper size + orientation from UI
         applyPageLayout(job);
         PageLayout pageLayout = job.getJobSettings().getPageLayout();
 
-        // ── Calculate actual page count based on data ─────────────────────────
-        int actualPageCount = calculatePageCount(filtered, pageLayout, reportType);
+        if (!job.showPrintDialog(getOwnerWindow())) return;
 
-        // Set copies from spinner
-        int copies = copiesSpinner.getValue();
-        job.getJobSettings().setCopies(copies);
+        int     copies     = copiesSpinner.getValue();
+        boolean allSuccess = true;
+        for (int i = 0; i < copies; i++) {
+            if (!job.printPage(pageLayout, content)) { allSuccess = false; break; }
+        }
 
-        // Lock page range to actual data pages only (not 1–9999)
-        job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
-        // ─────────────────────────────────────────────────────────────────────
-
-        // Silent print — no dialog
-        if (job.printPage(pageLayout, content)) {
+        if (allSuccess) {
             job.endJob();
-            AlertDialogManager.showInfo("Print Successful",
-                    String.format("Document sent to: %s%n%d page(s) × %d %s printed successfully.",
+            AlertDialogManager.showInfo("Success",
+                    String.format("Document sent to printer: %s\n%d %s printed.",
                             job.getPrinter().getName(),
-                            actualPageCount,
                             copies, copies == 1 ? "copy" : "copies"));
             closeDialog();
         } else {
@@ -661,47 +872,6 @@ public class EvacuationPlanPrintingController {
         }
     }
 
-    // ── Calculates how many pages the report will span ───────────────────────────
-    private int calculatePageCount(List<EvacuationPlanModel> filtered,
-                                   PageLayout pageLayout, String reportType) {
-        if (filtered == null || filtered.isEmpty()) return 1;
-
-        double pageHeight = pageLayout.getPrintableHeight();
-
-        // Estimate rows per page based on report type
-        // Each row is approximately 22px tall; header/footer/title take ~120px
-        double usableHeight = pageHeight - 120;
-        int rowHeight;
-
-        switch (reportType) {
-            case "Evacuation Plan":
-                // Grouped by letter — slight overhead per group
-                rowHeight = 24;
-                break;
-            case "Capacity Report":
-                // Fixed content — always 1 page
-                return 1;
-            default:
-                // Beneficiary List
-                rowHeight = 22;
-                break;
-        }
-
-        int rowsPerPage = Math.max(1, (int) (usableHeight / rowHeight));
-        int totalRows   = filtered.size();
-
-        // Add extra rows for letter-group headers in Evacuation Plan
-        if ("Evacuation Plan".equals(reportType)) {
-            long groupCount = filtered.stream()
-                    .map(p -> Character.toUpperCase(p.getBeneficiaryName().charAt(0)))
-                    .distinct().count();
-            totalRows += (int) groupCount; // each group label takes ~1 extra row
-        }
-
-        return Math.max(1, (int) Math.ceil((double) totalRows / rowsPerPage));
-    }
-
-    /** Applies the paper-size and orientation chosen by the user to the printer job. */
     private void applyPageLayout(PrinterJob job) {
         Printer         printer     = job.getPrinter();
         Paper           paper       = resolvePaper(printer);
@@ -719,10 +889,6 @@ public class EvacuationPlanPrintingController {
         if (selected.startsWith("Legal"))  return Paper.LEGAL;
         return Paper.A4;
     }
-
-    // =========================================================================
-    //  PDF GENERATION  ← NEW  (iText 7)
-    // =========================================================================
 
     private void generateAndSavePDF(List<EvacuationPlanModel> filtered,
                                     String disasterName, String siteName) {
@@ -757,20 +923,8 @@ public class EvacuationPlanPrintingController {
         }
     }
 
-    /**
-     * iText 7 PDF builder.
-     *
-     * Sections:
-     *   1. Dark-navy header bar (report type | RespondPH + timestamp)
-     *   2. Metadata box        (disaster, site, report type, total, generated on)
-     *   3. Report body         (switches on getSelectedReportType())
-     *   4. Closing note
-     *   5. Page-number footer
-     */
-    private void buildPDF(File file,
-                          List<EvacuationPlanModel> filtered,
-                          String disasterName,
-                          String siteName) throws IOException {
+    private void buildPDF(File file, List<EvacuationPlanModel> filtered,
+                          String disasterName, String siteName) throws IOException {
 
         PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
@@ -785,19 +939,17 @@ public class EvacuationPlanPrintingController {
         String timestamp  = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
 
-        // ── Header bar ────────────────────────────────────────────────────────
+        // Header bar
         Table headerTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
                 .useAllAvailableWidth().setMarginBottom(4);
-
         headerTable.addCell(new Cell()
                 .add(new Paragraph(reportType.toUpperCase())
                         .setFont(fontBold).setFontSize(18).setFontColor(PDF_WHITE))
-                .add(new Paragraph("Municipal of Banate Disaster Risk Reduction and Management")
+                .add(new Paragraph("Barangay Disaster Risk Reduction and Management")
                         .setFont(fontNormal).setFontSize(10)
                         .setFontColor(new DeviceRgb(189, 215, 238)))
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
-
         headerTable.addCell(new Cell()
                 .add(new Paragraph("RespondPH")
                         .setFont(fontBold).setFontSize(13).setFontColor(PDF_WHITE)
@@ -809,16 +961,14 @@ public class EvacuationPlanPrintingController {
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
                 .setVerticalAlignment(VerticalAlignment.MIDDLE));
-
         doc.add(headerTable);
 
-        // ── Metadata box ──────────────────────────────────────────────────────
+        // Metadata box
         Table metaTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                 .useAllAvailableWidth()
                 .setBackgroundColor(new DeviceRgb(240, 244, 248))
                 .setBorder(new SolidBorder(new DeviceRgb(190, 210, 230), 1))
                 .setMarginTop(10).setMarginBottom(14);
-
         addMetaRow(metaTable, "Disaster Event",  disasterName,                       fontBold, fontNormal);
         addMetaRow(metaTable, "Evacuation Site", siteName,                            fontBold, fontNormal);
         addMetaRow(metaTable, "Report Type",     reportType,                          fontBold, fontNormal);
@@ -826,7 +976,6 @@ public class EvacuationPlanPrintingController {
         addMetaRow(metaTable, "Generated On",    timestamp,                           fontBold, fontNormal);
         doc.add(metaTable);
 
-        // ── Report body ───────────────────────────────────────────────────────
         switch (reportType) {
             case "Beneficiary List" ->
                     buildPdfBeneficiaryList(doc, filtered, disasterName, siteName, fontBold, fontNormal, fontMono);
@@ -836,15 +985,13 @@ public class EvacuationPlanPrintingController {
                     buildPdfCapacityReport(doc, filtered, siteName, fontBold, fontNormal);
         }
 
-        // ── Closing note ──────────────────────────────────────────────────────
         doc.add(new Paragraph(
-                "This report was generated automatically by RespondPH. "
-                        + "Data reflects the latest evacuation plan records.")
+                "This report was generated automatically by RespondPH. " +
+                        "Data reflects the latest evacuation plan records.")
                 .setFont(fontNormal).setFontSize(8)
                 .setFontColor(new DeviceRgb(120, 130, 140))
                 .setTextAlignment(TextAlignment.CENTER).setMarginTop(10));
 
-        // ── Page numbers ──────────────────────────────────────────────────────
         int totalPages = pdfDoc.getNumberOfPages();
         for (int i = 1; i <= totalPages; i++) {
             doc.showTextAligned(
@@ -860,22 +1007,18 @@ public class EvacuationPlanPrintingController {
 
     // ── PDF report-body builders ──────────────────────────────────────────────
 
-    private void buildPdfBeneficiaryList(Document doc,
-                                         List<EvacuationPlanModel> plans,
+    private void buildPdfBeneficiaryList(Document doc, List<EvacuationPlanModel> plans,
                                          String disasterName, String siteName,
-                                         PdfFont fontBold, PdfFont fontNormal,
-                                         PdfFont fontMono) {
+                                         PdfFont fontBold, PdfFont fontNormal, PdfFont fontMono) {
         doc.add(new Paragraph("Beneficiary List")
-                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG)
-                .setMarginBottom(4));
+                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG).setMarginBottom(4));
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{6, 60, 34}))
                 .useAllAvailableWidth().setMarginBottom(12);
 
-        for (String col : new String[]{ "#", "Beneficiary Name", "Date Assigned" }) {
+        for (String col : new String[]{"#", "Beneficiary Name", "Date Assigned"}) {
             table.addHeaderCell(new Cell()
-                    .add(new Paragraph(col).setFont(fontBold).setFontSize(9)
-                            .setFontColor(PDF_WHITE))
+                    .add(new Paragraph(col).setFont(fontBold).setFontSize(9).setFontColor(PDF_WHITE))
                     .setBackgroundColor(PDF_HEADER_BG).setPadding(5)
                     .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         }
@@ -885,8 +1028,8 @@ public class EvacuationPlanPrintingController {
             EvacuationPlanModel p = plans.get(i);
             DeviceRgb bg = alt ? new DeviceRgb(245, 248, 252) : new DeviceRgb(255, 255, 255);
             alt = !alt;
-            table.addCell(pdfCell(String.valueOf(i + 1), fontMono,   8, bg, TextAlignment.CENTER));
-            table.addCell(pdfCell(nvl(p.getBeneficiaryName()),  fontNormal, 9, bg, TextAlignment.LEFT));
+            table.addCell(pdfCell(String.valueOf(i + 1),          fontMono,   8, bg, TextAlignment.CENTER));
+            table.addCell(pdfCell(nvl(p.getBeneficiaryName()),    fontNormal, 9, bg, TextAlignment.LEFT));
             table.addCell(pdfCell(formatDate(p.getDateCreated()), fontNormal, 9, bg, TextAlignment.CENTER));
         }
         doc.add(table);
@@ -894,13 +1037,10 @@ public class EvacuationPlanPrintingController {
                 .setFont(fontBold).setFontSize(10).setFontColor(PDF_HEADER_BG).setMarginTop(4));
     }
 
-    private void buildPdfEvacuationPlan(Document doc,
-                                        List<EvacuationPlanModel> plans,
-                                        String siteName,
-                                        PdfFont fontBold, PdfFont fontNormal) {
+    private void buildPdfEvacuationPlan(Document doc, List<EvacuationPlanModel> plans,
+                                        String siteName, PdfFont fontBold, PdfFont fontNormal) {
         doc.add(new Paragraph("Evacuation Plan")
-                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG)
-                .setMarginBottom(4));
+                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG).setMarginBottom(4));
 
         Map<Character, List<EvacuationPlanModel>> byLetter = plans.stream()
                 .collect(Collectors.groupingBy(
@@ -916,7 +1056,6 @@ public class EvacuationPlanPrintingController {
 
             Table group = new Table(UnitValue.createPercentArray(new float[]{6, 54, 40}))
                     .useAllAvailableWidth().setMarginBottom(2);
-
             for (EvacuationPlanModel p : entry.getValue()) {
                 DeviceRgb bg = new DeviceRgb(249, 251, 253);
                 group.addCell(pdfCell(String.valueOf(counter++), fontNormal, 9, bg, TextAlignment.CENTER));
@@ -930,13 +1069,10 @@ public class EvacuationPlanPrintingController {
                 .setFont(fontBold).setFontSize(10).setFontColor(PDF_HEADER_BG).setMarginTop(6));
     }
 
-    private void buildPdfCapacityReport(Document doc,
-                                        List<EvacuationPlanModel> plans,
-                                        String siteName,
-                                        PdfFont fontBold, PdfFont fontNormal) {
+    private void buildPdfCapacityReport(Document doc, List<EvacuationPlanModel> plans,
+                                        String siteName, PdfFont fontBold, PdfFont fontNormal) {
         doc.add(new Paragraph("Capacity Report")
-                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG)
-                .setMarginBottom(6));
+                .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG).setMarginBottom(6));
 
         int    totalCapacity = evacSiteCapacities.getOrDefault(siteName, 0);
         int    occupied      = plans.size();
@@ -952,25 +1088,20 @@ public class EvacuationPlanPrintingController {
         addMetaRow(statsTable, "Occupancy Rate",      String.format("%.1f%%", pct), fontBold, fontNormal);
         doc.add(statsTable);
 
-        // Occupancy bar
         DeviceRgb barColor  = pct >= 100 ? PDF_RED : pct >= 80 ? PDF_ORANGE : PDF_GREEN;
         float     filledPct = (float) Math.min(pct, 100.0);
 
         Table barTable = new Table(UnitValue.createPercentArray(
-                filledPct < 100 ? new float[]{ filledPct, 100 - filledPct }
-                        : new float[]{ 100f }))
+                filledPct < 100 ? new float[]{filledPct, 100 - filledPct} : new float[]{100f}))
                 .useAllAvailableWidth().setHeight(18).setMarginBottom(8);
-
         barTable.addCell(new Cell()
                 .add(new Paragraph(String.format("%.0f%%", pct))
                         .setFont(fontBold).setFontSize(8).setFontColor(PDF_WHITE)
                         .setTextAlignment(TextAlignment.CENTER))
                 .setBackgroundColor(barColor).setPadding(2)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
-
         if (filledPct < 100) {
-            barTable.addCell(new Cell()
-                    .add(new Paragraph(""))
+            barTable.addCell(new Cell().add(new Paragraph(""))
                     .setBackgroundColor(new DeviceRgb(220, 220, 220)).setPadding(2)
                     .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         }
@@ -982,11 +1113,10 @@ public class EvacuationPlanPrintingController {
                 :              "✔ Site has available space for more evacuees.";
         doc.add(new Paragraph(statusNote)
                 .setFont(fontBold).setFontSize(10)
-                .setFontColor(pct >= 80 ? PDF_RED : PDF_GREEN)
-                .setMarginTop(4));
+                .setFontColor(pct >= 80 ? PDF_RED : PDF_GREEN).setMarginTop(4));
     }
 
-    // ── PDF helper methods ────────────────────────────────────────────────────
+    // ── PDF helpers ───────────────────────────────────────────────────────────
 
     private void addMetaRow(Table table, String label, String value,
                             PdfFont fontBold, PdfFont fontNormal) {
@@ -1022,7 +1152,7 @@ public class EvacuationPlanPrintingController {
     }
 
     // =========================================================================
-    //  PRINTER DETECTION  ← NEW  (identical logic to AddAidController)
+    // PRINTER DETECTION
     // =========================================================================
 
     private static class PrinterEntry {
@@ -1061,13 +1191,6 @@ public class EvacuationPlanPrintingController {
         return entries;
     }
 
-    /**
-     * Returns TRUE only for real, physically connected hardware printers.
-     * Virtual printers (PDF, FAX, XPS, OneNote…) always return FALSE.
-     * Windows: PowerShell IsOnline → WMIC fallback.
-     * Linux/macOS: CUPS lpstat → javax.print fallback.
-     * Any ambiguity → FALSE (fail-safe).
-     */
     private boolean isPrinterActive(Printer printer) {
         if (printer == null) return false;
         if (isVirtualPrinter(printer.getName())) return false;
@@ -1191,8 +1314,121 @@ public class EvacuationPlanPrintingController {
     }
 
     // =========================================================================
-    //  EXISTING JAVAFX REPORT BUILDERS  (all unchanged from original)
+    // JAVAFX REPORT BUILDERS (all unchanged)
     // =========================================================================
+
+    private boolean validate() {
+        if (disasterComboBox.getValue() == null) {
+            AlertDialogManager.showWarning("Validation", "Please select a disaster event.");
+            return false;
+        }
+        if (evacuationSiteComboBox.getValue() == null) {
+            AlertDialogManager.showWarning("Validation", "Please select an evacuation site.");
+            return false;
+        }
+        if (bondPaperSizeComboBox.getValue() == null) {
+            AlertDialogManager.showWarning("Validation", "Please select a paper size.");
+            return false;
+        }
+        return true;
+    }
+
+    private void handlePreview() {
+        if (!validate()) return;
+        VBox content = buildReportContent(getSelectedReportType());
+        if (content == null) return;
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20;");
+
+        Stage previewStage = new Stage();
+        previewStage.initModality(Modality.APPLICATION_MODAL);
+        previewStage.setTitle("Preview – " + getSelectedReportType());
+        previewStage.setScene(new Scene(scrollPane, 650, 900));
+        previewStage.show();
+    }
+
+    private void populateDisasterCombo() {
+        disasterNameToId.clear();
+        allPlans.stream()
+                .filter(p -> p.getDisasterName() != null)
+                .sorted(Comparator.comparing(EvacuationPlanModel::getDisasterName))
+                .forEach(p -> disasterNameToId.put(p.getDisasterName(), p.getDisasterId()));
+
+        ObservableList<String> names =
+                FXCollections.observableArrayList(disasterNameToId.keySet());
+        disasterComboBox.setItems(names);
+        if (!names.isEmpty()) disasterComboBox.getSelectionModel().selectFirst();
+    }
+
+    private void populateEvacSiteComboForDisaster(String disasterName) {
+        evacuationSiteComboBox.getItems().clear();
+        evacSiteNameToId.clear();
+        evacSiteCapacities.clear();
+        hideCapacitySummary();
+
+        Integer disasterId = disasterNameToId.get(disasterName);
+        if (disasterId == null) return;
+
+        Task<Map<String, Integer>> task = new Task<>() {
+            @Override protected Map<String, Integer> call() {
+                return allPlans.stream()
+                        .filter(p -> disasterId.equals(p.getDisasterId()))
+                        .filter(p -> p.getEvacSiteName() != null)
+                        .collect(Collectors.toMap(
+                                EvacuationPlanModel::getEvacSiteName,
+                                EvacuationPlanModel::getEvacSiteId,
+                                (a, b) -> a, LinkedHashMap::new));
+            }
+            @Override protected void succeeded() {
+                Map<String, Integer> siteMap = getValue();
+                evacSiteNameToId.putAll(siteMap);
+                siteMap.forEach((siteName, siteId) -> {
+                    EvacSiteModel model = evacSiteDAO.getById(siteId);
+                    if (model != null) {
+                        try {
+                            evacSiteCapacities.put(siteName,
+                                    Integer.parseInt(model.getCapacity()));
+                        } catch (NumberFormatException ignored) {
+                            evacSiteCapacities.put(siteName, 0);
+                        }
+                    }
+                });
+                ObservableList<String> sorted = FXCollections.observableArrayList(
+                        siteMap.keySet().stream().sorted().collect(Collectors.toList()));
+                evacuationSiteComboBox.setItems(sorted);
+                if (!sorted.isEmpty()) evacuationSiteComboBox.getSelectionModel().selectFirst();
+            }
+            @Override protected void failed() {
+                AlertDialogManager.showError("Error",
+                        "Failed to load evacuation sites: " + getException().getMessage());
+            }
+        };
+        new Thread(task).start();
+    }
+
+    private void updateCapacitySummary(String siteName) {
+        String  disasterName = disasterComboBox.getValue();
+        Integer disasterId   = disasterNameToId.get(disasterName);
+        Integer siteId       = evacSiteNameToId.get(siteName);
+        if (disasterId == null || siteId == null) { hideCapacitySummary(); return; }
+
+        long    occupied = allPlans.stream()
+                .filter(p -> disasterId.equals(p.getDisasterId()) && siteId.equals(p.getEvacSiteId()))
+                .count();
+        Integer capacity = evacSiteCapacities.getOrDefault(siteName, 0);
+        capacityLabel.setText(String.format("Capacity: %d / %d  (%.0f%% occupied)",
+                occupied, capacity,
+                capacity > 0 ? (occupied * 100.0 / capacity) : 0.0));
+        capacitySummary.setVisible(true);
+        capacitySummary.setManaged(true);
+    }
+
+    private void hideCapacitySummary() {
+        capacitySummary.setVisible(false);
+        capacitySummary.setManaged(false);
+    }
 
     private String getSelectedReportType() {
         if (evacuationPlanRadio.isSelected()) return "Evacuation Plan";
@@ -1239,17 +1475,17 @@ public class EvacuationPlanPrintingController {
 
         HBox colHeader = styledRow(true);
         colHeader.getChildren().addAll(
-                colCell("#",                50,  true),
+                colCell("#", 50, true),
                 colCell("Beneficiary Name", 340, true),
-                colCell("Date Assigned",    150, true));
+                colCell("Date Assigned", 150, true));
         root.getChildren().add(colHeader);
 
         for (int i = 0; i < plans.size(); i++) {
             EvacuationPlanModel p = plans.get(i);
             HBox row = styledRow(i % 2 == 0);
             row.getChildren().addAll(
-                    colCell(String.valueOf(i + 1),         50,  false),
-                    colCell(p.getBeneficiaryName(),         340, false),
+                    colCell(String.valueOf(i + 1), 50, false),
+                    colCell(p.getBeneficiaryName(), 340, false),
                     colCell(formatDate(p.getDateCreated()), 150, false));
             root.getChildren().add(row);
         }
@@ -1258,8 +1494,8 @@ public class EvacuationPlanPrintingController {
         Label totalLabel = new Label("Total Beneficiaries: " + plans.size());
         totalLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold;");
         root.getChildren().add(totalLabel);
-        if (includeFooterCheckbox.isSelected())      root.getChildren().add(buildFooter(plans.size()));
-        if (includePageNumbersCheckbox.isSelected())  root.getChildren().add(pageNumber(1));
+        if (includeFooterCheckbox.isSelected())     root.getChildren().add(buildFooter(plans.size()));
+        if (includePageNumbersCheckbox.isSelected()) root.getChildren().add(pageNumber(1));
         return root;
     }
 
@@ -1299,8 +1535,8 @@ public class EvacuationPlanPrintingController {
         }
 
         root.getChildren().add(separator());
-        if (includeFooterCheckbox.isSelected())      root.getChildren().add(buildFooter(plans.size()));
-        if (includePageNumbersCheckbox.isSelected())  root.getChildren().add(pageNumber(1));
+        if (includeFooterCheckbox.isSelected())     root.getChildren().add(buildFooter(plans.size()));
+        if (includePageNumbersCheckbox.isSelected()) root.getChildren().add(pageNumber(1));
         return root;
     }
 
@@ -1350,12 +1586,12 @@ public class EvacuationPlanPrintingController {
                 + (pct >= 80 ? "#c0392b" : "#1a7a4a") + ";");
         root.getChildren().add(noteLabel);
 
-        if (includeFooterCheckbox.isSelected())      root.getChildren().add(buildFooter(occupied));
-        if (includePageNumbersCheckbox.isSelected())  root.getChildren().add(pageNumber(1));
+        if (includeFooterCheckbox.isSelected())     root.getChildren().add(buildFooter(occupied));
+        if (includePageNumbersCheckbox.isSelected()) root.getChildren().add(pageNumber(1));
         return root;
     }
 
-    // ── JavaFX UI helpers (all unchanged) ─────────────────────────────────────
+    // ── JavaFX UI helpers ─────────────────────────────────────────────────────
 
     private VBox printPage() {
         VBox page = new VBox(6);
@@ -1367,11 +1603,11 @@ public class EvacuationPlanPrintingController {
     }
 
     private VBox buildHeader(String reportTitle, String disasterName, String siteName) {
-        VBox header = new VBox(4);
-        header.setAlignment(Pos.CENTER);
+        VBox h = new VBox(4);
+        h.setAlignment(Pos.CENTER);
         Label republic  = new Label("Republic of the Philippines");
         republic.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
-        Label title     = new Label("MUNICIPAL OF BANATE DISASTER RISK REDUCTION");
+        Label title     = new Label("BARANGAY DISASTER RISK REDUCTION");
         title.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
         Label title2    = new Label("AND MANAGEMENT");
         title2.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
@@ -1384,20 +1620,19 @@ public class EvacuationPlanPrintingController {
         Label dateLabel = new Label("Generated: " + LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  HH:mm")));
         dateLabel.setStyle("-fx-font-size: 10; -fx-text-fill: #777;");
-        header.getChildren().addAll(republic, title, title2, rptLabel, disLabel, siteLabel, dateLabel);
-        return header;
+        h.getChildren().addAll(republic, title, title2, rptLabel, disLabel, siteLabel, dateLabel);
+        return h;
     }
 
     private HBox buildFooter(int totalRecords) {
         HBox footer = new HBox();
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(10, 0, 0, 0));
-        Label left  = new Label("Total Records: " + totalRecords);
+        Label left = new Label("Total Records: " + totalRecords);
         left.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        String preparedBy = SessionManager.getInstance().getCurrentAdminFullName();
-        Label right = new Label("Prepared by : "+ preparedBy);
+        Label right = new Label("Prepared by BDRRMC  |  RespondPH System");
         right.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
         footer.getChildren().addAll(left, spacer, right);
         return footer;

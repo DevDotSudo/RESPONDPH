@@ -8,6 +8,7 @@ import com.ionres.respondph.evac_site.EvacSiteDAO;
 import com.ionres.respondph.evac_site.EvacSiteDAOServiceImpl;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.SessionManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,12 +54,10 @@ import java.util.stream.Collectors;
 
 public class EvacuationPlanPrintingController {
 
-    // ── Page Layout Constants ───────────────────────────────────────────────
     private static final double PAGE_WIDTH    = 612;
     private static final double MARGIN        = 36;
     private static final double CONTENT_WIDTH = PAGE_WIDTH - (2 * MARGIN);
 
-    // ── PDF color palette ─────────────────────────────────────────────────────
     private static final DeviceRgb PDF_HEADER_BG = new DeviceRgb(44,  62,  80);
     private static final DeviceRgb PDF_WHITE     = new DeviceRgb(255, 255, 255);
     private static final DeviceRgb PDF_BLUE      = new DeviceRgb(41,  128, 185);
@@ -632,28 +631,74 @@ public class EvacuationPlanPrintingController {
             return;
         }
 
+        // Apply paper size + orientation from UI
         applyPageLayout(job);
         PageLayout pageLayout = job.getJobSettings().getPageLayout();
 
-        if (!job.showPrintDialog(getOwnerWindow())) return;
+        // ── Calculate actual page count based on data ─────────────────────────
+        int actualPageCount = calculatePageCount(filtered, pageLayout, reportType);
 
-        int     copies     = copiesSpinner.getValue();
-        boolean allSuccess = true;
-        for (int i = 0; i < copies; i++) {
-            if (!job.printPage(pageLayout, content)) { allSuccess = false; break; }
-        }
+        // Set copies from spinner
+        int copies = copiesSpinner.getValue();
+        job.getJobSettings().setCopies(copies);
 
-        if (allSuccess) {
+        // Lock page range to actual data pages only (not 1–9999)
+        job.getJobSettings().setPageRanges(new PageRange(1, actualPageCount));
+        // ─────────────────────────────────────────────────────────────────────
+
+        // Silent print — no dialog
+        if (job.printPage(pageLayout, content)) {
             job.endJob();
-            AlertDialogManager.showInfo("Success",
-                    String.format("Document sent to printer: %s\n%d %s printed.",
+            AlertDialogManager.showInfo("Print Successful",
+                    String.format("Document sent to: %s%n%d page(s) × %d %s printed successfully.",
                             job.getPrinter().getName(),
+                            actualPageCount,
                             copies, copies == 1 ? "copy" : "copies"));
             closeDialog();
         } else {
             AlertDialogManager.showError("Print Error",
                     "An error occurred while printing. Please try again.");
         }
+    }
+
+    // ── Calculates how many pages the report will span ───────────────────────────
+    private int calculatePageCount(List<EvacuationPlanModel> filtered,
+                                   PageLayout pageLayout, String reportType) {
+        if (filtered == null || filtered.isEmpty()) return 1;
+
+        double pageHeight = pageLayout.getPrintableHeight();
+
+        // Estimate rows per page based on report type
+        // Each row is approximately 22px tall; header/footer/title take ~120px
+        double usableHeight = pageHeight - 120;
+        int rowHeight;
+
+        switch (reportType) {
+            case "Evacuation Plan":
+                // Grouped by letter — slight overhead per group
+                rowHeight = 24;
+                break;
+            case "Capacity Report":
+                // Fixed content — always 1 page
+                return 1;
+            default:
+                // Beneficiary List
+                rowHeight = 22;
+                break;
+        }
+
+        int rowsPerPage = Math.max(1, (int) (usableHeight / rowHeight));
+        int totalRows   = filtered.size();
+
+        // Add extra rows for letter-group headers in Evacuation Plan
+        if ("Evacuation Plan".equals(reportType)) {
+            long groupCount = filtered.stream()
+                    .map(p -> Character.toUpperCase(p.getBeneficiaryName().charAt(0)))
+                    .distinct().count();
+            totalRows += (int) groupCount; // each group label takes ~1 extra row
+        }
+
+        return Math.max(1, (int) Math.ceil((double) totalRows / rowsPerPage));
     }
 
     /** Applies the paper-size and orientation chosen by the user to the printer job. */
@@ -747,7 +792,7 @@ public class EvacuationPlanPrintingController {
         headerTable.addCell(new Cell()
                 .add(new Paragraph(reportType.toUpperCase())
                         .setFont(fontBold).setFontSize(18).setFontColor(PDF_WHITE))
-                .add(new Paragraph("Barangay Disaster Risk Reduction and Management")
+                .add(new Paragraph("Municipal of Banate Disaster Risk Reduction and Management")
                         .setFont(fontNormal).setFontSize(10)
                         .setFontColor(new DeviceRgb(189, 215, 238)))
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)
@@ -1326,7 +1371,7 @@ public class EvacuationPlanPrintingController {
         header.setAlignment(Pos.CENTER);
         Label republic  = new Label("Republic of the Philippines");
         republic.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
-        Label title     = new Label("BARANGAY DISASTER RISK REDUCTION");
+        Label title     = new Label("MUNICIPAL OF BANATE DISASTER RISK REDUCTION");
         title.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
         Label title2    = new Label("AND MANAGEMENT");
         title2.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
@@ -1351,7 +1396,8 @@ public class EvacuationPlanPrintingController {
         left.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label right = new Label("Prepared by BDRRMC  |  RespondPH System");
+        String preparedBy = SessionManager.getInstance().getCurrentAdminFullName();
+        Label right = new Label("Prepared by : "+ preparedBy);
         right.setStyle("-fx-font-size: 10; -fx-text-fill: #555;");
         footer.getChildren().addAll(left, spacer, right);
         return footer;

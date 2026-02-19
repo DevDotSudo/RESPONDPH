@@ -40,7 +40,7 @@ public class MainFrameController {
     public static MainFrameController getInstance() { return INSTANCE; }
 
     // ── FXML ─────────────────────────────────────────────────────────────────
-    @FXML private VBox        contentArea;
+    @FXML public VBox        contentArea;
     @FXML private VBox        smsProgressToast;
     @FXML private VBox        smsToastBody;
     @FXML private Label       smsProgressTitle;
@@ -53,10 +53,10 @@ public class MainFrameController {
     @FXML private Label  footerStatusLabel;
     @FXML private Button btnShowProgress;
 
-    @FXML private Button managementSectionBtn;
-    @FXML private Button disasterSectionBtn;
-    @FXML private Button aidsSectionBtn;
-    @FXML private Button evacSectionBtn;
+    @FXML public Button managementSectionBtn;
+    @FXML public Button disasterSectionBtn;
+    @FXML public Button aidsSectionBtn;
+    @FXML public Button evacSectionBtn;
     @FXML private VBox   managementSectionContent;
     @FXML private VBox   disasterSectionContent;
     @FXML private VBox   aidsSectionContent;
@@ -68,21 +68,21 @@ public class MainFrameController {
 
     @FXML private Button dashboardBtn;
     @FXML private Button manageAdminBtn;
-    @FXML private Button manageBeneficiariesBtn;
+    @FXML public   Button manageBeneficiariesBtn;
     @FXML private Button familyMembersBtn;
-    @FXML private Button disasterBtn;
+    @FXML public   Button disasterBtn;
     @FXML private Button disasterMappingBtn;
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
-    @FXML private Button evacBtn;
+    @FXML public   Button evacBtn;
     @FXML private Button evacPlanBtn;
     @FXML private Button aidTypeBtn;
-    @FXML private Button aidBtn;
+    @FXML public   Button aidBtn;
     @FXML private Button sendSmsBtn;
     @FXML private Button logoutBtn;
 
     // ── Nav state ─────────────────────────────────────────────────────────────
-    private Button  activeBtn;
+    public Button  activeBtn;
 
     // ── SMS bulk state ────────────────────────────────────────────────────────
     private boolean smsMinimized  = false;
@@ -800,7 +800,7 @@ public class MainFrameController {
         i.setRotate(CHEVRON_COLLAPSED);
     }
 
-    private void setupSectionToggle(Button b, VBox c, FontAwesomeIconView i) {
+    public void setupSectionToggle(Button b, VBox c, FontAwesomeIconView i) {
         if (b == null || c == null || i == null) return;
         b.setOnAction(e -> {
             boolean opening = !c.isVisible();
@@ -810,6 +810,23 @@ public class MainFrameController {
                 animateChevron(i, CHEVRON_EXPANDED);
             }
         });
+    }
+
+    // Add these public methods to MainFrameController.java
+    public void openManagementSection() {
+        ensureSectionOpen(managementSectionContent, managementSectionIcon);
+    }
+
+    public void openDisasterSection() {
+        ensureSectionOpen(disasterSectionContent, disasterSectionIcon);
+    }
+
+    public void openAidsSection() {
+        ensureSectionOpen(aidsSectionContent, aidsSectionIcon);
+    }
+
+    public void openEvacSection() {
+        ensureSectionOpen(evacSectionContent, evacSectionIcon);
     }
 
     private void ensureSectionOpen(VBox c, FontAwesomeIconView i) {

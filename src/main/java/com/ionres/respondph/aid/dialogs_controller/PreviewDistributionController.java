@@ -18,27 +18,6 @@ import javafx.stage.Stage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controller for preview_distribution_dialog.fxml
- *
- * <p>Call {@link #initData} from AddAidController after loading the FXML:
- *
- * <pre>{@code
- *   FXMLLoader loader = new FXMLLoader(
- *       getClass().getResource("/fxml/aid/preview_distribution_dialog.fxml"));
- *   Parent root = loader.load();
- *
- *   PreviewDistributionController ctrl = loader.getController();
- *   ctrl.initData(preview, getDistributionScopeText(), isFCMSelected(), dialogStage);
- *
- *   Stage stage = new Stage();
- *   stage.initModality(Modality.WINDOW_MODAL);
- *   stage.initOwner(dialogStage);
- *   stage.setScene(new Scene(root, 1000, 900));
- *   stage.setTitle("Preview Distribution");
- *   stage.show();
- * }</pre>
- */
 public class PreviewDistributionController {
 
     /* ── FXML — header ───────────────────────────────────────────── */
@@ -47,7 +26,6 @@ public class PreviewDistributionController {
     @FXML private Label  methodLabel;
     @FXML private Label  totalLabel;
     @FXML private Button closeBtn;
-    @FXML private Button footerCloseBtn;
 
     /* ── FXML — HIGH table ───────────────────────────────────────── */
     @FXML private TableView<BeneficiaryRow>            highPriorityTable;
@@ -119,7 +97,6 @@ public class PreviewDistributionController {
         populateTables();
 
         closeBtn.setOnAction(this::handleClose);
-        footerCloseBtn.setOnAction(this::handleClose);
     }
 
     /* ── Header labels ───────────────────────────────────────────── */
@@ -131,7 +108,6 @@ public class PreviewDistributionController {
         totalLabel.setText(allClusters.size() + " beneficiaries");
     }
 
-    /* ── Table population ────────────────────────────────────────── */
     private void populateTables() {
         Map<Integer, String> priorityMap = buildClusterPriorityMap(allClusters);
 

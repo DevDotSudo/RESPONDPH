@@ -46,12 +46,10 @@ public class MainFrameController {
     @FXML private Label  footerSmsLabel;
     @FXML private Button btnShowSmsProgress;
 
-    // News pill
     @FXML private HBox   newsFooterPill;
     @FXML private Label  footerNewsLabel;
     @FXML private Button btnShowNewsProgress;
 
-    // Divider between pills
     @FXML private Label  footerDivider;
 
     @FXML public Button managementSectionBtn;
@@ -126,19 +124,15 @@ public class MainFrameController {
     public void initialize() {
         INSTANCE = this;
 
-        // SMS toast buttons
         if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeSmsToFooter());
         if (smsCloseBtn    != null) smsCloseBtn.setOnAction(e -> handleSmsCloseButton());
 
-        // News toast buttons
         if (newsMinimizeBtn != null) newsMinimizeBtn.setOnAction(e -> minimizeNewsToFooter());
         if (newsCloseBtn    != null) newsCloseBtn.setOnAction(e -> handleNewsCloseButton());
 
-        // Footer — each pill has its OWN show button
         if (btnShowSmsProgress  != null) btnShowSmsProgress.setOnAction(e -> restoreSmsFromFooter());
         if (btnShowNewsProgress != null) btnShowNewsProgress.setOnAction(e -> restoreNewsFromFooter());
 
-        // SMS toast sizing
         if (smsProgressToast != null) {
             smsProgressToast.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             smsProgressToast.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
@@ -147,7 +141,6 @@ public class MainFrameController {
         if (smsToastBody   != null) smsToastBody.setMaxHeight(Region.USE_PREF_SIZE);
         if (smsProgressBar != null) smsProgressBar.setMaxWidth(Double.MAX_VALUE);
 
-        // News toast sizing
         if (newsProgressToast != null) {
             newsProgressToast.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             newsProgressToast.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
@@ -156,7 +149,6 @@ public class MainFrameController {
         if (newsToastBody   != null) newsToastBody.setMaxHeight(Region.USE_PREF_SIZE);
         if (newsProgressBar != null) newsProgressBar.setMaxWidth(Double.MAX_VALUE);
 
-        // Sidebar
         setupSectionToggle(managementSectionBtn, managementSectionContent, managementSectionIcon);
         setupSectionToggle(disasterSectionBtn,   disasterSectionContent,   disasterSectionIcon);
         setupSectionToggle(aidsSectionBtn,        aidsSectionContent,       aidsSectionIcon);
@@ -176,7 +168,6 @@ public class MainFrameController {
         boolean smsMini  = smsVisible  && smsMinimized;
         boolean newsMini = newsVisible && newsMinimized;
 
-        // Update SMS pill
         if (smsFooterPill != null) {
             smsFooterPill.setVisible(smsMini);
             smsFooterPill.setManaged(smsMini);
@@ -185,7 +176,6 @@ public class MainFrameController {
             footerSmsLabel.setText("📨 " + smsFooterText);
         }
 
-        // Update News pill
         if (newsFooterPill != null) {
             newsFooterPill.setVisible(newsMini);
             newsFooterPill.setManaged(newsMini);
@@ -194,13 +184,11 @@ public class MainFrameController {
             footerNewsLabel.setText("🤖 " + newsFooterText);
         }
 
-        // Divider — only when both are minimised
         if (footerDivider != null) {
             footerDivider.setVisible(smsMini && newsMini);
             footerDivider.setManaged(smsMini && newsMini);
         }
 
-        // Footer bar — visible if at least one pill is active
         boolean anyMini = smsMini || newsMini;
         if (footerBar != null) {
             footerBar.setVisible(anyMini);
@@ -247,7 +235,7 @@ public class MainFrameController {
             if (smsProgressBar     != null)
                 smsProgressBar.setProgress(total <= 0 ? 0 : sent / (double) total);
             smsFooterText = msg;
-            if (smsMinimized) refreshFooter();   // live-update the pill label
+            if (smsMinimized) refreshFooter();
         });
     }
 
@@ -312,7 +300,7 @@ public class MainFrameController {
         smsMinimized = false;
         if (smsToastBody     != null) { smsToastBody.setVisible(true);     smsToastBody.setManaged(true); }
         if (smsProgressToast != null) { smsProgressToast.setVisible(true); smsProgressToast.setManaged(true); }
-        refreshFooter();   // hides SMS pill; news pill stays if news still minimised
+        refreshFooter();
     }
 
     private void showSmsToast() {
@@ -331,6 +319,9 @@ public class MainFrameController {
         smsProgressBar.getStyleClass().remove("sms-toast-progress-news");
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // NEWS PROGRESS TOAST — public API
+    // ═════════════════════════════════════════════════════════════════════════
 
     public void setNewsCancelAction(Runnable action) { this.newsCancelAction = action; }
 
@@ -377,16 +368,19 @@ public class MainFrameController {
             streamTail = null;
         }
 
-        // Live-update footer pill label
         newsFooterText = header;
         if (newsMinimized) refreshFooter();
 
         if (newsLogBox == null) return;
 
         if (header.startsWith(GROUNDING_SEARCH_EMOJI) || header.startsWith(GROUNDING_PAGE_EMOJI)) {
-            handleGroundingEvent(header); return;
+            handleGroundingEvent(header);
+            // Also show the streaming tail if present (writing is happening alongside grounding)
+            if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
+            return;
         }
-        if (header.startsWith("Writing news…")) {
+        if (header.startsWith("Writing news…") || header.startsWith("Searching…")
+                || header.startsWith("📄") || header.startsWith("🔍")) {
             updateTickLabel(header);
             if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
@@ -464,7 +458,7 @@ public class MainFrameController {
         newsMinimized = false;
         if (newsToastBody     != null) { newsToastBody.setVisible(true);     newsToastBody.setManaged(true); }
         if (newsProgressToast != null) { newsProgressToast.setVisible(true); newsProgressToast.setManaged(true); }
-        refreshFooter();   // hides news pill; SMS pill stays if SMS still minimised
+        refreshFooter();
     }
 
     private void showNewsToast() {
@@ -523,7 +517,6 @@ public class MainFrameController {
                 "-fx-text-fill: rgba(255,255,255,0.50); " +
                         "-fx-font-size: 11px; -fx-font-style: italic;");
 
-        // Dots
         newsDotBar = new HBox(6);
         newsDotBar.setAlignment(Pos.CENTER_LEFT);
         for (int i = 0; i < 5; i++) {
@@ -539,7 +532,6 @@ public class MainFrameController {
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
         dotRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Log
         newsLogBox = new VBox(3);
         newsLogBox.setFillWidth(true);
         newsLogBox.setPadding(new Insets(6, 8, 6, 8));
@@ -563,27 +555,41 @@ public class MainFrameController {
     // ── Status handlers ───────────────────────────────────────────────────────
 
     private void handleGroundingEvent(String header) {
+        // Strip the elapsed-time suffix for the log row (e.g. "(12s)")
         String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
+
+        // Always update the live tick label so the user sees the current action
         updateTickLabel(header);
+
+        // Only append a new typewriter log row when the grounding label actually changed
+        // (avoids spamming the log with the same search query every second)
         if (!rowText.equals(lastGroundingRowText())) {
-            clearStreamingLabel(); clearTickLabel();
+            clearStreamingLabel();
             RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
             appendRowTypewriter(rowText, kind);
         }
     }
 
+    // FIX #12: Fill dots regardless of whether streamTail is present.
+    // The old code only filled dots when streamTail != null, causing dots to
+    // never fill when the "N of M items" message arrived without a preview line.
     private void handleItemConfirmed(String header, String streamTail) {
         int n = 0;
         try { n = Integer.parseInt(header.split(" ")[0]); } catch (NumberFormatException ignored) {}
 
-        if (streamTail != null) {
-            commitStreamingLabel(); clearTickLabel();
+        // Always update dots and count label when we have a new confirmed count
+        if (n > confirmedNewsCount) {
             for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
             confirmedNewsCount = n;
             if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
             newsFooterText = n + " of 5 items found";
             if (newsMinimized) refreshFooter();
             appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
+        }
+
+        if (streamTail != null && !streamTail.isBlank()) {
+            commitStreamingLabel();
+            clearTickLabel();
             updateStreamingLabel(streamTail);
         } else {
             updateTickLabel(header);
@@ -593,6 +599,7 @@ public class MainFrameController {
     private void handleDone(String header) {
         commitStreamingLabel(); clearTickLabel(); stopPulse();
         appendRow("🎉 " + header, RowKind.ITEM);
+        // Fill any remaining unfilled dots
         for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
         confirmedNewsCount = 5;
         if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");

@@ -283,15 +283,3 @@
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
 }
-
-/* ===== RESPONSIVE ADJUSTMENTS ===== */
-@media (max-width: 600px) {
-    .dialog-container {
-        -fx-pref-width: 95%;
-    }
-
-    .beneficiary-table .column-header .label,
-    .beneficiary-table .table-cell {
-        -fx-font-size: 12px;
-    }
-}

@@ -34,8 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SendSMSController implements Initializable {
+
+    private static final Logger LOG = Logger.getLogger(SendSMSController.class.getName());
 
     @FXML private ComboBox<String> cbSelectBeneficiary;
     @FXML private ComboBox<String> cbSelectPorts;
@@ -82,6 +86,7 @@ public class SendSMSController implements Initializable {
     @FXML private TextArea txtCustomEvacMessage;
     @FXML private Button   btnSaveEvacMessage;
     @FXML private Label    lblMessageStatus;
+
     private DisasterMappingService disasterMappingService;
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
     private final List<NewsItem>   storedNewsItems           = new ArrayList<>();
@@ -110,7 +115,6 @@ public class SendSMSController implements Initializable {
                     updateSendButtonState();
                     return;
                 }
-                // Auto-connect regardless of GSM/API toggle — user explicitly picked a port
                 autoConnectToPort(newPort);
             };
 
@@ -119,12 +123,13 @@ public class SendSMSController implements Initializable {
         smsService = new SmsServiceImpl();
         smsSender  = SMSSender.getInstance();
         disasterMappingService = new DisasterMappingServiceImpl(DBConnection.getInstance());
-        try {
 
+        try {
             newsGeneratorService = new NewsGeneratorService();
+            LOG.info("[SendSMS] NewsGeneratorService initialized successfully.");
         } catch (Exception e) {
             newsGeneratorService = null;
-            System.err.println("[AI] Disabled: " + e.getMessage());
+            LOG.warning("[SendSMS] AI News disabled: " + e.getMessage());
         }
 
         beneficiaryDAO = new BeneficiaryDAOImpl();
@@ -223,10 +228,6 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    /**
-     * Populates slot {@code slotIndex} with the given news item.
-     * The SMS text is shown as a label and the URL as a double-click hyperlink.
-     */
     private void updateNewsSlot(int slotIndex, NewsItem item) {
         if (slotIndex < 0 || slotIndex >= newsSlots.length) return;
         RadioButton slot = newsSlots[slotIndex];
@@ -255,11 +256,9 @@ public class SendSMSController implements Initializable {
         slot.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         slot.setDisable(false);
 
-        // Auto-select the first slot so its text pre-fills the message box
         if (slotIndex == 0) slot.setSelected(true);
     }
 
-    /** Resets all 5 radio-button slots to their empty placeholder state. */
     private void clearNewsSlots() {
         for (int i = 0; i < newsSlots.length; i++) {
             RadioButton slot = newsSlots[i];
@@ -320,14 +319,13 @@ public class SendSMSController implements Initializable {
     private void populateAvailablePorts() {
         if (cbSelectPorts == null) return;
 
-        // Remove old listener to avoid double-firing during repopulation
         cbSelectPorts.getSelectionModel().selectedItemProperty()
                 .removeListener(portChangeListener);
 
         new Thread(() -> {
             List<String> ports;
             try {
-                ports = smsSender.getAvailablePorts(); // blocking — runs off FX thread
+                ports = smsSender.getAvailablePorts();
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));
@@ -351,7 +349,6 @@ public class SendSMSController implements Initializable {
                     cbSelectPorts.setItems(items);
                     cbSelectPorts.setDisable(false);
 
-                    // If already connected to a known port, just select it without reconnecting
                     String connected = smsSender.getConnectedPort();
                     if (connected != null && items.contains(connected)) {
                         cbSelectPorts.getSelectionModel().select(connected);
@@ -362,7 +359,6 @@ public class SendSMSController implements Initializable {
                     }
                 }
 
-                // Re-attach listener AFTER populating so it doesn't fire during setup
                 cbSelectPorts.getSelectionModel().selectedItemProperty()
                         .addListener(portChangeListener);
 
@@ -371,8 +367,6 @@ public class SendSMSController implements Initializable {
             });
         }, "Port-Scan-Thread").start();
     }
-
-
 
     private void updateConnectionLabel(String text, String color) {
         if (connectionStatusLabel != null) {
@@ -498,11 +492,16 @@ public class SendSMSController implements Initializable {
 
         boolean aiEnabled = newsGeneratorService != null;
 
+        // FIX #11: Show container but keep slots hidden individually — don't hide the whole container
+        // until we know there's nothing to show. Start hidden.
         updateAiResponseVisibility(false);
 
         if (btnGenerateNews != null) {
             btnGenerateNews.setDisable(!aiEnabled);
             btnGenerateNews.setOnAction(e -> onGenerateNews());
+            if (!aiEnabled) {
+                btnGenerateNews.setText("AI Disabled (No API Key)");
+            }
         }
         if (cbNewsTopic != null) {
             cbNewsTopic.setDisable(!aiEnabled);
@@ -510,6 +509,8 @@ public class SendSMSController implements Initializable {
         if (btnSaveEvacMessage != null) {
             btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
         }
+
+        LOG.info("[SendSMS] News controls setup. AI enabled: " + aiEnabled);
     }
 
     private void checkNetworkStatus() {
@@ -726,7 +727,11 @@ public class SendSMSController implements Initializable {
     private void onGenerateNews() {
         if (cbNewsTopic == null || btnGenerateNews == null) return;
 
-        if (!generationInProgress.compareAndSet(false, true)) return;
+        // FIX #10: Guard with compareAndSet; all early-exit paths already reset below.
+        if (!generationInProgress.compareAndSet(false, true)) {
+            LOG.info("[SendSMS] Generation already in progress, ignoring duplicate click.");
+            return;
+        }
 
         if (newsGeneratorService == null) {
             generationInProgress.set(false);
@@ -747,50 +752,69 @@ public class SendSMSController implements Initializable {
             return;
         }
 
+        LOG.info("[SendSMS] Starting news generation for topic: " + topic);
+
         storedNewsItems.clear();
         clearNewsSlots();
         updateAiResponseVisibility(false);
 
+        // Disable generate button during generation
+        btnGenerateNews.setDisable(true);
+
         MainFrameController main = MainFrameController.getInstance();
         if (main != null) {
-            main.setNewsCancelAction(() -> newsGeneratorService.cancelCurrentGeneration());
+            main.setNewsCancelAction(() -> {
+                LOG.info("[SendSMS] User cancelled news generation.");
+                newsGeneratorService.cancelCurrentGeneration();
+            });
             main.showNewsProgress(topic);
         }
 
         newsGeneratorService
                 .generateNewsHeadlines(topic, (progress, status) ->
-                        Platform.runLater(() -> { if (main != null) main.setNewsProgress(progress, status); }))
+                        Platform.runLater(() -> {
+                            if (main != null) main.setNewsProgress(progress, status);
+                        }))
                 .whenComplete((result, ex) -> Platform.runLater(() -> {
 
+                    // FIX #10: Always reset the flag and re-enable button on completion.
                     generationInProgress.set(false);
+                    if (btnGenerateNews != null) btnGenerateNews.setDisable(false);
 
-                    // Always clear the cancel action
                     if (main != null) main.setNewsCancelAction(null);
 
                     // ── Error path ────────────────────────────────────────────────
                     if (ex != null) {
-                        ex.printStackTrace();
+                        // FIX #9: Safe null-chain for error message extraction
+                        Throwable cause   = ex.getCause() != null ? ex.getCause() : ex;
+                        String    errMsg  = cause.getMessage();
+                        if (errMsg == null) errMsg = cause.getClass().getSimpleName();
+
+                        LOG.log(Level.SEVERE, "[SendSMS] News generation failed: " + errMsg, ex);
+
                         if (main != null) main.hideNewsProgress();
-                        // Fix: proper null check before getMessage()
-                        String errMsg = (ex.getCause() != null)
-                                ? ex.getCause().getMessage()
-                                : ex.getMessage();
                         AlertDialogManager.showError("AI Error",
                                 "News generation failed:\n" + errMsg);
                         return;
                     }
 
+                    if (main != null) main.hideNewsProgress();
+
                     if (result == null || result.isEmpty()) {
-                        if (main != null) main.hideNewsProgress();
+                        LOG.warning("[SendSMS] Generation returned no results.");
+                        AlertDialogManager.showWarning("No Results",
+                                "No news items could be verified.\n"
+                                        + "Try a different topic or check your internet connection.");
                         return;
                     }
 
-                    if (main != null) main.hideNewsProgress();
+                    LOG.info("[SendSMS] Generation complete. Got " + result.size() + " items.");
 
                     storedNewsItems.addAll(result);
                     int n = Math.min(storedNewsItems.size(), newsSlots.length);
                     for (int i = 0; i < n; i++) updateNewsSlot(i, storedNewsItems.get(i));
 
+                    // FIX #11: Only show response container after populating slots.
                     updateAiResponseVisibility(true);
 
                     if (n < 5) {
@@ -907,7 +931,7 @@ public class SendSMSController implements Initializable {
                     Platform.runLater(() -> {
                         setSmsLoading(false);
                         if (main != null) {
-                            main.setSmsCancelAction(null);   // clear before hiding
+                            main.setSmsCancelAction(null);
                             main.hideSmsProgress();
                         }
                         AlertDialogManager.showSuccess("Send Complete",
@@ -956,6 +980,7 @@ public class SendSMSController implements Initializable {
         }
         if (btnSendSMS != null) btnSendSMS.setDisable(!enabled);
     }
+
     public void reloadBeneficiarySelectionTable() {
         try {
             List<BeneficiaryModel> freshList = beneficiaryDAO.getAllBeneficiaries();
@@ -981,7 +1006,6 @@ public class SendSMSController implements Initializable {
                                 "\n\nPlease set the disaster location and radius in Disaster Mapping first.");
                 return result;
             }
-
 
             java.util.Set<Integer> addedIds = new java.util.HashSet<>();
 

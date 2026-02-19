@@ -100,8 +100,7 @@
                         <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="info-icon" />
                         <Label styleClass="info-title" text="Password Requirements" />
                     </HBox>
-                    <Label styleClass="info-text" text="• Minimum 8 characters" />
-                    <Label styleClass="info-text" text="• At least one uppercase letter, one lowercase letter, and one number" />
+                    <Label styleClass="info-text" text="• Minimum 6 characters" />
                     <Label styleClass="info-text" text="• Passwords must match" />
                 </VBox>
             </VBox>

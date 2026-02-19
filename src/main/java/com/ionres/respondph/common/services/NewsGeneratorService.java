@@ -11,13 +11,18 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NewsGeneratorService {
 
-    private static final String ENV_API_KEY    = "GEMINI_API_KEY";
-    private static final String MODEL_ID       = "gemini-3-pro-preview";
+    private static final Logger LOG = Logger.getLogger(NewsGeneratorService.class.getName());
+
+    private static final String ENV_API_KEY = "GEMINI_API_KEY";
+
+    private static final String MODEL_ID = "gemini-3-pro-preview";
 
     private static final int REQUEST_COUNT = 10;
     private static final int TARGET        = 5;
@@ -31,8 +36,10 @@ public class NewsGeneratorService {
 
     private static final int URL_VERIFY_THREADS = 6;
 
+    // FIX #4: Relaxed LINE_PARSER — allow trailing whitespace/punctuation after closing ')'
+    // Also make the number prefix fully optional, and allow '.' at end.
     private static final Pattern LINE_PARSER = Pattern.compile(
-            "^\\s*(?:\\d+\\s*[.):\\-]\\s*)?(.+?)\\s*\\(\\s*[Ss]ource\\s*:\\s*(https?://[^\\s)]+)\\s*\\)\\s*$"
+            "^\\s*(?:\\d+\\s*[.):\\-]\\s*)?(.+?)\\s*\\(\\s*[Ss]ource\\s*:\\s*(https?://[^\\s)]+)\\s*\\)\\s*[.\\s]*$"
     );
 
     private static final Pattern COMPLETE_ITEM = Pattern.compile(
@@ -48,7 +55,6 @@ public class NewsGeneratorService {
     private final AtomicReference<Thread> streamThread    = new AtomicReference<>(null);
 
     // ── Record ────────────────────────────────────────────────────────────────
-    /** Immutable data holder returned to callers. */
     public record NewsItem(String smsText, String url) {}
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -69,13 +75,15 @@ public class NewsGeneratorService {
                 URL_VERIFY_THREADS,
                 r -> { Thread t = new Thread(r, "url-verify"); t.setDaemon(true); return t; }
         );
+
+        LOG.info("[NewsGen] Service initialized. Model: " + MODEL_ID + ", URL verify: " + VERIFY_URL_LIVE);
     }
 
-    /** Signal the in-flight generation to stop gracefully. */
     public void cancelCurrentGeneration() {
         cancelRequested.set(true);
         Thread t = streamThread.get();
         if (t != null) t.interrupt();
+        LOG.info("[NewsGen] Cancel requested.");
     }
 
     public CompletableFuture<List<NewsItem>> generateNewsHeadlines(
@@ -88,96 +96,139 @@ public class NewsGeneratorService {
             streamThread.set(Thread.currentThread());
             long startMs = System.currentTimeMillis();
 
-            List<NewsItem>            verified          = new CopyOnWriteArrayList<>();
-            Set<String>               usedUrls          = ConcurrentHashMap.newKeySet();
-            Set<String>               seenFingerprints  = ConcurrentHashMap.newKeySet();
-            List<Future<NewsItem>>    pendingVerify     = new ArrayList<>();
-            AtomicBoolean             streamDone        = new AtomicBoolean(false);
+            LOG.info("[NewsGen] Starting generation for topic: " + topic);
+
+            List<NewsItem>         verified         = new CopyOnWriteArrayList<>();
+            Set<String>            usedUrls         = ConcurrentHashMap.newKeySet();
+            Set<String>            seenFingerprints = ConcurrentHashMap.newKeySet();
+            List<Future<NewsItem>> pendingVerify    = new ArrayList<>();
+            AtomicBoolean          streamDone       = new AtomicBoolean(false);
 
             ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread t = new Thread(r, "news-ticker"); t.setDaemon(true); return t;
             });
-            AtomicReference<String> lastTickLabel = new AtomicReference<>("🔍 Searching news sources…");
+            AtomicReference<String> lastTickLabel   = new AtomicReference<>("🔍 Searching news sources…");
+            AtomicLong              lastGroundingMs = new AtomicLong(0);
 
             ScheduledFuture<?> tick = ticker.scheduleAtFixedRate(() -> {
                 if (streamDone.get()) return;
+                // Don't overwrite a fresh grounding event with the stale ticker label
+                if (System.currentTimeMillis() - lastGroundingMs.get() < 3000) return;
                 long elapsed = elapsed(startMs);
                 int  n       = verified.size();
-                double bar   = Math.min((double) n / TARGET, 0.90); // reserve last 10 % for validation
+                double bar   = Math.min((double) n / TARGET, 0.90);
                 String label = (n == 0)
                         ? lastTickLabel.get() + " (" + elapsed + "s)"
                         : n + " of " + TARGET + " items verified (" + elapsed + "s)";
                 emit(onProgress, bar, label);
             }, 0, 1, TimeUnit.SECONDS);
 
-            // ── Phase 1 : stream Gemini response ─────────────────────────────
-            StringBuilder buffer       = new StringBuilder();
-            int           parsedLines  = 0;
-            int           seenComplete = 0;
-            String        lastSearchQ  = null;
+            // ── Phase 1: stream Gemini response ──────────────────────────────
+            StringBuilder buffer         = new StringBuilder();
+            int           linesSeenSoFar = 0;
+            int           seenComplete   = 0;
+            String        lastGrounding  = null; // most recent grounding label (search/page)
 
             try {
+                LOG.info("[NewsGen] Calling Gemini stream with model: " + MODEL_ID);
+
                 Iterable<GenerateContentResponse> stream =
                         client.models.generateContentStream(MODEL_ID, buildPrompt(topic), buildConfig());
 
                 for (GenerateContentResponse chunk : stream) {
                     if (cancelRequested.get()) break;
 
+                    // ── Grounding events (search queries / pages being read) ──
                     GroundingStatus gs = extractGroundingStatus(chunk);
-                    if (gs != null && !gs.label.equals(lastSearchQ)) {
-                        lastSearchQ = gs.label;
-                        lastTickLabel.set(gs.label);
+                    if (gs != null) {
+                        if (!gs.label.equals(lastGrounding)) {
+                            lastGrounding = gs.label;
+                            lastTickLabel.set(gs.label);
+                            LOG.fine("[NewsGen] Grounding event: " + gs.label);
+                        }
+                        // Record when we last emitted a grounding event so the ticker backs off
+                        lastGroundingMs.set(System.currentTimeMillis());
                         long e = elapsed(startMs);
-                        emit(onProgress, (double) verified.size() / TARGET,
-                                gs.label + " (" + e + "s)");
+                        int  n = verified.size();
+                        String display = n > 0
+                                ? n + " of " + TARGET + " found\n▶ " + gs.label
+                                : gs.label + " (" + e + "s)";
+                        emit(onProgress, Math.min((double) n / TARGET, 0.85), display);
                     }
 
+                    // ── Text chunks (actual generated content) ───────────────
                     String piece = safeText(chunk);
                     if (piece != null && !piece.isEmpty()) {
                         buffer.append(piece);
+                        LOG.finest("[NewsGen] Chunk received, buffer size: " + buffer.length());
 
                         int nowComplete = countComplete(buffer.toString());
                         if (nowComplete > seenComplete) {
                             seenComplete = nowComplete;
 
-                            int dispatched = dispatchNewLines(
-                                    buffer.toString(), parsedLines,
+                            int[] result = dispatchNewLines(
+                                    buffer.toString(), linesSeenSoFar,
                                     usedUrls, seenFingerprints,
                                     pendingVerify, verified
                             );
-                            parsedLines += dispatched;
+                            linesSeenSoFar = result[0];
 
                             drainVerified(pendingVerify, verified, usedUrls);
 
                             int n = verified.size();
                             long e = elapsed(startMs);
+                            LOG.info("[NewsGen] Verified so far: " + n + "/" + TARGET);
                             emit(onProgress,
                                     Math.min((double) n / TARGET, 0.85),
                                     n + " of " + TARGET + " items found (" + e + "s)\n▶ " + tail(buffer.toString()));
 
-                            if (n >= TARGET) break; // we have enough, no need to wait for more
+                            if (n >= TARGET) {
+                                LOG.info("[NewsGen] Reached target, stopping stream early.");
+                                break;
+                            }
                         } else {
-                            // Still assembling — show live stream preview
+                            // Mid-stream: show live writing preview
                             int n = verified.size();
                             long e = elapsed(startMs);
-                            String header = n == 0
-                                    ? "Writing news… (" + e + "s)"
-                                    : n + " of " + TARGET + " items found (" + e + "s)";
-                            emit(onProgress, (double) n / TARGET, header + "\n▶ " + tail(buffer.toString()));
+                            String tailText = tail(buffer.toString());
+                            String header;
+                            if (n > 0) {
+                                header = n + " of " + TARGET + " items found (" + e + "s)";
+                            } else if (buffer.length() > 10) {
+                                // Gemini started writing — show "Writing" not grounding label
+                                header = "Writing news… (" + e + "s)";
+                            } else {
+                                // Buffer nearly empty — still searching
+                                header = (lastGrounding != null ? lastGrounding : "Searching…") + " (" + e + "s)";
+                            }
+                            // Only append tail if it has real content beyond the ellipsis
+                            if (tailText.length() > 2) {
+                                emit(onProgress, (double) n / TARGET, header + "\n▶ " + tailText);
+                            } else {
+                                emit(onProgress, (double) n / TARGET, header);
+                            }
                         }
                     }
                 }
 
+                LOG.info("[NewsGen] Stream complete. Buffer length: " + buffer.length());
+
             } catch (Exception streamEx) {
+                LOG.log(Level.WARNING, "[NewsGen] Stream error: " + streamEx.getMessage(), streamEx);
                 if (!cancelRequested.get()) {
-                    // Fallback: blocking call
                     try {
                         emit(onProgress, (double) verified.size() / TARGET, "Reconnecting…");
+                        LOG.info("[NewsGen] Falling back to blocking generateContent call.");
                         GenerateContentResponse resp =
                                 client.models.generateContent(MODEL_ID, buildPrompt(topic), buildConfig());
                         String raw = safeText(resp);
-                        if (raw != null) buffer.append("\n").append(raw);
-                    } catch (Exception ignored) {}
+                        if (raw != null) {
+                            buffer.append("\n").append(raw);
+                            LOG.info("[NewsGen] Fallback response received, length: " + raw.length());
+                        }
+                    } catch (Exception fallbackEx) {
+                        LOG.log(Level.SEVERE, "[NewsGen] Fallback also failed: " + fallbackEx.getMessage(), fallbackEx);
+                    }
                 }
             } finally {
                 streamThread.set(null);
@@ -193,30 +244,34 @@ public class NewsGeneratorService {
                 return Collections.emptyList();
             }
 
-            // ── Phase 2 : dispatch any remaining unverified lines ─────────────
-            dispatchNewLines(buffer.toString(), parsedLines,
+            // ── Phase 2: dispatch any remaining unverified lines ──────────────
+            LOG.info("[NewsGen] Phase 2: dispatching remaining lines.");
+            dispatchNewLines(buffer.toString(), linesSeenSoFar,
                     usedUrls, seenFingerprints,
                     pendingVerify, verified);
 
             emit(onProgress, 0.88, "Validating articles… (" + elapsed(startMs) + "s)");
 
-            // Wait for all in-flight verifications (up to 30 s total)
             waitForPending(pendingVerify, verified, usedUrls, 30_000);
+            LOG.info("[NewsGen] After phase 2 wait, verified: " + verified.size());
 
-            // ── Phase 3 : retry gap if < TARGET ──────────────────────────────
+            // ── Phase 3: retry gap if < TARGET ───────────────────────────────
             if (!cancelRequested.get() && verified.size() < TARGET) {
                 int gap = TARGET - verified.size();
+                LOG.info("[NewsGen] Phase 3: fetching " + gap + " more items.");
                 emit(onProgress, 0.90,
                         "Only " + verified.size() + " found — fetching " + gap + " more…");
 
                 List<NewsItem> extra = retryGap(topic, gap, usedUrls, seenFingerprints, startMs);
                 verified.addAll(extra);
+                LOG.info("[NewsGen] After retry, total verified: " + verified.size());
             }
 
-            // ── Phase 4 : rank, dedup, trim to TARGET ────────────────────────
+            // ── Phase 4: rank, dedup, trim to TARGET ─────────────────────────
             List<NewsItem> best = selectBest(new ArrayList<>(verified), TARGET);
 
             long total = elapsed(startMs);
+            LOG.info("[NewsGen] Done in " + total + "s. Final count: " + best.size());
             emit(onProgress, 1.0,
                     "Done — " + best.size() + " of " + TARGET + " items in " + total + "s");
 
@@ -224,41 +279,57 @@ public class NewsGeneratorService {
         });
     }
 
-    private int dispatchNewLines(
-            String raw, int alreadyParsed,
+    // FIX #3: Now returns int[]{newLinesSeenCount} so the caller knows
+    // how many raw lines have been processed (not how many were dispatched).
+    private int[] dispatchNewLines(
+            String raw, int alreadyProcessedLines,
             Set<String> usedUrls, Set<String> seenFingerprints,
             List<Future<NewsItem>> pending,
             List<NewsItem> verified) {
 
-        if (raw == null || raw.isBlank()) return 0;
+        if (raw == null || raw.isBlank()) return new int[]{alreadyProcessedLines};
 
-        String[] lines = raw.split("\\r?\\n");
-        int dispatched = 0;
-        int lineIndex  = 0;
+        String[] lines = raw.split("\\r?\\n", -1);
+        int dispatched   = 0;
+        int totalLines   = lines.length;
 
-        for (String line : lines) {
-            lineIndex++;
-            if (lineIndex <= alreadyParsed) continue;
-
+        for (int lineIndex = alreadyProcessedLines; lineIndex < totalLines; lineIndex++) {
+            String line    = lines[lineIndex];
             String trimmed = line.trim();
+
             if (trimmed.isEmpty()) continue;
 
             String fp = fingerprint(trimmed);
             if (seenFingerprints.contains(fp)) continue;
 
             Matcher m = LINE_PARSER.matcher(trimmed);
-            if (!m.matches()) continue;
+            if (!m.matches()) {
+                LOG.fine("[NewsGen] Line did not match parser: " + trimmed.substring(0, Math.min(80, trimmed.length())));
+                continue;
+            }
 
             seenFingerprints.add(fp);
 
             String rawSms = m.group(1).trim();
             String url    = m.group(2).trim();
 
-            if (!isLikelyReliableUrl(url))   continue;
-            if (usedUrls.contains(url))       continue;
+            LOG.fine("[NewsGen] Parsed line — url: " + url + ", sms length: " + rawSms.length());
+
+            if (!isLikelyReliableUrl(url)) {
+                LOG.fine("[NewsGen] URL rejected (unreliable): " + url);
+                continue;
+            }
+            if (usedUrls.contains(url)) {
+                LOG.fine("[NewsGen] URL already used: " + url);
+                continue;
+            }
 
             String sms = cleanSms(rawSms);
-            if (!isSmsAcceptable(sms))         continue;
+            if (!isSmsAcceptable(sms)) {
+                LOG.fine("[NewsGen] SMS rejected (unacceptable, len=" + sms.length() + "): "
+                        + sms.substring(0, Math.min(60, sms.length())));
+                continue;
+            }
 
             usedUrls.add(url);
             dispatched++;
@@ -268,17 +339,25 @@ public class NewsGeneratorService {
 
             Future<NewsItem> future = urlVerifyPool.submit(() -> {
                 if (cancelRequested.get()) return null;
-                if (!VERIFY_URL_LIVE || isUrlLive(finalUrl)) {
+                if (!VERIFY_URL_LIVE) {
+                    LOG.fine("[NewsGen] URL verification skipped (disabled): " + finalUrl);
                     return new NewsItem(finalSms, finalUrl);
                 }
-                // URL dead — release the slot so a retry can use it
+                boolean live = isUrlLive(finalUrl);
+                LOG.fine("[NewsGen] URL " + finalUrl + " live=" + live);
+                if (live) {
+                    return new NewsItem(finalSms, finalUrl);
+                }
                 usedUrls.remove(finalUrl);
                 return null;
             });
             pending.add(future);
         }
 
-        return dispatched;
+        if (dispatched > 0)
+            LOG.info("[NewsGen] dispatchNewLines: dispatched " + dispatched + " new items from " + totalLines + " lines.");
+
+        return new int[]{totalLines};
     }
 
     private void drainVerified(
@@ -293,8 +372,10 @@ public class NewsGeneratorService {
                 it.remove();
                 try {
                     NewsItem item = f.get();
-                    if (item != null && !containsUrl(verified, item.url()))
+                    if (item != null && !containsUrl(verified, item.url())) {
                         verified.add(item);
+                        LOG.info("[NewsGen] ✅ Verified item added: " + item.url());
+                    }
                 } catch (Exception ignored) {}
             }
         }
@@ -312,6 +393,9 @@ public class NewsGeneratorService {
             if (!pending.isEmpty()) {
                 try { Thread.sleep(150); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
             }
+        }
+        if (!pending.isEmpty()) {
+            LOG.warning("[NewsGen] waitForPending timeout, " + pending.size() + " tasks still running.");
         }
         cancelPending(pending);
     }
@@ -333,14 +417,21 @@ public class NewsGeneratorService {
         List<NewsItem> out = new ArrayList<>();
         try {
             String retryPrompt = buildRetryPrompt(topic, needed);
+            LOG.info("[NewsGen] Retry gap: requesting " + (needed + 2) + " items.");
             GenerateContentResponse resp =
                     client.models.generateContent(MODEL_ID, retryPrompt, buildConfig());
             String raw = safeText(resp);
-            if (raw == null || raw.isBlank()) return out;
+            if (raw == null || raw.isBlank()) {
+                LOG.warning("[NewsGen] Retry returned empty response.");
+                return out;
+            }
 
-            List<Future<NewsItem>> pending = new ArrayList<>();
+            LOG.fine("[NewsGen] Retry raw response:\n" + raw);
 
-            for (String line : raw.split("\\r?\\n")) {
+            List<Future<NewsItem>> pending  = new ArrayList<>();
+            int                    targeted = 0;
+
+            for (String line : raw.split("\\r?\\n", -1)) {
                 String trimmed = line.trim();
                 if (trimmed.isEmpty()) continue;
 
@@ -355,22 +446,29 @@ public class NewsGeneratorService {
                 String sms = cleanSms(m.group(1).trim());
                 String url = m.group(2).trim();
 
-                if (!isSmsAcceptable(sms))       continue;
-                if (!isLikelyReliableUrl(url))   continue;
-                if (usedUrls.contains(url))       continue;
+                if (!isSmsAcceptable(sms))     continue;
+                if (!isLikelyReliableUrl(url)) continue;
+                if (usedUrls.contains(url))    continue;
 
                 usedUrls.add(url);
+                targeted++;
+
                 pending.add(urlVerifyPool.submit(() -> {
                     if (!VERIFY_URL_LIVE || isUrlLive(url)) return new NewsItem(sms, url);
                     usedUrls.remove(url);
                     return null;
                 }));
 
-                if (out.size() + pending.size() >= needed) break;
+                // FIX #5: Don't break early based on pending+out — let all lines be dispatched
+                // so we have enough candidates after verification completes.
+                if (targeted >= needed + 4) break; // slight buffer above needed
             }
 
             waitForPending(pending, out, usedUrls, 20_000);
-        } catch (Exception ignored) {}
+            LOG.info("[NewsGen] Retry got " + out.size() + " verified items.");
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "[NewsGen] Retry gap failed: " + e.getMessage(), e);
+        }
 
         return out;
     }
@@ -379,16 +477,9 @@ public class NewsGeneratorService {
     // Ranking / selection
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * From all verified candidates, pick the best {@code target} items by:
-     *  1. Prefer SMS lengths closest to the ideal 300-320 range.
-     *  2. Deduplicate by domain (one story per outlet).
-     *  3. If domain-dedup leaves a gap, fill with next-best regardless of domain.
-     */
     private List<NewsItem> selectBest(List<NewsItem> candidates, int target) {
         if (candidates == null || candidates.isEmpty()) return new ArrayList<>();
 
-        // Score: 0 = perfect length, higher = worse
         candidates.sort(Comparator.comparingInt(item -> {
             int len = item.smsText().length();
             if (len >= MIN_LEN && len <= MAX_LEN) return 0;
@@ -398,7 +489,6 @@ public class NewsGeneratorService {
         List<NewsItem> out         = new ArrayList<>();
         Set<String>    seenDomains = new HashSet<>();
 
-        // First pass: one item per domain
         for (NewsItem item : candidates) {
             if (out.size() >= target) break;
             String domain = domain(item.url());
@@ -407,7 +497,6 @@ public class NewsGeneratorService {
             out.add(item);
         }
 
-        // Second pass: fill remaining slots ignoring domain restriction
         if (out.size() < target) {
             for (NewsItem item : candidates) {
                 if (out.size() >= target) break;
@@ -441,18 +530,14 @@ public class NewsGeneratorService {
 
             if (scheme == null || (!scheme.equals("http") && !scheme.equals("https"))) return false;
             if (host  == null || host.isBlank())  return false;
-
-            // Must be an article path, not a bare homepage
-            if (path == null || path.length() < 6 || "/".equals(path)) return false;
+            if (path  == null || path.length() < 6 || "/".equals(path)) return false;
 
             String h = host.toLowerCase(Locale.ROOT);
-            // Strip leading "www."
             if (h.startsWith("www.")) h = h.substring(4);
 
             for (String blocked : BLOCKED_HOSTS)
                 if (h.equals(blocked) || h.endsWith("." + blocked)) return false;
 
-            // Avoid tag/category/search pages — not real articles
             String p = path.toLowerCase(Locale.ROOT);
             if (p.contains("/tag/") || p.contains("/search") ||
                     p.contains("/category/") || p.contains("?s=") || p.contains("?q=")) return false;
@@ -467,7 +552,6 @@ public class NewsGeneratorService {
         try {
             URI uri = URI.create(url);
 
-            // Try HEAD first (fast)
             HttpRequest head = HttpRequest.newBuilder(uri)
                     .timeout(URL_TIMEOUT)
                     .method("HEAD", HttpRequest.BodyPublishers.noBody())
@@ -481,8 +565,8 @@ public class NewsGeneratorService {
 
             if (code >= 200 && code < 400) return true;
 
-            // Some servers block HEAD — fall back to GET
-            if (code == 403 || code == 405 || code == 400 || code == 405) {
+            // FIX #6: removed duplicate 405 in condition
+            if (code == 403 || code == 405 || code == 400) {
                 HttpRequest get = HttpRequest.newBuilder(uri)
                         .timeout(URL_TIMEOUT)
                         .GET()
@@ -494,6 +578,7 @@ public class NewsGeneratorService {
 
             return false;
         } catch (Exception e) {
+            LOG.fine("[NewsGen] URL liveness check failed for " + url + ": " + e.getMessage());
             return false;
         }
     }
@@ -509,9 +594,9 @@ public class NewsGeneratorService {
     private String cleanSms(String raw) {
         if (raw == null) return "";
         String t = raw
-                .replaceAll("https?://\\S+", "")       // strip accidental URLs in text
-                .replaceAll("\\*{1,2}([^*]+)\\*{1,2}", "$1") // strip markdown bold/italic
-                .replaceAll("\\.{2,}", ".")             // collapse ellipsis
+                .replaceAll("https?://\\S+", "")
+                .replaceAll("\\*{1,2}([^*]+)\\*{1,2}", "$1")
+                .replaceAll("\\.{2,}", ".")
                 .replaceAll("\\s+", " ")
                 .trim();
 
@@ -520,13 +605,28 @@ public class NewsGeneratorService {
         return t;
     }
 
+    // FIX #2: Relaxed isSmsAcceptable — the old sentence-count check was rejecting
+    // valid Hiligaynon text. Use a simpler heuristic: at least one sentence terminator
+    // and a reasonable character count. Also allow up to MAX_LEN+40 before clean/truncate.
     private boolean isSmsAcceptable(String sms) {
         if (sms == null || sms.isBlank()) return false;
         int len = sms.length();
-        if (len < MIN_LEN || len > MAX_LEN + 30) return false; // allow slight overshoot (truncation will fix)
-        if (countSentences(sms) < 2) return false;
-        // Reject placeholder / test lines
+
+        // After cleanSms() the max is MAX_LEN (truncateAtSentence ensures this).
+        // Only reject if genuinely too short or astronomically long (shouldn't happen).
+        if (len < MIN_LEN - 20) {
+            LOG.fine("[NewsGen] SMS too short (" + len + "): " + sms.substring(0, Math.min(40, len)));
+            return false;
+        }
+        if (len > MAX_LEN + 50) {
+            LOG.fine("[NewsGen] SMS too long (" + len + ") after clean.");
+            return false;
+        }
         if (sms.toLowerCase(Locale.ROOT).contains("lorem ipsum")) return false;
+
+        // Must have at least one sentence-ending punctuation
+        if (!sms.matches("(?s).*[.!?].*")) return false;
+
         return true;
     }
 
@@ -588,11 +688,14 @@ public class NewsGeneratorService {
                         "Output exactly " + (needed + 2) + " items.";
     }
 
+    // FIX #8: buildConfig now wraps the Tool in a List as required by the SDK.
     private GenerateContentConfig buildConfig() {
+        Tool searchTool = Tool.builder()
+                .googleSearch(GoogleSearch.builder().build())
+                .build();
+
         return GenerateContentConfig.builder()
-                .tools(Tool.builder()
-                        .googleSearch(GoogleSearch.builder().build())
-                        .build())
+                .tools(List.of(searchTool))
                 .build();
     }
 
@@ -613,7 +716,6 @@ public class NewsGeneratorService {
         String t = buffer.length() > 100
                 ? buffer.substring(buffer.length() - 100)
                 : buffer;
-        // Strip partial first word (likely cut at chunk boundary)
         int sp = t.indexOf(' ');
         if (sp > 0 && sp < 20) t = t.substring(sp + 1);
         return "…" + t.replaceAll("\\s+", " ").trim();
@@ -632,7 +734,10 @@ public class NewsGeneratorService {
     }
 
     private String safeText(GenerateContentResponse r) {
-        try { return r == null ? null : r.text(); } catch (Exception e) { return null; }
+        try { return r == null ? null : r.text(); } catch (Exception e) {
+            LOG.fine("[NewsGen] safeText failed: " + e.getMessage());
+            return null;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -655,7 +760,6 @@ public class NewsGeneratorService {
             GroundingMetadata meta = c.groundingMetadata().orElse(null);
             if (meta == null) return null;
 
-            // Prefer grounding chunks (pages being read) over search query labels
             List<GroundingChunk> chunks = meta.groundingChunks().orElse(null);
             if (chunks != null && !chunks.isEmpty()) {
                 for (int i = chunks.size() - 1; i >= 0; i--) {

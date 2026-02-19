@@ -21,6 +21,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -130,10 +132,20 @@ public class DashboardController {
                 repositionPanel();
             });
 
-            // FIX 1: panel lives inside mapContainer (a Pane), not StackPane.
-            // Only Pane respects layoutX/layoutY for absolute positioning.
             buildInfoPanel();
             wireSearchComboBox();
+
+            // ── FIX: Wire overlay event forwarding BEFORE map handlers ────
+            //
+            // The searchOverlay sits in a StackPane above mapContainer.
+            // Even with pickOnBounds=false on the HBox, scroll/drag events
+            // that land on the ComboBox editor or the search Button are
+            // consumed by those controls and never reach mapContainer.
+            //
+            // We intercept at the FILTER phase (top-down) on searchOverlay
+            // so we can re-dispatch to mapContainer before the child
+            // controls consume them.
+            wireOverlayEventForwarding();
 
             // ── SINGLE click — drag / dismiss ─────────────────────────────
             mapContainer.setOnMousePressed(e -> {
@@ -221,8 +233,105 @@ public class DashboardController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
+    // FIX: Forward overlay events to mapContainer
+    //
+    // Problem: The searchOverlay HBox sits in a StackPane above mapContainer.
+    // Even though HBox has pickOnBounds=false, its visible children
+    // (the search Button, and the ComboBox editor when open) ARE pick-able
+    // and consume scroll/drag events before mapContainer ever sees them.
+    //
+    // Solution: Use event FILTERS (capture phase, top-down) on the overlay
+    // to detect scroll and drag events. If the event target is NOT the
+    // ComboBox editor text field (so typing still works), we translate the
+    // event coordinates into mapContainer's local space and fire a copy there.
+    //
+    // For ScrollEvent: always forward — the ComboBox drop-down list scroll is
+    // already handled by the ScrollPane filter inside populateInfoPanel, and
+    // zooming the map when hovering the search button/closed combo is correct
+    // behaviour.
+    //
+    // For MouseEvent (press/drag): only forward when the target is NOT the
+    // ComboBox skin's internal TextField, so the user can still type.
+    // ═════════════════════════════════════════════════════════════════════════
+    private void wireOverlayEventForwarding() {
+        if (searchOverlay == null || mapContainer == null) return;
+
+        // ── Scroll forwarding ─────────────────────────────────────────────
+        searchOverlay.addEventFilter(ScrollEvent.SCROLL, e -> {
+            // Don't forward if the combo popup list is open — let it scroll naturally.
+            // We detect this by checking if the source is the ComboBox itself.
+            // If you want zoom to always win, just remove the if-check below.
+            if (!beneficiarySearchBox.isShowing()) {
+                // Re-fire on mapContainer in mapContainer's coordinate space
+                ScrollEvent forwarded = e.copyFor(mapContainer, mapContainer);
+                mapContainer.fireEvent(forwarded);
+                e.consume(); // prevent double-zoom if mapContainer is also in path
+            }
+        });
+
+        // ── Drag forwarding ───────────────────────────────────────────────
+        // We need to track dragStart from overlay-filtered presses too,
+        // so the first delta after the cursor moves off the overlay is correct.
+
+        searchOverlay.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY) return;
+            if (isComboEditorTarget(e)) return; // let text field handle it
+
+            // Translate position to mapContainer local coords
+            javafx.geometry.Point2D local = mapContainer.sceneToLocal(e.getSceneX(), e.getSceneY());
+
+            // Mirror what mapContainer.setOnMousePressed does
+            BeneficiaryMarker hit = findMarkerAtScreen(local.getX(), local.getY());
+            if (hit == null && selectedBeneficiary != null) {
+                dismissPanel();
+            }
+            dragStartX = local.getX();
+            dragStartY = local.getY();
+
+            // Don't consume — the Button still needs its own press to work.
+        });
+
+        searchOverlay.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY) return;
+            if (isComboEditorTarget(e)) return;
+
+            javafx.geometry.Point2D local = mapContainer.sceneToLocal(e.getSceneX(), e.getSceneY());
+            double dx = local.getX() - dragStartX;
+            double dy = local.getY() - dragStartY;
+            dragStartX = local.getX();
+            dragStartY = local.getY();
+
+            double tilesOnScreen  = Math.pow(2, currentZoom);
+            double degPerPixelLon = 360.0 / (tilesOnScreen * 256.0);
+            double degPerPixelLat = degPerPixelLon * Math.cos(Math.toRadians(currentCenterLat));
+
+            currentCenterLon -= dx * degPerPixelLon;
+            currentCenterLat += dy * degPerPixelLat;
+            mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
+
+            e.consume(); // prevent button from acting on a drag gesture
+        });
+    }
+
+    /**
+     * Returns true if the mouse event's target is the internal TextField
+     * inside the ComboBox editor skin — meaning the user is actively typing
+     * and we should NOT forward the event to the map.
+     */
+    private boolean isComboEditorTarget(MouseEvent e) {
+        if (beneficiarySearchBox == null || !beneficiarySearchBox.isVisible()) return false;
+        javafx.scene.Node target = (javafx.scene.Node) e.getTarget();
+        // Walk up the scene-graph from target; if we hit the ComboBox, it owns it
+        while (target != null) {
+            if (target == beneficiarySearchBox) return true;
+            target = target.getParent();
+        }
+        return false;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
     // Combobox
-    // FIX 2: call hide() BEFORE every searchItems.setAll() to prevent the
+    // FIX: call hide() BEFORE every searchItems.setAll() to prevent the
     //   ReadOnlyUnbackedObservableList.subList IndexOutOfBoundsException that
     //   fires when the ListView tries to compute getAddedSubList() on a list
     //   that was just cleared while the popup was still open.
@@ -285,11 +394,16 @@ public class DashboardController {
 
     // ═════════════════════════════════════════════════════════════════════════
     // Search button toggle
+    // FIX: set mouseTransparent on the ComboBox when hidden so it does not
+    //      intercept any events in the overlay area when it is not in use.
     // ═════════════════════════════════════════════════════════════════════════
     private void searchToggle() {
         boolean nowVisible = !beneficiarySearchBox.isVisible();
         beneficiarySearchBox.setVisible(nowVisible);
         beneficiarySearchBox.setManaged(nowVisible);
+        // KEY FIX: when hidden, make the node fully transparent to events so
+        // it never silently swallows scroll/drag gestures over the button area.
+        beneficiarySearchBox.setMouseTransparent(!nowVisible);
 
         if (nowVisible) {
             beneficiarySearchBox.hide(); // hide before mutation
@@ -313,16 +427,8 @@ public class DashboardController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // FIX 1: Build info panel inside mapContainer (a Pane).
-    //
-    // Root cause of invisible panel:
-    //   The old code added infoPanel to the StackPane parent and called
-    //   setManaged(false) + setLayoutX/Y. StackPane ignores layoutX/Y on its
-    //   children — it always centres them. Moving the panel into mapContainer
-    //   (which is a plain Pane) means absolute positioning via layoutX/Y works.
-    //
-    //   setViewOrder(-1) raises it above the Canvas that mapping draws on,
-    //   so it renders on top and receives mouse events correctly.
+    // Build info panel inside mapContainer (a Pane).
+    // setViewOrder(-1) raises it above the Canvas that mapping draws on.
     // ═════════════════════════════════════════════════════════════════════════
     private void buildInfoPanel() {
         infoPanel = new VBox(0);
@@ -469,8 +575,8 @@ public class DashboardController {
             );
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            // Consume scroll events at filter phase so they never reach the map zoom handler
-            scroll.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, javafx.event.Event::consume);
+            // Consume scroll events so they don't reach the map zoom handler
+            scroll.addEventFilter(ScrollEvent.SCROLL, javafx.event.Event::consume);
 
             infoPanel.getChildren().addAll(midDiv, familyRow, scroll);
         }

@@ -3,7 +3,7 @@ package com.ionres.respondph.sendsms;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.common.interfaces.BulkProgressListener;
 import com.ionres.respondph.common.services.NewsGeneratorService;
-import com.ionres.respondph.common.services.NewsGeneratorService.NewsItem;
+import com.ionres.respondph.common.services.NewsItem;
 import com.ionres.respondph.main.MainFrameController;
 import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
 import com.ionres.respondph.util.*;

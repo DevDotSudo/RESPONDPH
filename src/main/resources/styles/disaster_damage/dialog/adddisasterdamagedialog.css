@@ -547,8 +547,175 @@
     -fx-border-width: 1px 0 0 0;
     -fx-background-radius: 0 0 8px 8px;
 }
+.upload-instruction-panel {
+    -fx-background-color: rgba(249,115,22,0.04);
+    -fx-border-color: rgba(249,115,22,0.18);
+    -fx-border-width: 1px;
+    -fx-border-style: dashed;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
 
-/* ---------- PRIMARY BUTTON ---------- */
+.upload-icon-badge {
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-border-color: rgba(249,115,22,0.30);
+    -fx-border-width: 1.5px;
+    -fx-background-radius: 50px;
+    -fx-border-radius: 50px;
+    -fx-min-width: 64px;
+    -fx-min-height: 64px;
+    -fx-pref-width: 64px;
+    -fx-pref-height: 64px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.25), 12, 0.0, 0, 0);
+}
+
+.upload-badge-icon {
+    -fx-fill: rgba(249,115,22,0.90);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.40), 6, 0.0, 0, 0);
+}
+
+.upload-panel-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
+    -fx-alignment: CENTER;
+}
+
+.upload-panel-desc {
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+    -fx-alignment: CENTER;
+}
+
+/* Format tags */
+.upload-tag {
+    -fx-background-color: rgba(148,163,184,0.10);
+    -fx-border-color: rgba(148,163,184,0.22);
+    -fx-border-width: 1px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 3px 8px;
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+/* ---------- Upload Button ---------- */
+.btn-upload {
+    -fx-background-color: rgba(249,115,22,0.14);
+    -fx-border-color: rgba(249,115,22,0.55);
+    -fx-border-width: 1.5px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-cursor: hand;
+    -fx-min-height: 40px;
+    -fx-pref-height: 40px;
+    -fx-padding: 0 20px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.15), 8, 0.0, 0, 2);
+}
+.btn-upload:hover {
+    -fx-background-color: rgba(249,115,22,0.24);
+    -fx-border-color: rgba(249,115,22,0.85);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 12, 0.0, 0, 3);
+}
+.btn-upload:pressed {
+    -fx-background-color: rgba(249,115,22,0.32);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+.btn-upload .btn-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+}
+.btn-upload .btn-text {
+    -fx-text-fill: rgba(249,115,22,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+/* Remove button */
+.btn-remove-photo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: rgba(239,68,68,0.75);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+    -fx-padding: 2px 6px;
+}
+.btn-remove-photo:hover {
+    -fx-text-fill: rgba(239,68,68,1.00);
+}
+
+/* ---------- RIGHT PANEL: Image Preview Container ---------- */
+.image-preview-container {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: rgba(148,163,184,0.16);
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-min-height: 200px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 10, 0.0, 0, 3);
+}
+
+/* ---------- Placeholder (no image yet) ---------- */
+.image-placeholder {
+    -fx-background-color: transparent;
+    -fx-padding: 30px;
+}
+
+.placeholder-icon-ring {
+    -fx-background-color: rgba(148,163,184,0.07);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1.5px;
+    -fx-background-radius: 50px;
+    -fx-border-radius: 50px;
+    -fx-min-width: 72px;
+    -fx-min-height: 72px;
+    -fx-pref-width: 72px;
+    -fx-pref-height: 72px;
+}
+
+.placeholder-icon {
+    -fx-fill: rgba(148,163,184,0.35);
+}
+
+.placeholder-title {
+    -fx-text-fill: rgba(148,163,184,0.70);
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.placeholder-hint {
+    -fx-text-fill: rgba(148,163,184,0.45);
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+/* ---------- Preview Badge (after upload) ---------- */
+.preview-badge {
+    -fx-alignment: BOTTOM_RIGHT;
+}
+.preview-badge-inner {
+    -fx-background-color: rgba(34,197,94,0.18);
+    -fx-border-color: rgba(34,197,94,0.40);
+    -fx-border-width: 1px;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-padding: 5px 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 6, 0.0, 0, 2);
+}
+.preview-badge-icon {
+    -fx-fill: rgba(74,222,128,0.95);
+}
+.preview-badge-text {
+    -fx-text-fill: rgba(74,222,128,0.95);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 800;
+}
+
 .btn-primary {
     -fx-background-color: rgba(249,115,22,0.92);
     -fx-text-fill: rgba(255,255,255,0.98);

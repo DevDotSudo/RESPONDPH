@@ -8,7 +8,6 @@ import com.google.genai.types.GroundingChunk;
 import com.google.genai.types.GroundingMetadata;
 import com.google.genai.types.GoogleSearch;
 import com.google.genai.types.Tool;
-
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,25 +33,15 @@ public class NewsGeneratorService {
     private static final String ENV_API_KEY = "GEMINI_API_KEY";
     private static final String MODEL_ID    = "gemini-3-pro-preview";
 
-    /** How many items we ask the AI to generate (cast a wide net). */
     private static final int REQUEST_COUNT = 10;
 
     /** How many items we want to deliver to the caller. */
     private static final int TARGET = 5;
 
-    /**
-     * Categories that search Philippines-wide instead of Iloilo City.
-     * Must match NATIONAL_CATEGORIES in SendSMSController.
-     */
     private static final Set<String> NATIONAL_CATEGORIES = Set.of(
             "national news", "politics", "health news", "law"
     );
 
-    /**
-     * Minimum SMS text length. Deliberately loose so items the AI writes
-     * slightly shorter than ideal still pass. Ranking by length ensures
-     * quality floats to the top.
-     */
     private static final int MIN_LEN = 280;
 
     /** Hard cap — anything above this is truncated at a sentence boundary. */
@@ -70,15 +59,6 @@ public class NewsGeneratorService {
     // ── Cancellation ─────────────────────────────────────────────────────────
     private final AtomicBoolean           cancelRequested = new AtomicBoolean(false);
     private final AtomicReference<Thread> streamThread    = new AtomicReference<>(null);
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // NESTED RECORD
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Represents a single news item: SMS text (Hiligaynon/English) + source URL.
-     */
-    public record NewsItem(String smsText, String url) {}
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -172,9 +152,8 @@ public class NewsGeneratorService {
 
             emit(onProgress, 0.0, "Waiting for AI…");
 
-            // Determine geographic scope from category
             boolean isNational = isNationalCategory(category);
-            String geoScope = isNational ? "Philippines" : "Iloilo City";
+            String geoScope = isNational ? "Philippines" : "Iloilo";
 
             String prompt = buildPrompt(topic, category, geoScope, LocalDate.now().toString());
             GenerateContentConfig config = GenerateContentConfig.builder()

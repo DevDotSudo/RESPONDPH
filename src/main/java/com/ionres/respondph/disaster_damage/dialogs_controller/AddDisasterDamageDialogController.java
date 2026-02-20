@@ -182,11 +182,11 @@ public class AddDisasterDamageDialogController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select Damage Photo");
         chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Files", "."),
+                new FileChooser.ExtensionFilter("All Files", "*.*"),
                 new FileChooser.ExtensionFilter("Image Files",
-                        ".png", ".jpg", "*.jpeg",
-                        ".PNG", ".JPG", "*.JPEG",
-                        ".bmp", ".BMP", ".gif", ".GIF")
+                        "*.png", "*.jpg", "*.jpeg",
+                        "*.PNG", "*.JPG", "*.JPEG",
+                        "*.bmp", "*.BMP", "*.gif", "*.GIF")
         );
 
         String userHome = System.getProperty("user.home");

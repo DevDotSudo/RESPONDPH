@@ -1,25 +1,19 @@
 package com.ionres.respondph.common.services;
 
-import com.google.genai.Client;
-import com.google.genai.types.Candidate;
-import com.google.genai.types.GenerateContentConfig;
-import com.google.genai.types.GenerateContentResponse;
-import com.google.genai.types.GroundingChunk;
-import com.google.genai.types.GroundingMetadata;
-import com.google.genai.types.GoogleSearch;
-import com.google.genai.types.Tool;
+import com.anthropic.client.AnthropicClient;
+import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import com.anthropic.core.http.StreamResponse;
+import com.anthropic.models.messages.MessageCreateParams;
+import com.anthropic.models.messages.Model;
+import com.anthropic.models.messages.RawMessageStreamEvent;
+
 import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,90 +22,137 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Claude Haiku 4.5 — Streaming + RSS grounding (no web tools needed).
+ *
+ * Key point:
+ *  - Claude MUST NOT be asked to "find real URLs".
+ *  - Your app fetches real articles (RSS) and supplies them in the prompt.
+ *  - Claude outputs ArticleIndex; your code resolves to the real URL.
+ */
 public class NewsGeneratorService {
 
-    private static final String ENV_API_KEY = "GEMINI_API_KEY";
-    private static final String MODEL_ID    = "gemini-3-pro-preview";
+    private static final String ENV_ANTHROPIC_KEY = "ANTHROPIC_API_KEY";
+
+    private static final Model MODEL_ID = Model.CLAUDE_SONNET_4_5_20250929;
 
     private static final int REQUEST_COUNT = 10;
-
-    /** How many items we want to deliver to the caller. */
     private static final int TARGET = 5;
 
     private static final Set<String> NATIONAL_CATEGORIES = Set.of(
-            "national news", "politics", "health news", "law"
+            "national news", "politics", "health news", "law", "crime"
+    );
+
+    private static final Set<String> WEATHER_CATEGORIES = Set.of(
+            "weather", "weather news", "weather update"
     );
 
     private static final int MIN_LEN = 280;
-
-    /** Hard cap — anything above this is truncated at a sentence boundary. */
     private static final int MAX_LEN = 320;
 
-    // Detects a fully-completed item line in the stream buffer.
-    // Used only for live progress bar — does NOT gate final parse.
+    private static final int HTTP_TIMEOUT_SEC = 12;
+    private static final int MAX_ARTICLES_PER_SOURCE = 20;
+    private static final int MAX_ARTICLES_IN_PROMPT = 15;
+    private static final int RSS_SUFFICIENT_THRESHOLD = 3;
+
+    // Progress detection: completed line with ArticleIndex
     private static final Pattern COMPLETE_ITEM = Pattern.compile(
-            "(?m)^\\s*(?:\\d+\\s*[\\.)]\\s*)?.+?\\(\\s*Source\\s*:\\s*https?://[^\\s)]{10,}\\s*\\)\\s*$",
+            "(?m)^\\s*(?:\\d+\\s*[\\.)]\\s*)?.+?\\|\\s*Headline:\\s*.+?\\|\\s*ArticleIndex:\\s*\\d+\\s*$",
             Pattern.CASE_INSENSITIVE
     );
 
-    private final Client client;
+    // Parse line: sms | Headline: ... | ArticleIndex: N
+    private static final Pattern LINE_FULL = Pattern.compile(
+            "^\\s*(?:\\d+\\s*[\\.)]\\s*)?(.+?)\\s*\\|\\s*Headline:\\s*(.+?)\\s*\\|\\s*ArticleIndex:\\s*(\\d+)\\s*$",
+            Pattern.CASE_INSENSITIVE
+    );
 
-    // ── Cancellation ─────────────────────────────────────────────────────────
-    private final AtomicBoolean           cancelRequested = new AtomicBoolean(false);
-    private final AtomicReference<Thread> streamThread    = new AtomicReference<>(null);
+    // Fallback: sms | Headline: ...
+    private static final Pattern LINE_FALLBACK = Pattern.compile(
+            "^\\s*(?:\\d+\\s*[\\.)]\\s*)?(.+?)\\s*\\|\\s*Headline:\\s*(.+?)\\s*$",
+            Pattern.CASE_INSENSITIVE
+    );
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // RSS regex
+    private static final Pattern RSS_ITEM  = Pattern.compile("<item[^>]*>(.*?)</item>",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern RSS_TITLE = Pattern.compile(
+            "<title[^>]*>\\s*(?:<!\\[CDATA\\[)?(.*?)(?:]]>)?\\s*</title>",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern RSS_LINK  = Pattern.compile(
+            "(?:<link>|<link[^/]*/?>)\\s*(https?://[^\\s<\"]+)",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern RSS_DESC  = Pattern.compile(
+            "<description[^>]*>\\s*(?:<!\\[CDATA\\[)?(.*?)(?:]]>)?\\s*</description>",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+
+    // RSS sources (same as your earlier list; edit as needed)
+    private static final List<String> LOCAL_RSS = List.of(
+            "https://panaynews.net/feed/",
+            "https://www.dailyguardian.com.ph/feed/",
+            "https://www.sunstar.com.ph/iloilo/rss",
+            "https://thefreeman.com.ph/feed/",
+            "https://www.antique-mirror.com/feed/",
+            "https://capiznews.com/feed/",
+            "https://www.manilatimes.net/tag/iloilo/feed/",
+            "https://www.rappler.com/places/visayas/feed/",
+            "https://businessmirror.com.ph/tag/iloilo/feed/",
+            "https://www.pna.gov.ph/rss/region-6"
+    );
+
+    private static final List<String> WEATHER_RSS = List.of(
+            "https://www.pagasa.dost.gov.ph/rss/weather_forecast",
+            "https://www.ndrrmc.gov.ph/attachments/feed/rss.xml",
+            "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=1&locCode=PH|ILO|ILOILO+CITY|",
+            "https://weather.com/rss/current/PHXX0024",
+            "https://news.abs-cbn.com/rss/weather",
+            "https://www.gmanetwork.com/news/rss/weather.xml",
+            "https://www.rappler.com/science-nature/weather/feed/"
+    );
+
+    private static final List<String> NATIONAL_RSS = List.of(
+            "https://www.gmanetwork.com/news/rss/news.xml",
+            "https://news.abs-cbn.com/rss/news",
+            "https://mb.com.ph/feed/",
+            "https://www.philstar.com/rss/headlines",
+            "https://www.manilatimes.net/feed/",
+            "https://www.rappler.com/feed/",
+            "https://newsinfo.inquirer.net/feed/",
+            "https://www.pna.gov.ph/rss/news"
+    );
+
+    private final AnthropicClient client;
+    private final HttpClient http;
+
+    private final AtomicBoolean cancelRequested = new AtomicBoolean(false);
+    private final AtomicReference<Thread> streamThread = new AtomicReference<>(null);
 
     public NewsGeneratorService() {
-        String apiKey = System.getenv(ENV_API_KEY);
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("Missing environment variable " + ENV_API_KEY);
-        }
-        this.client = Client.builder().apiKey(apiKey.trim()).build();
+        String apiKey = System.getenv(ENV_ANTHROPIC_KEY);
+        if (apiKey == null || apiKey.isBlank())
+            throw new IllegalStateException("Missing env var: " + ENV_ANTHROPIC_KEY);
+
+        this.client = AnthropicOkHttpClient.builder()
+                .apiKey(apiKey.trim())
+                .build();
+
+        this.http = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(java.time.Duration.ofSeconds(10))
+                .build();
     }
 
-    /**
-     * Cancels the in-progress generateNewsHeadlines() call immediately.
-     *
-     * Two-pronged:
-     *   1. Sets cancelRequested so the loop exits on the next iteration.
-     *   2. Interrupts the stream thread so a blocking iter.next() unblocks
-     *      instantly (without this, cancel can wait 5–30 s for next chunk).
-     */
     public void cancelCurrentGeneration() {
         cancelRequested.set(true);
         Thread t = streamThread.get();
         if (t != null) t.interrupt();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PUBLIC API
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Streams news from Gemini with Google Search grounding.
-     *
-     * Strategy:
-     *   • Ask the AI for REQUEST_COUNT (10) items so we have plenty of
-     *     candidates even when some fail validation.
-     *   • Accumulate every streamed chunk into a buffer.
-     *   • Parse ALL item lines from the final buffer — no limit during parse.
-     *   • Filter: valid full-article URL + at least 2 sentences + MIN_LEN chars.
-     *   • Rank survivors by SMS text length (longer = more complete) and take
-     *     the best TARGET (5).
-     *
-     * @param topic      Search keywords (e.g., "local", "disaster", "weather").
-     * @param category   Category for determining geographic scope. If in
-     *                   NATIONAL_CATEGORIES, searches Philippines-wide;
-     *                   otherwise searches Iloilo City + surrounding areas.
-     * @param onProgress (progress 0–1, status label) callback for the UI.
-     * @return CompletableFuture that completes with up to TARGET NewsItems.
-     */
     public CompletableFuture<List<NewsItem>> generateNewsHeadlines(
             String topic,
             String category,
-            BiConsumer<Double, String> onProgress) {
-
+            BiConsumer<Double, String> onProgress
+    ) {
         cancelRequested.set(false);
 
         return CompletableFuture.supplyAsync(() -> {
@@ -119,11 +160,9 @@ public class NewsGeneratorService {
             streamThread.set(Thread.currentThread());
 
             long startMs = System.currentTimeMillis();
-
             AtomicInteger confirmedItems = new AtomicInteger(0);
-            AtomicBoolean done           = new AtomicBoolean(false);
+            AtomicBoolean done = new AtomicBoolean(false);
 
-            // ── Elapsed ticker ────────────────────────────────────────────────
             ScheduledExecutorService ticker =
                     Executors.newSingleThreadScheduledExecutor(r -> {
                         Thread t = new Thread(r, "news-elapsed-ticker");
@@ -131,415 +170,440 @@ public class NewsGeneratorService {
                         return t;
                     });
 
-            AtomicReference<String> lastQueryRef = new AtomicReference<>(null);
-
             ScheduledFuture<?> tick = ticker.scheduleAtFixedRate(() -> {
                 if (done.get()) return;
-                int    n       = confirmedItems.get();
-                long   elapsed = (System.currentTimeMillis() - startMs) / 1000;
-                double bar     = (double) n / REQUEST_COUNT;
-                String q       = lastQueryRef.get();
-                String label;
-                if (n == 0) {
-                    label = q != null
-                            ? q + " (" + elapsed + "s)"
-                            : "Searching news sources… (" + elapsed + "s)";
-                } else {
-                    label = n + " of " + REQUEST_COUNT + " fetched (" + elapsed + "s)";
-                }
+                int n = confirmedItems.get();
+                long elapsed = (System.currentTimeMillis() - startMs) / 1000;
+                double bar = (double) n / REQUEST_COUNT;
+                String label = (n == 0)
+                        ? "Fetching live articles… (" + elapsed + "s)"
+                        : n + " of " + REQUEST_COUNT + " drafted (" + elapsed + "s)";
                 emit(onProgress, bar, label);
             }, 1, 1, TimeUnit.SECONDS);
 
-            emit(onProgress, 0.0, "Waiting for AI…");
-
-            boolean isNational = isNationalCategory(category);
-            String geoScope = isNational ? "Philippines" : "Iloilo";
-
-            String prompt = buildPrompt(topic, category, geoScope, LocalDate.now().toString());
-            GenerateContentConfig config = GenerateContentConfig.builder()
-                    .tools(Tool.builder()
-                            .googleSearch(GoogleSearch.builder().build())
-                            .build())
-                    .build();
-
-            StringBuilder buffer         = new StringBuilder();
-            int           seenInBuffer   = 0;
-            boolean       firstChunkSeen = false;
-            String        lastSearchQuery = null;
-
             try {
-                Iterable<GenerateContentResponse> stream =
-                        client.models.generateContentStream(MODEL_ID, prompt, config);
+                // ── STEP 1: fetch RSS ─────────────────────────────────────
+                emit(onProgress, 0.03, "Fetching live articles (RSS)…");
+                CategoryGroup group = resolveGroup(category);
+                List<RawArticle> articles = fetchArticlesRssOnly(group, topic);
 
-                // Explicit Iterator:
-                //   a) Skip individual malformed JSON chunks without aborting.
-                //   b) Detect thread interruption from cancelCurrentGeneration().
-                Iterator<GenerateContentResponse> iter = stream.iterator();
+                System.out.printf("[News] RSS articles after dedup: %d%n", articles.size());
 
-                while (iter.hasNext()) {
+                if (cancelRequested.get()) {
+                    emit(onProgress, 1.0, "Cancelled.");
+                    return List.of();
+                }
 
-                    // Fast-path cancel check (no blocking)
-                    if (cancelRequested.get()) {
-                        System.out.println("[AI] Cancelled between chunks.");
-                        break;
-                    }
+                String geoScope = (group == CategoryGroup.NATIONAL) ? "Philippines" : "Iloilo City";
+                String today = LocalDate.now().toString();
 
-                    // Blocks until next chunk OR thread is interrupted.
-                    GenerateContentResponse chunk;
-                    try {
-                        chunk = iter.next();
-                    } catch (Exception chunkEx) {
-                        // Interrupted by cancelCurrentGeneration()
-                        if (cancelRequested.get() || Thread.interrupted()) {
-                            System.out.println("[AI] Stream interrupted by cancellation.");
+                boolean hasGrounding = articles.size() >= RSS_SUFFICIENT_THRESHOLD;
+
+                String groundingBlock = buildGroundingBlock(articles);
+                String prompt = buildPromptSingleUser(topic, category, geoScope, today, groundingBlock, hasGrounding);
+
+                emit(onProgress, 0.10, hasGrounding ? "Writing from real articles…" : "RSS sparse — writing fallback items…");
+
+                // ── STEP 2: stream Claude ──────────────────────────────────
+                MessageCreateParams params = MessageCreateParams.builder()
+                        .model(MODEL_ID)
+                        .maxTokens(3000L)
+                        .addUserMessage(prompt)
+                        .build();
+
+                StringBuilder buffer = new StringBuilder();
+                int seenInBuffer = 0;
+                boolean firstChunkSeen = false;
+
+                try (StreamResponse<RawMessageStreamEvent> stream = client.messages().createStreaming(params)) {
+                    Iterator<RawMessageStreamEvent> iter = stream.stream().iterator();
+
+                    while (true) {
+                        if (cancelRequested.get()) {
+                            System.out.println("[Claude] Cancelled between chunks.");
                             break;
                         }
-                        // Malformed / truncated JSON frame — skip this chunk only
-                        String msg = chunkEx.getMessage() != null ? chunkEx.getMessage() : "";
-                        boolean isJsonError = msg.contains("JSON")
-                                || msg.contains("parse")
-                                || msg.contains("EOF")
-                                || msg.contains("end-of-input");
-                        if (isJsonError) {
-                            System.err.println("[AI] Skipping malformed chunk: " + msg);
-                            continue;
-                        }
-                        throw chunkEx;
-                    }
 
-                    // ── Grounding phase ───────────────────────────────────────
-                    GroundingStatus gs = extractGroundingStatus(chunk);
-                    if (gs != null && !gs.label.equals(lastSearchQuery)) {
-                        lastSearchQuery = gs.label;
-                        lastQueryRef.set(gs.label);
-                        long elapsed = (System.currentTimeMillis() - startMs) / 1000;
-                        emit(onProgress, (double) seenInBuffer / REQUEST_COUNT,
-                                gs.label + " (" + elapsed + "s)");
-                        System.out.println("[AI] " + gs.label);
-                    }
-
-                    String piece = safeText(chunk);
-                    if (piece == null || piece.isEmpty()) continue;
-
-                    buffer.append(piece);
-
-                    if (!firstChunkSeen) {
-                        firstChunkSeen = true;
-                        long elapsed = (System.currentTimeMillis() - startMs) / 1000;
-                        emit(onProgress, 0.0,
-                                "Writing news… (" + elapsed + "s)\n▶ " + chunkPreview(buffer.toString()));
-                    }
-
-                    // Progress bar: advance on each fully-completed item line
-                    int nowComplete = countCompleteItems(buffer.toString());
-                    if (nowComplete > seenInBuffer) {
-                        seenInBuffer = nowComplete;
-                        confirmedItems.set(seenInBuffer);
-
-                        double bar   = (double) seenInBuffer / REQUEST_COUNT;
-                        long elapsed = (System.currentTimeMillis() - startMs) / 1000;
-                        emit(onProgress, bar,
-                                seenInBuffer + " of " + REQUEST_COUNT + " fetched (" + elapsed + "s)\n▶ "
-                                        + chunkPreview(buffer.toString()));
-
-                        System.out.println("[AI] Stream: item " + seenInBuffer + "/" + REQUEST_COUNT + " confirmed");
-                    } else {
-                        double bar   = (double) seenInBuffer / REQUEST_COUNT;
-                        long elapsed = (System.currentTimeMillis() - startMs) / 1000;
-                        String header = seenInBuffer == 0
-                                ? "Writing news… (" + elapsed + "s)"
-                                : seenInBuffer + " of " + REQUEST_COUNT + " fetched (" + elapsed + "s)";
-                        emit(onProgress, bar, header + "\n▶ " + chunkPreview(buffer.toString()));
-                    }
-                }
-
-            } catch (Exception streamEx) {
-                if (cancelRequested.get()) {
-                    System.out.println("[AI] Cancelled; skipping fallback.");
-                } else {
-                    System.err.println("[AI] Stream failed, blocking fallback: " + streamEx.getMessage());
-                    streamEx.printStackTrace();
-                    try {
-                        emit(onProgress, (double) confirmedItems.get() / REQUEST_COUNT, "Reconnecting…");
-                        GenerateContentResponse resp =
-                                client.models.generateContent(MODEL_ID, prompt, config);
-                        String raw = resp != null && resp.text() != null ? resp.text().trim() : null;
-                        if (raw != null && !raw.isEmpty()) {
-                            buffer.append(raw);
-                            int nowComplete = countCompleteItems(buffer.toString());
-                            if (nowComplete > seenInBuffer) {
-                                seenInBuffer = nowComplete;
-                                confirmedItems.set(seenInBuffer);
-                                long elapsed = (System.currentTimeMillis() - startMs) / 1000;
-                                emit(onProgress, (double) seenInBuffer / REQUEST_COUNT,
-                                        seenInBuffer + " of " + REQUEST_COUNT + " fetched (" + elapsed + "s)");
+                        RawMessageStreamEvent event;
+                        try {
+                            if (!iter.hasNext()) break;
+                            event = iter.next();
+                        } catch (Exception ex) {
+                            if (cancelRequested.get() || Thread.interrupted()) {
+                                System.out.println("[Claude] Stream interrupted by cancellation.");
+                                break;
                             }
+                            throw ex;
                         }
-                    } catch (Exception blockEx) {
-                        System.err.println("[AI] Fallback also failed: " + blockEx.getMessage());
-                        blockEx.printStackTrace();
+
+                        String piece = extractTextDelta(event);
+                        if (piece == null || piece.isEmpty()) continue;
+
+                        buffer.append(piece);
+
+                        if (!firstChunkSeen) {
+                            firstChunkSeen = true;
+                            long elapsed = (System.currentTimeMillis() - startMs) / 1000;
+                            emit(onProgress, 0.10, "Writing news… (" + elapsed + "s)\n▶ " + chunkPreview(buffer.toString()));
+                        }
+
+                        int nowComplete = countCompleteItems(buffer.toString());
+                        if (nowComplete > seenInBuffer) {
+                            seenInBuffer = nowComplete;
+                            confirmedItems.set(seenInBuffer);
+
+                            double bar = Math.min(0.90, (double) seenInBuffer / REQUEST_COUNT);
+                            long elapsed = (System.currentTimeMillis() - startMs) / 1000;
+                            emit(onProgress, bar,
+                                    seenInBuffer + " of " + REQUEST_COUNT + " drafted (" + elapsed + "s)\n▶ "
+                                            + chunkPreview(buffer.toString()));
+
+                            System.out.println("[Claude] Stream: item " + seenInBuffer + "/" + REQUEST_COUNT + " confirmed");
+                        }
                     }
                 }
+
+                if (cancelRequested.get()) {
+                    emit(onProgress, 1.0, "Cancelled.");
+                    return List.of();
+                }
+
+                // ── STEP 3: parse + resolve URLs locally ────────────────────
+                emit(onProgress, 0.92, "Validating items…");
+
+                String raw = buffer.toString()
+                        .replaceAll("[ \\t]+", " ")
+                        .trim();
+
+                System.out.println("\n=== CLAUDE RAW RESPONSE ===");
+                System.out.println(raw.isEmpty() ? "(empty)" : raw);
+                System.out.println("===========================\n");
+
+                List<NewsItem> candidates = parseAllCandidates(raw, articles);
+
+                System.out.printf("[News] Parsed candidates: %d%n", candidates.size());
+                for (int i = 0; i < candidates.size(); i++) {
+                    System.out.printf("  [%d] len=%d url=%s%n", i + 1, candidates.get(i).smsText().length(), candidates.get(i).url());
+                }
+
+                List<NewsItem> best = selectBest(candidates, TARGET);
+
+                long totalMs = System.currentTimeMillis() - startMs;
+                emit(onProgress, 1.0, "Done — " + best.size() + " of " + TARGET + " in " + (totalMs / 1000) + "s");
+
+                return best;
+
+            } catch (Exception e) {
+                System.err.println("[News] Error: " + e.getMessage());
+                e.printStackTrace();
+                emit(onProgress, 1.0, "Error: " + e.getMessage());
+                return List.of();
             } finally {
-                streamThread.set(null);
                 done.set(true);
                 tick.cancel(false);
                 ticker.shutdownNow();
-                Thread.interrupted(); // clear interrupt flag
+                streamThread.set(null);
+                Thread.interrupted();
             }
-
-            // ── Return empty on cancellation ──────────────────────────────────
-            if (cancelRequested.get()) {
-                emit(onProgress, 1.0, "Cancelled.");
-                return new ArrayList<>();
-            }
-
-            // ── Parse + select best 5 ─────────────────────────────────────────
-            long totalMs = System.currentTimeMillis() - startMs;
-            emit(onProgress,
-                    (double) confirmedItems.get() / REQUEST_COUNT,
-                    "Validating articles… (" + totalMs / 1000 + "s)");
-
-            String raw = buffer.toString()
-                    .replaceAll("[ \\t]+", " ")
-                    .trim();
-
-            System.out.println("\n=== AI RAW RESPONSE ===");
-            System.out.println(raw.isEmpty() ? "(empty)" : raw);
-            System.out.println("=======================\n");
-
-            // Parse ALL candidate items — no limit
-            List<NewsItem> allCandidates = parseAllCandidates(raw);
-
-            System.out.printf("[AI] Raw candidates parsed: %d%n", allCandidates.size());
-            for (int i = 0; i < allCandidates.size(); i++) {
-                System.out.printf("  [%d] len=%d url=%s%n",
-                        i + 1,
-                        allCandidates.get(i).smsText().length(),
-                        allCandidates.get(i).url());
-            }
-
-            // Pick the best TARGET items
-            List<NewsItem> best = selectBest(allCandidates, TARGET);
-
-            long totalSec = totalMs / 1000;
-            emit(onProgress, 1.0,
-                    "Done — " + best.size() + " of " + TARGET + " items in " + totalSec + "s");
-
-            System.out.printf("[AI] Final delivered: %d/%d in %d ms%n", best.size(), TARGET, totalMs);
-            return best;
         });
     }
 
-    private boolean isNationalCategory(String category) {
-        if (category == null || category.isBlank()) return false;
-        return NATIONAL_CATEGORIES.contains(category.toLowerCase(java.util.Locale.ROOT).trim());
+    // ─────────────────────────────────────────────────────────────────────────
+    // RSS FETCH (LIVE URLS)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private List<RawArticle> fetchArticlesRssOnly(CategoryGroup group, String topic) {
+        List<String> sources = switch (group) {
+            case LOCAL -> LOCAL_RSS;
+            case WEATHER -> WEATHER_RSS;
+            case NATIONAL -> NATIONAL_RSS;
+        };
+
+        List<CompletableFuture<List<RawArticle>>> futures = sources.stream()
+                .map(url -> CompletableFuture.supplyAsync(() -> fetchRss(url)))
+                .toList();
+
+        List<RawArticle> all = new ArrayList<>();
+        for (var f : futures) {
+            try { all.addAll(f.get(HTTP_TIMEOUT_SEC + 3L, TimeUnit.SECONDS)); }
+            catch (Exception e) { System.err.println("[News] RSS future error: " + e.getMessage()); }
+        }
+
+        return dedup(filterByTopic(all, topic));
+    }
+
+    private List<RawArticle> fetchRss(String url) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "Mozilla/5.0 (compatible; RespondPH-NewsBot/2.0; +https://ionres.com)")
+                    .header("Accept", "application/rss+xml, application/atom+xml, application/xml, text/xml, */*")
+                    .timeout(java.time.Duration.ofSeconds(HTTP_TIMEOUT_SEC))
+                    .GET().build();
+
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
+                System.err.printf("[News] RSS HTTP %d → %s%n", resp.statusCode(), url);
+                return List.of();
+            }
+
+            String body = resp.body();
+            if (body == null || body.isBlank()) return List.of();
+
+            List<RawArticle> items = parseRssXml(body, url);
+            System.out.printf("[News] RSS %s → %d items%n", url, items.size());
+            return items;
+
+        } catch (Exception e) {
+            System.err.printf("[News] RSS fetch failed [%s]: %s%n", url, e.getMessage());
+            return List.of();
+        }
+    }
+
+    private List<RawArticle> parseRssXml(String xml, String sourceUrl) {
+        List<RawArticle> items = new ArrayList<>();
+        Matcher itemM = RSS_ITEM.matcher(xml);
+
+        while (itemM.find() && items.size() < MAX_ARTICLES_PER_SOURCE) {
+            String block = itemM.group(1);
+            String title = cleanHtml(extractFirst(RSS_TITLE, block));
+            String link = extractFirst(RSS_LINK, block);
+            String desc = cleanHtml(extractFirst(RSS_DESC, block));
+
+            if (title == null || title.isBlank()) continue;
+            if (link == null || link.isBlank()) link = sourceUrl;
+
+            link = link.replaceAll("[<\"'\\s].*$", "").trim();
+
+            items.add(new RawArticle(title, link, desc != null ? desc : ""));
+        }
+
+        return items;
+    }
+
+    private List<RawArticle> filterByTopic(List<RawArticle> articles, String topic) {
+        if (topic == null || topic.isBlank() || topic.equalsIgnoreCase("general"))
+            return articles;
+
+        String lc = topic.toLowerCase(Locale.ROOT);
+        List<RawArticle> filtered = articles.stream()
+                .filter(a -> a.title().toLowerCase(Locale.ROOT).contains(lc)
+                        || a.description().toLowerCase(Locale.ROOT).contains(lc))
+                .toList();
+
+        return filtered.isEmpty() ? articles : filtered;
+    }
+
+    private List<RawArticle> dedup(List<RawArticle> articles) {
+        Set<String> seen = new LinkedHashSet<>();
+        List<RawArticle> unique = new ArrayList<>();
+        for (RawArticle a : articles) {
+            String key = a.title().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ").trim();
+            if (seen.add(key)) unique.add(a);
+        }
+        return unique;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // PARSE ALL CANDIDATES (no hard limit, lenient length)
+    // PROMPT (Claude does NOT browse; uses your RSS list)
     // ─────────────────────────────────────────────────────────────────────────
 
-    private List<NewsItem> parseAllCandidates(String raw) {
-        List<NewsItem> candidates = new ArrayList<>();
-        if (raw == null || raw.isBlank()) return candidates;
+    private String buildGroundingBlock(List<RawArticle> articles) {
+        if (articles.isEmpty()) return "";
+        int limit = Math.min(articles.size(), MAX_ARTICLES_IN_PROMPT);
 
-        Pattern linePattern = Pattern.compile(
-                "^\\s*(?:\\d+\\s*[\\.)]\\s*)?(.+?)\\s*\\(\\s*Source\\s*:\\s*(https?://[^\\s)]+)\\s*\\)\\s*$",
-                Pattern.CASE_INSENSITIVE
-        );
-
-        for (String line : raw.split("\\r?\\n")) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty()) continue;
-
-            Matcher m = linePattern.matcher(trimmed);
-            if (!m.matches()) continue;
-
-            String smsText = m.group(1).trim();
-            String url     = m.group(2).trim();
-
-            // 1. URL must be a real article path
-            if (!isValidFullArticleUrl(url)) {
-                System.out.println("[AI] Rejected (bad URL): " + url);
-                continue;
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== REAL NEWS ARTICLES (GAMITA LANG INI NGA BASEHAN) ===\n\n");
+        for (int i = 0; i < limit; i++) {
+            RawArticle a = articles.get(i);
+            sb.append("ARTICLE ").append(i + 1).append(":\n");
+            sb.append("  Title: ").append(a.title()).append("\n");
+            sb.append("  URL  : ").append(a.url()).append("\n");
+            if (!a.description().isBlank()) {
+                String desc = a.description().length() > 300
+                        ? a.description().substring(0, 300) + "…"
+                        : a.description();
+                sb.append("  Desc : ").append(desc).append("\n");
             }
+            sb.append("\n");
+        }
+        sb.append("=== END ARTICLES ===\n\n");
+        return sb.toString();
+    }
 
-            // 2. Clean SMS text: strip accidentally embedded URLs
-            smsText = smsText.replaceAll("https?://\\S+", "")
-                    .replaceAll("\\.{2,}", ".")
-                    .replaceAll("\\s+", " ")
-                    .trim();
+    private String buildPromptSingleUser(
+            String topic,
+            String category,
+            String geoScope,
+            String today,
+            String groundingBlock,
+            boolean hasGrounding
+    ) {
+        StringBuilder p = new StringBuilder();
 
-            // 3. Ensure ends with sentence-ending punctuation
-            if (!smsText.isEmpty() && !smsText.matches(".*[.!?]$")) {
-                smsText += ".";
-            }
+        p.append("IKAW ISA KA eksperto nga manunulat sang HILIGAYNON SMS NEWS para sa ")
+                .append(geoScope)
+                .append(", Philippines.\n\n");
 
-            // 4. Minimum length
-            if (smsText.length() < MIN_LEN) {
-                System.out.println("[AI] Rejected (too short, " + smsText.length() + " chars): "
-                        + smsText.substring(0, Math.min(60, smsText.length())));
-                continue;
-            }
+        p.append("IMPORTANTE: WALA IKAW SANG INTERNET ACCESS. ")
+                .append("INDI ka mag pangita sang balita. ")
+                .append("KUN MAY LISTA sang articles sa idalom, amo lang ina ang imo basehan.\n\n");
 
-            // 5. Must have at least 2 sentences
-            if (countSentences(smsText) < 2) {
-                System.out.println("[AI] Rejected (< 2 sentences): "
-                        + smsText.substring(0, Math.min(60, smsText.length())));
-                continue;
-            }
+        p.append("Tanan nga SMS body dapat PURE HILIGAYNON gid. ")
+                .append("INDI mag gamit sang English kag indi mag Tagalog. ")
+                .append("Kung may termino nga wala gid Hiligaynon, ilisan sang Hiligaynon nga pagpaathag.\n\n");
 
-            // 6. Hard cap — truncate at sentence boundary if over MAX_LEN
-            if (smsText.length() > MAX_LEN) {
-                smsText = truncateAtSentence(smsText, MAX_LEN);
-            }
+        p.append("Subong nga adlaw: ").append(today).append("\n")
+                .append("Topic: ").append(topic).append(" | Category: ").append(category).append("\n\n");
 
-            candidates.add(new NewsItem(smsText, url));
+        if (hasGrounding && !groundingBlock.isBlank()) {
+            p.append(groundingBlock);
+            p.append("Baseha ang tagsa ka SMS item STRICTLY sa isa ka lain-lain nga ARTICLE sa lista. ")
+                    .append("INDI mag imbento sang facts nga wala sa article.\n\n");
+        } else {
+            p.append("WALA SANG sapat nga articles. ")
+                    .append("Himoa ang items base sa general knowledge, pero indi mag butang sang peke nga detalye.\n\n");
         }
 
-        return candidates;
+        p.append("HIMOA EXACTLY ").append(REQUEST_COUNT).append(" ka SMS items.\n")
+                .append("Tagsa ka item: 2–3 ka kumpleto nga pangungusap.\n")
+                .append("Kada SMS body: EXACTLY ").append(MIN_LEN).append("–").append(MAX_LEN).append(" characters.\n")
+                .append("BAWAL: ellipsis (…), '...', putol nga pangungusap, kag raw URL sa SMS body.\n\n");
+
+        p.append("STRICT LINE FORMAT (isa lang ka linya kada item, WALAY blank lines):\n")
+                .append("{N}. {SMS body} | Headline: {exact article title} | ArticleIndex: {1-based article number}\n\n");
+
+        p.append("RULES:\n")
+                .append("1) KADA item dapat lain nga ARTICLE (wala sang repeat).\n")
+                .append("2) Ang Headline dapat EXACT pareho sang Title sa article list.\n")
+                .append("3) Ang ArticleIndex dapat sakto nga numero sang article nga gin-basehan.\n")
+                .append("4) Output ONLY the numbered list. WALA intro. WALA closing. WALA markdown.\n");
+
+        return p.toString();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PARSE + URL RESOLUTION (LOCAL)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private List<NewsItem> parseAllCandidates(String raw, List<RawArticle> articles) {
+        List<NewsItem> results = new ArrayList<>();
+        if (raw == null || raw.isBlank()) return results;
+
+        for (String line : raw.split("\\r?\\n")) {
+            String t = line.trim();
+            if (t.isEmpty()) continue;
+
+            Matcher m = LINE_FULL.matcher(t);
+            if (m.matches()) {
+                String smsText = cleanSmsText(m.group(1));
+                String headline = m.group(2).trim();
+                int idx = safeInt(m.group(3), -1);
+
+                if (!validateSms(smsText)) continue;
+
+                String url = resolveUrl(idx, headline, articles);
+                if (url == null) url = "";
+                results.add(new NewsItem(smsText, url));
+                continue;
+            }
+
+            Matcher fb = LINE_FALLBACK.matcher(t);
+            if (fb.matches()) {
+                String smsText = cleanSmsText(fb.group(1));
+                String headline = fb.group(2).trim();
+                if (!validateSms(smsText)) continue;
+                String url = resolveByTitle(headline, articles);
+                if (url == null) url = "";
+                results.add(new NewsItem(smsText, url));
+            }
+        }
+
+        return results;
+    }
+
+    private int safeInt(String s, int def) {
+        try { return Integer.parseInt(s.trim()); } catch (Exception e) { return def; }
+    }
+
+    private String resolveUrl(int index, String headline, List<RawArticle> articles) {
+        if (index >= 1 && index <= articles.size()) return articles.get(index - 1).url();
+        return resolveByTitle(headline, articles);
+    }
+
+    private String resolveByTitle(String headline, List<RawArticle> articles) {
+        if (articles == null || articles.isEmpty()) return "";
+        if (headline == null || headline.isBlank()) return "";
+
+        Set<String> words = Arrays.stream(headline.toLowerCase(Locale.ROOT).split("\\W+"))
+                .filter(w -> w.length() > 3)
+                .collect(Collectors.toSet());
+
+        RawArticle best = null;
+        int bestScore = 0;
+        for (RawArticle a : articles) {
+            int score = 0;
+            String lc = a.title().toLowerCase(Locale.ROOT);
+            for (String w : words) if (lc.contains(w)) score++;
+            if (score > bestScore) { bestScore = score; best = a; }
+        }
+        return (best != null && bestScore > 0) ? best.url() : "";
     }
 
     private List<NewsItem> selectBest(List<NewsItem> candidates, int target) {
-        if (candidates.isEmpty()) return new ArrayList<>();
+        if (candidates.isEmpty()) return List.of();
 
-        // Score: distance from ideal 320-char length
-        // Bonus: items inside [300, 320] get score 0 (perfect)
-        Comparator<NewsItem> byScore = Comparator.comparingInt(item -> {
-            int len = item.smsText().length();
-            if (len >= 300 && len <= 320) return 0;
-            return Math.abs(len - 320);
-        });
-
+        // Prefer items closest to midpoint
+        int mid = (MIN_LEN + MAX_LEN) / 2;
         List<NewsItem> sorted = candidates.stream()
-                .sorted(byScore)
+                .sorted(Comparator.comparingInt(it -> Math.abs(it.smsText().length() - mid)))
                 .collect(Collectors.toList());
 
-        // De-duplicate by domain — keep only first item per domain
-        List<NewsItem> deduped      = new ArrayList<>();
-        List<String>   seenDomains  = new ArrayList<>();
-
-        for (NewsItem item : sorted) {
-            String domain = extractDomain(item.url());
-            if (domain != null && seenDomains.contains(domain)) {
-                System.out.println("[AI] Skipping duplicate domain: " + domain);
-                continue;
-            }
-            if (domain != null) seenDomains.add(domain);
-            deduped.add(item);
-            if (deduped.size() >= target) break;
+        // Dedup by URL
+        LinkedHashMap<String, NewsItem> dedup = new LinkedHashMap<>();
+        for (NewsItem it : sorted) {
+            String key = (it.url() == null) ? "" : it.url().trim();
+            if (!key.isEmpty() && !dedup.containsKey(key)) dedup.put(key, it);
+            if (dedup.size() >= target) break;
         }
 
-        // If de-duplication removed too many, fill back from sorted list
-        if (deduped.size() < target) {
-            for (NewsItem item : sorted) {
-                if (!deduped.contains(item)) {
-                    deduped.add(item);
-                    if (deduped.size() >= target) break;
+        // Fill if URLs missing/empty
+        if (dedup.size() < target) {
+            for (NewsItem it : sorted) {
+                if (dedup.size() >= target) break;
+                String key = (it.url() == null) ? "" : it.url().trim();
+                if (key.isEmpty()) {
+                    dedup.put(UUID.randomUUID().toString(), it);
                 }
             }
         }
 
-        System.out.println("[AI] Selected " + deduped.size() + " items after ranking + dedup:");
-        for (int i = 0; i < deduped.size(); i++) {
-            System.out.printf("  #%d len=%d  %s%n",
-                    i + 1,
-                    deduped.get(i).smsText().length(),
-                    deduped.get(i).url());
-        }
-
-        return deduped;
+        return new ArrayList<>(dedup.values()).subList(0, Math.min(target, dedup.size()));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // STREAM PROGRESS HELPER
+    // VALIDATION / CLEANUP
     // ─────────────────────────────────────────────────────────────────────────
 
-    private int countCompleteItems(String buffer) {
-        if (buffer == null || buffer.isBlank()) return 0;
-        Matcher m = COMPLETE_ITEM.matcher(buffer);
-        int count = 0;
-        while (m.find()) count++;
-        return count;
+    private String cleanSmsText(String s) {
+        if (s == null) return "";
+        s = s.replaceAll("\\s+", " ").trim();
+        if (!s.isEmpty() && !s.matches(".*[.!?]$")) s += ".";
+        if (s.length() > MAX_LEN) s = truncateAtSentence(s, MAX_LEN);
+        return s;
     }
 
-    private String buildPrompt(String topic, String category, String geoScope, String today) {
-        return
-                "You are an SMS news generator for " + geoScope + ", Philippines.\n" +
-                        "Use Google Search grounding to find REAL, VERIFIED, CURRENTLY LIVE article URLs.\n" +
-                        "News must come from " + geoScope + ". Prefer today (" + today + ") or the last 3 days.\n" +
-                        "Topic: " + topic + "\n" +
-                        "Category: " + category + "\n\n" +
+    private boolean validateSms(String sms) {
+        if (sms == null) return false;
+        int len = sms.length();
+        if (len < MIN_LEN || len > MAX_LEN) return false;
 
-                        "Return EXACTLY " + REQUEST_COUNT + " items. ONE item per line. " +
-                        "NO intro. NO blank lines. NO markdown. NO commentary.\n\n" +
+        int sentences = countSentences(sms);
+        if (sentences < 2 || sentences > 3) return false;
 
-                        "STRICT LINE FORMAT:\n" +
-                        "{number}. {Hiligaynon SMS text, 300-320 characters, 2-3 complete sentences, no ellipsis} " +
-                        "(Source: {FULL article URL including path})\n\n" +
+        if (sms.contains("…") || sms.contains("...")) return false;
 
-                        "RULES — violating any = item will be discarded:\n" +
-                        "1. SMS text must be 300–320 characters (count carefully).\n" +
-                        "2. 2–3 complete sentences. No cut-off. No '...'.\n" +
-                        "3. Hiligaynon only. English only if no Hiligaynon equivalent exists.\n" +
-                        "4. Do NOT put the URL inside the SMS text.\n" +
-                        "5. Source URL must be a full article path (not just homepage).\n" +
-                        "6. Source URL must be real and currently accessible via Google Search.\n" +
-                        "7. NEVER fabricate or guess URLs. Skip that story if unsure.\n" +
-                        "8. No extra lines or text outside the format.\n" +
-                        "9. Complete each item fully before starting the next.\n" +
-                        "10. All " + REQUEST_COUNT + " items must be distinct stories with distinct URLs.";
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private String chunkPreview(String bufferStr) {
-        if (bufferStr == null || bufferStr.isBlank()) return "";
-        String tail = bufferStr.length() > 80
-                ? bufferStr.substring(bufferStr.length() - 80)
-                : bufferStr;
-        int firstSpace = tail.indexOf(' ');
-        if (firstSpace > 0 && firstSpace < 15) tail = tail.substring(firstSpace + 1);
-        tail = tail.replaceAll("\\s+", " ").trim();
-        return tail.isEmpty() ? "" : "…" + tail;
-    }
-
-    private boolean isValidFullArticleUrl(String url) {
-        try {
-            URI u = URI.create(url);
-            String s = u.getScheme(), h = u.getHost(), p = u.getPath();
-            if (s == null || (!s.equalsIgnoreCase("http") && !s.equalsIgnoreCase("https"))) return false;
-            if (h == null || h.isBlank()) return false;
-            if (p == null || p.isBlank() || "/".equals(p) || p.length() < 2) return false;
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String extractDomain(String url) {
-        try {
-            return URI.create(url).getHost();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * Truncates text at the last sentence boundary at or before maxLen.
-     * Falls back to hard cut if no boundary found.
-     */
-    private String truncateAtSentence(String text, int maxLen) {
-        if (text.length() <= maxLen) return text;
-        String sub = text.substring(0, maxLen);
-        int lastDot = Math.max(sub.lastIndexOf('.'), Math.max(sub.lastIndexOf('!'), sub.lastIndexOf('?')));
-        if (lastDot > maxLen / 2) {
-            return sub.substring(0, lastDot + 1).trim();
-        }
-        return sub.trim();
+        return true;
     }
 
     private int countSentences(String text) {
@@ -550,74 +614,90 @@ public class NewsGeneratorService {
         return n;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GROUNDING STATUS
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private static class GroundingStatus {
-        final String label;
-        GroundingStatus(String label) { this.label = label; }
+    private String truncateAtSentence(String text, int maxLen) {
+        if (text.length() <= maxLen) return text;
+        String sub = text.substring(0, maxLen);
+        int last = Math.max(sub.lastIndexOf('.'),
+                Math.max(sub.lastIndexOf('!'), sub.lastIndexOf('?')));
+        if (last > maxLen / 2) return sub.substring(0, last + 1).trim();
+        return sub.trim();
     }
 
-    private GroundingStatus extractGroundingStatus(GenerateContentResponse chunk) {
+    // ─────────────────────────────────────────────────────────────────────────
+    // PROGRESS / STREAM TEXT EXTRACTION
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private int countCompleteItems(String buffer) {
+        if (buffer == null || buffer.isBlank()) return 0;
+        Matcher m = COMPLETE_ITEM.matcher(buffer);
+        int count = 0;
+        while (m.find()) count++;
+        return count;
+    }
+
+    private String chunkPreview(String bufferStr) {
+        if (bufferStr == null || bufferStr.isBlank()) return "";
+        String tail = bufferStr.length() > 90
+                ? bufferStr.substring(bufferStr.length() - 90)
+                : bufferStr;
+        tail = tail.replaceAll("\\s+", " ").trim();
+        return tail.isEmpty() ? "" : "…" + tail;
+    }
+
+    private String extractTextDelta(RawMessageStreamEvent event) {
         try {
-            if (chunk == null) return null;
-            List<Candidate> candidates = chunk.candidates().orElse(null);
-            if (candidates == null || candidates.isEmpty()) return null;
-            Candidate c = candidates.get(0);
-            if (c == null) return null;
-            GroundingMetadata meta = c.groundingMetadata().orElse(null);
-            if (meta == null) return null;
-
-            List<GroundingChunk> chunks = meta.groundingChunks().orElse(null);
-            if (chunks != null && !chunks.isEmpty()) {
-                for (int i = chunks.size() - 1; i >= 0; i--) {
-                    GroundingChunk gc = chunks.get(i);
-                    if (gc == null) continue;
-                    var web = gc.web().orElse(null);
-                    if (web == null) continue;
-                    String title = web.title().orElse(null);
-                    String uri   = web.uri().orElse(null);
-                    if (title != null && !title.isBlank()) {
-                        String display = title.length() > 55 ? title.substring(0, 52) + "…" : title;
-                        return new GroundingStatus("📄 Reading: " + display);
-                    }
-                    if (uri != null && !uri.isBlank()) {
-                        try {
-                            String host = URI.create(uri).getHost();
-                            if (host != null) return new GroundingStatus("📄 Reading: " + host);
-                        } catch (Exception ignored) {}
-                    }
-                }
-            }
-
-            List<String> queries = meta.webSearchQueries().orElse(null);
-            if (queries != null && !queries.isEmpty()) {
-                String q = queries.get(0);
-                if (q != null && !q.isBlank()) {
-                    String display = q.length() > 55 ? q.substring(0, 52) + "…" : q;
-                    return new GroundingStatus("🔍 Searching: \"" + display + "\"");
-                }
-            }
-
-            return null;
+            if (event == null) return null;
+            return event.contentBlockDelta().stream()
+                    .flatMap(cbd -> cbd.delta().text().stream())
+                    .map(td -> td.text())
+                    .collect(Collectors.joining(""));
         } catch (Exception e) {
             return null;
         }
     }
 
-    private void emit(BiConsumer<Double, String> cb, double p, String s) {
-        if (cb != null) cb.accept(Math.max(0.0, Math.min(1.0, p)), s);
+    private void emit(BiConsumer<Double, String> cb, double p, String msg) {
+        if (cb != null) cb.accept(Math.max(0.0, Math.min(1.0, p)), msg);
     }
 
-    private String safeText(GenerateContentResponse r) {
-        try {
-            if (r == null) return null;
-            // Do NOT trim individual chunks — removes boundary whitespace and
-            // merges words across chunks. Final buffer is trimmed once instead.
-            return r.text();
-        } catch (Exception e) {
-            return null;
-        }
+    // ─────────────────────────────────────────────────────────────────────────
+    // CATEGORY GROUPING
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private enum CategoryGroup { LOCAL, WEATHER, NATIONAL }
+
+    private CategoryGroup resolveGroup(String category) {
+        if (category == null || category.isBlank()) return CategoryGroup.LOCAL;
+        String lc = category.toLowerCase(Locale.ROOT).trim();
+        if (WEATHER_CATEGORIES.contains(lc)) return CategoryGroup.WEATHER;
+        if (NATIONAL_CATEGORIES.contains(lc)) return CategoryGroup.NATIONAL;
+        return CategoryGroup.LOCAL;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RSS UTIL
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private String extractFirst(Pattern p, String text) {
+        Matcher m = p.matcher(text);
+        return m.find() ? m.group(1).trim() : null;
+    }
+
+    private String cleanHtml(String html) {
+        if (html == null) return null;
+        return html
+                .replaceAll("<[^>]+>", " ")
+                .replace("&amp;", "&").replace("&lt;", "<")
+                .replace("&gt;", ">").replace("&quot;", "\"")
+                .replace("&#39;", "'").replace("&apos;", "'")
+                .replace("&nbsp;", " ").replace("&#8211;", "–")
+                .replace("&#8212;", "—")
+                .replaceAll("\\s+", " ").trim();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TYPES
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public record RawArticle(String title, String url, String description) {}
 }

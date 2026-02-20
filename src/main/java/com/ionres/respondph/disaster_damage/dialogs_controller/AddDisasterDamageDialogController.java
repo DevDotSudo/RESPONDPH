@@ -12,9 +12,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -31,6 +36,13 @@ public class AddDisasterDamageDialogController {
     @FXML private DatePicker assessmentDatePicker;
     @FXML private TextArea notesFld;
     @FXML private Button saveBtn, exitBtn;
+    @FXML private Button uploadPhotoBtn;
+    @FXML private Button removePhotoBtn;
+    @FXML private ImageView damagePhotoView;
+    @FXML private VBox imagePlaceholder;
+    @FXML private StackPane previewBadge;
+    @FXML private StackPane imagePreviewContainer;
+    private byte[] selectedImageBytes = null;
     private List<BeneficiaryModel> allBeneficiaries;
     private List<DisasterModel> allDisaster;
     private DisasterDamageService disasterDamageService;
@@ -53,6 +65,8 @@ public class AddDisasterDamageDialogController {
         EventHandler<ActionEvent> handler = this::handleActions;
         saveBtn.setOnAction(handler);
         exitBtn.setOnAction(handler);
+        uploadPhotoBtn.setOnAction(handler);
+        removePhotoBtn.setOnAction(handler);
     }
 
     private void handleActions(ActionEvent event) {
@@ -63,6 +77,12 @@ public class AddDisasterDamageDialogController {
         }
         else if (src == exitBtn){
             closeDialog();
+        }
+        else if (src == uploadPhotoBtn){
+            handleImageUpload();
+        }
+        else if (src == removePhotoBtn){
+            handleRemoveImage();
         }
     }
 
@@ -157,6 +177,81 @@ public class AddDisasterDamageDialogController {
                     "Error loading beneficiaries: " + e.getMessage());
         }
     }
+
+    private void handleImageUpload() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select Damage Photo");
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Files", "."),
+                new FileChooser.ExtensionFilter("Image Files",
+                        ".png", ".jpg", "*.jpeg",
+                        ".PNG", ".JPG", "*.JPEG",
+                        ".bmp", ".BMP", ".gif", ".GIF")
+        );
+
+        String userHome = System.getProperty("user.home");
+        File oneDrivePictures = new File(userHome + "/OneDrive/Pictures");
+        File localPictures    = new File(userHome + "/Pictures");
+
+        if (oneDrivePictures.exists()) {
+            chooser.setInitialDirectory(oneDrivePictures);
+        } else if (localPictures.exists()) {
+            chooser.setInitialDirectory(localPictures);
+        } else {
+            chooser.setInitialDirectory(new File(userHome));
+        }
+
+        File file = chooser.showOpenDialog(uploadPhotoBtn.getScene().getWindow());
+        if (file != null) {
+            try {
+
+                if (file.length() > 5 * 1024 * 1024) {
+                    AlertDialogManager.showWarning("File Too Large", "Please select an image under 5MB.");
+                    return;
+                }
+
+                selectedImageBytes = java.nio.file.Files.readAllBytes(file.toPath());
+
+                Image img = new Image(file.toURI().toString());
+                damagePhotoView.setImage(img);
+
+                imagePlaceholder.setVisible(false);
+                imagePlaceholder.setManaged(false);
+
+                damagePhotoView.setVisible(true);
+                damagePhotoView.setManaged(true);
+
+                previewBadge.setVisible(true);
+                previewBadge.setManaged(true);
+
+                removePhotoBtn.setVisible(true);
+                removePhotoBtn.setManaged(true);
+
+            } catch (Exception ex) {
+                AlertDialogManager.showError("Error", "Failed to read image: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void handleRemoveImage() {
+        selectedImageBytes = null;
+        damagePhotoView.setImage(null);
+
+        // Hide image, show placeholder again
+        damagePhotoView.setVisible(false);
+        damagePhotoView.setManaged(false);
+
+        imagePlaceholder.setVisible(true);
+        imagePlaceholder.setManaged(true);
+
+        // Hide badge and remove button
+        previewBadge.setVisible(false);
+        previewBadge.setManaged(false);
+
+        removePhotoBtn.setVisible(false);
+        removePhotoBtn.setManaged(false);
+    }
+
 
     private void setupBeneficiarySearchFilter() {
         beneficiaryNameFld.getEditor().textProperty().addListener((obs, oldText, newText) -> {

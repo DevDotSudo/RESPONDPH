@@ -67,6 +67,9 @@ public class AddDisasterDamageDialogController {
         exitBtn.setOnAction(handler);
         uploadPhotoBtn.setOnAction(handler);
         removePhotoBtn.setOnAction(handler);
+
+        damagePhotoView.fitWidthProperty().bind(imagePreviewContainer.widthProperty().subtract(20));
+        damagePhotoView.fitHeightProperty().bind(imagePreviewContainer.heightProperty().subtract(20));
     }
 
     private void handleActions(ActionEvent event) {
@@ -182,7 +185,7 @@ public class AddDisasterDamageDialogController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select Damage Photo");
         chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Files", "."),
+                new FileChooser.ExtensionFilter("All Files", "*.*"),
                 new FileChooser.ExtensionFilter("Image Files",
                         ".png", ".jpg", "*.jpeg",
                         ".PNG", ".JPG", "*.JPEG",
@@ -419,6 +422,7 @@ public class AddDisasterDamageDialogController {
                     notes,
                     regDate
             );
+            disasterDamage.setImage(selectedImageBytes);
 
             boolean success = disasterDamageService.createDisasterDamage(disasterDamage);
 
@@ -437,6 +441,7 @@ public class AddDisasterDamageDialogController {
                     AlertDialogManager.showSuccess("Success",
                             "Disaster damage record has been successfully added.\n"
                     );
+                    handleRemoveImage();
                 } else {
                     AlertDialogManager.showWarning("Partial Success",
                             "Disaster damage record has been added, but score recalculation encountered issues.\n" +

@@ -746,3 +746,10 @@
 
 .btn-icon { -fx-fill: rgba(255,255,255,0.98); }
 .btn-text { -fx-text-fill: rgba(255,255,255,0.98); -fx-font-weight: 900; }
+
+.image-preview-container {
+    -fx-background-color: #1a1a2e;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-clip: true; /* clips children to bounds */
+}

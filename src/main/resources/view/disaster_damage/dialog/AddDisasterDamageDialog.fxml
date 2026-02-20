@@ -233,7 +233,8 @@
                     </VBox>
 
                     <!-- RIGHT COLUMN: Image Preview Placeholder -->
-                    <StackPane fx:id="imagePreviewContainer" styleClass="image-preview-container" GridPane.columnIndex="1">
+                    <StackPane fx:id="imagePreviewContainer" styleClass="image-preview-container"
+                               GridPane.columnIndex="1" minHeight="200" maxHeight="200">
 
                         <!-- Placeholder (shown when no image) -->
                         <VBox fx:id="imagePlaceholder" alignment="CENTER" spacing="14" styleClass="image-placeholder">
@@ -247,7 +248,9 @@
                         </VBox>
 
                         <!-- Actual image (shown after upload, initially hidden) -->
-                        <ImageView fx:id="damagePhotoView" fitHeight="200" fitWidth="320" managed="false" preserveRatio="true" smooth="true" visible="false">
+                        <ImageView fx:id="damagePhotoView" fitHeight="200" fitWidth="300" managed="false"
+                                   preserveRatio="true" smooth="true" visible="false"
+                                   StackPane.alignment="CENTER">
                             <effect>
                                 <DropShadow color="rgba(0,0,0,0.4)" offsetX="0" offsetY="2" radius="12" spread="0.0" />
                             </effect>

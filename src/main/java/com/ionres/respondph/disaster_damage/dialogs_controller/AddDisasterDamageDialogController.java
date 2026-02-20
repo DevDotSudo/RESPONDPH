@@ -12,9 +12,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -36,6 +41,13 @@ public class AddDisasterDamageDialogController {
     private DisasterDamageService disasterDamageService;
     private DisasterDamageController disasterDamageController;
     private boolean isSaving = false;
+    @FXML private Button uploadImageBtn;
+    @FXML private Button removeImageBtn;
+    @FXML private ImageView imagePreview;
+    @FXML private VBox imagePreviewBox;
+    @FXML private Label imageFilenameLbl;
+
+    private byte[] selectedImageBytes = null;
 
     public void setDisasterDamageService(DisasterDamageService disasterDamageService) {
         this.disasterDamageService = disasterDamageService;
@@ -53,6 +65,8 @@ public class AddDisasterDamageDialogController {
         EventHandler<ActionEvent> handler = this::handleActions;
         saveBtn.setOnAction(handler);
         exitBtn.setOnAction(handler);
+        uploadImageBtn.setOnAction(handler);
+        removeImageBtn.setOnAction(handler);
     }
 
     private void handleActions(ActionEvent event) {
@@ -60,10 +74,56 @@ public class AddDisasterDamageDialogController {
 
         if(src == saveBtn){
             addDisasterDamage();
+        }else if(src == uploadImageBtn){
+            handleImageUpload();
+
+        }
+        else if (src == removeImageBtn){
+            handleRemoveImage();
         }
         else if (src == exitBtn){
             closeDialog();
         }
+    }
+
+    private void handleImageUpload() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select Damage Photo");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+        );
+        File file = chooser.showOpenDialog(uploadImageBtn.getScene().getWindow());
+        if (file != null) {
+            try {
+                selectedImageBytes = java.nio.file.Files.readAllBytes(file.toPath());
+
+                // Show preview
+                Image img = new Image(file.toURI().toString());
+                imagePreview.setImage(img);
+                imageFilenameLbl.setText(file.getName());
+
+                // Show the preview box, hide the button
+                imagePreviewBox.setVisible(true);
+                imagePreviewBox.setManaged(true);
+                uploadImageBtn.setVisible(false);
+                uploadImageBtn.setManaged(false);
+
+            } catch (Exception ex) {
+                AlertDialogManager.showError("Error", "Failed to read image: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void handleRemoveImage() {
+        selectedImageBytes = null;
+        imagePreview.setImage(null);
+        imageFilenameLbl.setText("No image selected");
+
+        // Hide preview, show button again
+        imagePreviewBox.setVisible(false);
+        imagePreviewBox.setManaged(false);
+        uploadImageBtn.setVisible(true);
+        uploadImageBtn.setManaged(true);
     }
 
     private void setupKeyHandlers() {
@@ -324,6 +384,7 @@ public class AddDisasterDamageDialogController {
                     notes,
                     regDate
             );
+            disasterDamage.setImage(selectedImageBytes);
 
             boolean success = disasterDamageService.createDisasterDamage(disasterDamage);
 

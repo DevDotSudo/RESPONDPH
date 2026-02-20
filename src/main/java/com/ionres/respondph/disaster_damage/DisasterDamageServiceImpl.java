@@ -74,6 +74,8 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             boolean flag = disasterDamageDAO.saving(new DisasterDamageModel(ddm.getBeneficiaryId(), ddm.getDisasterId(), encryptedHouseDamage,
                     encryptedAssessmentDate, encryptedVerified, encryptedNotes, encryptedRegDate));
 
+            ddm.setImage(ddm.getImage());
+
             if (!flag) {
                 throw ExceptionFactory.failedToCreate("Disaster");
             }
@@ -134,6 +136,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             encrypted.setVerifiedBy(encryptedVerifiedBy);
             encrypted.setNotes(encryptedNotes);
             encrypted.setRegDate(encryptedRegDate);
+            encrypted.setImage(ddm.getImage());
 
             boolean updated = disasterDamageDAO.update(encrypted);
 

@@ -22,8 +22,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
 
     @Override
     public boolean saving(DisasterDamageModel ddm) {
-        String sql = "INSERT INTO beneficiary_disaster_damage (beneficiary_id, disaster_id, house_damage_severity, assessment_date, verified_by, notes, reg_date)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO beneficiary_disaster_damage (beneficiary_id, disaster_id, house_damage_severity, assessment_date, verified_by, notes, reg_date, image)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
             conn = dbConnection.getConnection();
@@ -36,6 +36,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             ps.setString(5, ddm.getVerifiedBy());
             ps.setString(6, ddm.getNotes());
             ps.setString(7, ddm.getRegDate());
+            ps.setBytes(8, ddm.getImage());
 
             int rowsAffected = ps.executeUpdate();
             ps.close();
@@ -88,7 +89,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                         "dmd.assessment_date, " +
                         "dmd.verified_by, " +
                         "dmd.notes, " +
-                        "dmd.reg_date " +
+                        "dmd.reg_date, " +
+                        "dmd.image " +
                         "FROM beneficiary_disaster_damage dmd " +
                         "INNER JOIN beneficiary b " +
                         "   ON dmd.beneficiary_id = b.beneficiary_id " +
@@ -148,6 +150,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                         rs.getString("reg_date")
                 );
 
+                ddm.setImage(rs.getBytes("image"));
+
                 list.add(ddm);
             }
 
@@ -205,13 +209,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
     public boolean update(DisasterDamageModel ddm) {
 
         String sql = "UPDATE beneficiary_disaster_damage SET " +
-                "beneficiary_id = ?, " +
-                "disaster_id = ?, " +
-                "house_damage_severity = ?, " +
-                "assessment_date = ?, " +
-                "verified_by = ?, " +
-                "notes = ?, " +
-                "reg_date = ?"+
+                "beneficiary_id = ?, disaster_id = ?, house_damage_severity = ?, " +
+                "assessment_date = ?, verified_by = ?, notes = ?, reg_date = ?, image = ? " +
                 "WHERE beneficiary_disaster_damage_id = ?";
 
         try {
@@ -225,7 +224,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
             ps.setString(5, ddm.getVerifiedBy());
             ps.setString(6, ddm.getNotes());
             ps.setString(7, ddm.getRegDate());
-            ps.setInt(8, ddm.getBeneficiaryDisasterDamageId());
+            ps.setBytes(8, ddm.getImage());
+            ps.setInt(9, ddm.getBeneficiaryDisasterDamageId());
 
             int rowsAffected = ps.executeUpdate();
             ps.close();
@@ -283,7 +283,8 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                         "dmd.assessment_date, " +
                         "dmd.verified_by, " +
                         "dmd.notes, " +
-                        "dmd.reg_date " +
+                        "dmd.reg_date," +
+                        "dmd.image " +
                         "FROM beneficiary_disaster_damage dmd " +
                         "INNER JOIN beneficiary b ON dmd.beneficiary_id = b.beneficiary_id " +
                         "INNER JOIN disaster d ON dmd.disaster_id = d.disaster_id " +
@@ -332,6 +333,7 @@ public class DisasterDamageDAOImpl implements  DisasterDamageDAO {
                 ddm.setRegDate(
                         rs.getString("reg_date")
                 );
+                ddm.setImage(rs.getBytes("image"));
             }
 
         } catch (SQLException e) {

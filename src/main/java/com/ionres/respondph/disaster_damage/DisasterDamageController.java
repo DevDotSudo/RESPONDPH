@@ -1335,18 +1335,114 @@ public class DisasterDamageController {
         if (printer == null) return false;
         if (isVirtualPrinter(printer.getName())) return false;
         String os = System.getProperty("os.name", "").toLowerCase();
-        return os.contains("win") ? isPrinterActiveWindows(printer.getName()) : true;
+        return os.contains("win")
+                ? isPrinterActiveWindows(printer.getName())
+                : isPrinterActiveUnix(printer);
     }
 
-    private boolean isVirtualPrinter(String printerName) {
-        if (printerName == null) return false;
-        String lower = printerName.toLowerCase();
-        return lower.contains("pdf")    || lower.contains("fax")      || lower.contains("xps")      ||
-                lower.contains("onenote")|| lower.contains("microsoft print") ||
-                lower.contains("send to")|| lower.contains("snagit")   || lower.contains("cutepdf")  ||
-                lower.contains("bullzip")|| lower.contains("dopdf")    || lower.contains("nitro")    ||
-                lower.contains("foxit")  || lower.contains("pdfcreator")|| lower.contains("primopdf") ||
-                lower.contains("pdf24")  || lower.contains("adobe pdf");
+    private boolean isVirtualPrinter(String name) {
+        if (name == null) return false;
+        String l = name.toLowerCase();
+        return l.contains("pdf")
+                || l.contains("fax")
+                || l.contains("xps")
+                || l.contains("onenote")
+                || l.contains("microsoft print")
+                || l.contains("microsoft document")
+                || l.contains("send to")
+                || l.contains("snagit")
+                || l.contains("cutepdf")
+                || l.contains("cute pdf")
+                || l.contains("bullzip")
+                || l.contains("dopdf")
+                || l.contains("nitro")
+                || l.contains("foxit")
+                || l.contains("pdfcreator")
+                || l.contains("primopdf")
+                || l.contains("pdf24")
+                || l.contains("adobe pdf");
+    }
+
+
+
+    private boolean isPrinterActiveWindowsWmic(String printerName) {
+        try {
+            String[] cmd = {
+                    "wmic", "printer",
+                    "where", "Name='" + printerName.replace("'", "\\'") + "'",
+                    "get", "PrinterStatus,WorkOffline",
+                    "/format:csv"
+            };
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line).append("\n");
+                output = sb.toString();
+            }
+            try (java.io.InputStream err = proc.getErrorStream()) {
+                err.transferTo(java.io.OutputStream.nullOutputStream());
+            }
+            proc.waitFor();
+
+            for (String line : output.split("\n")) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("Node") || line.startsWith("\r")) continue;
+                String[] parts = line.split(",");
+                if (parts.length < 3) continue;
+                String statusStr   = parts[parts.length - 2].trim();
+                String workOffline = parts[parts.length - 1].trim();
+                if ("TRUE".equalsIgnoreCase(workOffline)) return false;
+                try {
+                    int status = Integer.parseInt(statusStr);
+                    return (status == 3 || status == 4 || status == 5);
+                } catch (NumberFormatException ex) { return false; }
+            }
+            return false;
+        } catch (Exception e) { return false; }
+    }
+
+    private boolean isPrinterActiveUnix(Printer printer) {
+        if (printer == null) return false;
+        try {
+            Process proc = Runtime.getRuntime().exec(
+                    new String[]{ "lpstat", "-p", printer.getName() });
+            String output;
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line).append(" ");
+                output = sb.toString().toLowerCase();
+            }
+            proc.waitFor();
+            if (output.contains("enabled"))  return true;
+            if (output.contains("disabled")) return false;
+        } catch (Exception ignored) { }
+
+        try {
+            for (javax.print.PrintService svc :
+                    javax.print.PrintServiceLookup.lookupPrintServices(null, null)) {
+                if (!svc.getName().equalsIgnoreCase(printer.getName())) continue;
+                javax.print.attribute.PrintServiceAttributeSet attrs = svc.getAttributes();
+                javax.print.attribute.standard.PrinterIsAcceptingJobs acc =
+                        (javax.print.attribute.standard.PrinterIsAcceptingJobs)
+                                attrs.get(javax.print.attribute.standard.PrinterIsAcceptingJobs.class);
+                if (acc != null && acc ==
+                        javax.print.attribute.standard.PrinterIsAcceptingJobs.NOT_ACCEPTING_JOBS)
+                    return false;
+                javax.print.attribute.standard.PrinterState state =
+                        (javax.print.attribute.standard.PrinterState)
+                                attrs.get(javax.print.attribute.standard.PrinterState.class);
+                if (state != null)
+                    return state == javax.print.attribute.standard.PrinterState.IDLE
+                            || state == javax.print.attribute.standard.PrinterState.PROCESSING;
+                break;
+            }
+        } catch (Exception ignored) { }
+        return false;
     }
 
     private boolean isPrinterActiveWindows(String printerName) {
@@ -1360,12 +1456,21 @@ public class DisasterDamageController {
             String output;
             try (java.io.BufferedReader reader = new java.io.BufferedReader(
                     new java.io.InputStreamReader(proc.getInputStream(), "UTF-8"))) {
-                output = reader.lines().collect(Collectors.joining()).trim();
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line.trim());
+                output = sb.toString().trim();
+            }
+            try (java.io.InputStream err = proc.getErrorStream()) {
+                err.transferTo(java.io.OutputStream.nullOutputStream());
             }
             proc.waitFor();
-            return "True".equalsIgnoreCase(output);
+
+            if ("True".equalsIgnoreCase(output))  return true;
+            if ("False".equalsIgnoreCase(output)) return false;
+            return isPrinterActiveWindowsWmic(printerName); // fallback
         } catch (Exception e) {
-            return false;
+            return isPrinterActiveWindowsWmic(printerName);
         }
     }
 

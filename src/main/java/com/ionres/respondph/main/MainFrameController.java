@@ -91,6 +91,7 @@ public class MainFrameController {
     private Runnable smsCancelAction;
     private String   smsFooterText  = "";
 
+    // ── News toast state ──────────────────────────────────────────────────────
     private boolean  newsMinimized  = false;
     private boolean  newsVisible    = false;
     private Timeline newsSnapTimeline;
@@ -107,8 +108,8 @@ public class MainFrameController {
     private int        confirmedNewsCount = 0;
     private Timeline   pulseTimeline;
 
-    private static final int      MAX_LOG_ROWS      = 14;
-    private static final Duration CHEVRON_DURATION  = Duration.millis(180);
+    private static final int      MAX_LOG_ROWS     = 14;
+    private static final Duration CHEVRON_DURATION = Duration.millis(180);
     private static final double   CHEVRON_COLLAPSED = 0;
     private static final double   CHEVRON_EXPANDED  = 90;
     private static final String   ORANGE_STYLE =
@@ -172,17 +173,15 @@ public class MainFrameController {
             smsFooterPill.setVisible(smsMini);
             smsFooterPill.setManaged(smsMini);
         }
-        if (footerSmsLabel != null && smsMini) {
+        if (footerSmsLabel != null && smsMini)
             footerSmsLabel.setText("📨 " + smsFooterText);
-        }
 
         if (newsFooterPill != null) {
             newsFooterPill.setVisible(newsMini);
             newsFooterPill.setManaged(newsMini);
         }
-        if (footerNewsLabel != null && newsMini) {
+        if (footerNewsLabel != null && newsMini)
             footerNewsLabel.setText("🤖 " + newsFooterText);
-        }
 
         if (footerDivider != null) {
             footerDivider.setVisible(smsMini && newsMini);
@@ -263,8 +262,6 @@ public class MainFrameController {
         });
     }
 
-    // ── SMS internal ──────────────────────────────────────────────────────────
-
     private void handleSmsCloseButton() {
         if (smsCancelAction != null) {
             boolean ok = AlertDialogManager.showConfirmation(
@@ -327,6 +324,8 @@ public class MainFrameController {
 
     public void showNewsProgress(String topic) {
         Platform.runLater(() -> {
+            // Always fully reset before showing — fixes stale confirmedNewsCount
+            // from a previous generation causing dots not to update.
             resetNewsLogState();
             newsMinimized  = false;
             newsVisible    = true;
@@ -356,15 +355,16 @@ public class MainFrameController {
 
         animateNewsBarTo(Math.max(0.0, Math.min(1.0, progress)));
 
+        // Split header from optional streaming tail (separated by \n▶ )
         String header;
         String streamTail;
         int nlIdx = status.indexOf('\n');
         if (nlIdx >= 0) {
-            header     = status.substring(0, nlIdx).trim();
+            header    = status.substring(0, nlIdx).trim();
             String after = status.substring(nlIdx + 1).trim();
             streamTail = after.startsWith("▶ ") ? after.substring(2) : after;
         } else {
-            header     = status.trim();
+            header    = status.trim();
             streamTail = null;
         }
 
@@ -373,21 +373,39 @@ public class MainFrameController {
 
         if (newsLogBox == null) return;
 
+        // ── Route to the appropriate handler ─────────────────────────────────
+
+        // "N of 5 items found (Xs)"  — dot fill + item confirmed row
+        if (header.matches("\\d+ of \\d+ items? found.*")) {
+            handleItemConfirmed(header, streamTail);
+            return;
+        }
+
+        // Grounding events: "🔍 Searching: …" or "📄 Reading: …"
         if (header.startsWith(GROUNDING_SEARCH_EMOJI) || header.startsWith(GROUNDING_PAGE_EMOJI)) {
             handleGroundingEvent(header);
-            // Also show the streaming tail if present (writing is happening alongside grounding)
             if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
-        if (header.startsWith("Writing news…") || header.startsWith("Searching…")
-                || header.startsWith("📄") || header.startsWith("🔍")) {
+
+        // Inline live writing / searching label (no dedicated row, just tick)
+        if (header.startsWith("Writing news…")
+                || header.startsWith("Searching…")
+                || header.startsWith("Using gemini")        // model switch messages
+                || header.startsWith("Switching to")
+                || header.startsWith("Found ")
+                || header.startsWith("All models")) {
             updateTickLabel(header);
             if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
-        if (header.matches("\\d+ of \\d+ items.*")) {
-            handleItemConfirmed(header, streamTail); return;
+
+        // N found, searching for M more — treat like tick label
+        if (header.matches("Found \\d+.*") || header.matches("Only \\d+.*")) {
+            updateTickLabel(header);
+            return;
         }
+
         if (header.startsWith("Validating")) {
             commitStreamingLabel(); clearTickLabel();
             appendRow("🔎 " + header, RowKind.INFO); return;
@@ -397,7 +415,7 @@ public class MainFrameController {
         }
         if (header.startsWith("Reconnecting")) {
             commitStreamingLabel(); clearTickLabel();
-            appendRow("🔄 Reconnecting — switching to direct call…", RowKind.INFO); return;
+            appendRow("🔄 Reconnecting…", RowKind.INFO); return;
         }
         if (header.startsWith("Cancelled")) {
             commitStreamingLabel(); clearTickLabel(); stopPulse();
@@ -527,6 +545,7 @@ public class MainFrameController {
             dot.setStrokeWidth(1.5);
             newsDotBar.getChildren().add(dot);
         }
+
         newsCountLabel = new Label("0 of 5 items found");
         newsCountLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
@@ -555,14 +574,8 @@ public class MainFrameController {
     // ── Status handlers ───────────────────────────────────────────────────────
 
     private void handleGroundingEvent(String header) {
-        // Strip the elapsed-time suffix for the log row (e.g. "(12s)")
         String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
-
-        // Always update the live tick label so the user sees the current action
         updateTickLabel(header);
-
-        // Only append a new typewriter log row when the grounding label actually changed
-        // (avoids spamming the log with the same search query every second)
         if (!rowText.equals(lastGroundingRowText())) {
             clearStreamingLabel();
             RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
@@ -570,36 +583,49 @@ public class MainFrameController {
         }
     }
 
-    // FIX #12: Fill dots regardless of whether streamTail is present.
-    // The old code only filled dots when streamTail != null, causing dots to
-    // never fill when the "N of M items" message arrived without a preview line.
+    /**
+     * Called when NewsGeneratorService emits "N of 5 items found (Xs)".
+     *
+     * FIX: The dot counter was broken because:
+     * 1. confirmedNewsCount was never reset between generations (now fixed in resetNewsLogState).
+     * 2. The regex in setNewsProgress didn't match "N of 5 items found" (now fixed to
+     *    "\\d+ of \\d+ items? found.*" which handles singular/plural).
+     * 3. The header is parsed as split(" ")[0] to get N — this works for "1 of 5 items found (3s)".
+     */
     private void handleItemConfirmed(String header, String streamTail) {
         int n = 0;
-        try { n = Integer.parseInt(header.split(" ")[0]); } catch (NumberFormatException ignored) {}
+        try {
+            n = Integer.parseInt(header.split(" ")[0]);
+        } catch (NumberFormatException ignored) {}
 
-        // Always update dots and count label when we have a new confirmed count
+        // Fill dots from the last confirmed count up to n (handles 1→2→3→4→5 in order)
         if (n > confirmedNewsCount) {
-            for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
+            for (int i = confirmedNewsCount; i < n && i < 5; i++) {
+                fillDot(i);
+            }
             confirmedNewsCount = n;
-            if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
+
+            if (newsCountLabel != null)
+                newsCountLabel.setText(n + " of 5 items found");
             newsFooterText = n + " of 5 items found";
             if (newsMinimized) refreshFooter();
+
+            // Append a confirmation row in the log
+            clearTickLabel();
             appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
         }
 
         if (streamTail != null && !streamTail.isBlank()) {
-            commitStreamingLabel();
-            clearTickLabel();
             updateStreamingLabel(streamTail);
-        } else {
-            updateTickLabel(header);
         }
     }
 
     private void handleDone(String header) {
-        commitStreamingLabel(); clearTickLabel(); stopPulse();
+        commitStreamingLabel();
+        clearTickLabel();
+        stopPulse();
         appendRow("🎉 " + header, RowKind.ITEM);
-        // Fill any remaining unfilled dots
+        // Fill any remaining dots in case some confirmations were missed
         for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
         confirmedNewsCount = 5;
         if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
@@ -780,8 +806,9 @@ public class MainFrameController {
         if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; }
     }
 
+    /** Resets all news log state. Called at start of every new generation. */
     private void resetNewsLogState() {
-        confirmedNewsCount = 0;
+        confirmedNewsCount = 0;  // ← critical: ensures dots start from 0 each run
         newsLogBox         = null;
         newsLogScroll      = null;
         newsDotBar         = null;
@@ -812,21 +839,10 @@ public class MainFrameController {
         pill.setManaged(visible);
     }
 
-    public void openManagementSection() {
-        ensureSectionOpen(managementSectionContent, managementSectionIcon);
-    }
-
-    public void openDisasterSection() {
-        ensureSectionOpen(disasterSectionContent, disasterSectionIcon);
-    }
-
-    public void openAidsSection() {
-        ensureSectionOpen(aidsSectionContent, aidsSectionIcon);
-    }
-
-    public void openEvacSection() {
-        ensureSectionOpen(evacSectionContent, evacSectionIcon);
-    }
+    public void openManagementSection() { ensureSectionOpen(managementSectionContent, managementSectionIcon); }
+    public void openDisasterSection()   { ensureSectionOpen(disasterSectionContent,   disasterSectionIcon); }
+    public void openAidsSection()       { ensureSectionOpen(aidsSectionContent,        aidsSectionIcon); }
+    public void openEvacSection()       { ensureSectionOpen(evacSectionContent,        evacSectionIcon); }
 
     private void wireNavButtons() {
         EventHandler<ActionEvent> nav = this::handleActions;

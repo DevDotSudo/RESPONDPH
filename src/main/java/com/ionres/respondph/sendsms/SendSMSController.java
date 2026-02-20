@@ -491,24 +491,15 @@ public class SendSMSController implements Initializable {
         if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
 
         boolean aiEnabled = newsGeneratorService != null;
-
-        // FIX #11: Show container but keep slots hidden individually — don't hide the whole container
-        // until we know there's nothing to show. Start hidden.
         updateAiResponseVisibility(false);
 
         if (btnGenerateNews != null) {
             btnGenerateNews.setDisable(!aiEnabled);
             btnGenerateNews.setOnAction(e -> onGenerateNews());
-            if (!aiEnabled) {
-                btnGenerateNews.setText("AI Disabled (No API Key)");
-            }
+            if (!aiEnabled) btnGenerateNews.setText("AI Disabled (No API Key)");
         }
-        if (cbNewsTopic != null) {
-            cbNewsTopic.setDisable(!aiEnabled);
-        }
-        if (btnSaveEvacMessage != null) {
-            btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
-        }
+        if (cbNewsTopic != null) cbNewsTopic.setDisable(!aiEnabled);
+        if (btnSaveEvacMessage != null) btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
 
         LOG.info("[SendSMS] News controls setup. AI enabled: " + aiEnabled);
     }
@@ -727,9 +718,8 @@ public class SendSMSController implements Initializable {
     private void onGenerateNews() {
         if (cbNewsTopic == null || btnGenerateNews == null) return;
 
-        // FIX #10: Guard with compareAndSet; all early-exit paths already reset below.
         if (!generationInProgress.compareAndSet(false, true)) {
-            LOG.info("[SendSMS] Generation already in progress, ignoring duplicate click.");
+            LOG.info("[SendSMS] Generation already in progress.");
             return;
         }
 
@@ -757,8 +747,6 @@ public class SendSMSController implements Initializable {
         storedNewsItems.clear();
         clearNewsSlots();
         updateAiResponseVisibility(false);
-
-        // Disable generate button during generation
         btnGenerateNews.setDisable(true);
 
         MainFrameController main = MainFrameController.getInstance();
@@ -777,21 +765,17 @@ public class SendSMSController implements Initializable {
                         }))
                 .whenComplete((result, ex) -> Platform.runLater(() -> {
 
-                    // FIX #10: Always reset the flag and re-enable button on completion.
+                    // Always reset flag and re-enable button
                     generationInProgress.set(false);
                     if (btnGenerateNews != null) btnGenerateNews.setDisable(false);
-
                     if (main != null) main.setNewsCancelAction(null);
 
-                    // ── Error path ────────────────────────────────────────────────
+                    // ── Error path ────────────────────────────────────────────
                     if (ex != null) {
-                        // FIX #9: Safe null-chain for error message extraction
-                        Throwable cause   = ex.getCause() != null ? ex.getCause() : ex;
-                        String    errMsg  = cause.getMessage();
+                        Throwable cause  = ex.getCause() != null ? ex.getCause() : ex;
+                        String    errMsg = cause.getMessage();
                         if (errMsg == null) errMsg = cause.getClass().getSimpleName();
-
                         LOG.log(Level.SEVERE, "[SendSMS] News generation failed: " + errMsg, ex);
-
                         if (main != null) main.hideNewsProgress();
                         AlertDialogManager.showError("AI Error",
                                 "News generation failed:\n" + errMsg);
@@ -803,7 +787,7 @@ public class SendSMSController implements Initializable {
                     if (result == null || result.isEmpty()) {
                         LOG.warning("[SendSMS] Generation returned no results.");
                         AlertDialogManager.showWarning("No Results",
-                                "No news items could be verified.\n"
+                                "No news items could be generated.\n"
                                         + "Try a different topic or check your internet connection.");
                         return;
                     }
@@ -814,15 +798,17 @@ public class SendSMSController implements Initializable {
                     int n = Math.min(storedNewsItems.size(), newsSlots.length);
                     for (int i = 0; i < n; i++) updateNewsSlot(i, storedNewsItems.get(i));
 
-                    // FIX #11: Only show response container after populating slots.
                     updateAiResponseVisibility(true);
 
-                    if (n < 5) {
-                        AlertDialogManager.showInfo("Partial Results",
-                                "Generated " + n + " of 5 news items.\n"
-                                        + "Some articles could not be verified or found.");
+                    // Accurate success/partial message
+                    if (n >= 5) {
+                        AlertDialogManager.showSuccess("Done",
+                                "5 news items generated successfully.");
                     } else {
-                        AlertDialogManager.showSuccess("Success", "5 verified news items generated.");
+                        AlertDialogManager.showInfo("Partial Results",
+                                n + " of 5 news items were found.\n"
+                                        + "The topic may have limited recent coverage in Iloilo City.\n"
+                                        + "Try a broader topic or generate again.");
                     }
                 }));
     }
@@ -832,10 +818,7 @@ public class SendSMSController implements Initializable {
             aiResponseContainer.setVisible(visible);
             aiResponseContainer.setManaged(visible);
         }
-
-        if (btnUseSelectedNews != null) {
-            btnUseSelectedNews.setDisable(!visible);
-        }
+        if (btnUseSelectedNews != null) btnUseSelectedNews.setDisable(!visible);
         for (RadioButton slot : newsSlots) {
             if (slot == null) continue;
             slot.setVisible(visible);
@@ -883,7 +866,7 @@ public class SendSMSController implements Initializable {
         if (group == null) return List.of();
         String base = group.contains("(") ? group.substring(0, group.indexOf("(")).trim() : group;
         return switch (base) {
-            case "All Beneficiaries"       -> beneficiaryDAO.getAllBeneficiaries();
+            case "All Beneficiaries" -> beneficiaryDAO.getAllBeneficiaries();
             case "By Barangay" -> {
                 String brgy = (cbSelectBarangay != null) ? cbSelectBarangay.getValue() : null;
                 yield brgy != null ? beneficiaryDAO.getBeneficiariesByBarangay(brgy) : List.of();
@@ -907,7 +890,6 @@ public class SendSMSController implements Initializable {
         if (main != null) {
             main.showSmsProgress("Sending SMS (" + method + ")", total);
             main.setSmsCount(0, total);
-
             main.setSmsCancelAction(() -> {
                 smsService.cancelBulkSend();
                 Platform.runLater(() -> {
@@ -925,7 +907,6 @@ public class SendSMSController implements Initializable {
                         if (main != null) main.setSmsCount(done, tot);
                     });
                 }
-
                 @Override
                 public void onFinished(int tot, int successCount, String m) {
                     Platform.runLater(() -> {
@@ -948,7 +929,6 @@ public class SendSMSController implements Initializable {
                 return null;
             }
         };
-
         task.setOnFailed(ev -> Platform.runLater(() -> {
             setSmsLoading(false);
             if (main != null) {
@@ -986,12 +966,8 @@ public class SendSMSController implements Initializable {
             List<BeneficiaryModel> freshList = beneficiaryDAO.getAllBeneficiaries();
             BeneficiarySelectionDialogController ctrl =
                     DialogManager.getController("selection", BeneficiarySelectionDialogController.class);
-            if (ctrl != null) {
-                ctrl.setBeneficiaries(freshList);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            if (ctrl != null) ctrl.setBeneficiaries(freshList);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private List<BeneficiaryModel> getBeneficiariesInDisasterArea(DisasterModel disaster) {
@@ -1011,21 +987,15 @@ public class SendSMSController implements Initializable {
 
             for (DisasterCircleInfo circle : circles) {
                 List<BeneficiaryModel> allBeneficiaries = beneficiaryDAO.getAllBeneficiaries();
-
                 for (BeneficiaryModel b : allBeneficiaries) {
                     if (addedIds.contains(b.getId())) continue;
-
                     double lat, lon;
                     try {
                         lat = Double.parseDouble(b.getLatitude() != null ? b.getLatitude() : "");
                         lon = Double.parseDouble(b.getLongitude() != null ? b.getLongitude() : "");
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-
+                    } catch (NumberFormatException e) { continue; }
                     double distance = com.ionres.respondph.util.GeographicUtils
                             .calculateDistance(lat, lon, circle.lat, circle.lon);
-
                     if (!Double.isNaN(distance) && distance <= circle.radius) {
                         if (b.getMobileNumber() != null && !b.getMobileNumber().trim().isEmpty()) {
                             result.add(b);
@@ -1040,7 +1010,6 @@ public class SendSMSController implements Initializable {
                         "No beneficiaries with phone numbers found inside the disaster area of: "
                                 + disaster.getName());
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialogManager.showError("Error",
@@ -1049,9 +1018,7 @@ public class SendSMSController implements Initializable {
         return result;
     }
 
-    @FXML private void onRefreshPorts() {
-        populateAvailablePorts();
-    }
+    @FXML private void onRefreshPorts() { populateAvailablePorts(); }
 
     private void updateConnectionStatus() {
         if (connectionStatusLabel == null) return;

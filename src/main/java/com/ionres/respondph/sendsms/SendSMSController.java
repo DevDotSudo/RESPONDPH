@@ -33,6 +33,7 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,6 +41,11 @@ import java.util.logging.Logger;
 public class SendSMSController implements Initializable {
 
     private static final Logger LOG = Logger.getLogger(SendSMSController.class.getName());
+
+    // ── Categories that search Philippines-wide (must match NewsGeneratorService) ──
+    private static final Set<String> NATIONAL_CATEGORIES = Set.of(
+            "national news", "politics", "health news", "law"
+    );
 
     @FXML private ComboBox<String> cbSelectBeneficiary;
     @FXML private ComboBox<String> cbSelectPorts;
@@ -714,6 +720,15 @@ public class SendSMSController implements Initializable {
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Returns true when the selected category searches Philippines-wide.
+    // Mirrors the logic in NewsGeneratorService so alert messages are accurate.
+    // ─────────────────────────────────────────────────────────────────────────
+    private boolean isNationalCategory(String category) {
+        if (category == null || category.isBlank()) return false;
+        return NATIONAL_CATEGORIES.contains(category.toLowerCase(java.util.Locale.ROOT).trim());
+    }
+
     @FXML
     private void onGenerateNews() {
         if (cbNewsTopic == null || btnGenerateNews == null) return;
@@ -735,14 +750,22 @@ public class SendSMSController implements Initializable {
             return;
         }
 
-        String topic = cbNewsTopic.getSelectionModel().getSelectedItem();
-        if (topic == null || topic.trim().isEmpty()) {
+        // cbNewsTopic holds the category (e.g. "Local", "National News", "Weather", etc.)
+        // It serves as both the search topic keyword and the geographic scope selector.
+        String category = cbNewsTopic.getSelectionModel().getSelectedItem();
+        if (category == null || category.trim().isEmpty()) {
             generationInProgress.set(false);
             AlertDialogManager.showWarning("Topic Required", "Please select a news topic.");
             return;
         }
 
-        LOG.info("[SendSMS] Starting news generation for topic: " + topic);
+        // Derive a human-readable scope label for progress/alert messages
+        String scopeLabel = isNationalCategory(category)
+                ? "Philippines"
+                : "Iloilo City and surrounding areas";
+
+        LOG.info("[SendSMS] Starting news generation. category=" + category
+                + " scope=" + scopeLabel);
 
         storedNewsItems.clear();
         clearNewsSlots();
@@ -755,17 +778,18 @@ public class SendSMSController implements Initializable {
                 LOG.info("[SendSMS] User cancelled news generation.");
                 newsGeneratorService.cancelCurrentGeneration();
             });
-            main.showNewsProgress(topic);
+            main.showNewsProgress(category);
         }
 
+        // ── Pass BOTH topic and category to the updated service signature ────
+        // The category drives the geographic scope; topic drives the search query.
         newsGeneratorService
-                .generateNewsHeadlines(topic, (progress, status) ->
+                .generateNewsHeadlines(category, category, (progress, status) ->
                         Platform.runLater(() -> {
                             if (main != null) main.setNewsProgress(progress, status);
                         }))
                 .whenComplete((result, ex) -> Platform.runLater(() -> {
 
-                    // Always reset flag and re-enable button
                     generationInProgress.set(false);
                     if (btnGenerateNews != null) btnGenerateNews.setDisable(false);
                     if (main != null) main.setNewsCancelAction(null);
@@ -787,7 +811,7 @@ public class SendSMSController implements Initializable {
                     if (result == null || result.isEmpty()) {
                         LOG.warning("[SendSMS] Generation returned no results.");
                         AlertDialogManager.showWarning("No Results",
-                                "No news items could be generated.\n"
+                                "No news items could be generated for " + category + "\n"
                                         + "Try a different topic or check your internet connection.");
                         return;
                     }
@@ -800,14 +824,15 @@ public class SendSMSController implements Initializable {
 
                     updateAiResponseVisibility(true);
 
-                    // Accurate success/partial message
                     if (n >= 5) {
                         AlertDialogManager.showSuccess("Done",
-                                "5 news items generated successfully.");
+                                "5 news items generated successfully for " + category + " in "
+                                        + scopeLabel + ".");
                     } else {
                         AlertDialogManager.showInfo("Partial Results",
-                                n + " of 5 news items were found.\n"
-                                        + "The topic may have limited recent coverage in Iloilo City.\n"
+                                n + " of 5 news items were found for " + category + " in "
+                                        + scopeLabel + ".\n"
+                                        + "This topic may have limited recent coverage.\n"
                                         + "Try a broader topic or generate again.");
                     }
                 }));

@@ -12,9 +12,15 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +39,17 @@ public class EditDisasterDamageDialogController {
     @FXML private DatePicker assessmentDatePicker;
     @FXML private TextArea notesFld;
     @FXML private Button updateBtn, exitBtn;
+    // Add this with your other button declarations:
+    @FXML private Button cancelBtn;
+
+    // ADD THESE:
+    @FXML private Button uploadPhotoBtn;
+    @FXML private Button removePhotoBtn;
+    @FXML private ImageView damagePhotoView;
+    @FXML private VBox imagePlaceholder;
+    @FXML private VBox previewBadge;
+    @FXML private StackPane imagePreviewContainer;
+    private byte[] selectedImageBytes = null;
 
     private List<BeneficiaryModel> allBeneficiaries;
     private List<DisasterModel> allDisaster;
@@ -72,6 +89,10 @@ public class EditDisasterDamageDialogController {
     private void initialize() {
         setupEventHandlers();
         setupKeyHandlers();
+
+        // Bind image to container
+        damagePhotoView.fitWidthProperty().bind(imagePreviewContainer.widthProperty().subtract(20));
+        damagePhotoView.fitHeightProperty().bind(imagePreviewContainer.heightProperty().subtract(20));
     }
 
     private void setupKeyHandlers() {
@@ -87,6 +108,9 @@ public class EditDisasterDamageDialogController {
     private void setupEventHandlers() {
         updateBtn.setOnAction(this::handleUpdate);
         exitBtn.setOnAction(this::handleExit);
+        uploadPhotoBtn.setOnAction(this::handleImageUp);
+        removePhotoBtn.setOnAction(this::handleRemove);
+        cancelBtn.setOnAction(this::handleExit);
     }
 
     private void handleUpdate(ActionEvent event) {
@@ -96,6 +120,11 @@ public class EditDisasterDamageDialogController {
     private void handleExit(ActionEvent event) {
         closeDialog();
     }
+    private void handleImageUp(ActionEvent event){
+        handleImageUpload();
+    }
+    private void handleRemove(ActionEvent event){handleRemoveImage();}
+
 
 
 
@@ -156,6 +185,59 @@ public class EditDisasterDamageDialogController {
             AlertDialogManager.showError("Load Error",
                     "Error loading beneficiaries: " + e.getMessage());
         }
+    }
+    private void handleImageUpload() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select Damage Photo");
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files",
+                        "*.png", "*.jpg", "*.jpeg", "*.PNG", "*.JPG", "*.JPEG", "*.bmp", "*.gif"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        String userHome = System.getProperty("user.home");
+        File pictures = new File(userHome + "/OneDrive/Pictures");
+        if (!pictures.exists()) pictures = new File(userHome + "/Pictures");
+        if (pictures.exists()) chooser.setInitialDirectory(pictures);
+
+        File file = chooser.showOpenDialog(uploadPhotoBtn.getScene().getWindow());
+        if (file != null) {
+            try {
+                if (file.length() > 5 * 1024 * 1024) {
+                    AlertDialogManager.showWarning("File Too Large", "Please select an image under 5MB.");
+                    return;
+                }
+
+                selectedImageBytes = java.nio.file.Files.readAllBytes(file.toPath());
+                Image img = new Image(file.toURI().toString());
+                damagePhotoView.setImage(img);
+
+                imagePlaceholder.setVisible(false);
+                imagePlaceholder.setManaged(false);
+                damagePhotoView.setVisible(true);
+                damagePhotoView.setManaged(true);
+                previewBadge.setVisible(true);
+                previewBadge.setManaged(true);
+                removePhotoBtn.setVisible(true);
+                removePhotoBtn.setManaged(true);
+
+            } catch (Exception ex) {
+                AlertDialogManager.showError("Error", "Failed to read image: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void handleRemoveImage() {
+        selectedImageBytes = null;
+        damagePhotoView.setImage(null);
+        damagePhotoView.setVisible(false);
+        damagePhotoView.setManaged(false);
+        imagePlaceholder.setVisible(true);
+        imagePlaceholder.setManaged(true);
+        previewBadge.setVisible(false);
+        previewBadge.setManaged(false);
+        removePhotoBtn.setVisible(false);
+        removePhotoBtn.setManaged(false);
     }
 
     private void setupBeneficiaryListeners() {
@@ -352,9 +434,54 @@ public class EditDisasterDamageDialogController {
             }
         }
 
+        // ✅ LOAD EXISTING IMAGE - MOVED BEFORE Platform.runLater
+        if (disasterDamage.getImage() != null && disasterDamage.getImage().length > 0) {
+            try {
+                selectedImageBytes = disasterDamage.getImage();
+
+                Image img = new Image(new java.io.ByteArrayInputStream(selectedImageBytes));
+                damagePhotoView.setImage(img);
+
+                // Show image, hide placeholder
+                imagePlaceholder.setVisible(false);
+                imagePlaceholder.setManaged(false);
+                damagePhotoView.setVisible(true);
+                damagePhotoView.setManaged(true);
+                previewBadge.setVisible(true);
+                previewBadge.setManaged(true);
+                removePhotoBtn.setVisible(true);
+                removePhotoBtn.setManaged(true);
+
+                System.out.println("✓ Image loaded successfully - Size: " + selectedImageBytes.length + " bytes");
+            } catch (Exception e) {
+                System.err.println("✗ Error loading image: " + e.getMessage());
+                e.printStackTrace();
+
+                // On error, make sure placeholder is visible
+                imagePlaceholder.setVisible(true);
+                imagePlaceholder.setManaged(true);
+                damagePhotoView.setVisible(false);
+                damagePhotoView.setManaged(false);
+                previewBadge.setVisible(false);
+                previewBadge.setManaged(false);
+                removePhotoBtn.setVisible(false);
+                removePhotoBtn.setManaged(false);
+            }
+        } else {
+            // No image - ensure placeholder is visible
+            System.out.println("ℹ No image data available");
+            imagePlaceholder.setVisible(true);
+            imagePlaceholder.setManaged(true);
+            damagePhotoView.setVisible(false);
+            damagePhotoView.setManaged(false);
+            previewBadge.setVisible(false);
+            previewBadge.setManaged(false);
+            removePhotoBtn.setVisible(false);
+            removePhotoBtn.setManaged(false);
+        }
+
         Platform.runLater(() -> isPopulatingFields = false);
     }
-
     private void updateDisasterDamage() {
         try {
             if (!validateInput()) {
@@ -385,6 +512,7 @@ public class EditDisasterDamageDialogController {
 
             updatedDisasterDamage.setBeneficiaryDisasterDamageId(
                     currentDisasterDamage.getBeneficiaryDisasterDamageId());
+            updatedDisasterDamage.setImage(selectedImageBytes);
 
             boolean success = disasterDamageService.updateDisasterDamage(updatedDisasterDamage);
 

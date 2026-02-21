@@ -13,6 +13,7 @@ public class DisasterDamageModel {
     private String verifiedBy;
     private String notes;
     private String regDate;
+    private byte[] image;
 
     public DisasterDamageModel() {
     }
@@ -121,4 +122,6 @@ public class DisasterDamageModel {
     public void setRegDate(String regDate){
         this.regDate = regDate;
     }
+    public byte[] getImage() { return image; }
+    public void setImage(byte[] image) { this.image = image; }
 }

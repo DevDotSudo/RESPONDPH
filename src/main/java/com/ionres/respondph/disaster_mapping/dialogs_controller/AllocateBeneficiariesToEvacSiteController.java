@@ -48,9 +48,9 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
     @FXML private TableColumn<BeneficiaryAllocationRow, String> statusColumn;
     //    @FXML private Button saveBtn;
     @FXML private Button closeBtn;
-
     @FXML private TextField searchField;
-
+    private double yOffset = 0;
+    private double xOffset = 0;
     private FilteredList<BeneficiaryAllocationRow> filteredBeneficiaries;
     private Stage dialogStage;
     private EvacSiteModel evacSite;
@@ -77,10 +77,9 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
         geoDAO = new GeoBasedEvacPlanDAOImpl(dbConnection);
         evacPlanDAO = new EvacuationPlanDAOImpl(dbConnection);
         evacSiteService = new com.ionres.respondph.evac_site.EvacSiteServiceImpl(dbConnection);
-
         setupTable();
         setupButtons();
-
+        makeDraggable();
     }
 
     public void setDialogStage(Stage dialogStage) {
@@ -198,140 +197,6 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
             AlertDialogManager.showError("Error", "Failed to load evacuation site information: " + e.getMessage());
         }
     }
-
-//    public void loadBeneficiaries() {
-//        LOGGER.info("=== LOADING BENEFICIARIES ===");
-//        LOGGER.info("Disaster ID for query: " + disasterId);
-//        LOGGER.info("Current Evac Site ID: " + (evacSite != null ? evacSite.getEvacId() : "null"));
-//
-//        allBeneficiaries.clear();
-//
-//        if (disasterId <= 0) {
-//            LOGGER.severe("CRITICAL: Cannot load beneficiaries - invalid disaster ID: " + disasterId);
-//            AlertDialogManager.showError("Error", "Invalid disaster ID. Cannot load beneficiaries.");
-//            totalBeneficiariesLabel.setText("Total Beneficiaries: 0 (Invalid disaster ID)");
-//            return;
-//        }
-//
-//        try {
-//            LOGGER.info("Calling geoDAO.getRankedBeneficiariesWithLocation(" + disasterId + ")");
-//            List<RankedBeneficiaryWithLocation> rankedBeneficiaries =
-//                    geoDAO.getRankedBeneficiariesWithLocation(disasterId, true);
-//
-//            LOGGER.info("Retrieved " + rankedBeneficiaries.size() + " ranked beneficiaries from database");
-//
-//            if (rankedBeneficiaries.isEmpty()) {
-//                LOGGER.warning("No beneficiaries found for disaster ID: " + disasterId);
-//                totalBeneficiariesLabel.setText("Total Beneficiaries: 0");
-//                return;
-//            }
-//
-//            List<EvacSiteWithDistance> availableSites = getAvailableEvacSitesWithCapacity();
-//
-//            if (availableSites.isEmpty()) {
-//                LOGGER.warning("No evacuation sites with available capacity");
-//                totalBeneficiariesLabel.setText("Total Beneficiaries: " + rankedBeneficiaries.size() + " (No available sites)");
-//
-//                for (RankedBeneficiaryWithLocation beneficiary : rankedBeneficiaries) {
-//                    BeneficiaryAllocationRow row = new BeneficiaryAllocationRow(
-//                            beneficiary.getBeneficiaryId(),
-//                            beneficiary.getFirstName() + " " + beneficiary.getLastName(),
-//                            beneficiary.getFinalScore(),
-//                            beneficiary.getScoreCategory(),
-//                            beneficiary.getHouseholdMembers(),
-//                            "No Capacity Available",
-//                            "Pending",
-//                            beneficiary.getLatitude(),
-//                            beneficiary.getLongitude()
-//                    );
-//                    allBeneficiaries.add(row);
-//                }
-//                return;
-//            }
-//
-//            Map<Integer, Integer> siteRemainingCapacity = new HashMap<>();
-//            Map<Integer, String> siteNames = new HashMap<>();
-//
-//            for (EvacSiteWithDistance site : availableSites) {
-//                siteRemainingCapacity.put(site.getEvacSiteId(), site.getRemainingCapacity());
-//                siteNames.put(site.getEvacSiteId(), site.getEvacSiteName());
-//            }
-//
-//            Map<Integer, Integer> assignmentMap = new HashMap<>(); // beneficiary_id -> evac_site_id
-//
-//            for (RankedBeneficiaryWithLocation beneficiary : rankedBeneficiaries) {
-//                if (evacPlanDAO.isAlreadyAssignedToDisaster(beneficiary.getBeneficiaryId(), disasterId)) {
-//                    Integer assignedEvacSiteId = evacPlanDAO.getAssignedEvacSiteId(beneficiary.getBeneficiaryId(), disasterId);
-//
-//                    if (assignedEvacSiteId != null && assignedEvacSiteId == evacSite.getEvacId()) {
-//                        String assignedSiteName = evacSite.getName();
-//
-//                        BeneficiaryAllocationRow row = new BeneficiaryAllocationRow(
-//                                beneficiary.getBeneficiaryId(),
-//                                beneficiary.getFirstName() + " " + beneficiary.getLastName(),
-//                                beneficiary.getFinalScore(),
-//                                beneficiary.getScoreCategory(),
-//                                beneficiary.getHouseholdMembers(),
-//                                assignedSiteName,
-//                                "Assigned to This Site",
-//                                beneficiary.getLatitude(),
-//                                beneficiary.getLongitude()
-//                        );
-//                        allBeneficiaries.add(row);
-//                        LOGGER.info("Beneficiary " + beneficiary.getBeneficiaryId() + " is assigned to this site - showing in table");
-//                    } else {
-//                        LOGGER.info("Beneficiary " + beneficiary.getBeneficiaryId() + " is assigned to a different site - skipping");
-//                    }
-//                    continue;
-//                }
-//
-//                EvacSiteWithDistance nearestSite = findNearestSiteWithCapacity(
-//                        beneficiary.getLatitude(),
-//                        beneficiary.getLongitude(),
-//                        beneficiary.getHouseholdMembers(),
-//                        availableSites,
-//                        siteRemainingCapacity
-//                );
-//
-//                String assignedSiteName = "No Capacity Available";
-//                String status = "Pending";
-//
-//                if (nearestSite != null) {
-//                    assignedSiteName = siteNames.get(nearestSite.getEvacSiteId());
-//                    assignmentMap.put(beneficiary.getBeneficiaryId(), nearestSite.getEvacSiteId());
-//
-//                    int remainingCap = siteRemainingCapacity.get(nearestSite.getEvacSiteId());
-//                    siteRemainingCapacity.put(nearestSite.getEvacSiteId(), remainingCap - beneficiary.getHouseholdMembers());
-//                }
-//
-//                BeneficiaryAllocationRow row = new BeneficiaryAllocationRow(
-//                        beneficiary.getBeneficiaryId(),
-//                        beneficiary.getFirstName() + " " + beneficiary.getLastName(),
-//                        beneficiary.getFinalScore(),
-//                        beneficiary.getScoreCategory(),
-//                        beneficiary.getHouseholdMembers(),
-//                        assignedSiteName,
-//                        status,
-//                        beneficiary.getLatitude(),
-//                        beneficiary.getLongitude()
-//                );
-//
-//                allBeneficiaries.add(row);
-//            }
-//
-//            totalBeneficiariesLabel.setText("Total Beneficiaries: " + allBeneficiaries.size() +
-//                    " (Assigned to this site: " + allBeneficiaries.stream()
-//                    .filter(b -> "Assigned to This Site".equals(b.getStatus()))
-//                    .count() + ")");
-//
-//            LOGGER.info("Loaded " + allBeneficiaries.size() + " beneficiaries for allocation");
-//
-//        } catch (Exception e) {
-//            LOGGER.log(Level.SEVERE, "Error loading beneficiaries for disaster ID: " + disasterId, e);
-//            AlertDialogManager.showError("Error", "Failed to load beneficiaries: " + e.getMessage());
-//            totalBeneficiariesLabel.setText("Total Beneficiaries: 0 (Error)");
-//        }
-//    }
 
     public void loadBeneficiaries() {
         LOGGER.info("=== LOADING BENEFICIARIES ===");
@@ -467,11 +332,23 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
     }
 
 
-
     private void closeDialog() {
         if (dialogStage != null) {
             dialogStage.close();
         }
+    }
+
+    private void makeDraggable() {
+        root.setOnMousePressed(event -> {
+            yOffset = event.getSceneY();
+            xOffset = event.getSceneX();
+        });
+        root.setOnMouseDragged(event -> {
+           if(dialogStage != null) {
+               dialogStage.setY(event.getScreenY() - yOffset);
+               dialogStage.setX(event.getScreenX() - xOffset);
+           }
+        });
     }
 
     // Inner class for table rows

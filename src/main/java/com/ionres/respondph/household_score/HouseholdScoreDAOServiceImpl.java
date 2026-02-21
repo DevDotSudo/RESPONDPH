@@ -391,11 +391,10 @@ public class HouseholdScoreDAOServiceImpl implements HouseholdScoreDAO {
         model.setDigitalNoDigitalScore(rs.getDouble("digital_no_digital_score"));
 
         // Damage scores
-        model.setNoVisibleDamageScore(rs.getDouble("damage_no_visible_damage"));
-        model.setMinorDamageScore(rs.getDouble("damage_minor_damage"));
-        model.setModerateDamageScore(rs.getDouble("damage_moderate_damage"));
-        model.setSevereDamageScore(rs.getDouble("damage_severe_damage"));
-        model.setDestructionOrCollapseScore(rs.getDouble("damage_destruction_or_collapse"));
+        model.setAffectedScore(rs.getDouble("damage_affected"));
+        model.setPartiallyScore(rs.getDouble("damage_partially"));
+        model.setTotallyScore(rs.getDouble("damage_totally"));
+
 
         return model;
     }

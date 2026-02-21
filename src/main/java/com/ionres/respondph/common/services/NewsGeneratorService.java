@@ -101,13 +101,7 @@ public class NewsGeneratorService {
     );
 
     private static final List<String> WEATHER_RSS = List.of(
-            "https://www.pagasa.dost.gov.ph/rss/weather_forecast",
-            "https://www.ndrrmc.gov.ph/attachments/feed/rss.xml",
-            "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=1&locCode=PH|ILO|ILOILO+CITY|",
-            "https://weather.com/rss/current/PHXX0024",
-            "https://news.abs-cbn.com/rss/weather",
-            "https://www.gmanetwork.com/news/rss/weather.xml",
-            "https://www.rappler.com/science-nature/weather/feed/"
+            "https://data.gmanetwork.com/gno/rss/weather/feed.xml"
     );
 
     private static final List<String> NATIONAL_RSS = List.of(

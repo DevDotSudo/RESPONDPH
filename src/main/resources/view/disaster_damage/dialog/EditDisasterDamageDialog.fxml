@@ -127,11 +127,9 @@
                             <ComboBox fx:id="damageSeverityFld" maxWidth="1.7976931348623157E308" promptText="Select damage severity" styleClass="field-combo" HBox.hgrow="ALWAYS">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="No visible damage" />
-                                        <String fx:value="Minor damage (non-structural)" />
-                                        <String fx:value="Moderate damage (partially unusable)" />
-                                        <String fx:value="Severe damage (unsafe for use)" />
-                                        <String fx:value="Destruction or collapse" />
+                                        <String fx:value="Affected" />
+                                        <String fx:value="Partially Damage" />
+                                        <String fx:value="Totally Damage" />
                                     </FXCollections>
                                 </items>
                             </ComboBox>

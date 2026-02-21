@@ -772,11 +772,9 @@ public class HouseholdScoreCalculate {
     private double getDisasterDamageScore(String access, VulnerabilityIndicatorScoreModel vulnScores) {
         if (access == null) return 0.0;
         String lower = access.trim().toLowerCase();
-        if (lower.contains("no visible")) return vulnScores.getNoVisibleDamageScore();
-        if (lower.contains("minor damage")) return vulnScores.getMinorDamageScore();
-        if (lower.contains("moderate damage")) return vulnScores.getModerateDamageScore();
-        if (lower.contains("severe damage")) return vulnScores.getSevereDamageScore();
-        if (lower.contains("destruction")) return vulnScores.getDestructionOrCollapseScore();
+        if (lower.contains("affected")) return vulnScores.getAffectedScore();
+        if (lower.contains("partially damage")) return vulnScores.getPartiallyScore();
+        if (lower.contains("totally damage")) return vulnScores.getTotallyScore();
         return 0.0;
     }
 

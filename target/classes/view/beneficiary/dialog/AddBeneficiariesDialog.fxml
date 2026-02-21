@@ -23,13 +23,13 @@
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Button fx:id="importExcelBtn"
-                prefHeight="42.0"
-                prefWidth="180.0"
-                styleClass="dialog-close"
-                onAction="#onImportExcel">
-            <text>Import Excel</text>
-        </Button>
+<!--        <Button fx:id="importExcelBtn"-->
+<!--                prefHeight="42.0"-->
+<!--                prefWidth="180.0"-->
+<!--                styleClass="dialog-close"-->
+<!--                onAction="#onImportExcel">-->
+<!--            <text>Import Excel</text>-->
+<!--        </Button>-->
 
         <Button fx:id="exitBtn" styleClass="dialog-close">
             <graphic>

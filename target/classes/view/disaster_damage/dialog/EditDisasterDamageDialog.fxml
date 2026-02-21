@@ -8,7 +8,7 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_damage/dialog/editdisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamageDialogController">
+<VBox fx:id="root" prefHeight="900.0" prefWidth="1200.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/disaster_damage/dialog/editdisasterdamagedialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_damage.dialogs_controller.EditDisasterDamageDialogController">
 
     <!-- ==================== HEADER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">

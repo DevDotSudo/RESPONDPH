@@ -6,9 +6,7 @@ import com.anthropic.core.http.StreamResponse;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.Model;
 import com.anthropic.models.messages.RawMessageStreamEvent;
-
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -22,14 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Claude Haiku 4.5 — Streaming + RSS grounding (no web tools needed).
- *
- * Key point:
- *  - Claude MUST NOT be asked to "find real URLs".
- *  - Your app fetches real articles (RSS) and supplies them in the prompt.
- *  - Claude outputs ArticleIndex; your code resolves to the real URL.
- */
 public class NewsGeneratorService {
 
     private static final String ENV_ANTHROPIC_KEY = "ANTHROPIC_API_KEY";
@@ -86,33 +76,21 @@ public class NewsGeneratorService {
             "<description[^>]*>\\s*(?:<!\\[CDATA\\[)?(.*?)(?:]]>)?\\s*</description>",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
-    // RSS sources (same as your earlier list; edit as needed)
     private static final List<String> LOCAL_RSS = List.of(
             "https://panaynews.net/feed/",
-            "https://www.dailyguardian.com.ph/feed/",
-            "https://www.sunstar.com.ph/iloilo/rss",
-            "https://thefreeman.com.ph/feed/",
-            "https://www.antique-mirror.com/feed/",
-            "https://capiznews.com/feed/",
-            "https://www.manilatimes.net/tag/iloilo/feed/",
-            "https://www.rappler.com/places/visayas/feed/",
-            "https://businessmirror.com.ph/tag/iloilo/feed/",
-            "https://www.pna.gov.ph/rss/region-6"
+            "https://www.dailyguardian.com.ph/feed/"
     );
 
     private static final List<String> WEATHER_RSS = List.of(
-            "https://data.gmanetwork.com/gno/rss/weather/feed.xml"
+            "https://data.gmanetwork.com/gno/rss/weather/feed.xml",
+            "https://www.weather.gov/rss/"
     );
 
     private static final List<String> NATIONAL_RSS = List.of(
-            "https://www.gmanetwork.com/news/rss/news.xml",
-            "https://news.abs-cbn.com/rss/news",
-            "https://mb.com.ph/feed/",
-            "https://www.philstar.com/rss/headlines",
-            "https://www.manilatimes.net/feed/",
-            "https://www.rappler.com/feed/",
-            "https://newsinfo.inquirer.net/feed/",
-            "https://www.pna.gov.ph/rss/news"
+            "https://data.gmanetwork.com/gno/rss/news/feed.xml",
+            "https://abcnews.com/abcnews/politicsheadlines",
+            "https://abcnews.com/abcnews/healthheadlines",
+            "https://www.philstar.com/rss/headlines"
     );
 
     private final AnthropicClient client;

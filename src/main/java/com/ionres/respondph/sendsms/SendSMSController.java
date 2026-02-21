@@ -274,6 +274,8 @@ public class SendSMSController implements Initializable {
                 slot.setText("Slot " + (i + 1) + " (Empty)");
                 slot.setDisable(true);
                 slot.setSelected(false);
+                slot.setVisible(true);   // ← ADD THIS
+                slot.setManaged(true);   // ← ADD THIS
             }
         }
     }
@@ -821,6 +823,13 @@ public class SendSMSController implements Initializable {
                     storedNewsItems.addAll(result);
                     int n = Math.min(storedNewsItems.size(), newsSlots.length);
                     for (int i = 0; i < n; i++) updateNewsSlot(i, storedNewsItems.get(i));
+                    for (int i = n; i < newsSlots.length; i++) {
+                        RadioButton slot = newsSlots[i];
+                        if (slot != null) {
+                            slot.setVisible(false);
+                            slot.setManaged(false);
+                        }
+                    }
 
                     updateAiResponseVisibility(true);
 
@@ -844,10 +853,12 @@ public class SendSMSController implements Initializable {
             aiResponseContainer.setManaged(visible);
         }
         if (btnUseSelectedNews != null) btnUseSelectedNews.setDisable(!visible);
-        for (RadioButton slot : newsSlots) {
+        for (int i = 0; i < newsSlots.length; i++) {
+            RadioButton slot = newsSlots[i];
             if (slot == null) continue;
-            slot.setVisible(visible);
-            slot.setManaged(visible);
+            boolean show = visible && i < storedNewsItems.size();
+            slot.setVisible(show);
+            slot.setManaged(show);
         }
         if (!visible && newsAiResponse != null) newsAiResponse.selectToggle(null);
     }

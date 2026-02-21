@@ -67,6 +67,9 @@ public class AddDisasterDamageDialogController {
         exitBtn.setOnAction(handler);
         uploadPhotoBtn.setOnAction(handler);
         removePhotoBtn.setOnAction(handler);
+
+        damagePhotoView.fitWidthProperty().bind(imagePreviewContainer.widthProperty().subtract(20));
+        damagePhotoView.fitHeightProperty().bind(imagePreviewContainer.heightProperty().subtract(20));
     }
 
     private void handleActions(ActionEvent event) {
@@ -419,7 +422,7 @@ public class AddDisasterDamageDialogController {
                     notes,
                     regDate
             );
-
+            disasterDamage.setImage(selectedImageBytes);
             boolean success = disasterDamageService.createDisasterDamage(disasterDamage);
 
             if (success) {
@@ -430,13 +433,13 @@ public class AddDisasterDamageDialogController {
                 int adminId = SessionManager.getInstance().getCurrentAdminId();
 
                 UpdateTrigger trigger = new UpdateTrigger();
-//                boolean cascadeSuccess = trigger.triggerCascadeUpdateForNewBeneficiaryWithDisaster(beneficiaryId, adminId, disaster.getDisasterId());
                 boolean cascadeSuccess = trigger.triggerCascadeUpdateWithDisaster(beneficiaryId, disaster.getDisasterId());
 
                 if (cascadeSuccess) {
                     AlertDialogManager.showSuccess("Success",
                             "Disaster damage record has been successfully added.\n"
                     );
+                    handleRemoveImage();
                 } else {
                     AlertDialogManager.showWarning("Partial Success",
                             "Disaster damage record has been added, but score recalculation encountered issues.\n" +

@@ -71,8 +71,10 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             String encryptedNotes = cs.encryptWithOneParameter(ddm.getNotes());
             String encryptedRegDate = cs.encryptWithOneParameter(ddm.getRegDate());
 
-            boolean flag = disasterDamageDAO.saving(new DisasterDamageModel(ddm.getBeneficiaryId(), ddm.getDisasterId(), encryptedHouseDamage,
-                    encryptedAssessmentDate, encryptedVerified, encryptedNotes, encryptedRegDate));
+            DisasterDamageModel toSave = new DisasterDamageModel(ddm.getBeneficiaryId(), ddm.getDisasterId(), encryptedHouseDamage,
+                    encryptedAssessmentDate, encryptedVerified, encryptedNotes, encryptedRegDate);
+            toSave.setImage(ddm.getImage()); // ADD THIS
+            boolean flag = disasterDamageDAO.saving(toSave);
 
             if (!flag) {
                 throw ExceptionFactory.failedToCreate("Disaster");
@@ -134,6 +136,7 @@ public class DisasterDamageServiceImpl implements DisasterDamageService {
             encrypted.setVerifiedBy(encryptedVerifiedBy);
             encrypted.setNotes(encryptedNotes);
             encrypted.setRegDate(encryptedRegDate);
+            encrypted.setImage(ddm.getImage());
 
             boolean updated = disasterDamageDAO.update(encrypted);
 

@@ -516,10 +516,6 @@ public class SendSMSController implements Initializable {
         lblNetworkStatus.setStyle("-fx-text-fill: " + (online ? "#22c55e" : "#ef4444") + ";");
     }
 
-    // =========================================================================
-    //  Browser helper
-    // =========================================================================
-
     private void openInBrowser(String url) {
         if (url == null || url.isBlank()) return;
         try {
@@ -530,10 +526,6 @@ public class SendSMSController implements Initializable {
                     "Could not open:\n" + url + "\n\n" + e.getMessage());
         }
     }
-
-    // =========================================================================
-    //  Evacuation message
-    // =========================================================================
 
     private void loadExistingEvacMessage() {
         if (txtCustomEvacMessage == null) return;
@@ -580,10 +572,6 @@ public class SendSMSController implements Initializable {
             lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
         }
     }
-
-    // =========================================================================
-    //  SMS sending
-    // =========================================================================
 
     @FXML
     private void onSendSMS() {
@@ -678,10 +666,6 @@ public class SendSMSController implements Initializable {
         if (btnSendSMS  != null) btnSendSMS.setDisable(loading);
         if (txtMessage  != null) txtMessage.setDisable(loading);
     }
-
-    // =========================================================================
-    //  GSM port / radio buttons
-    // =========================================================================
 
     private void setupRadioButtons() {
         if (rbApi != null) rbApi.selectedProperty().addListener((obs, old, selected) -> {

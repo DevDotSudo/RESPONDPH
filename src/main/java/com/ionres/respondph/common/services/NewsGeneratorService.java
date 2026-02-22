@@ -98,9 +98,10 @@ public class NewsGeneratorService {
 
     // HEALTH: health-focused feeds
     private static final List<String> RSS_HEALTH = List.of(
-            "https://data.gmanetwork.com/gno/rss/news/feed.xml",
-            "https://www.philstar.com/rss/headlines",
-            "https://abcnews.com/abcnews/healthheadlines"
+            "https://data.gmanetwork.com/gno/rss/lifestyle/healthandwellness/feed.xml",
+            "https://www.philstar.com/rss/lifestyle",
+            "https://abcnews.com/abcnews/healthheadlines",
+            "https://www.msf.org/rss/Philippines"
     );
 
     // CRIME / LAW / PUBLIC SAFETY

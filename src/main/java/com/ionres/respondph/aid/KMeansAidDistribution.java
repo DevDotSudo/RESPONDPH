@@ -252,6 +252,7 @@ public class KMeansAidDistribution {
                     double dist = Math.pow(beneficiaries.get(j).getFinalScore() - centroids[c], 2);
                     minDist = Math.min(minDist, dist);
                 }
+
                 distances[j] = minDist;
                 totalDistance += minDist;
             }

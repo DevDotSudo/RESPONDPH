@@ -24,29 +24,43 @@ import com.ionres.respondph.disaster_mapping.DisasterMappingService;
 import com.ionres.respondph.disaster_mapping.DisasterMappingServiceImpl;
 import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.database.DBConnection;
+
 import java.awt.Desktop;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * SendSMSController
+ *
+ * News pipeline (triggered by onGenerateNews):
+ *   Step 1 → NewsGeneratorService fetches RSS articles
+ *   Step 2 → Claude summarises articles into English SMS bodies
+ *   Step 3 → Google Translate converts English → Hiligaynon (hil)
+ *
+ * Required env vars (checked at startup by NewsGeneratorService):
+ *   ANTHROPIC_API_KEY        — Claude API
+ *   GOOGLE_TRANSLATE_API_KEY — Google Translate (optional; English used as fallback)
+ */
 public class SendSMSController implements Initializable {
 
     private static final Logger LOG = Logger.getLogger(SendSMSController.class.getName());
 
-    // ── Categories that search Philippines-wide (must match NewsGeneratorService) ──
+    // ── Must match category strings in cbNewsTopic and NewsGeneratorService ──
     private static final Set<String> NATIONAL_CATEGORIES = Set.of(
-            "national news", "politics", "health news", "law"
+            "national news", "politics news", "health news", "crime / law / public safety news"
+    );
+    private static final Set<String> WEATHER_CATEGORIES = Set.of(
+            "weather news", "weather", "weather update"
     );
 
+    // ── FXML fields ───────────────────────────────────────────────────────────
     @FXML private ComboBox<String> cbSelectBeneficiary;
     @FXML private ComboBox<String> cbSelectPorts;
     @FXML private ComboBox<String> cbSelectBarangay;
@@ -88,19 +102,19 @@ public class SendSMSController implements Initializable {
     @FXML private RadioButton rbNewsSlot3;
     @FXML private RadioButton rbNewsSlot4;
     @FXML private RadioButton rbNewsSlot5;
-    @FXML private Button btnDisconnect;
-    @FXML private TextArea txtCustomEvacMessage;
-    @FXML private Button   btnSaveEvacMessage;
-    @FXML private Label    lblMessageStatus;
+    @FXML private Button      btnDisconnect;
+    @FXML private TextArea    txtCustomEvacMessage;
+    @FXML private Button      btnSaveEvacMessage;
+    @FXML private Label       lblMessageStatus;
 
+    // ── Services / state ──────────────────────────────────────────────────────
     private DisasterMappingService disasterMappingService;
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
     private final List<NewsItem>   storedNewsItems           = new ArrayList<>();
     private RadioButton[]          newsSlots;
 
     private final AtomicBoolean generationInProgress = new AtomicBoolean(false);
-
-    private final ObservableList<SmsModel> logRows = FXCollections.observableArrayList();
+    private final ObservableList<SmsModel> logRows   = FXCollections.observableArrayList();
 
     private CustomEvacMessageManager evacMessageManager;
     private SmsService               smsService;
@@ -112,6 +126,7 @@ public class SendSMSController implements Initializable {
     private boolean isOpeningDialog    = false;
     private boolean isUpdatingComboBox = false;
 
+    // Listener kept as a field so we can remove and re-add it safely
     private final javafx.beans.value.ChangeListener<String> portChangeListener =
             (obs, oldPort, newPort) -> {
                 if (newPort == null || newPort.equals(oldPort)) return;
@@ -124,18 +139,25 @@ public class SendSMSController implements Initializable {
                 autoConnectToPort(newPort);
             };
 
+    // =========================================================================
+    //  initialize
+    // =========================================================================
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         smsService = new SmsServiceImpl();
         smsSender  = SMSSender.getInstance();
         disasterMappingService = new DisasterMappingServiceImpl(DBConnection.getInstance());
 
+        // ── Initialise NewsGeneratorService ───────────────────────────────────
+        // The service reads ANTHROPIC_API_KEY and GOOGLE_TRANSLATE_API_KEY from env.
+        // If ANTHROPIC_API_KEY is missing the constructor throws; we catch that and
+        // disable the AI news feature gracefully.
         try {
             newsGeneratorService = new NewsGeneratorService();
-            LOG.info("[SendSMS] NewsGeneratorService initialized successfully.");
+            LOG.info("[SendSMS] NewsGeneratorService ready (pipeline: RSS → Claude EN → Google Translate HIL).");
         } catch (Exception e) {
             newsGeneratorService = null;
-            LOG.warning("[SendSMS] AI News disabled: " + e.getMessage());
+            LOG.warning("[SendSMS] AI news disabled: " + e.getMessage());
         }
 
         beneficiaryDAO = new BeneficiaryDAOImpl();
@@ -158,43 +180,288 @@ public class SendSMSController implements Initializable {
         DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
 
         evacMessageManager = CustomEvacMessageManager.getInstance();
-
         if (charCount != null) charCount.setText("0/320 characters");
 
         updateConnectionStatus();
         loadExistingEvacMessage();
     }
 
-    private void autoConnectToPort(String portName) {
-        updateConnectionLabel("Connecting to " + portName + "…", "orange");
-        updateDisconnectButtonVisibility();
+    // =========================================================================
+    //  News generation — main handler
+    // =========================================================================
 
-        new Thread(() -> {
-            boolean ok = smsSender.connectToPort(portName, 5000);
-            Platform.runLater(() -> {
-                if (ok) {
-                    updateConnectionLabel("Connected to " + portName, "green");
-                } else {
-                    updateConnectionLabel("Failed to connect to " + portName, "red");
-                    AlertDialogManager.showError("Connection Failed",
-                            "Could not connect to GSM modem on " + portName +
-                                    ".\nCheck if the device is plugged in and not in use.");
-                }
-                updateDisconnectButtonVisibility();
-                updateSendButtonState();
+    /**
+     * Called when the user clicks "Generate News".
+     *
+     * Flow:
+     *   1. Validates state (service ready, online, topic selected).
+     *   2. Calls NewsGeneratorService.generateNewsHeadlines(topic, category, progress).
+     *      Inside that call:
+     *        • Step 1 — fetches RSS articles matching the category/geo scope
+     *        • Step 2 — Claude reads articles and writes English SMS summaries
+     *        • Step 3 — Google Translate converts each summary to Hiligaynon
+     *   3. Displays results in the 5 radio-button news slots.
+     */
+    @FXML
+    private void onGenerateNews() {
+        if (cbNewsTopic == null || btnGenerateNews == null) return;
+
+        // Guard: prevent concurrent generation
+        if (!generationInProgress.compareAndSet(false, true)) {
+            LOG.info("[SendSMS] Generation already in progress — ignoring click.");
+            return;
+        }
+
+        // Guard: service available
+        if (newsGeneratorService == null) {
+            generationInProgress.set(false);
+            AlertDialogManager.showError("AI Disabled",
+                    "News generation requires ANTHROPIC_API_KEY.\n"
+                            + "Set the environment variable and restart the application.");
+            return;
+        }
+
+        // Guard: internet
+        if (!InternetConnectionChecker.isOnline()) {
+            generationInProgress.set(false);
+            AlertDialogManager.showError("No Internet",
+                    "An internet connection is required for:\n"
+                            + "  • Fetching RSS news articles\n"
+                            + "  • Claude AI (English summary)\n"
+                            + "  • Google Translate (Hiligaynon)");
+            return;
+        }
+
+        // Category drives both the geographic scope and the keyword filter
+        String category = cbNewsTopic.getSelectionModel().getSelectedItem();
+        if (category == null || category.trim().isEmpty()) {
+            generationInProgress.set(false);
+            AlertDialogManager.showWarning("Topic Required", "Please select a news topic.");
+            return;
+        }
+
+        String scopeLabel = resolveScopeLabel(category);
+
+        LOG.info("[SendSMS] News generation started. category='" + category
+                + "' scope='" + scopeLabel + "'");
+
+        // Reset UI
+        storedNewsItems.clear();
+        clearNewsSlots();
+        updateAiResponseVisibility(false);
+        btnGenerateNews.setDisable(true);
+
+        // Show progress in main frame
+        MainFrameController main = MainFrameController.getInstance();
+        if (main != null) {
+            main.setNewsCancelAction(() -> {
+                LOG.info("[SendSMS] User cancelled news generation.");
+                newsGeneratorService.cancel();   // ← uses the renamed cancel() method
             });
-        }, "GSM-Connect-Thread").start();
+            main.showNewsProgress(category);
+        }
+
+        // ── Launch pipeline ───────────────────────────────────────────────────
+        // topic  = category (drives keyword search inside the RSS fetch)
+        // category = category (drives geo scope: local / weather / national)
+        newsGeneratorService
+                .generateNewsHeadlines(
+                        category,   // topic
+                        category,   // category (scope)
+                        (progress, status) -> Platform.runLater(() -> {
+                            // Forward step labels to the main frame progress bar
+                            // Status messages follow the pipeline:
+                            //   "Step 1/3 — Fetching RSS articles..."
+                            //   "Step 2/3 — Claude writing English summaries..."
+                            //   "Step 3/3 — Google Translate: English → Hiligaynon..."
+                            if (main != null) main.setNewsProgress(progress, status);
+                        }))
+                .whenComplete((result, ex) -> Platform.runLater(() -> {
+
+                    generationInProgress.set(false);
+                    if (btnGenerateNews != null) btnGenerateNews.setDisable(false);
+                    if (main != null) {
+                        main.setNewsCancelAction(null);
+                        main.hideNewsProgress();
+                    }
+
+                    // ── Error ─────────────────────────────────────────────────
+                    if (ex != null) {
+                        Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                        String msg = cause.getMessage();
+                        if (msg == null) msg = cause.getClass().getSimpleName();
+                        LOG.log(Level.SEVERE, "[SendSMS] News generation failed: " + msg, ex);
+                        AlertDialogManager.showError("Generation Failed",
+                                "News generation encountered an error:\n\n" + msg
+                                        + "\n\nCheck that ANTHROPIC_API_KEY and GOOGLE_TRANSLATE_API_KEY are set.");
+                        return;
+                    }
+
+                    // ── No results ────────────────────────────────────────────
+                    if (result == null || result.isEmpty()) {
+                        LOG.warning("[SendSMS] Generation returned 0 items.");
+                        AlertDialogManager.showWarning("No Results",
+                                "No Hiligaynon news items could be generated for:\n"
+                                        + "  Category : " + category + "\n"
+                                        + "  Scope    : " + scopeLabel + "\n\n"
+                                        + "Possible causes:\n"
+                                        + "  • RSS feeds returned no matching articles\n"
+                                        + "  • Google Translate API key is missing or invalid\n"
+                                        + "Try a different topic or check your API keys.");
+                        return;
+                    }
+
+                    LOG.info("[SendSMS] Pipeline complete. Items: " + result.size()
+                            + " (in Hiligaynon, scope: " + scopeLabel + ")");
+
+                    // ── Populate news slots ───────────────────────────────────
+                    storedNewsItems.addAll(result);
+                    int n = Math.min(storedNewsItems.size(), newsSlots.length);
+                    for (int i = 0; i < n; i++)
+                        updateNewsSlot(i, storedNewsItems.get(i));
+                    // Hide unused slots
+                    for (int i = n; i < newsSlots.length; i++) {
+                        RadioButton slot = newsSlots[i];
+                        if (slot != null) { slot.setVisible(false); slot.setManaged(false); }
+                    }
+
+                    updateAiResponseVisibility(true);
+
+                    // ── Success alert ─────────────────────────────────────────
+                    if (n == TARGET) {
+                        AlertDialogManager.showSuccess("Generation Complete",
+                                TARGET + " Hiligaynon news items generated.\n"
+                                        + "Category : " + category + "\n"
+                                        + "Scope    : " + scopeLabel);
+                    } else {
+                        AlertDialogManager.showInfo("Partial Results",
+                                n + " of " + TARGET + " items generated.\n"
+                                        + "Category : " + category + "\n"
+                                        + "Scope    : " + scopeLabel + "\n\n"
+                                        + "This topic may have limited recent RSS coverage.\n"
+                                        + "Try a broader category or generate again.");
+                    }
+                }));
     }
 
-    private void updateDisconnectButtonVisibility() {
-        if (btnDisconnect == null) return;
-        boolean connected = smsSender.isConnected();
-        btnDisconnect.setVisible(connected);
-        btnDisconnect.setManaged(connected);
+    /** TARGET matches NewsGeneratorService.TARGET */
+    private static final int TARGET = 5;
+
+    /**
+     * Returns a human-readable scope description for alert messages.
+     * Mirrors the geo-scope logic in NewsGeneratorService.
+     */
+    private String resolveScopeLabel(String category) {
+        if (category == null) return "Iloilo";
+        String lc = category.toLowerCase(Locale.ROOT).trim();
+        if (NATIONAL_CATEGORIES.contains(lc)) return "the Philippines (national)";
+        if (WEATHER_CATEGORIES.contains(lc))  return "Iloilo Province / Philippines weather";
+        return "Iloilo City and Iloilo Province";
     }
 
-    private void connectToSelectedPort(String portName) {
-        autoConnectToPort(portName);
+    // =========================================================================
+    //  News slots UI
+    // =========================================================================
+
+    private void setupNewsSlots() {
+        if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
+        for (int i = 0; i < newsSlots.length; i++) {
+            final int index = i;
+            RadioButton slot = newsSlots[i];
+            if (slot == null) continue;
+            slot.setToggleGroup(newsAiResponse);
+            slot.getStyleClass().add("ai-news-slot");
+            slot.setWrapText(true);
+            slot.setAlignment(Pos.TOP_LEFT);
+            slot.setTextOverrun(OverrunStyle.CLIP);
+            slot.setMinHeight(Region.USE_PREF_SIZE);
+            slot.setPrefHeight(Region.USE_COMPUTED_SIZE);
+            slot.setMaxHeight(Double.MAX_VALUE);
+            slot.setDisable(true);
+            slot.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                if (isSelected && index < storedNewsItems.size()) loadNewsToMessage(index);
+            });
+        }
+    }
+
+    /**
+     * Populates one news slot with:
+     *   • The Hiligaynon SMS body (translated by Google Translate)
+     *   • The source article URL (double-click to open in browser)
+     */
+    private void updateNewsSlot(int slotIndex, NewsItem item) {
+        if (slotIndex < 0 || slotIndex >= newsSlots.length || item == null) return;
+        RadioButton slot = newsSlots[slotIndex];
+        if (slot == null) return;
+
+        double leftIndent = 38;
+
+        // SMS body — this text is in Hiligaynon (output of Google Translate)
+        Label smsLabel = new Label(item.smsText());
+        smsLabel.setWrapText(true);
+        smsLabel.setMaxWidth(Double.MAX_VALUE);
+
+        // Source URL
+        Hyperlink link = new Hyperlink(
+                item.url() != null && !item.url().isBlank() ? item.url() : "(no source URL)");
+        link.setWrapText(true);
+        link.setMaxWidth(Double.MAX_VALUE);
+        link.setOnMouseClicked(ev -> {
+            if (ev.getClickCount() == 2 && item.url() != null && !item.url().isBlank())
+                openInBrowser(item.url());
+        });
+
+        VBox box = new VBox(6, smsLabel, link);
+        box.setFillWidth(true);
+        box.setMaxWidth(Double.MAX_VALUE);
+        box.prefWidthProperty().bind(slot.widthProperty().subtract(leftIndent));
+        smsLabel.prefWidthProperty().bind(box.prefWidthProperty());
+        link.prefWidthProperty().bind(box.prefWidthProperty());
+
+        slot.setText("");
+        slot.setGraphic(box);
+        slot.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        slot.setDisable(false);
+
+        // Auto-select first slot
+        if (slotIndex == 0) slot.setSelected(true);
+    }
+
+    private void clearNewsSlots() {
+        for (int i = 0; i < newsSlots.length; i++) {
+            RadioButton slot = newsSlots[i];
+            if (slot == null) continue;
+            slot.setGraphic(null);
+            slot.setContentDisplay(ContentDisplay.LEFT);
+            slot.setText("Slot " + (i + 1) + " (Empty)");
+            slot.setDisable(true);
+            slot.setSelected(false);
+            slot.setVisible(true);
+            slot.setManaged(true);
+        }
+    }
+
+    /** Loads the selected Hiligaynon SMS text into the message text area. */
+    private void loadNewsToMessage(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= storedNewsItems.size() || txtMessage == null) return;
+        String text = storedNewsItems.get(slotIndex).smsText();
+        if (text != null) txtMessage.setText(text.trim());
+    }
+
+    private void updateAiResponseVisibility(boolean visible) {
+        if (aiResponseContainer != null) {
+            aiResponseContainer.setVisible(visible);
+            aiResponseContainer.setManaged(visible);
+        }
+        if (btnUseSelectedNews != null) btnUseSelectedNews.setDisable(!visible);
+        for (int i = 0; i < newsSlots.length; i++) {
+            RadioButton slot = newsSlots[i];
+            if (slot == null) continue;
+            boolean show = visible && i < storedNewsItems.size();
+            slot.setVisible(show);
+            slot.setManaged(show);
+        }
+        if (!visible && newsAiResponse != null) newsAiResponse.selectToggle(null);
     }
 
     private void bindAiSlotWidths() {
@@ -209,132 +476,267 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    private void setupNewsSlots() {
+    // =========================================================================
+    //  News controls setup
+    // =========================================================================
+
+    private void setupNewsControls() {
         if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
 
-        for (int i = 0; i < newsSlots.length; i++) {
-            final int index = i;
-            RadioButton slot = newsSlots[i];
-            if (slot == null) continue;
+        boolean aiEnabled = (newsGeneratorService != null);
+        updateAiResponseVisibility(false);
 
-            slot.setToggleGroup(newsAiResponse);
-            slot.getStyleClass().add("ai-news-slot");
-            slot.setWrapText(true);
-            slot.setAlignment(Pos.TOP_LEFT);
-            slot.setTextOverrun(OverrunStyle.CLIP);
-            slot.setMinHeight(Region.USE_PREF_SIZE);
-            slot.setPrefHeight(Region.USE_COMPUTED_SIZE);
-            slot.setMaxHeight(Double.MAX_VALUE);
-            slot.setDisable(true);
-
-            slot.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-                if (isSelected && index < storedNewsItems.size())
-                    loadNewsToMessage(index);
-            });
+        if (btnGenerateNews != null) {
+            btnGenerateNews.setDisable(!aiEnabled);
+            btnGenerateNews.setOnAction(e -> onGenerateNews());
+            if (!aiEnabled)
+                btnGenerateNews.setText("AI Disabled (ANTHROPIC_API_KEY missing)");
         }
+        if (cbNewsTopic != null) cbNewsTopic.setDisable(!aiEnabled);
+        if (btnSaveEvacMessage != null) btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
+
+        LOG.info("[SendSMS] News controls configured. AI enabled: " + aiEnabled);
     }
 
-    private void updateNewsSlot(int slotIndex, NewsItem item) {
-        if (slotIndex < 0 || slotIndex >= newsSlots.length) return;
-        RadioButton slot = newsSlots[slotIndex];
-        if (slot == null || item == null) return;
+    // =========================================================================
+    //  Network status
+    // =========================================================================
 
-        double leftIndent = 38;
-
-        Label sms = new Label(item.smsText());
-        sms.setWrapText(true);
-        sms.setMaxWidth(Double.MAX_VALUE);
-
-        Hyperlink link = new Hyperlink(item.url());
-        link.setWrapText(true);
-        link.setMaxWidth(Double.MAX_VALUE);
-        link.setOnMouseClicked(ev -> { if (ev.getClickCount() == 2) openInBrowser(item.url()); });
-
-        VBox box = new VBox(6, sms, link);
-        box.setFillWidth(true);
-        box.setMaxWidth(Double.MAX_VALUE);
-        box.prefWidthProperty().bind(slot.widthProperty().subtract(leftIndent));
-        sms.prefWidthProperty().bind(box.prefWidthProperty());
-        link.prefWidthProperty().bind(box.prefWidthProperty());
-
-        slot.setText("");
-        slot.setGraphic(box);
-        slot.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        slot.setDisable(false);
-
-        if (slotIndex == 0) slot.setSelected(true);
-    }
-
-    private void clearNewsSlots() {
-        for (int i = 0; i < newsSlots.length; i++) {
-            RadioButton slot = newsSlots[i];
-            if (slot != null) {
-                slot.setGraphic(null);
-                slot.setContentDisplay(ContentDisplay.LEFT);
-                slot.setText("Slot " + (i + 1) + " (Empty)");
-                slot.setDisable(true);
-                slot.setSelected(false);
-                slot.setVisible(true);   // ← ADD THIS
-                slot.setManaged(true);   // ← ADD THIS
+    private void checkNetworkStatus() {
+        if (lblNetworkStatus == null) return;
+        Task<Boolean> task = new Task<>() {
+            @Override protected Boolean call() throws Exception {
+                HttpClient client = HttpClient.newBuilder()
+                        .connectTimeout(java.time.Duration.ofSeconds(5)).build();
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("https://www.google.com"))
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .timeout(java.time.Duration.ofSeconds(5))
+                        .build();
+                HttpResponse<Void> resp = client.send(req, HttpResponse.BodyHandlers.discarding());
+                return resp.statusCode() >= 200 && resp.statusCode() < 400;
             }
-        }
+        };
+        task.setOnSucceeded(e -> Platform.runLater(() ->
+                updateNetworkLabel(Boolean.TRUE.equals(task.getValue()))));
+        task.setOnFailed(e -> Platform.runLater(() -> updateNetworkLabel(false)));
+        new Thread(task, "Network-Check-Thread").start();
     }
 
-    private void loadNewsToMessage(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= storedNewsItems.size() || txtMessage == null) return;
-        String smsText = storedNewsItems.get(slotIndex).smsText();
-        if (smsText != null) txtMessage.setText(smsText.trim());
+    private void updateNetworkLabel(boolean online) {
+        if (lblNetworkStatus == null) return;
+        lblNetworkStatus.setText(online ? "Online" : "Offline — Internet required for AI news");
+        lblNetworkStatus.setStyle("-fx-text-fill: " + (online ? "#22c55e" : "#ef4444") + ";");
     }
+
+    // =========================================================================
+    //  Browser helper
+    // =========================================================================
 
     private void openInBrowser(String url) {
         if (url == null || url.isBlank()) return;
         try {
-            if (Desktop.isDesktopSupported())
-                Desktop.getDesktop().browse(URI.create(url));
-            else
-                AlertDialogManager.showWarning("Not Supported", "Cannot open browser on this system.");
+            if (Desktop.isDesktopSupported()) Desktop.getDesktop().browse(URI.create(url));
+            else AlertDialogManager.showWarning("Not Supported", "Cannot open browser on this system.");
         } catch (Exception e) {
             AlertDialogManager.showError("Open Link Failed",
                     "Could not open:\n" + url + "\n\n" + e.getMessage());
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // RADIO BUTTONS / GSM CONNECTION
-    // ─────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    //  Evacuation message
+    // =========================================================================
+
+    private void loadExistingEvacMessage() {
+        if (txtCustomEvacMessage == null) return;
+        if (evacMessageManager.hasCustomMessage()) {
+            String msg = evacMessageManager.getCustomEvacuationMessage();
+            txtCustomEvacMessage.setText(msg);
+            updateEvacMessageStatus(true, msg.length());
+        } else {
+            txtCustomEvacMessage.clear();
+            updateEvacMessageStatus(false, 0);
+        }
+    }
+
+    @FXML
+    private void onSaveEvacMessage() {
+        String message = txtCustomEvacMessage != null ? txtCustomEvacMessage.getText() : null;
+        if (message == null || message.trim().isEmpty()) {
+            AlertDialogManager.showWarning("Empty Message",
+                    "Please enter a custom evacuation message before saving.");
+            return;
+        }
+        if (message.length() > 320)
+            AlertDialogManager.showWarning("Message Too Long",
+                    "Message is " + message.length() + " chars. SMS limit is 320.");
+        if (!message.contains("{name}") && !message.contains("{evacSite}") && !message.contains("{site}")) {
+            boolean proceed = AlertDialogManager.showConfirmation(
+                    "Missing Placeholders",
+                    "Message doesn't contain {name} or {evacSite} placeholders.\n\nSave anyway?",
+                    ButtonType.OK, ButtonType.CANCEL);
+            if (!proceed) return;
+        }
+        evacMessageManager.setCustomEvacuationMessage(message.trim());
+        updateEvacMessageStatus(true, message.trim().length());
+        AlertDialogManager.showSuccess("Saved", "Custom evacuation message saved.");
+    }
+
+    private void updateEvacMessageStatus(boolean saved, int length) {
+        if (lblMessageStatus == null) return;
+        if (saved) {
+            lblMessageStatus.setText("✓ Custom evacuation message saved (" + length + " chars).");
+            lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+        } else {
+            lblMessageStatus.setText("No custom evacuation message set (using default format)");
+            lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
+        }
+    }
+
+    // =========================================================================
+    //  SMS sending
+    // =========================================================================
+
+    @FXML
+    private void onSendSMS() {
+        if (txtMessage == null || txtMessage.getText().trim().isEmpty()) {
+            AlertDialogManager.showError("Empty Message", "Please enter message content.");
+            return;
+        }
+        String group = (cbSelectBeneficiary != null) ? cbSelectBeneficiary.getValue() : null;
+        if (group == null) { AlertDialogManager.showError("No Group", "Select a recipient group."); return; }
+
+        String method = (rbGsm != null && rbGsm.isSelected()) ? "GSM" : "API";
+        List<BeneficiaryModel> recipients = getRecipients(group);
+        if (recipients.isEmpty()) {
+            AlertDialogManager.showError("No Recipients", "No valid recipients found for this selection.");
+            return;
+        }
+        boolean confirmed = AlertDialogManager.showConfirmation(
+                "Confirm Send",
+                "Send to " + recipients.size() + " recipient(s) via " + method + "?",
+                ButtonType.OK, ButtonType.CANCEL);
+        if (confirmed) sendSMSToRecipients(recipients, "RESPONDPH: " + txtMessage.getText(), method);
+    }
+
+    private List<BeneficiaryModel> getRecipients(String group) {
+        if (group == null) return List.of();
+        String base = group.contains("(") ? group.substring(0, group.indexOf("(")).trim() : group;
+        return switch (base) {
+            case "All Beneficiaries" -> beneficiaryDAO.getAllBeneficiaries();
+            case "By Barangay" -> {
+                String brgy = (cbSelectBarangay != null) ? cbSelectBarangay.getValue() : null;
+                yield brgy != null ? beneficiaryDAO.getBeneficiariesByBarangay(brgy) : List.of();
+            }
+            case "By Disaster Area" -> {
+                DisasterModel d = (cbSelectDisaster != null) ? cbSelectDisaster.getValue() : null;
+                yield d != null ? getBeneficiariesInDisasterArea(d) : List.of();
+            }
+            default -> base.startsWith("Selected Beneficiaries")
+                    ? new ArrayList<>(selectedBeneficiariesList)
+                    : List.of();
+        };
+    }
+
+    private void sendSMSToRecipients(List<BeneficiaryModel> recipients, String message, String method) {
+        setSmsLoading(true);
+        int total = recipients.size();
+        smsService.cancelBulkSend();
+
+        MainFrameController main = MainFrameController.getInstance();
+        if (main != null) {
+            main.showSmsProgress("Sending SMS (" + method + ")", total);
+            main.setSmsCount(0, total);
+            main.setSmsCancelAction(() -> {
+                smsService.cancelBulkSend();
+                Platform.runLater(() -> { setSmsLoading(false); loadSMSLogs(); });
+            });
+        }
+
+        if (smsService instanceof SmsServiceImpl impl) {
+            impl.setBulkProgressListener(new BulkProgressListener() {
+                @Override public void onProgress(int done, int tot, int success, String m) {
+                    Platform.runLater(() -> { if (main != null) main.setSmsCount(done, tot); });
+                }
+                @Override public void onFinished(int tot, int success, String m) {
+                    Platform.runLater(() -> {
+                        setSmsLoading(false);
+                        if (main != null) { main.setSmsCancelAction(null); main.hideSmsProgress(); }
+                        AlertDialogManager.showSuccess("Send Complete",
+                                success + " of " + tot + " messages sent.\n(" + m + ")");
+                        loadSMSLogs();
+                    });
+                }
+            });
+        }
+
+        Task<Void> task = new Task<>() {
+            @Override protected Void call() { smsService.sendBulkSMS(recipients, message, method); return null; }
+        };
+        task.setOnFailed(ev -> Platform.runLater(() -> {
+            setSmsLoading(false);
+            if (main != null) { main.setSmsCancelAction(null); main.hideSmsProgress(); }
+            Throwable ex = task.getException();
+            AlertDialogManager.showError("Send Failed", ex != null ? ex.getMessage() : "Unknown error");
+            loadSMSLogs();
+        }));
+        Thread t = new Thread(task, "SMS-Bulk-Thread");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void setSmsLoading(boolean loading) {
+        if (smsLoadingBox != null) { smsLoadingBox.setVisible(loading); smsLoadingBox.setManaged(loading); }
+        if (btnSendSMS  != null) btnSendSMS.setDisable(loading);
+        if (txtMessage  != null) txtMessage.setDisable(loading);
+    }
+
+    // =========================================================================
+    //  GSM port / radio buttons
+    // =========================================================================
 
     private void setupRadioButtons() {
-        if (rbApi != null) {
-            rbApi.selectedProperty().addListener((obs, old, selected) -> {
-                if (cbSelectPorts   != null) cbSelectPorts.setDisable(selected);
-                if (btnRefreshPorts != null) btnRefreshPorts.setDisable(selected);
+        if (rbApi != null) rbApi.selectedProperty().addListener((obs, old, selected) -> {
+            if (cbSelectPorts   != null) cbSelectPorts.setDisable(selected);
+            if (btnRefreshPorts != null) btnRefreshPorts.setDisable(selected);
+            updateSendButtonState();
+            updateConnectionStatus();
+        });
+        if (rbGsm != null) rbGsm.selectedProperty().addListener((obs, old, selected) -> {
+            if (!selected) return;
+            String port = (cbSelectPorts != null)
+                    ? cbSelectPorts.getSelectionModel().getSelectedItem() : null;
+            if (port != null && !port.contains("No") && !port.contains("Error"))
+                autoConnectToPort(port);
+            updateSendButtonState();
+        });
+    }
+
+    private void autoConnectToPort(String portName) {
+        updateConnectionLabel("Connecting to " + portName + "…", "orange");
+        updateDisconnectButtonVisibility();
+        new Thread(() -> {
+            boolean ok = smsSender.connectToPort(portName, 5000);
+            Platform.runLater(() -> {
+                updateConnectionLabel(ok ? "Connected to " + portName : "Failed to connect to " + portName,
+                        ok ? "green" : "red");
+                if (!ok) AlertDialogManager.showError("Connection Failed",
+                        "Could not connect to GSM modem on " + portName);
+                updateDisconnectButtonVisibility();
                 updateSendButtonState();
-                updateConnectionStatus();
             });
-        }
-        if (rbGsm != null) {
-            rbGsm.selectedProperty().addListener((obs, old, selected) -> {
-                if (!selected) return;
-                String port = (cbSelectPorts != null)
-                        ? cbSelectPorts.getSelectionModel().getSelectedItem() : null;
-                if (port != null && !port.contains("No") && !port.contains("Error"))
-                    connectToSelectedPort(port);
-                updateSendButtonState();
-            });
-        }
+        }, "GSM-Connect-Thread").start();
     }
 
     private void populateAvailablePorts() {
         if (cbSelectPorts == null) return;
-
-        cbSelectPorts.getSelectionModel().selectedItemProperty()
-                .removeListener(portChangeListener);
+        cbSelectPorts.getSelectionModel().selectedItemProperty().removeListener(portChangeListener);
 
         new Thread(() -> {
             List<String> ports;
-            try {
-                ports = smsSender.getAvailablePorts();
-            } catch (Exception e) {
+            try { ports = smsSender.getAvailablePorts(); }
+            catch (Exception e) {
                 Platform.runLater(() -> {
                     cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));
                     cbSelectPorts.setDisable(true);
@@ -344,19 +746,16 @@ public class SendSMSController implements Initializable {
                 });
                 return;
             }
-
-            final List<String> finalPorts = ports;
             Platform.runLater(() -> {
-                if (finalPorts.isEmpty()) {
+                if (ports.isEmpty()) {
                     cbSelectPorts.setItems(FXCollections.observableArrayList("No ports available"));
                     cbSelectPorts.setDisable(true);
                     cbSelectPorts.getSelectionModel().selectFirst();
                     updateConnectionLabel("No ports found", "red");
                 } else {
-                    ObservableList<String> items = FXCollections.observableArrayList(finalPorts);
+                    ObservableList<String> items = FXCollections.observableArrayList(ports);
                     cbSelectPorts.setItems(items);
                     cbSelectPorts.setDisable(false);
-
                     String connected = smsSender.getConnectedPort();
                     if (connected != null && items.contains(connected)) {
                         cbSelectPorts.getSelectionModel().select(connected);
@@ -366,10 +765,7 @@ public class SendSMSController implements Initializable {
                         updateConnectionLabel("Select a port to connect", "orange");
                     }
                 }
-
-                cbSelectPorts.getSelectionModel().selectedItemProperty()
-                        .addListener(portChangeListener);
-
+                cbSelectPorts.getSelectionModel().selectedItemProperty().addListener(portChangeListener);
                 updateDisconnectButtonVisibility();
                 updateSendButtonState();
             });
@@ -383,9 +779,61 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // TABLE / SMS LOGS
-    // ─────────────────────────────────────────────────────────────────────────
+    private void updateDisconnectButtonVisibility() {
+        if (btnDisconnect == null) return;
+        boolean connected = smsSender.isConnected();
+        btnDisconnect.setVisible(connected);
+        btnDisconnect.setManaged(connected);
+    }
+
+    private void updateSendButtonState() {
+        boolean enabled;
+        if (rbApi != null && rbApi.isSelected()) {
+            enabled = true;
+        } else if (rbGsm != null && rbGsm.isSelected()) {
+            String port = (cbSelectPorts != null)
+                    ? cbSelectPorts.getSelectionModel().getSelectedItem() : null;
+            enabled = port != null && !port.contains("No") && !port.contains("Error")
+                    && smsSender.isConnected();
+        } else {
+            enabled = false;
+        }
+        if (btnSendSMS != null) btnSendSMS.setDisable(!enabled);
+    }
+
+    private void updateConnectionStatus() {
+        if (connectionStatusLabel == null) return;
+        if (rbApi != null && rbApi.isSelected()) {
+            connectionStatusLabel.setText("Using SMS API");
+            connectionStatusLabel.setStyle("-fx-text-fill: blue;");
+        } else if (rbGsm != null && rbGsm.isSelected()) {
+            if (smsSender.isConnected()) {
+                String port = smsSender.getConnectedPort();
+                connectionStatusLabel.setText("Connected to " + (port != null ? port : "unknown port"));
+                connectionStatusLabel.setStyle("-fx-text-fill: green;");
+            } else {
+                connectionStatusLabel.setText("Select a port to connect");
+                connectionStatusLabel.setStyle("-fx-text-fill: orange;");
+            }
+        }
+        updateDisconnectButtonVisibility();
+    }
+
+    @FXML private void onDisconnect() {
+        if (smsSender != null && smsSender.isConnected()) {
+            smsSender.disconnect();
+            updateConnectionLabel("Disconnected", "orange");
+            updateDisconnectButtonVisibility();
+            updateSendButtonState();
+            AlertDialogManager.showInfo("Disconnected", "GSM modem disconnected.");
+        }
+    }
+
+    @FXML private void onRefreshPorts() { populateAvailablePorts(); }
+
+    // =========================================================================
+    //  Table / SMS logs
+    // =========================================================================
 
     public void loadSMSLogs() {
         try {
@@ -428,7 +876,6 @@ public class SendSMSController implements Initializable {
                         if (row == null) return;
                         resendBtn.setDisable(true);
                         String method = (rbApi != null && rbApi.isSelected()) ? "API" : "GSM";
-
                         Task<Boolean> task = new Task<>() {
                             @Override protected Boolean call() {
                                 return smsService.resendSMS(row, method);
@@ -440,7 +887,7 @@ public class SendSMSController implements Initializable {
                             adminTable.refresh();
                             resendBtn.setDisable(ok);
                             AlertDialogManager.showInfo(ok ? "Success" : "Failed",
-                                    ok ? "SMS resent successfully." : "Failed to resend SMS.");
+                                    ok ? "SMS resent." : "Failed to resend SMS.");
                         }));
                         task.setOnFailed(ev -> Platform.runLater(() -> {
                             row.setStatus("FAILED");
@@ -451,9 +898,7 @@ public class SendSMSController implements Initializable {
                         new Thread(task).start();
                     });
                 }
-
-                @Override
-                protected void updateItem(Void item, boolean empty) {
+                @Override protected void updateItem(Void item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                         setGraphic(null); return;
@@ -479,135 +924,30 @@ public class SendSMSController implements Initializable {
     private void populateComboBoxes() {
         if (cbSelectBeneficiary != null) {
             cbSelectBeneficiary.setItems(FXCollections.observableArrayList(
-                    "All Beneficiaries",
-                    "By Barangay",
-                    "Selected Beneficiaries",
-                    "By Disaster Area",
-                    "Custom List"
-            ));
+                    "All Beneficiaries", "By Barangay", "Selected Beneficiaries",
+                    "By Disaster Area", "Custom List"));
             cbSelectBeneficiary.getSelectionModel().selectFirst();
             cbSelectBeneficiary.getSelectionModel().selectedItemProperty()
                     .addListener((obs, old, val) -> onRecipientGroupChanged());
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // NEWS CONTROLS SETUP
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void setupNewsControls() {
-        if (newsAiResponse == null) newsAiResponse = new ToggleGroup();
-
-        boolean aiEnabled = newsGeneratorService != null;
-        updateAiResponseVisibility(false);
-
-        if (btnGenerateNews != null) {
-            btnGenerateNews.setDisable(!aiEnabled);
-            btnGenerateNews.setOnAction(e -> onGenerateNews());
-            if (!aiEnabled) btnGenerateNews.setText("AI Disabled (No API Key)");
-        }
-        if (cbNewsTopic != null) cbNewsTopic.setDisable(!aiEnabled);
-        if (btnSaveEvacMessage != null) btnSaveEvacMessage.setOnAction(e -> onSaveEvacMessage());
-
-        LOG.info("[SendSMS] News controls setup. AI enabled: " + aiEnabled);
-    }
-
-    private void checkNetworkStatus() {
-        if (lblNetworkStatus == null) return;
-        Task<Boolean> task = new Task<>() {
-            @Override protected Boolean call() throws Exception {
-                HttpClient client = HttpClient.newBuilder()
-                        .connectTimeout(java.time.Duration.ofSeconds(5)).build();
-                HttpRequest req = HttpRequest.newBuilder()
-                        .uri(URI.create("https://www.google.com"))
-                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                        .timeout(java.time.Duration.ofSeconds(5))
-                        .build();
-                HttpResponse<Void> resp = client.send(req, HttpResponse.BodyHandlers.discarding());
-                return resp.statusCode() >= 200 && resp.statusCode() < 400;
-            }
-        };
-        task.setOnSucceeded(e -> Platform.runLater(() ->
-                updateNetworkLabel(Boolean.TRUE.equals(task.getValue()))));
-        task.setOnFailed(e -> Platform.runLater(() -> updateNetworkLabel(false)));
-        new Thread(task, "Network-Check-Thread").start();
-    }
-
-    private void updateNetworkLabel(boolean online) {
-        if (lblNetworkStatus == null) return;
-        lblNetworkStatus.setText(online ? "Online" : "Offline - Internet required for AI");
-        lblNetworkStatus.setStyle("-fx-text-fill: " + (online ? "#22c55e;" : "#ef4444;"));
-    }
-
-    private void loadExistingEvacMessage() {
-        if (txtCustomEvacMessage == null) return;
-        if (evacMessageManager.hasCustomMessage()) {
-            String msg = evacMessageManager.getCustomEvacuationMessage();
-            txtCustomEvacMessage.setText(msg);
-            updateEvacMessageStatus(true, msg.length());
-        } else {
-            txtCustomEvacMessage.clear();
-            updateEvacMessageStatus(false, 0);
-        }
-    }
-
-    @FXML private void onSaveEvacMessage() {
-        String message = txtCustomEvacMessage != null ? txtCustomEvacMessage.getText() : null;
-        if (message == null || message.trim().isEmpty()) {
-            AlertDialogManager.showWarning("Empty Message",
-                    "Please enter a custom evacuation message before saving.");
-            return;
-        }
-        if (message.length() > 320) {
-            AlertDialogManager.showWarning("Message Too Long",
-                    "Message is " + message.length() + " characters. "
-                            + "SMS messages are limited to 320 characters and may be split.");
-        }
-        if (!message.contains("{name}") && !message.contains("{evacSite}") && !message.contains("{site}")) {
-            boolean proceed = AlertDialogManager.showConfirmation(
-                    "Missing Placeholders",
-                    "Your message doesn't contain placeholders.\n\n"
-                            + "Recommended: {name}, {evacSite}\n\nContinue saving anyway?",
-                    ButtonType.OK, ButtonType.CANCEL
-            );
-            if (!proceed) return;
-        }
-        evacMessageManager.setCustomEvacuationMessage(message.trim());
-        updateEvacMessageStatus(true, message.trim().length());
-        AlertDialogManager.showSuccess("Message Saved",
-                "Custom evacuation message saved successfully.\n"
-                        + "It will be used when allocating beneficiaries to evacuation sites.");
-    }
-
-    private void updateEvacMessageStatus(boolean saved, int length) {
-        if (lblMessageStatus == null) return;
-        if (saved) {
-            lblMessageStatus.setText("✓ Custom evacuation message saved.");
-            lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-        } else {
-            lblMessageStatus.setText("No custom evacuation message set (using default format)");
-            lblMessageStatus.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic;");
-        }
-    }
+    // =========================================================================
+    //  Recipient group / barangay / disaster
+    // =========================================================================
 
     private void onRecipientGroupChanged() {
         if (isUpdatingComboBox || isOpeningDialog) return;
         String group = (cbSelectBeneficiary != null) ? cbSelectBeneficiary.getValue() : null;
         if (group == null) return;
-
         switch (group) {
-            case "By Barangay" -> {
-                showBarangaySelection(true);
-                showDisasterSelection(false);
-            }
+            case "By Barangay" -> { showBarangaySelection(true);  showDisasterSelection(false); }
             case "By Disaster Area" -> {
-                showBarangaySelection(false);
-                showDisasterSelection(true);
+                showBarangaySelection(false); showDisasterSelection(true);
                 if (cbSelectDisaster != null && cbSelectDisaster.getItems().isEmpty()) loadDisasters();
             }
             default -> {
-                showBarangaySelection(false);
-                showDisasterSelection(false);
+                showBarangaySelection(false); showDisasterSelection(false);
                 if (group.startsWith("Selected Beneficiaries")) openBeneficiarySelectionDialog();
             }
         }
@@ -615,19 +955,12 @@ public class SendSMSController implements Initializable {
     }
 
     private void showBarangaySelection(boolean show) {
-        if (barangaySelectionBox != null) {
-            barangaySelectionBox.setVisible(show);
-            barangaySelectionBox.setManaged(show);
-        }
-        if (show && cbSelectBarangay != null && cbSelectBarangay.getItems().isEmpty())
-            loadBarangayList();
+        if (barangaySelectionBox != null) { barangaySelectionBox.setVisible(show); barangaySelectionBox.setManaged(show); }
+        if (show && cbSelectBarangay != null && cbSelectBarangay.getItems().isEmpty()) loadBarangayList();
     }
 
     private void showDisasterSelection(boolean show) {
-        if (disasterSelectionBox != null) {
-            disasterSelectionBox.setVisible(show);
-            disasterSelectionBox.setManaged(show);
-        }
+        if (disasterSelectionBox != null) { disasterSelectionBox.setVisible(show); disasterSelectionBox.setManaged(show); }
     }
 
     public void loadDisasters() {
@@ -651,7 +984,6 @@ public class SendSMSController implements Initializable {
             } catch (Exception e) {
                 Platform.runLater(() ->
                         AlertDialogManager.showError("Error", "Failed to load barangays: " + e.getMessage()));
-                e.printStackTrace();
             }
         }, "LoadBarangayThread").start();
     }
@@ -669,11 +1001,8 @@ public class SendSMSController implements Initializable {
                     DialogManager.getController("selection", BeneficiarySelectionDialogController.class);
             ctrl.resetState();
             if (!ctrl.isLoaded()) ctrl.setBeneficiaries(all);
-            if (!selectedBeneficiariesList.isEmpty())
-                ctrl.setPreselectedBeneficiaries(selectedBeneficiariesList);
-
+            if (!selectedBeneficiariesList.isEmpty()) ctrl.setPreselectedBeneficiaries(selectedBeneficiariesList);
             DialogManager.show("selection");
-
             if (ctrl.isOkClicked()) updateSelectedBeneficiaries(ctrl.getSelectedBeneficiaries());
             else                    handleDialogCancelled();
         } catch (Exception e) {
@@ -690,8 +1019,7 @@ public class SendSMSController implements Initializable {
         isUpdatingComboBox = true;
         try {
             selectedBeneficiariesList = (selected != null) ? new ArrayList<>(selected) : new ArrayList<>();
-            String text = "Selected Beneficiaries (%d selected)".formatted(selectedBeneficiariesList.size());
-            updateComboEntry(text);
+            updateComboEntry("Selected Beneficiaries (%d selected)".formatted(selectedBeneficiariesList.size()));
         } finally {
             Platform.runLater(() -> { isUpdatingComboBox = false; updateSendButtonState(); });
         }
@@ -722,281 +1050,6 @@ public class SendSMSController implements Initializable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Returns true when the selected category searches Philippines-wide.
-    // Mirrors the logic in NewsGeneratorService so alert messages are accurate.
-    // ─────────────────────────────────────────────────────────────────────────
-    private boolean isNationalCategory(String category) {
-        if (category == null || category.isBlank()) return false;
-        return NATIONAL_CATEGORIES.contains(category.toLowerCase(java.util.Locale.ROOT).trim());
-    }
-
-    @FXML
-    private void onGenerateNews() {
-        if (cbNewsTopic == null || btnGenerateNews == null) return;
-
-        if (!generationInProgress.compareAndSet(false, true)) {
-            LOG.info("[SendSMS] Generation already in progress.");
-            return;
-        }
-
-        if (newsGeneratorService == null) {
-            generationInProgress.set(false);
-            AlertDialogManager.showError("AI Disabled",
-                    "Missing GEMINI_API_KEY.\nSet the environment variable and restart.");
-            return;
-        }
-        if (!InternetConnectionChecker.isOnline()) {
-            generationInProgress.set(false);
-            AlertDialogManager.showError("Offline", "Internet connection required for AI news generation.");
-            return;
-        }
-
-        // cbNewsTopic holds the category (e.g. "Local", "National News", "Weather", etc.)
-        // It serves as both the search topic keyword and the geographic scope selector.
-        String category = cbNewsTopic.getSelectionModel().getSelectedItem();
-        if (category == null || category.trim().isEmpty()) {
-            generationInProgress.set(false);
-            AlertDialogManager.showWarning("Topic Required", "Please select a news topic.");
-            return;
-        }
-
-        // Derive a human-readable scope label for progress/alert messages
-        String scopeLabel = isNationalCategory(category)
-                ? "Philippines"
-                : "Iloilo City and surrounding areas";
-
-        LOG.info("[SendSMS] Starting news generation. category=" + category
-                + " scope=" + scopeLabel);
-
-        storedNewsItems.clear();
-        clearNewsSlots();
-        updateAiResponseVisibility(false);
-        btnGenerateNews.setDisable(true);
-
-        MainFrameController main = MainFrameController.getInstance();
-        if (main != null) {
-            main.setNewsCancelAction(() -> {
-                LOG.info("[SendSMS] User cancelled news generation.");
-                newsGeneratorService.cancelCurrentGeneration();
-            });
-            main.showNewsProgress(category);
-        }
-
-        // ── Pass BOTH topic and category to the updated service signature ────
-        // The category drives the geographic scope; topic drives the search query.
-        newsGeneratorService
-                .generateNewsHeadlines(category, category, (progress, status) ->
-                        Platform.runLater(() -> {
-                            if (main != null) main.setNewsProgress(progress, status);
-                        }))
-                .whenComplete((result, ex) -> Platform.runLater(() -> {
-
-                    generationInProgress.set(false);
-                    if (btnGenerateNews != null) btnGenerateNews.setDisable(false);
-                    if (main != null) main.setNewsCancelAction(null);
-
-                    // ── Error path ────────────────────────────────────────────
-                    if (ex != null) {
-                        Throwable cause  = ex.getCause() != null ? ex.getCause() : ex;
-                        String    errMsg = cause.getMessage();
-                        if (errMsg == null) errMsg = cause.getClass().getSimpleName();
-                        LOG.log(Level.SEVERE, "[SendSMS] News generation failed: " + errMsg, ex);
-                        if (main != null) main.hideNewsProgress();
-                        AlertDialogManager.showError("AI Error",
-                                "News generation failed:\n" + errMsg);
-                        return;
-                    }
-
-                    if (main != null) main.hideNewsProgress();
-
-                    if (result == null || result.isEmpty()) {
-                        LOG.warning("[SendSMS] Generation returned no results.");
-                        AlertDialogManager.showWarning("No Results",
-                                "No news items could be generated for " + category + "\n"
-                                        + "Try a different topic or check your internet connection.");
-                        return;
-                    }
-
-                    LOG.info("[SendSMS] Generation complete. Got " + result.size() + " items.");
-
-                    storedNewsItems.addAll(result);
-                    int n = Math.min(storedNewsItems.size(), newsSlots.length);
-                    for (int i = 0; i < n; i++) updateNewsSlot(i, storedNewsItems.get(i));
-                    for (int i = n; i < newsSlots.length; i++) {
-                        RadioButton slot = newsSlots[i];
-                        if (slot != null) {
-                            slot.setVisible(false);
-                            slot.setManaged(false);
-                        }
-                    }
-
-                    updateAiResponseVisibility(true);
-
-                    if (n >= 5) {
-                        AlertDialogManager.showSuccess("Done",
-                                "5 news items generated successfully for " + category + " in "
-                                        + scopeLabel + ".");
-                    } else {
-                        AlertDialogManager.showInfo("Partial Results",
-                                n + " of 5 news items were found for " + category + " in "
-                                        + scopeLabel + ".\n"
-                                        + "This topic may have limited recent coverage.\n"
-                                        + "Try a broader topic or generate again.");
-                    }
-                }));
-    }
-
-    private void updateAiResponseVisibility(boolean visible) {
-        if (aiResponseContainer != null) {
-            aiResponseContainer.setVisible(visible);
-            aiResponseContainer.setManaged(visible);
-        }
-        if (btnUseSelectedNews != null) btnUseSelectedNews.setDisable(!visible);
-        for (int i = 0; i < newsSlots.length; i++) {
-            RadioButton slot = newsSlots[i];
-            if (slot == null) continue;
-            boolean show = visible && i < storedNewsItems.size();
-            slot.setVisible(show);
-            slot.setManaged(show);
-        }
-        if (!visible && newsAiResponse != null) newsAiResponse.selectToggle(null);
-    }
-
-    private void setSmsLoading(boolean loading) {
-        if (smsLoadingBox != null) {
-            smsLoadingBox.setVisible(loading);
-            smsLoadingBox.setManaged(loading);
-        }
-        if (btnSendSMS  != null) btnSendSMS.setDisable(loading);
-        if (txtMessage  != null) txtMessage.setDisable(loading);
-    }
-
-    @FXML
-    private void onSendSMS() {
-        if (txtMessage == null || txtMessage.getText().trim().isEmpty()) {
-            AlertDialogManager.showError("Empty Message", "Please enter message content.");
-            return;
-        }
-        String group = (cbSelectBeneficiary != null) ? cbSelectBeneficiary.getValue() : null;
-        if (group == null) {
-            AlertDialogManager.showError("No Group", "Select a recipient group.");
-            return;
-        }
-        String method = (rbGsm != null && rbGsm.isSelected()) ? "GSM" : "API";
-        List<BeneficiaryModel> recipients = getRecipients(group);
-        if (recipients.isEmpty()) {
-            AlertDialogManager.showError("No Recipients",
-                    "No valid recipients found for this selection.");
-            return;
-        }
-        boolean confirmed = AlertDialogManager.showConfirmation(
-                "Confirm Send",
-                "Send to " + recipients.size() + " recipient(s) via " + method + "?",
-                ButtonType.OK, ButtonType.CANCEL
-        );
-        if (confirmed) sendSMSToRecipients(recipients, "RESPONDPH: " + txtMessage.getText(), method);
-    }
-
-    private List<BeneficiaryModel> getRecipients(String group) {
-        if (group == null) return List.of();
-        String base = group.contains("(") ? group.substring(0, group.indexOf("(")).trim() : group;
-        return switch (base) {
-            case "All Beneficiaries" -> beneficiaryDAO.getAllBeneficiaries();
-            case "By Barangay" -> {
-                String brgy = (cbSelectBarangay != null) ? cbSelectBarangay.getValue() : null;
-                yield brgy != null ? beneficiaryDAO.getBeneficiariesByBarangay(brgy) : List.of();
-            }
-            case "By Disaster Area" -> {
-                DisasterModel d = (cbSelectDisaster != null) ? cbSelectDisaster.getValue() : null;
-                yield d != null ? getBeneficiariesInDisasterArea(d) : List.of();
-            }
-            default -> base.startsWith("Selected Beneficiaries")
-                    ? new ArrayList<>(selectedBeneficiariesList)
-                    : List.of();
-        };
-    }
-
-    private void sendSMSToRecipients(List<BeneficiaryModel> recipients, String message, String method) {
-        setSmsLoading(true);
-        int total = recipients.size();
-
-        smsService.cancelBulkSend();
-        MainFrameController main = MainFrameController.getInstance();
-        if (main != null) {
-            main.showSmsProgress("Sending SMS (" + method + ")", total);
-            main.setSmsCount(0, total);
-            main.setSmsCancelAction(() -> {
-                smsService.cancelBulkSend();
-                Platform.runLater(() -> {
-                    setSmsLoading(false);
-                    loadSMSLogs();
-                });
-            });
-        }
-
-        if (smsService instanceof SmsServiceImpl impl) {
-            impl.setBulkProgressListener(new BulkProgressListener() {
-                @Override
-                public void onProgress(int done, int tot, int successCount, String m) {
-                    Platform.runLater(() -> {
-                        if (main != null) main.setSmsCount(done, tot);
-                    });
-                }
-                @Override
-                public void onFinished(int tot, int successCount, String m) {
-                    Platform.runLater(() -> {
-                        setSmsLoading(false);
-                        if (main != null) {
-                            main.setSmsCancelAction(null);
-                            main.hideSmsProgress();
-                        }
-                        AlertDialogManager.showSuccess("Send Complete",
-                                successCount + " of " + tot + " messages sent.\n(" + m + ")");
-                        loadSMSLogs();
-                    });
-                }
-            });
-        }
-
-        Task<Void> task = new Task<>() {
-            @Override protected Void call() {
-                smsService.sendBulkSMS(recipients, message, method);
-                return null;
-            }
-        };
-        task.setOnFailed(ev -> Platform.runLater(() -> {
-            setSmsLoading(false);
-            if (main != null) {
-                main.setSmsCancelAction(null);
-                main.hideSmsProgress();
-            }
-            Throwable ex = task.getException();
-            AlertDialogManager.showError("Send Failed",
-                    ex != null ? ex.getMessage() : "Unknown error");
-            loadSMSLogs();
-        }));
-
-        Thread t = new Thread(task, "SMS-Bulk-Thread");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private void updateSendButtonState() {
-        boolean enabled;
-        if (rbApi != null && rbApi.isSelected()) {
-            enabled = true;
-        } else if (rbGsm != null && rbGsm.isSelected()) {
-            String port = (cbSelectPorts != null)
-                    ? cbSelectPorts.getSelectionModel().getSelectedItem() : null;
-            enabled = port != null && !port.contains("No") && !port.contains("Error")
-                    && smsSender.isConnected();
-        } else {
-            enabled = false;
-        }
-        if (btnSendSMS != null) btnSendSMS.setDisable(!enabled);
-    }
-
     public void reloadBeneficiarySelectionTable() {
         try {
             List<BeneficiaryModel> freshList = beneficiaryDAO.getAllBeneficiaries();
@@ -1011,76 +1064,37 @@ public class SendSMSController implements Initializable {
         try {
             List<DisasterCircleInfo> circles = disasterMappingService
                     .getDisasterCirclesByDisasterId(disaster.getDisasterId());
-
             if (circles == null || circles.isEmpty()) {
                 AlertDialogManager.showWarning("No Disaster Area",
-                        "No geographic area defined for: " + disaster.getName() +
-                                "\n\nPlease set the disaster location and radius in Disaster Mapping first.");
+                        "No geographic area defined for: " + disaster.getName()
+                                + "\n\nPlease set the disaster location in Disaster Mapping first.");
                 return result;
             }
-
-            java.util.Set<Integer> addedIds = new java.util.HashSet<>();
-
+            Set<Integer> addedIds = new HashSet<>();
             for (DisasterCircleInfo circle : circles) {
-                List<BeneficiaryModel> allBeneficiaries = beneficiaryDAO.getAllBeneficiaries();
-                for (BeneficiaryModel b : allBeneficiaries) {
+                for (BeneficiaryModel b : beneficiaryDAO.getAllBeneficiaries()) {
                     if (addedIds.contains(b.getId())) continue;
-                    double lat, lon;
                     try {
-                        lat = Double.parseDouble(b.getLatitude() != null ? b.getLatitude() : "");
-                        lon = Double.parseDouble(b.getLongitude() != null ? b.getLongitude() : "");
-                    } catch (NumberFormatException e) { continue; }
-                    double distance = com.ionres.respondph.util.GeographicUtils
-                            .calculateDistance(lat, lon, circle.lat, circle.lon);
-                    if (!Double.isNaN(distance) && distance <= circle.radius) {
-                        if (b.getMobileNumber() != null && !b.getMobileNumber().trim().isEmpty()) {
+                        double lat = Double.parseDouble(b.getLatitude() != null ? b.getLatitude() : "");
+                        double lon = Double.parseDouble(b.getLongitude() != null ? b.getLongitude() : "");
+                        double dist = com.ionres.respondph.util.GeographicUtils
+                                .calculateDistance(lat, lon, circle.lat, circle.lon);
+                        if (!Double.isNaN(dist) && dist <= circle.radius
+                                && b.getMobileNumber() != null && !b.getMobileNumber().trim().isEmpty()) {
                             result.add(b);
                             addedIds.add(b.getId());
                         }
-                    }
+                    } catch (NumberFormatException ignored) {}
                 }
             }
-
-            if (result.isEmpty()) {
+            if (result.isEmpty())
                 AlertDialogManager.showWarning("No Beneficiaries in Area",
-                        "No beneficiaries with phone numbers found inside the disaster area of: "
-                                + disaster.getName());
-            }
+                        "No beneficiaries with phone numbers found inside: " + disaster.getName());
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialogManager.showError("Error",
                     "Failed to get beneficiaries in disaster area: " + e.getMessage());
         }
         return result;
-    }
-
-    @FXML private void onRefreshPorts() { populateAvailablePorts(); }
-
-    private void updateConnectionStatus() {
-        if (connectionStatusLabel == null) return;
-        if (rbApi != null && rbApi.isSelected()) {
-            connectionStatusLabel.setText("Using SMS API");
-            connectionStatusLabel.setStyle("-fx-text-fill: blue;");
-        } else if (rbGsm != null && rbGsm.isSelected()) {
-            if (smsSender.isConnected()) {
-                String port = smsSender.getConnectedPort();
-                connectionStatusLabel.setText("Connected to " + (port != null ? port : "unknown port"));
-                connectionStatusLabel.setStyle("-fx-text-fill: green;");
-            } else {
-                connectionStatusLabel.setText("Select a port to connect");
-                connectionStatusLabel.setStyle("-fx-text-fill: orange;");
-            }
-        }
-        updateDisconnectButtonVisibility();
-    }
-
-    @FXML private void onDisconnect() {
-        if (smsSender != null && smsSender.isConnected()) {
-            smsSender.disconnect();
-            updateConnectionLabel("Disconnected", "orange");
-            updateDisconnectButtonVisibility();
-            updateSendButtonState();
-            AlertDialogManager.showInfo("Disconnected", "GSM modem disconnected.");
-        }
     }
 }

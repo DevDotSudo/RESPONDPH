@@ -1,4 +1,3 @@
-
 package com.ionres.respondph.admin;
 
 import com.ionres.respondph.database.DBConnection;
@@ -6,15 +5,17 @@ import com.ionres.respondph.exception.*;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.CryptographyManager;
 import org.mindrot.jbcrypt.BCrypt;
-import java.util.ArrayList;
-import java.util.UUID;
-import java.time.LocalDate;
-import java.util.List;
+
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdminServiceImpl implements AdminService {
+
     private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
     private final AdminDAO adminDao;
     private static final Cryptography CRYPTO = CryptographyManager.getInstance();
@@ -23,9 +24,10 @@ public class AdminServiceImpl implements AdminService {
         this.adminDao = new AdminDAOImpl(dbConnection);
     }
 
+    // ─── GET ALL ──────────────────────────────────────────────────────────────
+
     @Override
     public List<AdminModel> getAllAdmins() {
-
         try {
             List<AdminModel> encryptedAdmins = adminDao.getAll();
             List<AdminModel> decryptedAdmins = new ArrayList<>();
@@ -37,7 +39,8 @@ public class AdminServiceImpl implements AdminService {
                         a.getFirstname(),
                         a.getMiddlename(),
                         a.getLastname(),
-                        a.getRegDate()
+                        a.getRegDate(),
+                        a.getRole()
                 );
 
                 List<String> decrypted = CRYPTO.decrypt(encrypted);
@@ -49,6 +52,7 @@ public class AdminServiceImpl implements AdminService {
                 d.setMiddlename(decrypted.get(2));
                 d.setLastname(decrypted.get(3));
                 d.setRegDate(decrypted.get(4));
+                d.setRole(decrypted.get(5)); // role is not encrypted
 
                 decryptedAdmins.add(d);
             }
@@ -61,32 +65,56 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    // ─── CREATE ───────────────────────────────────────────────────────────────
+
     @Override
     public boolean createAdmin(AdminModel admin) {
         try {
             if (admin.getUsername() == null || admin.getUsername().isBlank()) {
                 throw ExceptionFactory.missingField("Username");
             }
+            if (admin.getRole() == null || admin.getRole().isBlank()) {
+                throw ExceptionFactory.missingField("Role");
+            }
 
+            List<String> encryptedData = CRYPTO.encrypt(
+                    admin.getUsername(),
+                    admin.getFirstname(),
+                    admin.getMiddlename(),
+                    admin.getLastname(),
+                    admin.getRegDate(),
+                    admin.getRole()
+            );
 
-            List<String> encryptedData = CRYPTO.encrypt(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname(), admin.getRegDate());
-            String hashedPassword = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
-
+            String hashedPassword    = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
             String encryptedUsername = encryptedData.get(0);
-            String encryptedFname = encryptedData.get(1);
-            String encryptedMname = encryptedData.get(2);
-            String encryptedLname = encryptedData.get(3);
+            String encryptedFname   = encryptedData.get(1);
+            String encryptedMname   = encryptedData.get(2);
+            String encryptedLname   = encryptedData.get(3);
             String encryptedRegDate = encryptedData.get(4);
+            String encryptedRole     = encryptedData.get(5);
 
             if (adminDao.existsByUsername(encryptedUsername)) {
                 throw ExceptionFactory.duplicate("Admin", admin.getUsername());
             }
 
-            boolean flag = adminDao.saving(new AdminModel(encryptedUsername, encryptedFname, encryptedMname, encryptedLname, encryptedRegDate, hashedPassword));
-            if (!flag) {
+            // Build model with role — role is stored as plain text (not encrypted)
+            AdminModel toSave = new AdminModel(
+                    encryptedUsername,
+                    encryptedFname,
+                    encryptedMname,
+                    encryptedLname,
+                    encryptedRegDate,
+                    hashedPassword,
+                    encryptedRole     // plain text role
+            );
+
+            boolean saved = adminDao.saving(toSave);
+            if (!saved) {
                 throw ExceptionFactory.failedToCreate("Admin");
             }
-            return flag;
+            return true;
+
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "SQL error creating admin", ex);
             return false;
@@ -96,12 +124,16 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    // ─── GENERATE ID ──────────────────────────────────────────────────────────
+
     @Override
     public String generateAdminID() {
-        String year = String.valueOf(LocalDate.now().getYear());
+        String year   = String.valueOf(LocalDate.now().getYear());
         String random = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         return "ADMIN-" + year + "-" + random;
     }
+
+    // ─── DELETE ───────────────────────────────────────────────────────────────
 
     @Override
     public boolean deleteAdmin(AdminModel admin) {
@@ -111,16 +143,18 @@ public class AdminServiceImpl implements AdminService {
             }
 
             boolean deleted = adminDao.delete(admin);
-
             if (!deleted) {
                 throw ExceptionFactory.failedToDelete("Admin");
             }
-            return deleted;
+            return true;
+
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error deleting admin", ex);
             return false;
         }
     }
+
+    // ─── UPDATE ───────────────────────────────────────────────────────────────
 
     @Override
     public boolean updateAdmin(AdminModel admin) {
@@ -128,26 +162,31 @@ public class AdminServiceImpl implements AdminService {
             if (admin.getUsername() == null || admin.getUsername().isBlank()) {
                 throw ExceptionFactory.missingField("Username");
             }
+            if (admin.getRole() == null || admin.getRole().isBlank()) {
+                throw ExceptionFactory.missingField("Role");
+            }
 
+            List<String> encryptedData = CRYPTO.encryptUpdate(
+                    admin.getUsername(),
+                    admin.getFirstname(),
+                    admin.getMiddlename(),
+                    admin.getLastname(),
+                    admin.getRole()
+            );
 
-            List<String> encryptedData = CRYPTO.encryptUpdate(admin.getUsername(), admin.getFirstname(), admin.getMiddlename(), admin.getLastname());
+            admin.setUsername(encryptedData.get(0));
+            admin.setFirstname(encryptedData.get(1));
+            admin.setMiddlename(encryptedData.get(2));
+            admin.setLastname(encryptedData.get(3));
+            admin.setRole(encryptedData.get(4));
+            // role stays as-is (plain text, already set on the model)
 
-            String encryptedUsername = encryptedData.get(0);
-            String encryptedFname = encryptedData.get(1);
-            String encryptedMname = encryptedData.get(2);
-            String encryptedLname = encryptedData.get(3);
-
-            admin.setUsername(encryptedUsername);
-            admin.setFirstname(encryptedFname);
-            admin.setMiddlename(encryptedMname);
-            admin.setLastname(encryptedLname);
-
-
-            boolean flag = adminDao.update(admin);
-            if (!flag) {
+            boolean updated = adminDao.update(admin);
+            if (!updated) {
                 throw ExceptionFactory.failedToCreate("Admin");
             }
-            return flag;
+            return true;
+
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "SQL error updating admin", ex);
             return false;
@@ -157,22 +196,22 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    // ─── SEARCH ───────────────────────────────────────────────────────────────
+
     @Override
     public List<AdminModel> searchAdmin(String searchText) {
-
-        List<AdminModel> allAdmins = getAllAdmins();
-        List<AdminModel> filteredAdmins = new ArrayList<>();
+        List<AdminModel> allAdmins     = getAllAdmins();
+        List<AdminModel> filtered = new ArrayList<>();
+        String lower = searchText.toLowerCase();
 
         for (AdminModel admin : allAdmins) {
-            if (admin.getUsername().toLowerCase().contains(searchText.toLowerCase()) ||
-                    admin.getFirstname().toLowerCase().contains(searchText.toLowerCase()) ||
-                    admin.getLastname().toLowerCase().contains(searchText.toLowerCase())) {
-                filteredAdmins.add(admin);
+            if (admin.getUsername().toLowerCase().contains(lower)  ||
+                    admin.getFirstname().toLowerCase().contains(lower) ||
+                    admin.getLastname().toLowerCase().contains(lower)  ||
+                    (admin.getRole() != null && admin.getRole().toLowerCase().contains(lower))) {
+                filtered.add(admin);
             }
         }
-        return filteredAdmins;
+        return filtered;
     }
-
-
-
 }

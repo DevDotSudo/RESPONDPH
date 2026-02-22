@@ -1,5 +1,6 @@
 package com.ionres.respondph.main;
 
+import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.util.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.animation.*;
@@ -125,6 +126,15 @@ public class MainFrameController {
     public void initialize() {
         INSTANCE = this;
 
+        // Guard: admin may be null during token auto-login (session set after FXML loads)
+        AdminModel currentAdmin = SessionManager.getInstance().getCurrentAdmin();
+        if (currentAdmin != null && currentAdmin.getRole() != null) {
+            System.out.println(">>> initialize role: " + currentAdmin.getRole());
+            applyRoleVisibility(currentAdmin.getRole());
+
+
+        }
+
         if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeSmsToFooter());
         if (smsCloseBtn    != null) smsCloseBtn.setOnAction(e -> handleSmsCloseButton());
 
@@ -156,8 +166,18 @@ public class MainFrameController {
         setupSectionToggle(evacSectionBtn,         evacSectionContent,       evacSectionIcon);
 
         collapseAllSections();
-        loadPage("/view/dashboard/Dashboard.fxml");
-        activeButton(dashboardBtn);
+
+        String role = (currentAdmin != null) ? currentAdmin.getRole() : null;
+
+        if (role == null || role.equals("Admin") || role.equals("LDRRMO")) {
+            loadPage("/view/dashboard/Dashboard.fxml");
+            activeButton(dashboardBtn);
+        } else if (role.equals("Brgy_Sec") || role.equals("MSWDO")) {
+            // Load their default starting page instead
+            loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
+            activeButton(manageBeneficiariesBtn);
+        }
+
         wireNavButtons();
 
         hideFooter();
@@ -934,6 +954,7 @@ public class MainFrameController {
         new AppPreferences().clearRememberMe();
         SessionManager.getInstance().clearSession();
         Stage stage = (Stage) logoutBtn.getScene().getWindow();
+        SceneManager.clearCache("/view/main/MainScreen.fxml");
         stage.close();
         SceneManager.showStage("/view/auth/Login.fxml", "RESPONDPH - Login");
     }
@@ -946,6 +967,60 @@ public class MainFrameController {
             VBox.setVgrow(r, Priority.ALWAYS);
         }
         contentArea.getChildren().setAll(root);
+    }
+
+    public void applyRoleVisibility(String role) {
+        if (role == null || role.isBlank()) {
+            setVisible(managementSectionBtn, managementSectionContent, false);
+            setVisible(disasterSectionBtn,   disasterSectionContent,   false);
+            setVisible(aidsSectionBtn,       aidsSectionContent,       false);
+            setVisible(evacSectionBtn,       evacSectionContent,       false);
+            if (vulnerabilityBtn != null) { vulnerabilityBtn.setVisible(false); vulnerabilityBtn.setManaged(false); }
+            if (sendSmsBtn != null)       { sendSmsBtn.setVisible(false);       sendSmsBtn.setManaged(false); }
+            return;
+        }
+
+        switch (role) {
+            case "Admin" -> {
+                // All visible — do nothing
+            }
+            case "Brgy_Sec" -> {
+                setVisible(disasterSectionBtn, disasterSectionContent, false);
+                setVisible(aidsSectionBtn,     aidsSectionContent,     false);
+                setVisible(evacSectionBtn,     evacSectionContent,     false);
+                setButtonVisible(vulnerabilityBtn, false);
+                setButtonVisible(sendSmsBtn, false);
+                setButtonVisible(manageAdminBtn, false);
+                setButtonVisible(dashboardBtn, false);
+            }
+            case "MSWDO" -> {
+                setVisible(disasterSectionBtn, disasterSectionContent, false);
+                setButtonVisible(sendSmsBtn, false);
+                setButtonVisible(manageAdminBtn, false);
+                setButtonVisible(dashboardBtn, false);
+            }
+            case "LDRRMO" -> {
+               setButtonVisible(manageAdminBtn, false);
+            }
+        }
+    }
+
+    // Helper to hide both the section header button and its content
+    private void setVisible(Button sectionBtn, VBox sectionContent, boolean visible) {
+        if (sectionBtn != null) {          // ← add null check
+            sectionBtn.setVisible(visible);
+            sectionBtn.setManaged(visible);
+        }
+        if (sectionContent != null) {
+            sectionContent.setVisible(visible);
+            sectionContent.setManaged(visible);
+        }
+    }
+
+    private void setButtonVisible(Button btn, boolean visible) {
+        if (btn == null) return;
+        btn.setVisible(visible);
+        btn.setManaged(visible);
     }
 
     private void activeButton(Button btn) {

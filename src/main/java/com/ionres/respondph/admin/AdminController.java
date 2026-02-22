@@ -10,7 +10,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -19,51 +18,36 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+
 import java.util.List;
 
 public class AdminController {
+
     private final AdminService adminService = AppContext.adminService;
     private Stage dialogStage;
     ObservableList<AdminModel> adminList;
 
-    @FXML
-    private AnchorPane rootPane;
+    // ─── FXML ─────────────────────────────────────────────────────────────────
 
-    @FXML
-    private TableView<AdminModel> adminTable;
+    @FXML private AnchorPane rootPane;
 
-    @FXML
-    private TableColumn<AdminModel, String> idColumn;
+    @FXML private TableView<AdminModel> adminTable;
 
-    @FXML
-    private TableColumn<AdminModel, String> usernameColumn;
+    @FXML private TableColumn<AdminModel, Integer> idColumn;
+    @FXML private TableColumn<AdminModel, String>  usernameColumn;
+    @FXML private TableColumn<AdminModel, String>  fNameColumn;
+    @FXML private TableColumn<AdminModel, String>  mNameColumn;
+    @FXML private TableColumn<AdminModel, String>  lNameColumn;
+    @FXML private TableColumn<AdminModel, String>  regDateColumn;
+    @FXML private TableColumn<AdminModel, String>  roleColumn;     // ← NEW
+    @FXML private TableColumn<AdminModel, Void>    actionsColumn;
 
-    @FXML
-    private TableColumn<AdminModel, Integer> fNameColumn;
+    @FXML private TextField searchFld;
+    @FXML private Button    searchBtn;
+    @FXML private Button    addButton;
+    @FXML private Button    refreshButton;
 
-    @FXML
-    private TableColumn<AdminModel, String> mNameColumn;
-
-    @FXML
-    private TableColumn<AdminModel, String> lNameColumn;
-
-    @FXML
-    private TableColumn<AdminModel, String> regDateColumn;
-
-    @FXML
-    private TableColumn<AdminModel, Void> actionsColumn;
-
-    @FXML
-    private TextField searchFld;
-
-    @FXML
-    private Button searchBtn;
-
-    @FXML
-    private Button addButton;
-
-    @FXML
-    private Button refreshButton;
+    // ─── Init ─────────────────────────────────────────────────────────────────
 
     @FXML
     public void initialize() {
@@ -75,13 +59,12 @@ public class AdminController {
         setSearchFld();
     }
 
-    public void setDialogStage(Stage stage) {
-        this.dialogStage = stage;
-    }
+    // ─── Dialog Stage ─────────────────────────────────────────────────────────
 
-    public Stage getDialogStage() {
-        return dialogStage;
-    }
+    public void setDialogStage(Stage stage) { this.dialogStage = stage; }
+    public Stage getDialogStage()           { return dialogStage; }
+
+    // ─── Search ───────────────────────────────────────────────────────────────
 
     @FXML
     private void handleSearch() {
@@ -95,11 +78,11 @@ public class AdminController {
 
     private void searchAdmins(String searchText) {
         try {
-            List<AdminModel> filteredAdmins = adminService.searchAdmin(searchText);
-            adminList = FXCollections.observableArrayList(filteredAdmins);
+            List<AdminModel> filtered = adminService.searchAdmin(searchText);
+            adminList = FXCollections.observableArrayList(filtered);
             adminTable.setItems(adminList);
 
-            if (filteredAdmins.isEmpty()) {
+            if (filtered.isEmpty()) {
                 adminTable.setPlaceholder(new Label("No administrators found for: " + searchText));
             }
         } catch (Exception e) {
@@ -110,12 +93,12 @@ public class AdminController {
     }
 
     private void setSearchFld() {
-        searchFld.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.trim().isEmpty()) {
-                loadTable();
-            }
+        searchFld.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.trim().isEmpty()) loadTable();
         });
     }
+
+    // ─── Table Setup ──────────────────────────────────────────────────────────
 
     private void setupTableColumns() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -124,25 +107,51 @@ public class AdminController {
         mNameColumn.setCellValueFactory(new PropertyValueFactory<>("middlename"));
         lNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastname"));
         regDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
+        roleColumn.setCellValueFactory(new PropertyValueFactory<>("role")); // ← NEW
 
-        // Center align all columns
+        // Center-align all columns
         idColumn.setStyle("-fx-alignment: CENTER;");
         usernameColumn.setStyle("-fx-alignment: CENTER;");
         fNameColumn.setStyle("-fx-alignment: CENTER;");
         mNameColumn.setStyle("-fx-alignment: CENTER;");
         lNameColumn.setStyle("-fx-alignment: CENTER;");
         regDateColumn.setStyle("-fx-alignment: CENTER;");
+        roleColumn.setStyle("-fx-alignment: CENTER;");    // ← NEW
         actionsColumn.setStyle("-fx-alignment: CENTER;");
+
+        // Color-code the role badge in the role column
+        roleColumn.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String role, boolean empty) {
+                super.updateItem(role, empty);
+                if (empty || role == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(role);
+                    // Apply a subtle badge color per role
+                    String color = switch (role) {
+                        case "Admin"     -> "#c0392b"; // red
+                        case "Brgy_Sec" -> "#2980b9"; // blue
+                        case "MSWDO"      -> "#27ae60"; // green
+                        case "LDRRMO"    -> "#8e44ad"; // purple
+                        default          -> "#7f8c8d"; // grey
+                    };
+                    setStyle("-fx-alignment: CENTER; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+                }
+            }
+        });
     }
 
     private void setupButtons() {
-        addButton.setOnAction(event -> showAddAdminDialog());
-        refreshButton.setOnAction(event -> loadTable());
-        searchBtn.setOnAction(event -> handleSearch());
+        addButton.setOnAction(e -> showAddAdminDialog());
+        refreshButton.setOnAction(e -> loadTable());
+        searchBtn.setOnAction(e -> handleSearch());
     }
 
+    // ─── Load Table ───────────────────────────────────────────────────────────
+
     public void loadTable() {
-        // Show a temporary placeholder while loading
         adminTable.setPlaceholder(new Label("Loading administrators..."));
 
         Task<List<AdminModel>> task = new Task<>() {
@@ -178,6 +187,8 @@ public class AdminController {
         loadTable();
     }
 
+    // ─── Dialogs ──────────────────────────────────────────────────────────────
+
     private void showAddAdminDialog() {
         try {
             AddAdminDialogController controller =
@@ -203,11 +214,15 @@ public class AdminController {
 
     private void showEditAdminDialog(AdminModel selectedAdmin) {
         try {
-            EditAdminDialogController editAdminDialogController = DialogManager.getController("editAdmin", EditAdminDialogController.class);
-            editAdminDialogController.setAdminService(adminService);
-            editAdminDialogController.setAdminController(this);
-            editAdminDialogController.setAdminData(selectedAdmin);
+            EditAdminDialogController editController =
+                    DialogManager.getController("editAdmin", EditAdminDialogController.class);
+
+            editController.setAdminService(adminService);
+            editController.setAdminController(this);
+            editController.setAdminData(selectedAdmin);
+
             DialogManager.show("editAdmin");
+
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialogManager.showError("Dialog Error",
@@ -223,7 +238,7 @@ public class AdminController {
         }
 
         boolean confirm = AlertDialogManager.showConfirmation("Delete Administrator",
-                "Are you sure you want to delete administrator?");
+                "Are you sure you want to delete this administrator?");
 
         if (confirm) {
             try {
@@ -246,50 +261,49 @@ public class AdminController {
         }
     }
 
+    // ─── Action Buttons (Edit / Delete) ───────────────────────────────────────
+
     private void actionButtons() {
         Callback<TableColumn<AdminModel, Void>, TableCell<AdminModel, Void>> cellFactory =
-                new Callback<>() {
+                col -> new TableCell<>() {
+
+                    private final FontAwesomeIconView editIcon   = new FontAwesomeIconView(FontAwesomeIcon.EDIT);
+                    private final FontAwesomeIconView deleteIcon = new FontAwesomeIconView(FontAwesomeIcon.TRASH);
+                    private final Button editButton   = new Button("", editIcon);
+                    private final Button deleteButton = new Button("", deleteIcon);
+
+                    {
+                        editIcon.getStyleClass().add("edit-icon");
+                        deleteIcon.getStyleClass().add("delete-icon");
+                        editButton.getStyleClass().add("edit-button");
+                        deleteButton.getStyleClass().add("delete-button");
+
+                        editButton.setOnAction(e -> {
+                            AdminModel admin = getTableView().getItems().get(getIndex());
+                            showEditAdminDialog(admin);
+                        });
+
+                        deleteButton.setOnAction(e -> {
+                            AdminModel admin = getTableView().getItems().get(getIndex());
+                            deleteById(admin);
+                        });
+                    }
+
                     @Override
-                    public TableCell<AdminModel, Void> call(TableColumn<AdminModel, Void> adminModelVoidTableColumn) {
-                        return new TableCell<>() {
-                            private final FontAwesomeIconView editIcon = new FontAwesomeIconView(FontAwesomeIcon.EDIT);
-                            private final FontAwesomeIconView deleteIcon = new FontAwesomeIconView(FontAwesomeIcon.TRASH);
-                            private final Button editButton = new Button("", editIcon);
-                            private final Button deleteButton = new Button("", deleteIcon);
-
-                            {
-                                editIcon.getStyleClass().add("edit-icon");
-                                deleteIcon.getStyleClass().add("delete-icon");
-                                editButton.getStyleClass().add("edit-button");
-                                deleteButton.getStyleClass().add("delete-button");
-
-                                editButton.setOnAction(event -> {
-                                    AdminModel admin = getTableView().getItems().get(getIndex());
-                                    showEditAdminDialog(admin);
-                                });
-
-                                deleteButton.setOnAction(event -> {
-                                    AdminModel admin = getTableView().getItems().get(getIndex());
-                                    deleteById(admin);
-                                });
-                            }
-
-                            @Override
-                            public void updateItem(Void item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                } else {
-                                    HBox box = new HBox(10, editButton, deleteButton);
-                                    box.setAlignment(Pos.CENTER);
-                                    box.getStyleClass().add("action-buttons-container");
-                                    setGraphic(box);
-                                    setAlignment(Pos.CENTER);
-                                }
-                            }
-                        };
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            HBox box = new HBox(10, editButton, deleteButton);
+                            box.setAlignment(Pos.CENTER);
+                            box.getStyleClass().add("action-buttons-container");
+                            setGraphic(box);
+                            setAlignment(Pos.CENTER);
+                        }
                     }
                 };
+
         actionsColumn.setCellFactory(cellFactory);
     }
 }

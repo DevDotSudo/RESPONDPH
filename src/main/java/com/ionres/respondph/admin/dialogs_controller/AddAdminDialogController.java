@@ -4,57 +4,58 @@ import com.ionres.respondph.admin.AdminController;
 import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.admin.AdminService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DialogManager;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AddAdminDialogController {
 
     @FXML private VBox root;
-    @FXML private TextField usernameField, firstNameField, middleNameField, lastNameField;
+    @FXML private TextField     usernameField, firstNameField, middleNameField, lastNameField;
     @FXML private PasswordField passwordField, confirmPasswordField;
+    @FXML private ComboBox<String> roleComboBox;   // ← NEW
     @FXML private Button closeButton, saveButton;
-    private Stage dialogStage;
-    private AdminService adminService;
+
+    private Stage           dialogStage;
+    private AdminService    adminService;
     private AdminController adminController;
-    private boolean adminAdded;
-    private double xOffset, yOffset;
+    private boolean         adminAdded;
+    private double          xOffset, yOffset;
+
 
     @FXML
     public void initialize() {
+        // Populate role options
+        roleComboBox.setItems(FXCollections.observableArrayList(
+                "Admin", "Brgy_Sec", "MSWDO", "LDRRMO"
+        ));
+
         makeDraggable();
+
         EventHandler<ActionEvent> handler = this::handleActions;
         saveButton.setOnAction(handler);
         closeButton.setOnAction(handler);
     }
 
+
     private void handleActions(ActionEvent event) {
         Object src = event.getSource();
-        if (src == saveButton) {
-            handleSave();
-        }
-        else if (src == closeButton) {
-            close();
-        }
+        if (src == saveButton)       handleSave();
+        else if (src == closeButton) close();
     }
 
-    public void setDialogStage(Stage stage) {
-        this.dialogStage = stage;
-    }
 
-    public Stage getDialogStage() {
-        return dialogStage;
-    }
-
-    public void setAdminService(AdminService service) {
-        this.adminService = service;
-    }
+    public void setDialogStage(Stage stage)             { this.dialogStage = stage; }
+    public Stage getDialogStage()                       { return dialogStage; }
+    public void setAdminService(AdminService service)   { this.adminService = service; }
+    public boolean isAdminAdded()                       { return adminAdded; }
 
     public void setAdminController(AdminController controller) {
         this.adminController = controller;
@@ -66,9 +67,6 @@ public class AddAdminDialogController {
         clearFields();
     }
 
-    public boolean isAdminAdded() {
-        return adminAdded;
-    }
 
     private void handleSave() {
         if (!validateInput()) return;
@@ -85,6 +83,8 @@ public class AddAdminDialogController {
                     passwordField.getText()
             );
 
+            admin.setRole(roleComboBox.getValue());
+
             adminService.createAdmin(admin);
 
             AlertDialogManager.showSuccess("Admin Created",
@@ -100,11 +100,6 @@ public class AddAdminDialogController {
         }
     }
 
-    private void close() {
-        if (dialogStage != null) {
-            dialogStage.hide();
-        }
-    }
 
     private boolean validateInput() {
         if (usernameField.getText().trim().length() < 4) {
@@ -137,6 +132,12 @@ public class AddAdminDialogController {
             return false;
         }
 
+        if (roleComboBox.getValue() == null || roleComboBox.getValue().isBlank()) {
+            AlertDialogManager.showWarning("Validation Error",
+                    "Please select a role.");
+            return false;
+        }
+
         return true;
     }
 
@@ -148,6 +149,12 @@ public class AddAdminDialogController {
         lastNameField.clear();
         passwordField.clear();
         confirmPasswordField.clear();
+        roleComboBox.getSelectionModel().clearSelection(); // ← CLEAR ROLE
+        roleComboBox.setPromptText("Select a role");
+    }
+
+    private void close() {
+        if (dialogStage != null) dialogStage.hide();
     }
 
     private void makeDraggable() {

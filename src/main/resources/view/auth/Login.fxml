@@ -37,6 +37,22 @@
             </VBox.margin>
         </Label>
 
+        <!-- Role Selection -->
+        <VBox spacing="8">
+            <Label text="Role" styleClass="field-label"/>
+            <HBox styleClass="input-box" alignment="CENTER_LEFT" spacing="12">
+                <FontAwesomeIconView glyphName="ID_BADGE" size="18" styleClass="icon-label"/>
+                <ComboBox fx:id="roleComboBox"
+                          promptText="Select your role"
+                          styleClass="input-field"
+                          HBox.hgrow="ALWAYS"
+                          maxWidth="Infinity"/>
+            </HBox>
+            <VBox.margin>
+                <Insets bottom="10"/>
+            </VBox.margin>
+        </VBox>
+
         <!-- Username Field -->
         <VBox spacing="8">
             <Label text="Username" styleClass="field-label"/>

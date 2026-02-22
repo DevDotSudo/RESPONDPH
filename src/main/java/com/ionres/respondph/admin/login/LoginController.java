@@ -1,14 +1,17 @@
 package com.ionres.respondph.admin.login;
 
 import com.ionres.respondph.admin.AdminModel;
+import com.ionres.respondph.main.MainFrameController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -27,9 +30,14 @@ public class LoginController {
 
     @FXML
     private CheckBox rememberMeCheck;
+    @FXML
+    private ComboBox<String> roleComboBox;
 
     @FXML
     public void initialize() {
+        roleComboBox.setItems(FXCollections.observableArrayList(
+                "Admin", "Brgy_Sec", "MSWDO", "LDRRMO"
+        ));
         System.out.println("LoginController initialized");
 
         if (usernameField != null) {
@@ -82,14 +90,17 @@ public class LoginController {
 
                     if (usernameField.getScene() != null && usernameField.getScene().getWindow() != null) {
                         Stage loginStage = (Stage) usernameField.getScene().getWindow();
-                        System.out.println("Closing login stage...");
+
+                        // Close login FIRST
                         loginStage.close();
 
+                        // Clear cache so initialize() runs fresh with the correct admin
+                        SceneManager.clearCache("/view/main/MainScreen.fxml");
 
                         System.out.println("Opening main screen...");
                         SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
                         System.out.println("Auto-login completed successfully!");
-                    } else {
+                    }else {
                         System.out.println("ERROR: Scene or Window is not available!");
                     }
                 } else {
@@ -106,11 +117,11 @@ public class LoginController {
             prefs.clearRememberMe();
         }
     }
-
     @FXML
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
+        String selectedRole = roleComboBox.getValue();
         boolean rememberMe = rememberMeCheck.isSelected();
 
         try {
@@ -120,39 +131,43 @@ public class LoginController {
                 return;
             }
 
-            admin = loginService.login(username, password);
+            if (selectedRole == null || selectedRole.isEmpty()) {
+                AlertDialogManager.showWarning("Validation Error",
+                        "Please select your role.");
+                return;
+            }
+
+            admin = loginService.login(username, password, selectedRole);
 
             if (admin != null) {
-                // Handle remember me
                 if (rememberMe) {
                     String token = loginService.createRememberMeToken(admin.getId());
                     prefs.saveRememberMeToken(token);
-                    System.out.println("Remember me token saved: " + token);
                 } else {
                     prefs.clearRememberMe();
-                    System.out.println("Remember me cleared");
                 }
 
-                AlertDialogManager.showSuccess("Login Successful",
-                        "Welcome back. You are now logged in.");
+                AlertDialogManager.showSuccess("Login Successful", "Welcome back. You are now logged in.");
 
-                SessionManager.getInstance().setCurrentAdmin(admin);
+                // Save reference, set session, clear cache
                 Stage loginStage = (Stage) usernameField.getScene().getWindow();
+                SessionManager.getInstance().setCurrentAdmin(admin);
+                SceneManager.clearCache("/view/main/MainScreen.fxml");
+
+                // Close login FIRST, then show main
                 loginStage.close();
                 SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
-            }
-
-            else {
+                usernameField.clear();
+                passwordField.clear();
+                roleComboBox.setValue(null);
+            } else {
                 AlertDialogManager.showError("Login Failed",
-                        "Incorrect username or password.");
+                        "Incorrect username, password, or role.");
                 passwordField.clear();
             }
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError("Error",
-                    "Failed to login: " + e.getMessage());
+            AlertDialogManager.showError("Error", "Failed to login: " + e.getMessage());
         }
     }
 }

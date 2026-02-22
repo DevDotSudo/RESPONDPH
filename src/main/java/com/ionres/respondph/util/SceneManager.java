@@ -63,6 +63,11 @@ public final class SceneManager {
         currentStage.show();
     }
 
+    public static void clearCache(String fxmlPath) {
+        CACHE.remove(fxmlPath);
+    }
+
+
     public static class SceneEntry<T> {
         private final Parent root;
         private final T controller;

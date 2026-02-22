@@ -20,20 +20,20 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public AdminModel login(String usernameInput, String passwordInput) throws Exception {
-        if (usernameInput == null || usernameInput.isBlank() ||
-                passwordInput == null || passwordInput.isBlank()) {
-            throw new Exception("Username and password are required.");
-        }
+    public AdminModel login(String usernameInput, String passwordInput, String role) throws Exception {
+        AdminModel admin = adminDao.findByUsernameToLogin(usernameInput, role, cs);
 
-        AdminModel admin = adminDao.findByUsernameToLogin(usernameInput, cs);
+        // ADD THIS:
+        System.out.println("Login attempt - role selected: " + role);
+        System.out.println("Admin found: " + admin);
+        System.out.println("Admin role from DB: " + (admin != null ? admin.getRole() : "null - not found")); // pass role
 
         if (admin == null) {
-            throw new Exception("Invalid username or password.");
+            throw new Exception("Invalid username, password, or role.");
         }
 
         if (!BCrypt.checkpw(passwordInput, admin.getPassword())) {
-            throw new Exception("Invalid username or password.");
+            throw new Exception("Invalid username, password, or role.");
         }
 
         return admin;

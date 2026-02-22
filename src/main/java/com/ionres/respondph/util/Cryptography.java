@@ -39,9 +39,9 @@ public class Cryptography {
     }
 
     public List<String> encrypt(String username, String firstname, String middlename,
-                                String lastname, String regDate) throws Exception {
+                                String lastname, String regDate, String role) throws Exception {
 
-        String[] inputs = {username, firstname, middlename, lastname, regDate};
+        String[] inputs = {username, firstname, middlename, lastname, regDate, role};
 
         List<String> encryptedList = new ArrayList<>();
 
@@ -152,9 +152,9 @@ public class Cryptography {
     }
 
     public List<String> encryptUpdate(String username, String firstname, String middlename,
-                                      String lastname) throws Exception {
+                                      String lastname, String role) throws Exception {
 
-        String[] inputs = {username, firstname, middlename, lastname};
+        String[] inputs = {username, firstname, middlename, lastname, role};
         List<String> encryptedList = new ArrayList<>();
 
         for (String input : inputs) {

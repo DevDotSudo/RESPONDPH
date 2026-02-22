@@ -166,17 +166,12 @@ public class KMeansAidDistribution {
             clusterAvg[i] = clusterCounts[i] > 0 ? clusterSums[i] / clusterCounts[i] : 0.0;
         }
 
-        // Sort clusters by average score (highest to lowest)
         List<Integer> sortedClusters = new ArrayList<>();
         for (int i = 0; i < k; i++) {
             if (clusterCounts[i] > 0) sortedClusters.add(i);
         }
         sortedClusters.sort((a, b) -> Double.compare(clusterAvg[b], clusterAvg[a]));
 
-        // Create mapping: old cluster index → new cluster index
-        // Highest avg score cluster → 0 (High Priority)
-        // Middle avg score cluster → 1 (Moderate Priority)
-        // Lowest avg score cluster → 2 (Low Priority)
         Map<Integer, Integer> oldToNewCluster = new HashMap<>();
         for (int rank = 0; rank < sortedClusters.size(); rank++) {
             int oldClusterIdx = sortedClusters.get(rank);
@@ -238,7 +233,7 @@ public class KMeansAidDistribution {
 
     private double[] initializeCentroidsKMeansPlusPlus(List<BeneficiaryCluster> beneficiaries, int k) {
         double[] centroids = new double[k];
-        Random random = new Random();
+        Random random = new Random(67);
 
         centroids[0] = beneficiaries.get(random.nextInt(beneficiaries.size())).getFinalScore();
 

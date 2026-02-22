@@ -7,12 +7,21 @@ import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.SessionManager;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -39,6 +48,7 @@ public class AddAidTypeController {
     @FXML private TextArea notesFld;
     @FXML private Button saveBtn;
     @FXML private Button exitBtn;
+
     private double xOffset = 0;
     private double yOffset = 0;
     private AidTypeService aidTypeService;
@@ -67,9 +77,7 @@ public class AddAidTypeController {
 
         if (src == saveBtn) {
             addAidType();
-            aidTypeController.loadTable();
-        }
-        else if(src == exitBtn){
+        } else if (src == exitBtn) {
             closeDialog();
         }
     }
@@ -110,9 +118,6 @@ public class AddAidTypeController {
         textField.setTextFormatter(new TextFormatter<>(filter));
     }
 
-
-
-
     private void addAidType() {
         try {
             if (!validateWeightSum()) return;
@@ -139,7 +144,7 @@ public class AddAidTypeController {
 
             int adminId = SessionManager.getInstance().getCurrentAdminId();
             if (adminId <= 0) {
-                AlertDialogManager.showWarning("Warning","No admin logged in");
+                AlertDialogManager.showWarning("Warning", "No admin logged in");
                 return;
             }
 
@@ -175,16 +180,15 @@ public class AddAidTypeController {
                 int newAidTypeId = getLatestAidTypeId();
 
                 if (newAidTypeId > 0) {
-                    recalculateAllBeneficiaryScores(newAidTypeId, adminId);
+                    showProgressAndRecalculate(newAidTypeId, adminId);
+                } else {
+                    AlertDialogManager.showWarning("Warning",
+                            "Aid type created, but could not determine new Aid Type ID for score calculation.");
+                    DashboardRefresher.refreshComboBoxOfDNAndAN();
+                    DashboardRefresher.refresh();
+                    clearFields();
+                    aidTypeController.loadTable();
                 }
-
-                AlertDialogManager.showSuccess("Success",
-                        "Aid Type added successfully!\n" +
-                                "Household scores have been calculated for all beneficiaries.");
-
-                DashboardRefresher.refreshComboBoxOfDNAndAN();
-                DashboardRefresher.refresh();
-                clearFields();
             } else {
                 AlertDialogManager.showWarning("Error", "Failed to add Aid Type.");
             }
@@ -200,24 +204,225 @@ public class AddAidTypeController {
         }
     }
 
-    private double parseWeight(TextField field) {
-        String text = field.getText().trim();
-        return text.isEmpty() ? 0.0 : Double.parseDouble(text);
-    }
+    // ── Progress dialog + background Task (mirrors VulnerabilityIndicatorController) ──
+    private void showProgressAndRecalculate(int newAidTypeId, int adminId) {
 
+        // ── Build the progress dialog ─────────────────────────────────────────
+        Stage progressStage = new Stage();
+        progressStage.initModality(Modality.APPLICATION_MODAL);
+        progressStage.initStyle(StageStyle.UNDECORATED);
+        progressStage.setResizable(false);
+        progressStage.setAlwaysOnTop(true);
 
-    private int getLatestAidTypeId() {
-        try {
-            java.util.List<AidTypeModel> allAidTypes = aidTypeService.getAllAidType();
-            if (allAidTypes != null && !allAidTypes.isEmpty()) {
-                // Get the last aid type (most recently added)
-                return allAidTypes.get(allAidTypes.size() - 1).getAidTypeId();
+        // ── Outer wrapper (dark card) ─────────────────────────────────────────
+        VBox card = new VBox(0);
+        card.setPrefWidth(420);
+        card.setStyle(
+                "-fx-background-color: #0b1220;" +
+                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+        );
+
+        // ── Header ────────────────────────────────────────────────────────────
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(18, 22, 18, 22));
+        header.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.025);" +
+                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                        "-fx-border-width: 0 0 1 0;" +
+                        "-fx-background-radius: 10 10 0 0;"
+        );
+
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(22, 22);
+        spinner.setMaxSize(22, 22);
+        spinner.setMinSize(22, 22);
+        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
+
+        VBox titleBlock = new VBox(3);
+        Label titleLabel = new Label("Please Wait");
+        titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
+        titleLabel.setStyle(
+                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-weight: 900;"
+        );
+        Label subtitleLabel = new Label("Saving Aid Type");
+        subtitleLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: 600;"
+        );
+        titleBlock.getChildren().addAll(titleLabel, subtitleLabel);
+        header.getChildren().addAll(spinner, titleBlock);
+
+        // ── Body ──────────────────────────────────────────────────────────────
+        VBox body = new VBox(14);
+        body.setPadding(new Insets(22, 22, 24, 22));
+        body.setAlignment(Pos.CENTER_LEFT);
+        body.setStyle("-fx-background-color: transparent;");
+
+        Label statusLabel = new Label("Calculating household scores for all beneficiaries...");
+        statusLabel.setWrapText(true);
+        statusLabel.setMaxWidth(Double.MAX_VALUE);
+        statusLabel.setStyle(
+                "-fx-text-fill: rgba(226,232,240,0.85);" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: 600;"
+        );
+
+        // Progress bar track wrapper
+        VBox barWrapper = new VBox(0);
+        barWrapper.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.06);" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-width: 1;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-padding: 0;"
+        );
+
+        ProgressBar progressBar = new ProgressBar(ProgressBar.INDETERMINATE_PROGRESS);
+        progressBar.setPrefWidth(Double.MAX_VALUE);
+        progressBar.setPrefHeight(10);
+        progressBar.setMaxWidth(Double.MAX_VALUE);
+        progressBar.setStyle(
+                "-fx-accent: rgba(249,115,22,0.95);" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-radius: 6;"
+        );
+        barWrapper.getChildren().add(progressBar);
+
+        // Percentage / indeterminate label (right-aligned)
+        Label pctLabel = new Label("…");
+        pctLabel.setStyle(
+                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-font-weight: 700;"
+        );
+        HBox pctRow = new HBox();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        pctRow.getChildren().addAll(spacer, pctLabel);
+
+        progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
+            double pct = newVal.doubleValue();
+            if (pct < 0) {
+                pctLabel.setText("…");
+            } else {
+                pctLabel.setText(String.format("%.0f%%", pct * 100));
             }
-        } catch (Exception e) {
-            System.err.println("Error getting latest aid type ID: " + e.getMessage());
-            e.printStackTrace();
+        });
+
+        body.getChildren().addAll(statusLabel, barWrapper, pctRow);
+        card.getChildren().addAll(header, body);
+
+        Scene scene = new Scene(card);
+        scene.setFill(null);
+        progressStage.setScene(scene);
+
+        // Center on owner stage if available
+        Stage ownerStage = (Stage) root.getScene().getWindow();
+        if (ownerStage != null) {
+            progressStage.initOwner(ownerStage);
+            progressStage.setX(ownerStage.getX() + (ownerStage.getWidth()  - 420) / 2);
+            progressStage.setY(ownerStage.getY() + (ownerStage.getHeight() - 160) / 2);
         }
-        return -1;
+
+        progressStage.show();
+
+        // ── Disable save button while running ─────────────────────────────────
+        saveBtn.setDisable(true);
+
+        // ── Run the heavy calculation off the FX thread ───────────────────────
+        Task<int[]> task = new Task<>() {
+            @Override
+            protected int[] call() {
+                updateMessage("Calculating household scores for all beneficiaries...");
+
+                List<BeneficiaryDisasterPair> pairs = getAllBeneficiaryDisasterPairsWithHouseholdScores();
+                int total = pairs.size();
+                int successCount = 0;
+                int failCount = 0;
+
+                AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
+
+                for (int i = 0; i < total; i++) {
+                    BeneficiaryDisasterPair pair = pairs.get(i);
+                    updateMessage("Processing beneficiary " + (i + 1) + " of " + total + "…");
+                    updateProgress(i + 1, total);
+
+                    try {
+                        boolean success;
+                        if (pair.disasterId != null) {
+                            success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
+                                    pair.beneficiaryId, newAidTypeId, adminId, pair.disasterId);
+                        } else {
+                            success = calculator.calculateAndSaveAidHouseholdScore(
+                                    pair.beneficiaryId, newAidTypeId, adminId);
+                        }
+
+                        if (success) successCount++;
+                        else failCount++;
+
+                    } catch (Exception e) {
+                        failCount++;
+                        System.err.println("✗ Error for beneficiary ID " + pair.beneficiaryId +
+                                ", disaster ID " + pair.disasterId + ": " + e.getMessage());
+                    }
+                }
+
+                return new int[]{successCount, failCount, total};
+            }
+        };
+
+        statusLabel.textProperty().bind(task.messageProperty());
+
+        task.setOnSucceeded(e -> {
+            statusLabel.textProperty().unbind();
+            progressStage.close();
+            saveBtn.setDisable(false);
+
+            int[] result = task.getValue();
+            int successCount = result[0];
+            int total = result[2];
+
+            AlertDialogManager.showSuccess("Success",
+                    "Aid Type added successfully!\n" +
+                            successCount + " of " + total +
+                            " household score(s) calculated for all beneficiaries.");
+
+            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            DashboardRefresher.refresh();
+            clearFields();
+            aidTypeController.loadTable();
+        });
+
+        task.setOnFailed(e -> {
+            statusLabel.textProperty().unbind();
+            progressStage.close();
+            saveBtn.setDisable(false);
+
+            Throwable ex = task.getException();
+            AlertDialogManager.showWarning("Warning",
+                    "Aid type created, but there was an error calculating household scores.\n" +
+                            (ex != null ? ex.getMessage() : "Unknown error"));
+            if (ex != null) ex.printStackTrace();
+
+            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            DashboardRefresher.refresh();
+            clearFields();
+            aidTypeController.loadTable();
+        });
+
+        Thread thread = new Thread(task, "AidTypeRecalculate-Thread");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void recalculateAllBeneficiaryScores(int aidTypeId, int adminId) {
@@ -241,23 +446,14 @@ public class AddAidTypeController {
                     boolean success;
 
                     if (pair.disasterId != null) {
-                        // ✅ Has a real disaster — use disaster-aware calculation
                         System.out.println("→ With disaster (ID: " + pair.disasterId +
                                 ") for beneficiary ID: " + pair.beneficiaryId);
                         success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
-                                pair.beneficiaryId,
-                                aidTypeId,
-                                adminId,
-                                pair.disasterId
-                        );
+                                pair.beneficiaryId, aidTypeId, adminId, pair.disasterId);
                     } else {
-                        // ✅ No disaster (NULL) — use non-disaster calculation
                         System.out.println("→ No disaster (NULL) for beneficiary ID: " + pair.beneficiaryId);
                         success = calculator.calculateAndSaveAidHouseholdScore(
-                                pair.beneficiaryId,
-                                aidTypeId,
-                                adminId
-                        );
+                                pair.beneficiaryId, aidTypeId, adminId);
                     }
 
                     if (success) {
@@ -290,6 +486,24 @@ public class AddAidTypeController {
         }
     }
 
+    private double parseWeight(TextField field) {
+        String text = field.getText().trim();
+        return text.isEmpty() ? 0.0 : Double.parseDouble(text);
+    }
+
+    private int getLatestAidTypeId() {
+        try {
+            List<AidTypeModel> allAidTypes = aidTypeService.getAllAidType();
+            if (allAidTypes != null && !allAidTypes.isEmpty()) {
+                return allAidTypes.get(allAidTypes.size() - 1).getAidTypeId();
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting latest aid type ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     private static class BeneficiaryDisasterPair {
         int beneficiaryId;
         Integer disasterId;
@@ -300,8 +514,8 @@ public class AddAidTypeController {
         }
     }
 
-    private java.util.List<BeneficiaryDisasterPair> getAllBeneficiaryDisasterPairsWithHouseholdScores() {
-        java.util.List<BeneficiaryDisasterPair> pairs = new java.util.ArrayList<>();
+    private List<BeneficiaryDisasterPair> getAllBeneficiaryDisasterPairsWithHouseholdScores() {
+        List<BeneficiaryDisasterPair> pairs = new java.util.ArrayList<>();
         String sql = "SELECT DISTINCT beneficiary_id, disaster_id FROM household_score";
 
         java.sql.Connection conn = null;
@@ -312,11 +526,8 @@ public class AddAidTypeController {
 
             while (rs.next()) {
                 int beneficiaryId = rs.getInt("beneficiary_id");
-
-                // ✅ getObject returns null for SQL NULL; getInt() returns 0 — that was the bug
                 Object disasterObj = rs.getObject("disaster_id");
                 Integer disasterId = (disasterObj != null) ? ((Number) disasterObj).intValue() : null;
-
                 pairs.add(new BeneficiaryDisasterPair(beneficiaryId, disasterId));
             }
 
@@ -339,35 +550,22 @@ public class AddAidTypeController {
 
     private boolean validateWeightSum() {
         try {
-
-            double ageWeight = parseWeight(ageWeightFld);
-            double genderWeight = parseWeight(genderWeightFld);
-            double maritalStatusWeight = parseWeight(maritalStatusWeightFld);
-            double soloParentWeight =parseWeight(soloParentWeightFld);
-            double disabilityWeight = parseWeight(disabilityWeightFld);
-            double healthConditionWeight = parseWeight(healthConditionWeightFld);
-            double accessToCleanWaterWeight = parseWeight(waterAccessWeightFld);
-            double sanitationFacilityWeight = parseWeight(sanitationWeightFld);
-            double houseConstructionTypeWeight = parseWeight(houseTypeWeightFld);
-            double ownershipWeight = parseWeight(ownershipWeightFld);
-            double damageSeverityWeight = parseWeight(damageSeverityWeightFld);
-            double employmentStatusWeight = parseWeight(employmentWeightFld);
-            double monthlyIncomeWeight = parseWeight(monthlyIncomeWeightFld);
-            double educationalLevelWeight = parseWeight(educationWeightFld);
-            double digitalAccessWeight = parseWeight(digitalAccessWeightFld);
-            double dependencyRatioWeight = parseWeight(dependencyRatioWeightFld);
-
-            double totalWeight = ageWeight + genderWeight + maritalStatusWeight + soloParentWeight +
-                    disabilityWeight + healthConditionWeight + accessToCleanWaterWeight + sanitationFacilityWeight +
-                    houseConstructionTypeWeight + ownershipWeight + damageSeverityWeight + employmentStatusWeight +
-                    monthlyIncomeWeight + educationalLevelWeight + digitalAccessWeight + dependencyRatioWeight;
+            double totalWeight =
+                    parseWeight(ageWeightFld) + parseWeight(genderWeightFld) +
+                            parseWeight(maritalStatusWeightFld) + parseWeight(soloParentWeightFld) +
+                            parseWeight(disabilityWeightFld) + parseWeight(healthConditionWeightFld) +
+                            parseWeight(waterAccessWeightFld) + parseWeight(sanitationWeightFld) +
+                            parseWeight(houseTypeWeightFld) + parseWeight(ownershipWeightFld) +
+                            parseWeight(damageSeverityWeightFld) + parseWeight(employmentWeightFld) +
+                            parseWeight(monthlyIncomeWeightFld) + parseWeight(educationWeightFld) +
+                            parseWeight(digitalAccessWeightFld) + parseWeight(dependencyRatioWeightFld);
 
             totalWeight = Math.round(totalWeight * 100.0) / 100.0;
 
             if (totalWeight != 1.0) {
                 AlertDialogManager.showWarning("Validation Error",
                         "The sum of all weights must equal exactly 1.0" +
-                                " Current total: " + String.format("%.2f", totalWeight)+
+                                " Current total: " + String.format("%.2f", totalWeight) +
                                 " Required total: 1.0" +
                                 " Please adjust the weight values.");
                 return false;

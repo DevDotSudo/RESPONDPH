@@ -1,5 +1,6 @@
 package com.ionres.respondph.main;
 
+import com.ionres.respondph.admin.AdminModel;
 import com.ionres.respondph.util.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.animation.*;
@@ -23,7 +24,7 @@ public class MainFrameController {
     private static MainFrameController INSTANCE;
     public static MainFrameController getInstance() { return INSTANCE; }
 
-    @FXML public VBox contentArea;
+    @FXML public VBox        contentArea;
 
     @FXML private VBox        smsProgressToast;
     @FXML private VBox        smsToastBody;
@@ -40,14 +41,17 @@ public class MainFrameController {
     @FXML private Button      newsMinimizeBtn;
     @FXML private Button      newsCloseBtn;
 
-    @FXML private HBox  footerBar;
-    @FXML private HBox  smsFooterPill;
-    @FXML private Label footerSmsLabel;
+    @FXML private HBox   footerBar;
+
+    @FXML private HBox   smsFooterPill;
+    @FXML private Label  footerSmsLabel;
     @FXML private Button btnShowSmsProgress;
-    @FXML private HBox  newsFooterPill;
-    @FXML private Label footerNewsLabel;
+
+    @FXML private HBox   newsFooterPill;
+    @FXML private Label  footerNewsLabel;
     @FXML private Button btnShowNewsProgress;
-    @FXML private Label footerDivider;
+
+    @FXML private Label  footerDivider;
 
     @FXML public Button managementSectionBtn;
     @FXML public Button disasterSectionBtn;
@@ -64,21 +68,23 @@ public class MainFrameController {
 
     @FXML private Button dashboardBtn;
     @FXML private Button manageAdminBtn;
-    @FXML public  Button manageBeneficiariesBtn;
+    @FXML public   Button manageBeneficiariesBtn;
     @FXML private Button familyMembersBtn;
-    @FXML public  Button disasterBtn;
+    @FXML public   Button disasterBtn;
     @FXML private Button disasterMappingBtn;
     @FXML private Button disasterDamageBtn;
     @FXML private Button vulnerabilityBtn;
-    @FXML public  Button evacBtn;
+    @FXML public   Button evacBtn;
     @FXML private Button evacPlanBtn;
     @FXML private Button aidTypeBtn;
-    @FXML public  Button aidBtn;
+    @FXML public   Button aidBtn;
     @FXML private Button sendSmsBtn;
     @FXML private Button logoutBtn;
 
+    // ── Nav ──────────────────────────────────────────────────────────────────
     public Button activeBtn;
 
+    // ── SMS toast state ───────────────────────────────────────────────────────
     private boolean  smsMinimized   = false;
     private boolean  smsVisible     = false;
     private Task<?>  currentSmsTask = null;
@@ -86,6 +92,7 @@ public class MainFrameController {
     private Runnable smsCancelAction;
     private String   smsFooterText  = "";
 
+    // ── News toast state ──────────────────────────────────────────────────────
     private boolean  newsMinimized  = false;
     private boolean  newsVisible    = false;
     private Timeline newsSnapTimeline;
@@ -108,10 +115,25 @@ public class MainFrameController {
     private static final double   CHEVRON_EXPANDED  = 90;
     private static final String   ORANGE_STYLE =
             "-fx-accent: #F97316; -fx-control-inner-background: rgba(249,115,22,0.12);";
+    private static final String GROUNDING_SEARCH_EMOJI = "🔍";
+    private static final String GROUNDING_PAGE_EMOJI   = "📄";
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // INITIALIZE
+    // ═════════════════════════════════════════════════════════════════════════
 
     @FXML
     public void initialize() {
         INSTANCE = this;
+
+        // Guard: admin may be null during token auto-login (session set after FXML loads)
+        AdminModel currentAdmin = SessionManager.getInstance().getCurrentAdmin();
+        if (currentAdmin != null && currentAdmin.getRole() != null) {
+            System.out.println(">>> initialize role: " + currentAdmin.getRole());
+            applyRoleVisibility(currentAdmin.getRole());
+
+
+        }
 
         if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeSmsToFooter());
         if (smsCloseBtn    != null) smsCloseBtn.setOnAction(e -> handleSmsCloseButton());
@@ -144,8 +166,18 @@ public class MainFrameController {
         setupSectionToggle(evacSectionBtn,         evacSectionContent,       evacSectionIcon);
 
         collapseAllSections();
-        loadPage("/view/dashboard/Dashboard.fxml");
-        activeButton(dashboardBtn);
+
+        String role = (currentAdmin != null) ? currentAdmin.getRole() : null;
+
+        if (role == null || role.equals("Admin") || role.equals("LDRRMO")) {
+            loadPage("/view/dashboard/Dashboard.fxml");
+            activeButton(dashboardBtn);
+        } else if (role.equals("Brgy_Sec") || role.equals("MSWDO")) {
+            // Load their default starting page instead
+            loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
+            activeButton(manageBeneficiariesBtn);
+        }
+
         wireNavButtons();
 
         hideFooter();
@@ -192,6 +224,10 @@ public class MainFrameController {
             footerBar.setManaged(false);
         }
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // SMS PROGRESS TOAST — public API
+    // ═════════════════════════════════════════════════════════════════════════
 
     public void setSmsCancelAction(Runnable action) { this.smsCancelAction = action; }
 
@@ -300,10 +336,16 @@ public class MainFrameController {
         smsProgressBar.getStyleClass().remove("sms-toast-progress-news");
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // NEWS PROGRESS TOAST — public API
+    // ═════════════════════════════════════════════════════════════════════════
+
     public void setNewsCancelAction(Runnable action) { this.newsCancelAction = action; }
 
     public void showNewsProgress(String topic) {
         Platform.runLater(() -> {
+            // Always fully reset before showing — fixes stale confirmedNewsCount
+            // from a previous generation causing dots not to update.
             resetNewsLogState();
             newsMinimized  = false;
             newsVisible    = true;
@@ -329,47 +371,76 @@ public class MainFrameController {
             Platform.runLater(() -> setNewsProgress(progress, status));
             return;
         }
+        if (status == null) { animateNewsBarTo(Math.max(0.0, Math.min(1.0, progress))); return; }
 
         animateNewsBarTo(Math.max(0.0, Math.min(1.0, progress)));
 
-        if (status == null) return;
+        // Split header from optional streaming tail (separated by \n▶ )
+        String header;
+        String streamTail;
+        int nlIdx = status.indexOf('\n');
+        if (nlIdx >= 0) {
+            header    = status.substring(0, nlIdx).trim();
+            String after = status.substring(nlIdx + 1).trim();
+            streamTail = after.startsWith("▶ ") ? after.substring(2) : after;
+        } else {
+            header    = status.trim();
+            streamTail = null;
+        }
 
-        newsFooterText = status;
+        newsFooterText = header;
         if (newsMinimized) refreshFooter();
 
         if (newsLogBox == null) return;
 
-        if (status.matches("\\d+ of \\d+ items? found.*")) {
-            handleItemConfirmed(status);
+        // ── Route to the appropriate handler ─────────────────────────────────
+
+        // "N of 5 items found (Xs)"  — dot fill + item confirmed row
+        if (header.matches("\\d+ of \\d+ items? found.*")) {
+            handleItemConfirmed(header, streamTail);
             return;
         }
 
-        if (status.startsWith("Validating")) {
-            clearTickLabel();
-            appendRow("🔎 " + status, RowKind.INFO);
+        // Grounding events: "🔍 Searching: …" or "📄 Reading: …"
+        if (header.startsWith(GROUNDING_SEARCH_EMOJI) || header.startsWith(GROUNDING_PAGE_EMOJI)) {
+            handleGroundingEvent(header);
+            if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
 
-        if (status.startsWith("Done")) {
-            handleDone(status);
+        // Inline live writing / searching label (no dedicated row, just tick)
+        if (header.startsWith("Writing news…")
+                || header.startsWith("Searching…")
+                || header.startsWith("Using gemini")        // model switch messages
+                || header.startsWith("Switching to")
+                || header.startsWith("Found ")
+                || header.startsWith("All models")) {
+            updateTickLabel(header);
+            if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
 
-        if (status.startsWith("Cancelled")) {
-            clearTickLabel();
-            stopPulse();
+        // N found, searching for M more — treat like tick label
+        if (header.matches("Found \\d+.*") || header.matches("Only \\d+.*")) {
+            updateTickLabel(header);
+            return;
+        }
+
+        if (header.startsWith("Validating")) {
+            commitStreamingLabel(); clearTickLabel();
+            appendRow("🔎 " + header, RowKind.INFO); return;
+        }
+        if (header.startsWith("Done")) {
+            handleDone(header); return;
+        }
+        if (header.startsWith("Reconnecting")) {
+            commitStreamingLabel(); clearTickLabel();
+            appendRow("🔄 Reconnecting…", RowKind.INFO); return;
+        }
+        if (header.startsWith("Cancelled")) {
+            commitStreamingLabel(); clearTickLabel(); stopPulse();
             appendRow("🚫 Generation cancelled.", RowKind.INFO);
-            return;
         }
-
-        if (status.startsWith("Error")) {
-            clearTickLabel();
-            stopPulse();
-            appendRow("❌ " + status, RowKind.INFO);
-            return;
-        }
-
-        updateTickLabel(status);
     }
 
     public void hideNewsProgress() {
@@ -391,6 +462,8 @@ public class MainFrameController {
             refreshFooter();
         });
     }
+
+    // ── News internal ─────────────────────────────────────────────────────────
 
     private void handleNewsCloseButton() {
         if (newsCancelAction != null) {
@@ -432,14 +505,16 @@ public class MainFrameController {
         if (newsProgressToast != null) { newsProgressToast.setVisible(true); newsProgressToast.setManaged(true); }
     }
 
+    // ── News bar helpers ──────────────────────────────────────────────────────
+
     private void animateNewsBarTo(double target) {
         if (newsProgressBar == null) return;
         cancelNewsSnapAnimation();
         double cur = newsProgressBar.getProgress();
         if (cur < 0) cur = 0;
         newsSnapTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,       new KeyValue(newsProgressBar.progressProperty(), cur)),
-                new KeyFrame(Duration.millis(180), new KeyValue(newsProgressBar.progressProperty(), target)));
+                new KeyFrame(Duration.ZERO,        new KeyValue(newsProgressBar.progressProperty(), cur)),
+                new KeyFrame(Duration.millis(180),  new KeyValue(newsProgressBar.progressProperty(), target)));
         newsSnapTimeline.play();
     }
 
@@ -465,6 +540,10 @@ public class MainFrameController {
         newsProgressBar.getStyleClass().remove("sms-toast-progress-news");
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // NEWS ACTIVITY PANE (log / dots / streaming)
+    // ═════════════════════════════════════════════════════════════════════════
+
     private VBox buildNewsActivityPane(String topic) {
         VBox pane = new VBox(8);
         pane.setFillWidth(true);
@@ -489,7 +568,6 @@ public class MainFrameController {
 
         newsCountLabel = new Label("0 of 5 items found");
         newsCountLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
-
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
         dotRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -513,12 +591,34 @@ public class MainFrameController {
         return pane;
     }
 
-    private void handleItemConfirmed(String status) {
+    // ── Status handlers ───────────────────────────────────────────────────────
+
+    private void handleGroundingEvent(String header) {
+        String rowText = header.replaceAll("\\s*\\(\\d+s\\)\\s*$", "").trim();
+        updateTickLabel(header);
+        if (!rowText.equals(lastGroundingRowText())) {
+            clearStreamingLabel();
+            RowKind kind = header.startsWith(GROUNDING_SEARCH_EMOJI) ? RowKind.SEARCH : RowKind.PAGE;
+            appendRowTypewriter(rowText, kind);
+        }
+    }
+
+    /**
+     * Called when NewsGeneratorService emits "N of 5 items found (Xs)".
+     *
+     * FIX: The dot counter was broken because:
+     * 1. confirmedNewsCount was never reset between generations (now fixed in resetNewsLogState).
+     * 2. The regex in setNewsProgress didn't match "N of 5 items found" (now fixed to
+     *    "\\d+ of \\d+ items? found.*" which handles singular/plural).
+     * 3. The header is parsed as split(" ")[0] to get N — this works for "1 of 5 items found (3s)".
+     */
+    private void handleItemConfirmed(String header, String streamTail) {
         int n = 0;
         try {
-            n = Integer.parseInt(status.split(" ")[0]);
+            n = Integer.parseInt(header.split(" ")[0]);
         } catch (NumberFormatException ignored) {}
 
+        // Fill dots from the last confirmed count up to n (handles 1→2→3→4→5 in order)
         if (n > confirmedNewsCount) {
             for (int i = confirmedNewsCount; i < n && i < 5; i++) {
                 fillDot(i);
@@ -527,29 +627,35 @@ public class MainFrameController {
 
             if (newsCountLabel != null)
                 newsCountLabel.setText(n + " of 5 items found");
-
             newsFooterText = n + " of 5 items found";
             if (newsMinimized) refreshFooter();
 
+            // Append a confirmation row in the log
             clearTickLabel();
-            appendRow("✅ Item " + n + " of 5 confirmed", RowKind.ITEM);
+            appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
+        }
+
+        if (streamTail != null && !streamTail.isBlank()) {
+            updateStreamingLabel(streamTail);
         }
     }
 
-    private void handleDone(String status) {
+    private void handleDone(String header) {
+        commitStreamingLabel();
         clearTickLabel();
         stopPulse();
-        appendRow("🎉 " + status, RowKind.ITEM);
-
+        appendRow("🎉 " + header, RowKind.ITEM);
+        // Fill any remaining dots in case some confirmations were missed
         for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
         confirmedNewsCount = 5;
-
         if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
         newsFooterText = "5 of 5 items found ✓";
         if (newsMinimized) refreshFooter();
     }
 
-    private enum RowKind { ITEM, INFO }
+    // ── Log rows ──────────────────────────────────────────────────────────────
+
+    private enum RowKind { SEARCH, PAGE, ITEM, INFO }
 
     private void appendRow(String text, RowKind kind) {
         if (newsLogBox == null) return;
@@ -558,10 +664,27 @@ public class MainFrameController {
         row.setOpacity(0.0);
         newsLogBox.getChildren().add(row);
         FadeTransition ft = new FadeTransition(Duration.millis(220), row);
-        ft.setFromValue(0.0);
-        ft.setToValue(1.0);
-        ft.play();
+        ft.setFromValue(0.0); ft.setToValue(1.0); ft.play();
         scrollBottom();
+    }
+
+    private void appendRowTypewriter(String fullText, RowKind kind) {
+        if (newsLogBox == null || fullText == null || fullText.isBlank()) return;
+        ensureLogCapacity();
+        Label row = makeRowLabel("", kind);
+        newsLogBox.getChildren().add(row);
+        scrollBottom();
+
+        int totalChars = fullText.length();
+        int[] idx = {0};
+        Timeline tw = new Timeline(new KeyFrame(Duration.millis(28), e -> {
+            idx[0]++;
+            row.setText(idx[0] < totalChars ? fullText.substring(0, idx[0]) + "▌" : fullText);
+        }));
+        tw.setCycleCount(totalChars);
+        PauseTransition pause = new PauseTransition(Duration.millis(60));
+        pause.setOnFinished(e -> tw.play());
+        pause.play();
     }
 
     private void ensureLogCapacity() {
@@ -585,11 +708,44 @@ public class MainFrameController {
         row.setWrapText(true);
         row.setMaxWidth(Double.MAX_VALUE);
         switch (kind) {
-            case ITEM -> row.setStyle("-fx-text-fill: #FCD34D; -fx-font-size: 11px; -fx-font-weight: bold;");
-            case INFO -> row.setStyle("-fx-text-fill: rgba(255,255,255,0.55); -fx-font-size: 11px;");
+            case SEARCH -> row.setStyle("-fx-text-fill: #93C5FD; -fx-font-size: 11px;");
+            case PAGE   -> row.setStyle("-fx-text-fill: #86EFAC; -fx-font-size: 11px;");
+            case ITEM   -> row.setStyle("-fx-text-fill: #FCD34D; -fx-font-size: 11px; -fx-font-weight: bold;");
+            case INFO   -> row.setStyle("-fx-text-fill: rgba(255,255,255,0.42); -fx-font-size: 11px;");
         }
         return row;
     }
+
+    // ── Streaming label ───────────────────────────────────────────────────────
+
+    private void updateStreamingLabel(String tail) {
+        if (newsLogBox == null || tail == null || tail.isBlank()) return;
+        if (streamingLabel == null) {
+            ensureLogCapacity();
+            streamingLabel = new Label();
+            streamingLabel.setWrapText(true);
+            streamingLabel.setMaxWidth(Double.MAX_VALUE);
+            streamingLabel.setStyle(
+                    "-fx-text-fill: rgba(255,255,255,0.30); " +
+                            "-fx-font-size: 10.5px; -fx-font-style: italic;");
+            newsLogBox.getChildren().add(streamingLabel);
+        } else {
+            reorderSpecialLabels();
+        }
+        streamingLabel.setText(tail);
+        scrollBottom();
+    }
+
+    private void commitStreamingLabel() { streamingLabel = null; }
+
+    private void clearStreamingLabel() {
+        if (streamingLabel != null && newsLogBox != null) {
+            newsLogBox.getChildren().remove(streamingLabel);
+            streamingLabel = null;
+        }
+    }
+
+    // ── Tick label ────────────────────────────────────────────────────────────
 
     private void updateTickLabel(String text) {
         if (newsLogBox == null) return;
@@ -601,8 +757,7 @@ public class MainFrameController {
             tickLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 11px;");
             newsLogBox.getChildren().add(tickLabel);
         } else {
-            newsLogBox.getChildren().remove(tickLabel);
-            newsLogBox.getChildren().add(tickLabel);
+            reorderSpecialLabels();
         }
         tickLabel.setText("🔎 " + text);
         scrollBottom();
@@ -615,9 +770,31 @@ public class MainFrameController {
         }
     }
 
+    private void reorderSpecialLabels() {
+        if (newsLogBox == null) return;
+        if (tickLabel      != null) { newsLogBox.getChildren().remove(tickLabel);      newsLogBox.getChildren().add(tickLabel); }
+        if (streamingLabel != null) { newsLogBox.getChildren().remove(streamingLabel); newsLogBox.getChildren().add(streamingLabel); }
+    }
+
+    private String lastGroundingRowText() {
+        if (newsLogBox == null) return null;
+        for (int i = newsLogBox.getChildren().size() - 1; i >= 0; i--) {
+            var node = newsLogBox.getChildren().get(i);
+            if (node instanceof Label lbl && lbl != streamingLabel && lbl != tickLabel) {
+                String style = lbl.getStyle();
+                if (style.contains("#93C5FD") || style.contains("#86EFAC"))
+                    return lbl.getText().replace("▌", "");
+                break;
+            }
+        }
+        return null;
+    }
+
     private void scrollBottom() {
         Platform.runLater(() -> { if (newsLogScroll != null) newsLogScroll.setVvalue(1.0); });
     }
+
+    // ── Dots + pulse ──────────────────────────────────────────────────────────
 
     private void fillDot(int i) {
         if (newsDotBar == null || i < 0 || i >= newsDotBar.getChildren().size()) return;
@@ -627,8 +804,7 @@ public class MainFrameController {
         ScaleTransition pop = new ScaleTransition(Duration.millis(220), dot);
         pop.setFromX(1.0); pop.setFromY(1.0);
         pop.setToX(1.5);   pop.setToY(1.5);
-        pop.setAutoReverse(true);
-        pop.setCycleCount(2);
+        pop.setAutoReverse(true); pop.setCycleCount(2);
         pop.play();
     }
 
@@ -638,10 +814,8 @@ public class MainFrameController {
             if (newsLogBox == null || newsLogBox.getChildren().isEmpty()) return;
             var last = newsLogBox.getChildren().get(newsLogBox.getChildren().size() - 1);
             FadeTransition ft = new FadeTransition(Duration.millis(450), last);
-            ft.setFromValue(1.0);
-            ft.setToValue(0.30);
-            ft.setAutoReverse(true);
-            ft.setCycleCount(2);
+            ft.setFromValue(1.0); ft.setToValue(0.30);
+            ft.setAutoReverse(true); ft.setCycleCount(2);
             ft.play();
         }));
         pulseTimeline.setCycleCount(Timeline.INDEFINITE);
@@ -652,8 +826,9 @@ public class MainFrameController {
         if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; }
     }
 
+    /** Resets all news log state. Called at start of every new generation. */
     private void resetNewsLogState() {
-        confirmedNewsCount = 0;
+        confirmedNewsCount = 0;  // ← critical: ensures dots start from 0 each run
         newsLogBox         = null;
         newsLogScroll      = null;
         newsDotBar         = null;
@@ -661,6 +836,10 @@ public class MainFrameController {
         streamingLabel     = null;
         tickLabel          = null;
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═════════════════════════════════════════════════════════════════════════
 
     private static void setNodeVisible(VBox node, boolean visible) {
         if (node == null) return;
@@ -705,8 +884,7 @@ public class MainFrameController {
 
     private void collapseSection(VBox c, FontAwesomeIconView i) {
         if (c == null || i == null) return;
-        c.setVisible(false);
-        c.setManaged(false);
+        c.setVisible(false); c.setManaged(false);
         i.setRotate(CHEVRON_COLLAPSED);
     }
 
@@ -716,8 +894,7 @@ public class MainFrameController {
             boolean opening = !c.isVisible();
             collapseAllSections();
             if (opening) {
-                c.setVisible(true);
-                c.setManaged(true);
+                c.setVisible(true); c.setManaged(true);
                 animateChevron(i, CHEVRON_EXPANDED);
             }
         });
@@ -726,16 +903,14 @@ public class MainFrameController {
     private void ensureSectionOpen(VBox c, FontAwesomeIconView i) {
         if (c == null || i == null || c.isVisible()) return;
         collapseAllSections();
-        c.setVisible(true);
-        c.setManaged(true);
+        c.setVisible(true); c.setManaged(true);
         animateChevron(i, CHEVRON_EXPANDED);
     }
 
     private void animateChevron(FontAwesomeIconView i, double angle) {
         if (i == null) return;
         RotateTransition rt = new RotateTransition(CHEVRON_DURATION, i);
-        rt.setToAngle(angle);
-        rt.play();
+        rt.setToAngle(angle); rt.play();
     }
 
     private void handleActions(ActionEvent ev) {
@@ -779,6 +954,7 @@ public class MainFrameController {
         new AppPreferences().clearRememberMe();
         SessionManager.getInstance().clearSession();
         Stage stage = (Stage) logoutBtn.getScene().getWindow();
+        SceneManager.clearCache("/view/main/MainScreen.fxml");
         stage.close();
         SceneManager.showStage("/view/auth/Login.fxml", "RESPONDPH - Login");
     }
@@ -791,6 +967,59 @@ public class MainFrameController {
             VBox.setVgrow(r, Priority.ALWAYS);
         }
         contentArea.getChildren().setAll(root);
+    }
+
+    public void applyRoleVisibility(String role) {
+        if (role == null || role.isBlank()) {
+            setVisible(managementSectionBtn, managementSectionContent, false);
+            setVisible(disasterSectionBtn,   disasterSectionContent,   false);
+            setVisible(aidsSectionBtn,       aidsSectionContent,       false);
+            setVisible(evacSectionBtn,       evacSectionContent,       false);
+            if (vulnerabilityBtn != null) { vulnerabilityBtn.setVisible(false); vulnerabilityBtn.setManaged(false); }
+            if (sendSmsBtn != null)       { sendSmsBtn.setVisible(false);       sendSmsBtn.setManaged(false); }
+            return;
+        }
+
+        switch (role) {
+            case "Admin" -> {
+                // All visible — do nothing
+            }
+            case "Brgy_Sec" -> {
+                setVisible(disasterSectionBtn, disasterSectionContent, false);
+                setVisible(aidsSectionBtn,     aidsSectionContent,     false);
+                setVisible(evacSectionBtn,     evacSectionContent,     false);
+                setButtonVisible(vulnerabilityBtn, false);
+                setButtonVisible(sendSmsBtn, false);
+                setButtonVisible(manageAdminBtn, false);
+                setButtonVisible(dashboardBtn, false);
+            }
+            case "MSWDO" -> {
+                setVisible(disasterSectionBtn, disasterSectionContent, false);
+                setButtonVisible(sendSmsBtn, false);
+                setButtonVisible(manageAdminBtn, false);
+                setButtonVisible(dashboardBtn, false);
+            }
+            case "LDRRMO" -> {
+                setButtonVisible(manageAdminBtn, false);
+            }
+        }
+    }
+
+    private void setVisible(Button sectionBtn, VBox sectionContent, boolean visible) {
+        if (sectionBtn != null) {          // ← add null check
+            sectionBtn.setVisible(visible);
+            sectionBtn.setManaged(visible);
+        }
+        if (sectionContent != null) {
+            sectionContent.setVisible(visible);
+            sectionContent.setManaged(visible);
+        }
+    }
+
+    private void setButtonVisible(Button btn, boolean visible) {
+        if (btn == null) return;
+        btn.setVisible(visible);
+        btn.setManaged(visible);
     }
 
     private void activeButton(Button btn) {

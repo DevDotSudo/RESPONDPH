@@ -238,7 +238,7 @@ public class KMeansAidDistribution {
 
     private double[] initializeCentroidsKMeansPlusPlus(List<BeneficiaryCluster> beneficiaries, int k) {
         double[] centroids = new double[k];
-        Random random = new Random();
+        Random random = new Random(67);
 
         centroids[0] = beneficiaries.get(random.nextInt(beneficiaries.size())).getFinalScore();
 

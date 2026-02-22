@@ -3,9 +3,14 @@ package com.ionres.respondph.admin;
 import java.util.List;
 
 public interface AdminDAO {
-    public boolean saving(AdminModel am);
-    boolean existsByUsername(String username);
+
+    boolean saving(AdminModel am);
+
+    boolean existsByUsername(String encryptedUsername);
+
     List<AdminModel> getAll();
-    public boolean delete(AdminModel am);
-    public boolean update(AdminModel am);
+
+    boolean delete(AdminModel am);
+
+    boolean update(AdminModel am);
 }

@@ -18,8 +18,8 @@ public class LoginDAOImpl implements LoginDAO {
     }
 
     @Override
-    public AdminModel findByUsernameToLogin(String usernameInput, Cryptography cs) {
-        String sql = "SELECT admin_id, username, first_name, middle_name, last_name, hash FROM admin";
+    public AdminModel findByUsernameToLogin(String usernameInput, String role, Cryptography cs) {
+        String sql = "SELECT admin_id, username, first_name, middle_name, last_name, hash, role FROM admin";
 
         try {
             Connection conn = dbConnection.getConnection();
@@ -27,17 +27,19 @@ public class LoginDAOImpl implements LoginDAO {
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                String encryptedUsername = rs.getString("username");
-                String hashedPassword = rs.getString("hash");
-
-                String decryptedUsername = cs.decryptWithOneParameter(encryptedUsername);
-
+                String decryptedUsername = cs.decryptWithOneParameter(rs.getString("username"));
                 if (usernameInput.equals(decryptedUsername)) {
+                    String dbRole = cs.decryptWithOneParameter(rs.getString("role"));
+                    if (!role.equalsIgnoreCase(dbRole)) {
+                        return null; // Role mismatch — deny login
+                    }
+
                     List<String> encrypted = new ArrayList<>();
                     encrypted.add(rs.getString("username"));
                     encrypted.add(rs.getString("first_name"));
                     encrypted.add(rs.getString("middle_name"));
                     encrypted.add(rs.getString("last_name"));
+                    encrypted.add(rs.getString("role"));
 
                     List<String> decrypted = cs.decrypt(encrypted);
 
@@ -47,7 +49,9 @@ public class LoginDAOImpl implements LoginDAO {
                     admin.setFirstname(decrypted.get(1));
                     admin.setMiddlename(decrypted.get(2));
                     admin.setLastname(decrypted.get(3));
-                    admin.setPassword(hashedPassword);
+                    admin.setRole(decrypted.get(4));
+                    admin.setPassword(rs.getString("hash"));
+
                     return admin;
                 }
             }
@@ -82,7 +86,8 @@ public class LoginDAOImpl implements LoginDAO {
     public AdminModel findByRememberMeToken(String token, Cryptography cs) {
         System.out.println("DAO: findByRememberMeToken called with token: " + token);
 
-        String sql = "SELECT admin_id, username, first_name, middle_name, last_name, hash " +
+        // FIXED — role included
+        String sql = "SELECT admin_id, username, first_name, middle_name, last_name, hash, role " +
                 "FROM admin WHERE remember_token = ? AND token_expiry > ?";
 
         try {
@@ -108,6 +113,7 @@ public class LoginDAOImpl implements LoginDAO {
                 encrypted.add(rs.getString("first_name"));
                 encrypted.add(rs.getString("middle_name"));
                 encrypted.add(rs.getString("last_name"));
+                encrypted.add(rs.getString("role"));
 
                 List<String> decrypted = cs.decrypt(encrypted);
 
@@ -120,6 +126,7 @@ public class LoginDAOImpl implements LoginDAO {
                 admin.setMiddlename(decrypted.get(2));
                 admin.setLastname(decrypted.get(3));
                 admin.setPassword(rs.getString("hash"));
+                admin.setRole(decrypted.get(4));
 
                 System.out.println("DAO: Admin model created - ID: " + admin.getId() + ", Username: " + admin.getUsername());
                 return admin;

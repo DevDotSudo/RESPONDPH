@@ -1,17 +1,15 @@
 package com.ionres.respondph.admin;
 
 import com.ionres.respondph.database.DBConnection;
-import com.ionres.respondph.util.ResourceUtils;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdminDAOImpl implements AdminDAO {
+
     private static final Logger LOGGER = Logger.getLogger(AdminDAOImpl.class.getName());
     private final DBConnection dbConnection;
 
@@ -19,9 +17,13 @@ public class AdminDAOImpl implements AdminDAO {
         this.dbConnection = dbConnection;
     }
 
+    // ─── INSERT ───────────────────────────────────────────────────────────────
+
     @Override
     public boolean saving(AdminModel am) {
-        String sql = "INSERT INTO admin (username, first_name, middle_name, last_name, reg_date, hash) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO admin " +
+                "(username, first_name, middle_name, last_name, reg_date, hash, role) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -32,9 +34,9 @@ public class AdminDAOImpl implements AdminDAO {
             ps.setString(4, am.getLastname());
             ps.setString(5, am.getRegDate());
             ps.setString(6, am.getPassword());
+            ps.setString(7, am.getRole());
 
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+            return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error occurred while saving admin", e);
@@ -42,17 +44,19 @@ public class AdminDAOImpl implements AdminDAO {
         }
     }
 
+    // ─── EXISTS CHECK ─────────────────────────────────────────────────────────
+
     @Override
     public boolean existsByUsername(String encryptedUsername) {
         String sql = "SELECT COUNT(*) FROM admin WHERE username = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, encryptedUsername);
+
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
+                if (rs.next()) return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error checking if admin exists", e);
@@ -60,14 +64,16 @@ public class AdminDAOImpl implements AdminDAO {
         return false;
     }
 
+    // ─── GET ALL ──────────────────────────────────────────────────────────────
+
     @Override
     public List<AdminModel> getAll() {
-
         List<AdminModel> admins = new ArrayList<>();
-        String query = "SELECT * FROM admin";
+        String sql = "SELECT admin_id, username, first_name, middle_name, last_name, reg_date, role " +
+                "FROM admin";
 
         try (Connection conn = dbConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
+             PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
@@ -78,6 +84,7 @@ public class AdminDAOImpl implements AdminDAO {
                 admin.setMiddlename(rs.getString("middle_name"));
                 admin.setLastname(rs.getString("last_name"));
                 admin.setRegDate(rs.getString("reg_date"));
+                admin.setRole(rs.getString("role"));
                 admins.add(admin);
             }
 
@@ -88,16 +95,17 @@ public class AdminDAOImpl implements AdminDAO {
         return admins;
     }
 
+    // ─── DELETE ───────────────────────────────────────────────────────────────
+
     @Override
     public boolean delete(AdminModel am) {
         String sql = "DELETE FROM admin WHERE admin_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, am.getId());
 
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+            ps.setInt(1, am.getId());
+            return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error occurred while deleting admin", e);
@@ -105,9 +113,13 @@ public class AdminDAOImpl implements AdminDAO {
         }
     }
 
+    // ─── UPDATE ───────────────────────────────────────────────────────────────
+
     @Override
     public boolean update(AdminModel am) {
-        String sql = "UPDATE admin set username = ?, first_name = ?, middle_name = ?, last_name = ? WHERE admin_id = ?";
+        String sql = "UPDATE admin " +
+                "SET username = ?, first_name = ?, middle_name = ?, last_name = ?, role = ? " +
+                "WHERE admin_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -116,10 +128,10 @@ public class AdminDAOImpl implements AdminDAO {
             ps.setString(2, am.getFirstname());
             ps.setString(3, am.getMiddlename());
             ps.setString(4, am.getLastname());
-            ps.setInt(5, am.getId());
+            ps.setString(5, am.getRole());
+            ps.setInt(6, am.getId());
 
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+            return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error occurred while updating admin", e);

@@ -51,9 +51,9 @@
                     </graphic>
                 </Button>
             </HBox>
-         <VBox.margin>
-            <Insets />
-         </VBox.margin>
+            <VBox.margin>
+                <Insets />
+            </VBox.margin>
         </VBox>
 
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
@@ -66,6 +66,7 @@
                     <TableColumn fx:id="mNameColumn" prefWidth="150" text="Middle Name" />
                     <TableColumn fx:id="lNameColumn" prefWidth="150" text="Last Name" />
                     <TableColumn fx:id="regDateColumn" prefWidth="180" text="Registered Date" />
+                    <TableColumn fx:id="roleColumn"     text="Role"         prefWidth="100" />
                     <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
                 </columns>
                 <columnResizePolicy>

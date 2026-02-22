@@ -246,7 +246,7 @@ public class AddBeneficiariesDialogController {
             String regDate = java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
-            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFirstName();
+            String addedBy = com.ionres.respondph.util.SessionManager.getInstance().getCurrentAdminFullName();
 
 
             BeneficiaryModel bm = new BeneficiaryModel(

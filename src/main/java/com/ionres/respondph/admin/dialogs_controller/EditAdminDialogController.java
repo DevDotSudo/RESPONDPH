@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -27,6 +28,7 @@ public class EditAdminDialogController {
     @FXML private Label errorLabel;
 
     @FXML private Button updateBtn, closeButton;
+    @FXML private ComboBox<String> roleComboBox;
 
     private AdminService adminService;
     private AdminController adminController;
@@ -50,6 +52,7 @@ public class EditAdminDialogController {
         firstNameField.setText(admin.getFirstname());
         middleNameField.setText(admin.getMiddlename());
         lastNameField.setText(admin.getLastname());
+        roleComboBox.setValue(admin.getRole());
     }
 
     public void setAdminService(AdminService adminService) {
@@ -67,6 +70,8 @@ public class EditAdminDialogController {
                 handleEdit();
             }
         });
+        roleComboBox.getItems().addAll("Admin", "Brgy_Sec", "MSWDO", "LDRRMO");
+
 
         closeButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -143,6 +148,8 @@ public class EditAdminDialogController {
             admin.setFirstname(fname);
             admin.setMiddlename(mname);
             admin.setLastname(lname);
+            admin.setRole(roleComboBox.getValue());
+
 
             boolean updated = adminService.updateAdmin(admin);
 

@@ -573,7 +573,7 @@ public class SendSMSController implements Initializable {
     private void updateEvacMessageStatus(boolean saved, int length) {
         if (lblMessageStatus == null) return;
         if (saved) {
-            lblMessageStatus.setText("✓ Custom evacuation message saved (" + length + " chars).");
+            lblMessageStatus.setText("✓ Custom evacuation message saved.");
             lblMessageStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
         } else {
             lblMessageStatus.setText("No custom evacuation message set (using default format)");

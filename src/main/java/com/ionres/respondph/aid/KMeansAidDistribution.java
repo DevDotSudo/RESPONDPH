@@ -270,7 +270,6 @@ public class KMeansAidDistribution {
                 centroids[i] = beneficiaries.get(random.nextInt(beneficiaries.size())).getFinalScore();
             }
         }
-
         return centroids;
     }
 

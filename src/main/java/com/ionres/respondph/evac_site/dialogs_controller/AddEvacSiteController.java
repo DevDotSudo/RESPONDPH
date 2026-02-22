@@ -64,6 +64,9 @@ public class AddEvacSiteController {
 
     private void handleGetLocationBtn() {
         MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+
+        controller.setMarkerType(MappingDialogController.MarkerType.EVAC_SITE); // 👈 add this
+
         controller.setListener(latLng -> {
             latitudeFld.setText(String.valueOf(latLng.lat));
             longitudeFld.setText(String.valueOf(latLng.lon));

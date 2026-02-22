@@ -64,19 +64,19 @@ public class Mapping {
     public Mapping() {
         this.initialized = false;
         this.zoom = MIN_ZOOM;
-        loadMarkerImage();
+        setMarkerImage("/images/placeholder.png");
     }
 
-    private void loadMarkerImage() {
+    public void setMarkerImage(String resourcePath) {
         try {
-            markerImage = new Image(getClass().getResourceAsStream("/images/placeholder.png"));
-            if (markerImage.isError()) {
-                LOGGER.warning("Failed to load marker image from resources, using null");
-                markerImage = null;
+            Image img = new Image(getClass().getResourceAsStream(resourcePath));
+            if (!img.isError()) {
+                markerImage = img;
+            } else {
+                LOGGER.warning("Failed to load marker image: " + resourcePath);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error loading marker image from resources", e);
-            markerImage = null;
+            LOGGER.log(Level.WARNING, "Error loading marker image: " + resourcePath, e);
         }
     }
 

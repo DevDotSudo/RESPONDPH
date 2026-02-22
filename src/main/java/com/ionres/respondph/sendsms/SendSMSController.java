@@ -36,23 +36,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * SendSMSController
- *
- * News pipeline (triggered by onGenerateNews):
- *   Step 1 → NewsGeneratorService fetches RSS articles
- *   Step 2 → Claude summarises articles into English SMS bodies
- *   Step 3 → Google Translate converts English → Hiligaynon (hil)
- *
- * Required env vars (checked at startup by NewsGeneratorService):
- *   ANTHROPIC_API_KEY        — Claude API
- *   GOOGLE_TRANSLATE_API_KEY — Google Translate (optional; English used as fallback)
- */
 public class SendSMSController implements Initializable {
 
     private static final Logger LOG = Logger.getLogger(SendSMSController.class.getName());
 
-    // ── Must match category strings in cbNewsTopic and NewsGeneratorService ──
     private static final Set<String> NATIONAL_CATEGORIES = Set.of(
             "national news", "politics news", "health news", "crime / law / public safety news"
     );

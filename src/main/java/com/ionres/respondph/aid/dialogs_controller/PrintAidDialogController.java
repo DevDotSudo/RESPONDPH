@@ -10,6 +10,7 @@ import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.PdfProgressRunner;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
@@ -56,6 +57,9 @@ import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -256,8 +260,8 @@ public class PrintAidDialogController {
     private void showProgressAndOpenDialog() {
         if (!validate()) return;
 
-        String selectedAid = aidNameComboBox.getValue();
-        int    disasterId  = getSelectedDisasterId();
+        String selectedAid  = aidNameComboBox.getValue();
+        int    disasterId   = getSelectedDisasterId();
         String disasterName = resolveDisasterName();
 
         if (selectedAid == null || selectedAid.isBlank()) {
@@ -282,8 +286,8 @@ public class PrintAidDialogController {
                 }
 
                 dialogData.filteredRecords = records;
-                dialogData.disasterName = disasterName;
-                dialogData.aidName = selectedAid;
+                dialogData.disasterName    = disasterName;
+                dialogData.aidName         = selectedAid;
 
                 updateProgress(30, 100);
 
@@ -302,13 +306,9 @@ public class PrintAidDialogController {
                         .filtered(PrinterEntry::isActive);
 
                 updateProgress(80, 100);
-
-                // Step 4: Prepare dialog data (80-95%)
                 updateMessage("Preparing dialog components...");
                 Thread.sleep(300);
                 updateProgress(95, 100);
-
-                // Step 5: Finalize (95-100%)
                 updateMessage("Ready to open dialog...");
                 Thread.sleep(200);
                 updateProgress(100, 100);
@@ -317,7 +317,11 @@ public class PrintAidDialogController {
             }
         };
 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+
         task.setOnSucceeded(e -> {
+
             closeProgressDialog();
             PrintDialogData dialogData = task.getValue();
             showOutputFormatDialog(
@@ -325,9 +329,12 @@ public class PrintAidDialogController {
                     dialogData.disasterName,
                     dialogData.aidName
             );
+
+            shutDownExecutor(executor);
         });
 
         task.setOnFailed(e -> {
+
             closeProgressDialog();
             Throwable exception = task.getException();
             if (exception != null && exception.getMessage() != null) {
@@ -340,15 +347,32 @@ public class PrintAidDialogController {
             } else {
                 AlertDialogManager.showError("Error", "An unknown error occurred.");
             }
-            exception.printStackTrace();
+
+            shutDownExecutor(executor);
+            if (exception != null) exception.printStackTrace();
         });
 
         progressBar.progressProperty().bind(task.progressProperty());
         progressLabel.textProperty().bind(task.messageProperty());
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        executor.submit(task);
+
+    }
+
+    private void shutDownExecutor(ExecutorService executor){
+        try {
+            System.out.println("attempt to shutdown executor");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
+            System.err.println("tasks interrupted");
+        }finally {
+            if (!executor.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.println("shutdown finished");
+        }
     }
 
 
@@ -1123,55 +1147,63 @@ public class PrintAidDialogController {
         File file = chooser.showSaveDialog(owner);
         if (file == null) return;
 
-        try {
-            buildPDF(file, records, disasterName, aidName);
-            AlertDialogManager.showInfo("PDF Saved",
-                    "PDF successfully saved to:\n" + file.getAbsolutePath());
+        PdfProgressRunner.run(
+                dialogStage,
 
-            if (java.awt.Desktop.isDesktopSupported()) {
-                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
-                if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
-                    desktop.open(file);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("PDF Error", "Failed to generate PDF:\n" + e.getMessage());
-        }
+                progress -> buildPDF(file, records, disasterName, aidName, progress),
+
+                // ← on success
+                () -> {
+                    AlertDialogManager.showInfo("PDF Saved",
+                            "PDF successfully saved to:\n" + file.getAbsolutePath());
+                    try {
+                        if (java.awt.Desktop.isDesktopSupported()) {
+                            java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                            if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
+                                desktop.open(file);
+                        }
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                },
+
+                // ← on fail
+                errorMsg -> AlertDialogManager.showError("PDF Error",
+                        "Failed to generate PDF:\n" + errorMsg)
+        );
     }
 
-    /**
-     * iText 7 PDF builder.
-     *
-     * Layout:
-     *   • Dark-navy header bar  (Aid Report | RespondPH + timestamp)
-     *   • Metadata table        (Aid Name, Disaster, Barangay, Total, Generated On)
-     *   • Beneficiary table     (alternating rows, priority-colour accent)
-     *   • Distribution summary  (score statistics)
-     *   • Page-number footer
-     */
+
     private void buildPDF(File file,
                           List<AidModel> records,
                           String disasterName,
-                          String aidName) throws IOException {
+                          String aidName,
+                          PdfProgressRunner.PdfProgressCallback progress) throws Exception {
 
+        // A4 fixed — no paper size selection
+        PageSize pageSize = PageSize.A4;
+        float pageWidth   = pageSize.getWidth();
+
+        progress.update(8.0, "Creating fonts...");
         PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
         PdfFont fontMono   = PdfFontFactory.createFont(StandardFonts.COURIER);
 
-        // Resolve paper size from the ComboBox selection
-        PageSize pageSize = resolvePageSize();
-
-        PdfDocument pdfDoc = new PdfDocument(new PdfWriter(file));
-        Document    doc    = new Document(pdfDoc, pageSize);
-        doc.setMargins(36, 36, 54, 36);
-
-        String timestamp = LocalDateTime.now()
+        String timestamp  = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
         String reportType = getSelectedReportType();
 
-        // ═════════════════════════════════════════════════════════════════════
-        //  HEADER BAR
-        // ═════════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════════
+        // FIRST PASS — write to in-memory ByteArrayOutputStream
+        // ═══════════════════════════════════════════════════════════════════════
+        progress.update(15.0, "Building document (Pass 1 of 2)...");
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+        PdfWriter   writer1 = new PdfWriter(baos);
+        PdfDocument pdfDoc1 = new PdfDocument(writer1);
+        Document    doc1    = new Document(pdfDoc1, pageSize);
+        doc1.setMargins(36, 36, 54, 36);
+
+        // ── HEADER BAR ──────────────────────────────────────────────────────────
+        progress.update(20.0, "Writing report header...");
         Table headerTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
                 .useAllAvailableWidth()
                 .setMarginBottom(4);
@@ -1200,63 +1232,66 @@ public class PrintAidDialogController {
                 .setVerticalAlignment(VerticalAlignment.MIDDLE);
 
         headerTable.addCell(titleCell).addCell(metaCell);
-        doc.add(headerTable);
+        doc1.add(headerTable);
 
-        // ═════════════════════════════════════════════════════════════════════
-        //  METADATA BOX
-        // ═════════════════════════════════════════════════════════════════════
+        // ── METADATA BOX ────────────────────────────────────────────────────────
+        progress.update(25.0, "Writing metadata...");
         Table metaTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                 .useAllAvailableWidth()
                 .setBackgroundColor(new DeviceRgb(240, 244, 248))
                 .setBorder(new SolidBorder(new DeviceRgb(190, 210, 230), 1))
                 .setMarginTop(10).setMarginBottom(14);
 
-        addMetaRow(metaTable, "Aid Name",     aidName,                           fontBold, fontNormal);
-        addMetaRow(metaTable, "Disaster",     disasterName,                      fontBold, fontNormal);
-        addMetaRow(metaTable, "Barangay",     resolveBarangayLabel(),            fontBold, fontNormal);
-        addMetaRow(metaTable, "Total Records",records.size() + " beneficiaries", fontBold, fontNormal);
-        addMetaRow(metaTable, "Generated On", timestamp,                         fontBold, fontNormal);
-        doc.add(metaTable);
+        addMetaRow(metaTable, "Aid Name",      aidName,                            fontBold, fontNormal);
+        addMetaRow(metaTable, "Disaster",      disasterName,                       fontBold, fontNormal);
+        addMetaRow(metaTable, "Barangay",      resolveBarangayLabel(),             fontBold, fontNormal);
+        addMetaRow(metaTable, "Total Records", records.size() + " beneficiaries",  fontBold, fontNormal);
+        addMetaRow(metaTable, "Generated On",  timestamp,                          fontBold, fontNormal);
+        doc1.add(metaTable);
 
-        // ═════════════════════════════════════════════════════════════════════
-        //  BENEFICIARY TABLE
-        // ═════════════════════════════════════════════════════════════════════
-        Paragraph tableTitle = new Paragraph("Beneficiary List")
+        // ── BENEFICIARY TABLE ────────────────────────────────────────────────────
+        progress.update(32.0, "Writing beneficiary table...");
+        doc1.add(new Paragraph("Beneficiary List")
                 .setFont(fontBold).setFontSize(13)
                 .setFontColor(PDF_HEADER_BG)
-                .setMarginBottom(4);
-        doc.add(tableTitle);
+                .setMarginBottom(4));
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{5, 28, 18, 17, 16, 16}))
                 .useAllAvailableWidth()
                 .setMarginBottom(12);
 
-        // Column headers
-        for (String col : new String[]{ "#", "Beneficiary Name", "Aid Distributed", "Quantity", "Cost (₱)", "Score / Priority" }) {
+        for (String col : new String[]{ "#", "Beneficiary Name", "Aid Distributed",
+                "Quantity", "Cost (₱)", "Score / Priority" }) {
             table.addHeaderCell(new Cell()
-                    .add(new Paragraph(col).setFont(fontBold).setFontSize(9).setFontColor(PDF_WHITE))
+                    .add(new Paragraph(col).setFont(fontBold).setFontSize(9)
+                            .setFontColor(PDF_WHITE))
                     .setBackgroundColor(PDF_HEADER_BG)
                     .setPadding(5)
                     .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         }
 
-        // Data rows
-        boolean alt = false;
-        int rank = 1;
+        boolean alt  = false;
+        int     rank = 1;
+        int     total = records.size();
+
         for (AidModel aid : records) {
+            // Update progress as rows are written (32% → 65%)
+            double rowPct = 32.0 + ((rank / (double) total) * 33.0);
+            if (rank % 10 == 0) progress.update(rowPct, "Writing row " + rank + " of " + total + "...");
+
             DeviceRgb rowBg = alt
                     ? new DeviceRgb(245, 248, 252)
                     : new DeviceRgb(255, 255, 255);
             alt = !alt;
 
-            String scoreInfo = extractScoreInfo(aid.getNotes());
+            String    scoreInfo  = extractScoreInfo(aid.getNotes());
             DeviceRgb scoreColor = resolveScoreColor(aid.getNotes());
 
-            table.addCell(pdfCell(String.valueOf(rank++), fontMono,   8, rowBg, TextAlignment.CENTER));
-            table.addCell(pdfCell(safeStr(aid.getBeneficiaryName()), fontNormal, 9, rowBg, TextAlignment.LEFT));
-            table.addCell(pdfCell(safeStr(aid.getName()),            fontNormal, 9, rowBg, TextAlignment.LEFT));
-            table.addCell(pdfCell(String.valueOf(aid.getQuantity()), fontMono,   9, rowBg, TextAlignment.CENTER));
-            table.addCell(pdfCell(String.format("%.2f", aid.getCost()), fontMono, 9, rowBg, TextAlignment.RIGHT));
+            table.addCell(pdfCell(String.valueOf(rank++),                fontMono,   8, rowBg, TextAlignment.CENTER));
+            table.addCell(pdfCell(safeStr(aid.getBeneficiaryName()),     fontNormal, 9, rowBg, TextAlignment.LEFT));
+            table.addCell(pdfCell(safeStr(aid.getName()),                fontNormal, 9, rowBg, TextAlignment.LEFT));
+            table.addCell(pdfCell(String.valueOf(aid.getQuantity()),     fontMono,   9, rowBg, TextAlignment.CENTER));
+            table.addCell(pdfCell(String.format("%.2f", aid.getCost()), fontMono,   9, rowBg, TextAlignment.RIGHT));
 
             // Score cell with priority-colour accent
             table.addCell(new Cell()
@@ -1267,24 +1302,22 @@ public class PrintAidDialogController {
                     .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
                     .setBorderBottom(new SolidBorder(new DeviceRgb(220, 225, 230), 0.5f)));
         }
-        doc.add(table);
+        doc1.add(table);
 
-        // ═════════════════════════════════════════════════════════════════════
-        //  DISTRIBUTION SUMMARY FOOTER
-        // ═════════════════════════════════════════════════════════════════════
-        doc.add(new Paragraph(" ").setMarginTop(6).setMarginBottom(0));
+        // ── DISTRIBUTION SUMMARY ─────────────────────────────────────────────────
+        progress.update(68.0, "Writing distribution summary...");
+        doc1.add(new Paragraph(" ").setMarginTop(6).setMarginBottom(0));
         LineSeparator sep = new LineSeparator(
                 new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f));
         sep.setStrokeColor(new DeviceRgb(190, 200, 210));
         sep.setMarginBottom(8);
-        doc.add(sep);
+        doc1.add(sep);
 
-        doc.add(new Paragraph("Distribution Summary")
+        doc1.add(new Paragraph("Distribution Summary")
                 .setFont(fontBold).setFontSize(13).setFontColor(PDF_HEADER_BG)
                 .setMarginBottom(6));
 
-        // Totals
-        double   totalQty  = records.stream().mapToDouble(AidModel::getQuantity).sum();
+        double totalQty  = records.stream().mapToDouble(AidModel::getQuantity).sum();
         double totalCost = records.stream().mapToDouble(AidModel::getCost).sum();
         double avgScore  = records.stream()
                 .mapToDouble(a -> extractScore(a.getNotes())).average().orElse(0.0);
@@ -1295,21 +1328,22 @@ public class PrintAidDialogController {
 
         for (String col : new String[]{ "Metric", "Value", "" }) {
             summaryTable.addHeaderCell(new Cell()
-                    .add(new Paragraph(col).setFont(fontBold).setFontSize(10).setFontColor(PDF_WHITE))
+                    .add(new Paragraph(col).setFont(fontBold).setFontSize(10)
+                            .setFontColor(PDF_WHITE))
                     .setBackgroundColor(PDF_HEADER_BG).setPadding(6)
                     .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         }
 
         DeviceRgb sumBg1 = new DeviceRgb(235, 242, 250);
         DeviceRgb sumBg2 = new DeviceRgb(245, 248, 252);
-        addSummaryRow(summaryTable, "Total Beneficiaries",  String.valueOf(records.size()), "",  fontBold, fontNormal, sumBg1);
-        addSummaryRow(summaryTable, "Total Quantity",        String.format("%.0f", totalQty)  ,       "",  fontNormal, fontNormal, sumBg2);
-        addSummaryRow(summaryTable, "Total Cost",            String.format("₱%.2f", totalCost), "", fontNormal, fontNormal, sumBg1);
-        addSummaryRow(summaryTable, "Average Priority Score",String.format("%.3f", avgScore),  "",  fontNormal, fontNormal, sumBg2);
-        doc.add(summaryTable);
+        addSummaryRow(summaryTable, "Total Beneficiaries",   String.valueOf(records.size()),      "", fontBold,   fontNormal, sumBg1);
+        addSummaryRow(summaryTable, "Total Quantity",         String.format("%.0f", totalQty),    "", fontNormal, fontNormal, sumBg2);
+        addSummaryRow(summaryTable, "Total Cost",             String.format("₱%.2f", totalCost),  "", fontNormal, fontNormal, sumBg1);
+        addSummaryRow(summaryTable, "Average Priority Score", String.format("%.3f", avgScore),    "", fontNormal, fontNormal, sumBg2);
+        doc1.add(summaryTable);
 
-        // Closing note
-        doc.add(new Paragraph(
+        // ── CLOSING NOTE ─────────────────────────────────────────────────────────
+        doc1.add(new Paragraph(
                 "This report was generated automatically by RespondPH. "
                         + "Beneficiary data reflects the latest aid distribution records.")
                 .setFont(fontNormal).setFontSize(8)
@@ -1317,23 +1351,47 @@ public class PrintAidDialogController {
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginTop(8));
 
-        // Page numbers
-        int totalPages = pdfDoc.getNumberOfPages();
-        for (int i = 1; i <= totalPages; i++) {
-            doc.showTextAligned(
-                    new Paragraph("Page " + i + " of " + totalPages)
-                            .setFont(fontNormal).setFontSize(8)
-                            .setFontColor(new DeviceRgb(150, 160, 170)),
-                    pdfDoc.getPage(i).getPageSize().getWidth() / 2,
-                    22, i, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+        progress.update(72.0, "Finalizing first pass...");
+        doc1.close();
+
+
+        progress.update(75.0, "Counting pages...");
+        int totalPages;
+        try (PdfDocument counter = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(baos.toByteArray())))) {
+            totalPages = counter.getNumberOfPages();
         }
 
-        doc.close();
-    }
 
-    // =========================================================================
-    //  PDF HELPER METHODS
-    // =========================================================================
+        progress.update(78.0, "Stamping page numbers (Pass 2 of 2)...");
+        PdfDocument pdfDoc2 = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(baos.toByteArray())),
+                new PdfWriter(file));
+
+        // Fresh font — NOT reusing fontNormal from pdfDoc1
+        PdfFont stampFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        for (int i = 1; i <= totalPages; i++) {
+            double stampPct = 78.0 + (i / (double) totalPages) * 18.0;
+            progress.update(stampPct, "Stamping page " + i + " of " + totalPages + "...");
+
+            com.itextpdf.kernel.pdf.PdfPage page = pdfDoc2.getPage(i);
+            com.itextpdf.kernel.pdf.canvas.PdfCanvas canvas =
+                    new com.itextpdf.kernel.pdf.canvas.PdfCanvas(page);
+            canvas.beginText()
+                    .setFontAndSize(stampFont, 8)
+                    .setColor(new DeviceRgb(150, 160, 170), true)
+                    .moveText(pageWidth / 2 - 20, 22)
+                    .showText("Page " + i + " of " + totalPages)
+                    .endText()
+                    .release();
+        }
+
+        progress.update(97.0, "Saving file to disk...");
+        pdfDoc2.close();
+    }
 
     private void addMetaRow(Table table, String label, String value,
                             PdfFont fontBold, PdfFont fontNormal) {

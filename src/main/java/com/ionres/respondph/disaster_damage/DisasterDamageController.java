@@ -51,6 +51,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class DisasterDamageController {
@@ -217,10 +220,13 @@ public class DisasterDamageController {
             }
         };
 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
         task.setOnSucceeded(e -> {
             closeProgressDialog();
             PrintDialogData data = task.getValue();
             showPrintDialog(outputType, data.disasters, data.printers);
+            shutDownExecutor(executor);
         });
 
         task.setOnFailed(e -> {
@@ -228,14 +234,31 @@ public class DisasterDamageController {
             AlertDialogManager.showError("Error",
                     "Failed to load data: " + task.getException().getMessage());
             task.getException().printStackTrace();
+            shutDownExecutor(executor);
         });
 
         progressBar.progressProperty().bind(task.progressProperty());
         progressLabel.textProperty().bind(task.messageProperty());
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+
+        executor.submit(task);
+
+    }
+
+    private void shutDownExecutor(ExecutorService executor){
+        try {
+            System.out.println("attempt to shutdown executor");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
+            System.err.println("tasks interrupted");
+        }finally {
+            if (!executor.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.println("shutdown finished");
+        }
     }
 
     private static class PrintDialogData {
@@ -1108,61 +1131,93 @@ public class DisasterDamageController {
         File file = chooser.showSaveDialog(null);
         if (file == null) return;
 
-        try {
-            buildPDF(file, records, disaster);
-            AlertDialogManager.showInfo("PDF Saved",
-                    "PDF successfully saved to:\n" + file.getAbsolutePath());
-            if (java.awt.Desktop.isDesktopSupported()) {
-                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
-                if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
-                    desktop.open(file);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("PDF Error",
-                    "Failed to generate PDF:\n" + e.getMessage());
-        }
+        PdfProgressRunner.run(
+                dialogStage,
+
+                progress -> buildPDF(file, records, disaster, progress),
+
+                () -> {
+                    AlertDialogManager.showInfo("PDF Saved",
+                            "PDF successfully saved to:\n" + file.getAbsolutePath());
+                    try {
+                        if (java.awt.Desktop.isDesktopSupported()) {
+                            java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                            if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
+                                desktop.open(file);
+                        }
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                },
+
+                errorMsg -> AlertDialogManager.showError("PDF Error",
+                        "Failed to generate PDF:\n" + errorMsg)
+        );
     }
 
+
     private void buildPDF(File file, List<DisasterDamageModel> records,
-                          DisasterItem disaster) throws IOException {
+                          DisasterItem disaster,
+                          PdfProgressRunner.PdfProgressCallback progress) throws Exception {
+
+        // A4 landscape fixed
+        PageSize pageSize = PageSize.A4.rotate();
+        float    pageWidth = pageSize.getWidth();
+
+        progress.update(8.0, "Creating fonts...");
         PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-
-        PdfDocument pdfDoc = new PdfDocument(new PdfWriter(file));
-        Document doc = new Document(pdfDoc, PageSize.A4.rotate());
-        doc.setMargins(36, 36, 36, 36);
 
         String timestamp = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a"));
 
-        doc.add(new Paragraph("DISASTER DAMAGE ASSESSMENT REPORT")
-                .setFont(fontBold).setFontSize(18)
-                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(10));
-
         String disasterInfo = disaster.getDisasterId() == 0
                 ? "All Disasters"
                 : disaster.getDisasterName() + " (" + disaster.getDisasterType() + ")";
-        doc.add(new Paragraph("Disaster: " + disasterInfo + " | Generated: " + timestamp
-                + " | Total Records: " + records.size())
+
+
+        progress.update(15.0, "Building document (Pass 1 of 2)...");
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+        PdfWriter   writer1 = new PdfWriter(baos);
+        PdfDocument pdfDoc1 = new PdfDocument(writer1);
+        Document    doc1    = new Document(pdfDoc1, pageSize);
+        doc1.setMargins(36, 36, 36, 36);
+
+        progress.update(20.0, "Writing report header...");
+        doc1.add(new Paragraph("DISASTER DAMAGE ASSESSMENT REPORT")
+                .setFont(fontBold).setFontSize(18)
+                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(10));
+
+        doc1.add(new Paragraph(
+                "Disaster: " + disasterInfo
+                        + " | Generated: " + timestamp
+                        + " | Total Records: " + records.size())
                 .setFont(fontNormal).setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20));
 
+        progress.update(28.0, "Writing table header...");
         Table table = new Table(UnitValue.createPercentArray(
                 new float[]{5, 20, 15, 12, 12, 12, 12})).useAllAvailableWidth();
 
-        for (String h : new String[]{"ID", "Beneficiary", "Disaster", "Severity",
-                "Assessment Date", "Verified By", "Reg Date"}) {
+        for (String h : new String[]{ "ID", "Beneficiary", "Disaster", "Severity",
+                "Assessment Date", "Verified By", "Reg Date" }) {
             table.addHeaderCell(new Cell()
                     .add(new Paragraph(h).setFont(fontBold).setFontSize(9)
                             .setFontColor(COLOR_WHITE))
                     .setBackgroundColor(COLOR_HEADER_BG).setPadding(5));
         }
 
-        boolean alt = false;
+        boolean alt   = false;
+        int     rank  = 1;
+        int     total = records.size();
+
         for (DisasterDamageModel d : records) {
+            double rowPct = 28.0 + ((rank / (double) total) * 42.0);
+            if (rank % 10 == 0)
+                progress.update(rowPct, "Writing row " + rank + " of " + total + "...");
+
             DeviceRgb rowBg = alt ? COLOR_ALT_ROW : COLOR_WHITE;
             alt = !alt;
+
             table.addCell(cellOf(String.valueOf(d.getBeneficiaryDisasterDamageId()), fontNormal, 8, rowBg));
             table.addCell(cellOf(d.getBeneficiaryFirstname(), fontNormal, 8, rowBg));
             table.addCell(cellOf(d.getDisasterName(),         fontNormal, 8, rowBg));
@@ -1170,13 +1225,55 @@ public class DisasterDamageController {
             table.addCell(cellOf(d.getAssessmentDate(),       fontNormal, 8, rowBg));
             table.addCell(cellOf(d.getVerifiedBy(),           fontNormal, 8, rowBg));
             table.addCell(cellOf(d.getRegDate(),              fontNormal, 8, rowBg));
+            rank++;
         }
-        doc.add(table);
+        doc1.add(table);
 
-        doc.add(new Paragraph("\nSummary:\nTotal Records: " + records.size()
-                + "\nReport generated by RespondPH System")
+        progress.update(72.0, "Writing summary...");
+        doc1.add(new Paragraph(
+                "\nSummary:\nTotal Records: " + records.size()
+                        + "\nReport generated by RespondPH System")
                 .setFont(fontNormal).setFontSize(9).setMarginTop(20));
-        doc.close();
+
+        progress.update(75.0, "Finalizing first pass...");
+        doc1.close();
+
+
+        progress.update(78.0, "Counting pages...");
+        int totalPages;
+        try (PdfDocument counter = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(baos.toByteArray())))) {
+            totalPages = counter.getNumberOfPages();
+        }
+
+
+        progress.update(80.0, "Stamping page numbers (Pass 2 of 2)...");
+        PdfDocument pdfDoc2 = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(baos.toByteArray())),
+                new PdfWriter(file));
+
+        PdfFont stampFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        for (int i = 1; i <= totalPages; i++) {
+            double stampPct = 80.0 + (i / (double) totalPages) * 16.0;
+            progress.update(stampPct, "Stamping page " + i + " of " + totalPages + "...");
+
+            com.itextpdf.kernel.pdf.PdfPage page = pdfDoc2.getPage(i);
+            com.itextpdf.kernel.pdf.canvas.PdfCanvas canvas =
+                    new com.itextpdf.kernel.pdf.canvas.PdfCanvas(page);
+            canvas.beginText()
+                    .setFontAndSize(stampFont, 8)
+                    .setColor(new DeviceRgb(150, 160, 170), true)
+                    .moveText(pageWidth / 2 - 20, 22)
+                    .showText("Page " + i + " of " + totalPages)
+                    .endText()
+                    .release();
+        }
+
+        progress.update(97.0, "Saving file to disk...");
+        pdfDoc2.close();
     }
 
     private Cell cellOf(String text, PdfFont font, float size, DeviceRgb bg) {

@@ -8,6 +8,7 @@ import com.ionres.respondph.evac_site.EvacSiteDAO;
 import com.ionres.respondph.evac_site.EvacSiteDAOServiceImpl;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.PdfProgressRunner;
 import com.ionres.respondph.util.SessionManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -51,6 +52,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class EvacuationPlanPrintingController {
@@ -257,6 +261,8 @@ public class EvacuationPlanPrintingController {
                 return dialogData;
             }
         };
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
         task.setOnSucceeded(e -> {
             closeProgressDialog();
@@ -264,6 +270,8 @@ public class EvacuationPlanPrintingController {
             showOutputFormatDialog(
                     data.filteredPlans, data.disasterName,
                     data.siteName, data.disasterId, data.siteId);
+            shutDownExecutor(executor);
+
         });
 
         task.setOnFailed(e -> {
@@ -279,14 +287,32 @@ public class EvacuationPlanPrintingController {
                 AlertDialogManager.showError("Error", "An unknown error occurred.");
             }
             if (ex != null) ex.printStackTrace();
+            shutDownExecutor(executor);
+
         });
 
         progressBar.progressProperty().bind(task.progressProperty());
         progressLabel.textProperty().bind(task.messageProperty());
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+
+        executor.submit(task);
+
+    }
+
+    private void shutDownExecutor(ExecutorService executor){
+        try {
+            System.out.println("attempt to shutdown executor");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
+            System.err.println("tasks interrupted");
+        }finally {
+            if (!executor.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.println("shutdown finished");
+        }
     }
 
     private void createProgressDialog(String initialMessage) {
@@ -947,39 +973,55 @@ public class EvacuationPlanPrintingController {
         File file = chooser.showSaveDialog(owner);
         if (file == null) return;
 
-        try {
-            buildPDF(file, filtered, disasterName, siteName);
-            AlertDialogManager.showInfo("PDF Saved",
-                    "PDF successfully saved to:\n" + file.getAbsolutePath());
-            if (java.awt.Desktop.isDesktopSupported()) {
-                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
-                if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
-                    desktop.open(file);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("PDF Error",
-                    "Failed to generate PDF:\n" + e.getMessage());
-        }
+        PdfProgressRunner.run(
+                dialogStage,
+
+                progress -> buildPDF(file, filtered, disasterName, siteName, progress),
+
+                () -> {
+                    AlertDialogManager.showInfo("PDF Saved",
+                            "PDF successfully saved to:\n" + file.getAbsolutePath());
+                    try {
+                        if (java.awt.Desktop.isDesktopSupported()) {
+                            java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                            if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
+                                desktop.open(file);
+                        }
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                },
+
+                errorMsg -> AlertDialogManager.showError("PDF Error",
+                        "Failed to generate PDF:\n" + errorMsg)
+        );
     }
 
-    private void buildPDF(File file, List<EvacuationPlanModel> filtered,
-                          String disasterName, String siteName) throws IOException {
 
+    private void buildPDF(File file, List<EvacuationPlanModel> filtered,
+                          String disasterName, String siteName,
+                          PdfProgressRunner.PdfProgressCallback progress) throws Exception {
+
+        PageSize pageSize = PageSize.A4;
+        float    pageWidth = pageSize.getWidth();
+
+        progress.update(8.0, "Creating fonts...");
         PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
         PdfFont fontMono   = PdfFontFactory.createFont(StandardFonts.COURIER);
-
-        PageSize pageSize = resolvePdfPageSize();
-        PdfDocument pdfDoc = new PdfDocument(new PdfWriter(file));
-        Document    doc    = new Document(pdfDoc, pageSize);
-        doc.setMargins(36, 36, 54, 36);
 
         String reportType = getSelectedReportType();
         String timestamp  = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
 
-        // Header bar
+
+        progress.update(15.0, "Building document (Pass 1 of 2)...");
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+        PdfWriter   writer1 = new PdfWriter(baos);
+        PdfDocument pdfDoc1 = new PdfDocument(writer1);
+        Document    doc1    = new Document(pdfDoc1, pageSize);
+        doc1.setMargins(36, 36, 54, 36);
+
+        progress.update(20.0, "Writing report header...");
         Table headerTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
                 .useAllAvailableWidth().setMarginBottom(4);
         headerTable.addCell(new Cell()
@@ -1001,9 +1043,9 @@ public class EvacuationPlanPrintingController {
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
                 .setVerticalAlignment(VerticalAlignment.MIDDLE));
-        doc.add(headerTable);
+        doc1.add(headerTable);
 
-        // Metadata box
+        progress.update(25.0, "Writing metadata...");
         Table metaTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                 .useAllAvailableWidth()
                 .setBackgroundColor(new DeviceRgb(240, 244, 248))
@@ -1014,38 +1056,66 @@ public class EvacuationPlanPrintingController {
         addMetaRow(metaTable, "Report Type",     reportType,                          fontBold, fontNormal);
         addMetaRow(metaTable, "Total Records",   filtered.size() + " beneficiaries",  fontBold, fontNormal);
         addMetaRow(metaTable, "Generated On",    timestamp,                           fontBold, fontNormal);
-        doc.add(metaTable);
+        doc1.add(metaTable);
 
+        progress.update(32.0, "Writing report body...");
         switch (reportType) {
             case "Beneficiary List" ->
-                    buildPdfBeneficiaryList(doc, filtered, disasterName, siteName, fontBold, fontNormal, fontMono);
+                    buildPdfBeneficiaryList(doc1, filtered, disasterName, siteName, fontBold, fontNormal, fontMono);
             case "Evacuation Plan"  ->
-                    buildPdfEvacuationPlan(doc, filtered, siteName, fontBold, fontNormal);
+                    buildPdfEvacuationPlan(doc1, filtered, siteName, fontBold, fontNormal);
             case "Capacity Report"  ->
-                    buildPdfCapacityReport(doc, filtered, siteName, fontBold, fontNormal);
+                    buildPdfCapacityReport(doc1, filtered, siteName, fontBold, fontNormal);
         }
 
-        doc.add(new Paragraph(
+        progress.update(68.0, "Writing footer note...");
+        doc1.add(new Paragraph(
                 "This report was generated automatically by RespondPH. " +
                         "Data reflects the latest evacuation plan records.")
                 .setFont(fontNormal).setFontSize(8)
                 .setFontColor(new DeviceRgb(120, 130, 140))
                 .setTextAlignment(TextAlignment.CENTER).setMarginTop(10));
 
-        int totalPages = pdfDoc.getNumberOfPages();
-        for (int i = 1; i <= totalPages; i++) {
-            doc.showTextAligned(
-                    new Paragraph("Page " + i + " of " + totalPages)
-                            .setFont(fontNormal).setFontSize(8)
-                            .setFontColor(new DeviceRgb(150, 160, 170)),
-                    pdfDoc.getPage(i).getPageSize().getWidth() / 2,
-                    22, i, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+        progress.update(72.0, "Finalizing first pass...");
+        doc1.close();
+
+        progress.update(75.0, "Counting pages...");
+        int totalPages;
+        try (PdfDocument counter = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(baos.toByteArray())))) {
+            totalPages = counter.getNumberOfPages();
         }
 
-        doc.close();
+
+        progress.update(78.0, "Stamping page numbers (Pass 2 of 2)...");
+        PdfDocument pdfDoc2 = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(baos.toByteArray())),
+                new PdfWriter(file));
+
+        PdfFont stampFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        for (int i = 1; i <= totalPages; i++) {
+            double stampPct = 78.0 + (i / (double) totalPages) * 18.0;
+            progress.update(stampPct, "Stamping page " + i + " of " + totalPages + "...");
+
+            com.itextpdf.kernel.pdf.PdfPage page = pdfDoc2.getPage(i);
+            com.itextpdf.kernel.pdf.canvas.PdfCanvas canvas =
+                    new com.itextpdf.kernel.pdf.canvas.PdfCanvas(page);
+            canvas.beginText()
+                    .setFontAndSize(stampFont, 8)
+                    .setColor(new DeviceRgb(150, 160, 170), true)
+                    .moveText(pageWidth / 2 - 20, 22)
+                    .showText("Page " + i + " of " + totalPages)
+                    .endText()
+                    .release();
+        }
+
+        progress.update(97.0, "Saving file to disk...");
+        pdfDoc2.close();
     }
 
-    // ── PDF report-body builders ──────────────────────────────────────────────
 
     private void buildPdfBeneficiaryList(Document doc, List<EvacuationPlanModel> plans,
                                          String disasterName, String siteName,

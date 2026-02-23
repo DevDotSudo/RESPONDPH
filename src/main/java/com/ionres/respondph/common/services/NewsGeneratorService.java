@@ -39,30 +39,22 @@ public class NewsGeneratorService {
     private static final String LANG_TARGET          = "hil"; // Hiligaynon
 
     private static final String GOOGLE_WEATHER_URL          = "https://weather.googleapis.com/v1/currentConditions:lookup";
-    // Forecast endpoint — returns an array of daily forecasts; we take index [1] = tomorrow.
-    // Docs: https://developers.google.com/maps/documentation/weather/forecast
-    // Params: key, location.latitude, location.longitude, unitsSystem=METRIC, days=2
+
     private static final String GOOGLE_WEATHER_FORECAST_URL = "https://weather.googleapis.com/v1/forecast/days:lookup";
 
-    // Banate, Iloilo — the pinned location for weather Slot 1
     private static final double BANATE_LAT           = 11.0069373;
     private static final double BANATE_LNG           = 122.8255065;
     private static final String BANATE_LABEL         = "Banate, Iloilo";
-    // AccuWeather source link shown as the URL for the Banate live-weather slot
     private static final String BANATE_ACCUWEATHER_URL =
             "https://www.accuweather.com/en/ph/banate/263448/weather-forecast/263448?city=banate";
 
-    // National weather RSS (Slots 3-5 when category = weather)
-    private static final int    WEATHER_NATIONAL_TARGET = 3; // 3 national items (slots 3, 4, 5)
+    private static final int    WEATHER_NATIONAL_TARGET = 3;
 
-    // ─── SMS limits ───────────────────────────────────────────────────────────
-    // Hiligaynon is typically 30-40% longer than English.
-    // So target English at ~170-200 chars to land Hiligaynon at 280-320.
     private static final int TARGET      = 5;   // number of SMS items to produce
     private static final int EN_MIN      = 155; // min English chars sent to Claude
     private static final int EN_MAX      = 200; // max English chars sent to Claude
     private static final int HIL_MIN     = 280; // min Hiligaynon chars in final output
-    private static final int HIL_MAX     = 320; // max Hiligaynon chars in final output
+    private static final int HIL_MAX     = 310; // max Hiligaynon chars in final output
     private static final int MAX_RETRIES = 3;   // max shorten/expand retries per item
 
     // ─── HTTP / RSS ───────────────────────────────────────────────────────────
@@ -70,8 +62,6 @@ public class NewsGeneratorService {
     private static final int MAX_ARTICLES_PER_SOURCE = 20;
     private static final int MAX_ARTICLES_IN_PROMPT  = 15;
 
-    // ─── RSS feed lists ───────────────────────────────────────────────────────
-    // LOCAL: Iloilo/Panay local news only
     private static final List<String> RSS_LOCAL = List.of(
             "https://panaynews.net/feed/",
             "https://www.dailyguardian.com.ph/feed/"
@@ -835,7 +825,7 @@ public class NewsGeneratorService {
         // ── Length rule ───────────────────────────────────────────────────────
         p.append("SMS LENGTH RULE — NON-NEGOTIABLE:\n");
         p.append("  Target: ").append(EN_MIN).append("–").append(EN_MAX)
-                .append(" characters per English SMS body (Hiligaynon expands ~35%, landing at 280–320).\n");
+                .append(" characters per English SMS body (Hiligaynon expands ~35%, landing at 280–310).\n");
         p.append("  Too short (< ").append(EN_MIN).append(" chars): add a concrete detail")
                 .append(" — temperature, wind speed, rainfall mm, % rain chance, or a safety action.\n");
         p.append("  Too long  (> ").append(EN_MAX).append(" chars): cut the weakest detail.\n");
@@ -1223,7 +1213,7 @@ public class NewsGeneratorService {
     // =========================================================================
     //  STEP 2 — Claude prompt
     //  Target English length: EN_MIN–EN_MAX (155–200 chars)
-    //  Hiligaynon is ~30-40% longer, so this maps to HIL_MIN–HIL_MAX (280–320).
+    //  Hiligaynon is ~30-40% longer, so this maps to HIL_MIN–HIL_MAX (280–310).
     //  All items must strictly match the selected topic/category.
     // =========================================================================
 
@@ -1321,7 +1311,7 @@ public class NewsGeneratorService {
         // ── SMS length rule — dynamic explanation with category-specific tip ──
         p.append("SMS LENGTH RULE — NON-NEGOTIABLE:\n");
         p.append("  English target: ").append(EN_MIN).append("–").append(EN_MAX).append(" characters per SMS body.\n");
-        p.append("  (Hiligaynon translation expands ~35%, reaching the required 280–320 chars.)\n");
+        p.append("  (Hiligaynon translation expands ~35%, reaching the required 280–310 chars.)\n");
         p.append("  Too short (< ").append(EN_MIN).append("): add ").append(buildShortTip(catLc)).append("\n");
         p.append("  Too long  (> ").append(EN_MAX).append("): remove the least essential detail.\n");
         p.append("  End every SMS with a COMPLETE sentence. Never cut mid-word or mid-phrase.\n\n");
@@ -1602,7 +1592,7 @@ public class NewsGeneratorService {
             String finalText = enforceHiligaynonLength(hil, english, p.headline(), category);
 
             if (finalText == null) {
-                System.out.printf("[Translate] Item %d DROPPED — could not fit 280-320 chars cleanly%n", i + 1);
+                System.out.printf("[Translate] Item %d DROPPED — could not fit 280-310 chars cleanly%n", i + 1);
                 continue;
             }
 
@@ -1615,7 +1605,7 @@ public class NewsGeneratorService {
     }
 
     /**
-     * Ensures the Hiligaynon text is between HIL_MIN (280) and HIL_MAX (320) characters.
+     * Ensures the Hiligaynon text is between HIL_MIN (280) and HIL_MAX (310) characters.
      * Never truncates or cuts Hiligaynon text. Returns null if the item cannot be brought
      * into range without cutting.
      */

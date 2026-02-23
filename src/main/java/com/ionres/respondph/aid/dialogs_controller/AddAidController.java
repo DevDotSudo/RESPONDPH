@@ -8,6 +8,7 @@ import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.DashboardRefresher;
 import com.ionres.respondph.util.DialogManager;
+import com.ionres.respondph.util.PdfProgressRunner;
 import com.itextpdf.layout.element.Cell;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -51,6 +52,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javafx.collections.ObservableSet;
 import javafx.stage.StageStyle;
@@ -214,10 +218,13 @@ public class AddAidController {
         allBarangaysRadio.setToggleGroup(barangayModeGroup);
         allBarangaysRadio.setSelected(true);
 
+        singleBarangayContainer.setVisible(false);
+        singleBarangayContainer.setManaged(false);
+
         barangayModeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            boolean single = (newVal == singleBarangayRadio);
-            singleBarangayContainer.setVisible(single);
-            singleBarangayContainer.setManaged(single);
+            boolean isSingle = (newVal == singleBarangayRadio);
+            singleBarangayContainer.setVisible(isSingle);
+            singleBarangayContainer.setManaged(isSingle);
             lastPreviewResult = new ArrayList<>();
             scheduleBackgroundCluster();
         });
@@ -225,10 +232,19 @@ public class AddAidController {
         useBarangayFilterCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
             barangaySelectionContainer.setVisible(newVal);
             barangaySelectionContainer.setManaged(newVal);
+
+            if (!newVal) {
+                // Reset to All Barangays when unchecking filter
+                allBarangaysRadio.setSelected(true);
+                singleBarangayContainer.setVisible(false);
+                singleBarangayContainer.setManaged(false);
+            }
+
             lastPreviewResult = new ArrayList<>();
             scheduleBackgroundCluster();
         });
 
+        // Hide the whole container initially
         barangaySelectionContainer.setVisible(false);
         barangaySelectionContainer.setManaged(false);
     }
@@ -328,6 +344,21 @@ public class AddAidController {
             t.start();
         });
         clusterDebounce.play();
+    }
+    private void shutDownExecutor(ExecutorService executor){
+        try {
+            System.out.println("attempt to shutdown executor");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
+            System.err.println("tasks interrupted");
+        }finally {
+            if (!executor.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.println("shutdown finished");
+        }
     }
     // =========================================================================
 
@@ -1204,208 +1235,7 @@ public class AddAidController {
         return false;
     }
 
-    // =========================================================================
-    //  PDF GENERATION  (iText 7)
-    // =========================================================================
 
-    private void generateAndSavePDF(List<BeneficiaryCluster> beneficiaries) {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Save Aid Distribution PDF");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("PDF Files (.pdf)", ".pdf"));
-        String defaultName = "AidDistribution_"
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".pdf";
-        chooser.setInitialFileName(defaultName);
-        File file = chooser.showSaveDialog(dialogStage);
-        if (file == null) return;
-        try {
-            buildPDF(file, beneficiaries);
-            AlertDialogManager.showInfo("PDF Saved", "PDF successfully saved to:\n" + file.getAbsolutePath());
-            if (java.awt.Desktop.isDesktopSupported()) {
-                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
-                if (desktop.isSupported(java.awt.Desktop.Action.OPEN)) desktop.open(file);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertDialogManager.showError("PDF Error", "Failed to generate PDF:\n" + e.getMessage());
-        }
-    }
-
-    private void buildPDF(File file, List<BeneficiaryCluster> beneficiaries) throws IOException {
-        PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-        PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-        PdfFont fontMono   = PdfFontFactory.createFont(StandardFonts.COURIER);
-
-        PdfDocument  pdfDoc = new PdfDocument(new PdfWriter(file));
-        Document     doc    = new Document(pdfDoc, PageSize.A4);
-        doc.setMargins(36, 36, 54, 36);
-
-        String algorithm = isFCMSelected()
-                ? "Fuzzy C-Means (FCM) Clustering — 3 Clusters"
-                : "K-Means Clustering — 3 Clusters";
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
-
-        List<Integer> ids = beneficiaries.stream()
-                .map(BeneficiaryCluster::getBeneficiaryId).collect(Collectors.toList());
-        Map<Integer, String> nameMap = aidDAO.getBeneficiaryNames(ids);
-
-        Table headerTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
-                .useAllAvailableWidth().setMarginBottom(4);
-        Cell titleCell = new Cell()
-                .add(new Paragraph("Aid Distribution Report")
-                        .setFont(fontBold).setFontSize(20).setFontColor(COLOR_WHITE))
-                .add(new Paragraph("Beneficiary Priority Clustering")
-                        .setFont(fontNormal).setFontSize(11).setFontColor(new DeviceRgb(189, 215, 238)))
-                .setBackgroundColor(COLOR_HEADER_BG).setPadding(14)
-                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
-        Cell metaCell = new Cell()
-                .add(new Paragraph("RespondPH")
-                        .setFont(fontBold).setFontSize(13).setFontColor(COLOR_WHITE)
-                        .setTextAlignment(TextAlignment.RIGHT))
-                .add(new Paragraph(timestamp)
-                        .setFont(fontNormal).setFontSize(8).setFontColor(new DeviceRgb(189, 215, 238))
-                        .setTextAlignment(TextAlignment.RIGHT))
-                .setBackgroundColor(COLOR_HEADER_BG).setPadding(14)
-                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
-                .setVerticalAlignment(com.itextpdf.layout.properties.VerticalAlignment.MIDDLE);
-        headerTable.addCell(titleCell).addCell(metaCell);
-        doc.add(headerTable);
-
-        DeviceRgb metaBg = new DeviceRgb(240, 244, 248);
-        Table metaTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
-                .useAllAvailableWidth().setBackgroundColor(metaBg)
-                .setBorder(new SolidBorder(new DeviceRgb(190, 210, 230), 1))
-                .setMarginTop(10).setMarginBottom(14);
-        addMetaRow(metaTable, "Distribution Scope",  getDistributionScopeText(), fontBold, fontNormal);
-        addMetaRow(metaTable, "Algorithm",            algorithm,                  fontBold, fontNormal);
-        addMetaRow(metaTable, "Total Recipients",     beneficiaries.size() + " beneficiaries", fontBold, fontNormal);
-        addMetaRow(metaTable, "Generated On",         timestamp,                  fontBold, fontNormal);
-        doc.add(metaTable);
-
-        Map<Integer, String>  clusterToPriority = buildClusterPriorityMap(beneficiaries);
-        Map<Integer, Double>  clusterSums   = new HashMap<>();
-        Map<Integer, Integer> clusterCounts = new HashMap<>();
-        for (BeneficiaryCluster b : beneficiaries) {
-            int c = b.getCluster();
-            clusterSums.put(c,   clusterSums.getOrDefault(c,   0.0) + b.getFinalScore());
-            clusterCounts.put(c, clusterCounts.getOrDefault(c, 0)   + 1);
-        }
-        Map<Integer, Double> clusterAvg = new HashMap<>();
-        for (Integer c : clusterSums.keySet())
-            clusterAvg.put(c, clusterSums.get(c) / clusterCounts.get(c));
-        List<Integer> sortedClusters = new ArrayList<>(clusterAvg.keySet());
-        sortedClusters.sort((a, b) -> Double.compare(clusterAvg.get(b), clusterAvg.get(a)));
-        Map<Integer, List<BeneficiaryCluster>> byCluster = new HashMap<>();
-        for (BeneficiaryCluster b : beneficiaries)
-            byCluster.computeIfAbsent(b.getCluster(), k -> new ArrayList<>()).add(b);
-
-        DeviceRgb[] accentColors = { COLOR_HIGH, COLOR_MODERATE, COLOR_LOW };
-        int rank = 0, overallRank = 1;
-
-        for (Integer clusterNum : sortedClusters) {
-            String priorityName = clusterToPriority.getOrDefault(clusterNum, "Low Priority");
-            List<BeneficiaryCluster> members = byCluster.getOrDefault(clusterNum, new ArrayList<>());
-            if (members.isEmpty()) { rank++; continue; }
-            members.sort((b1, b2) -> Double.compare(b2.getFinalScore(), b1.getFinalScore()));
-            DeviceRgb accentColor = rank < accentColors.length ? accentColors[rank] : COLOR_LOW;
-            DeviceRgb lightAccent = lighten(accentColor, 0.88f);
-
-            Paragraph sectionHeading = new Paragraph()
-                    .add(new Text("  " + priorityName.toUpperCase() + "  ")
-                            .setFont(fontBold).setFontSize(11).setFontColor(COLOR_WHITE))
-                    .add(new Text("   " + members.size() + " beneficiaries")
-                            .setFont(fontNormal).setFontSize(10).setFontColor(new DeviceRgb(220, 230, 240)))
-                    .add(new Text("   Cluster " + clusterNum + "   |   Avg Score: "
-                            + String.format("%.3f", clusterAvg.get(clusterNum)))
-                            .setFont(fontNormal).setFontSize(9).setFontColor(new DeviceRgb(200, 215, 230)))
-                    .setBackgroundColor(accentColor).setPadding(7).setMarginTop(6).setMarginBottom(0);
-            doc.add(sectionHeading);
-
-            Table table = new Table(UnitValue.createPercentArray(new float[]{6, 34, 14, 22, 24}))
-                    .useAllAvailableWidth().setMarginBottom(10);
-            String[] colHeaders = { "#", "Name", "Beneficiary ID", "Priority", "Score" };
-            for (String col : colHeaders) {
-                table.addHeaderCell(new Cell()
-                        .add(new Paragraph(col).setFont(fontBold).setFontSize(9).setFontColor(COLOR_WHITE))
-                        .setBackgroundColor(darken(accentColor, 0.18f)).setPadding(5)
-                        .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
-            }
-            boolean alt = false;
-            for (BeneficiaryCluster b : members) {
-                DeviceRgb rowBg = alt ? lightAccent : COLOR_WHITE;
-                alt = !alt;
-                String name = nameMap.getOrDefault(b.getBeneficiaryId(), "Unknown");
-                addTableRow(table, rowBg, fontNormal, fontMono,
-                        String.valueOf(overallRank++), name,
-                        String.valueOf(b.getBeneficiaryId()), priorityName,
-                        String.format("%.3f", b.getFinalScore()));
-            }
-            doc.add(table);
-            rank++;
-        }
-
-        doc.add(new Paragraph(" ").setMarginTop(10).setMarginBottom(0));
-        LineSeparator separator = new LineSeparator(new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f));
-        separator.setStrokeColor(new DeviceRgb(190, 200, 210));
-        separator.setMarginBottom(8);
-        doc.add(separator);
-
-        Paragraph summaryTitle = new Paragraph("Distribution Summary")
-                .setFont(fontBold).setFontSize(13).setFontColor(COLOR_HEADER_BG)
-                .setMarginBottom(6).setMarginTop(4);
-        doc.add(summaryTitle);
-
-        Map<String, List<BeneficiaryCluster>> byPriority = groupBeneficiariesByPriority(beneficiaries);
-        Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{40, 30, 30}))
-                .useAllAvailableWidth().setMarginBottom(14);
-        for (String col : new String[]{ "Priority Group", "Count", "Avg Score" }) {
-            summaryTable.addHeaderCell(new Cell()
-                    .add(new Paragraph(col).setFont(fontBold).setFontSize(10).setFontColor(COLOR_WHITE))
-                    .setBackgroundColor(COLOR_HEADER_BG).setPadding(6)
-                    .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
-        }
-
-        String[]    priorityNames = { "High Priority", "Moderate Priority", "Low Priority" };
-        DeviceRgb[] rowColors     = { COLOR_HIGH, COLOR_MODERATE, COLOR_LOW };
-        int activePriorities = 0;
-        for (int pIdx = 0; pIdx < priorityNames.length; pIdx++) {
-            List<BeneficiaryCluster> group = byPriority.getOrDefault(priorityNames[pIdx], new ArrayList<>());
-            if (group.isEmpty()) continue;
-            double grpAvg = group.stream().mapToDouble(BeneficiaryCluster::getFinalScore).average().orElse(0.0);
-            DeviceRgb light = lighten(rowColors[pIdx], 0.88f);
-            summaryTable.addCell(styledSummaryCell(priorityNames[pIdx], fontBold,   10, light, rowColors[pIdx]));
-            summaryTable.addCell(styledSummaryCell(String.valueOf(group.size()),     fontNormal, 10, light, rowColors[pIdx]));
-            summaryTable.addCell(styledSummaryCell(String.format("%.3f", grpAvg),   fontNormal, 10, light, rowColors[pIdx]));
-            activePriorities++;
-        }
-
-        double totalAvg = beneficiaries.stream().mapToDouble(BeneficiaryCluster::getFinalScore).average().orElse(0.0);
-        DeviceRgb totalBg = new DeviceRgb(220, 230, 240);
-        summaryTable.addCell(styledSummaryCell("TOTAL (" + activePriorities + " group"
-                + (activePriorities != 1 ? "s" : "") + ")", fontBold, 10, totalBg, COLOR_HEADER_BG));
-        summaryTable.addCell(styledSummaryCell(String.valueOf(beneficiaries.size()), fontBold, 10, totalBg, COLOR_HEADER_BG));
-        summaryTable.addCell(styledSummaryCell(String.format("%.3f", totalAvg),      fontBold, 10, totalBg, COLOR_HEADER_BG));
-        doc.add(summaryTable);
-
-        doc.add(new Paragraph(
-                "This report was generated automatically by RespondPH. "
-                        + "Beneficiary priority levels are determined by clustering algorithms "
-                        + "applied to vulnerability and needs-assessment scores.")
-                .setFont(fontNormal).setFontSize(8)
-                .setFontColor(new DeviceRgb(120, 130, 140))
-                .setTextAlignment(TextAlignment.CENTER).setMarginTop(10));
-
-        int totalPages = pdfDoc.getNumberOfPages();
-        for (int i = 1; i <= totalPages; i++) {
-            doc.showTextAligned(
-                    new Paragraph("Page " + i + " of " + totalPages)
-                            .setFont(fontNormal).setFontSize(8)
-                            .setFontColor(new DeviceRgb(150, 160, 170)),
-                    pdfDoc.getPage(i).getPageSize().getWidth() / 2,
-                    22, i, TextAlignment.CENTER, com.itextpdf.layout.properties.VerticalAlignment.BOTTOM, 0);
-        }
-        doc.close();
-    }
 
     // =========================================================================
     //  PDF HELPER METHODS
@@ -1785,9 +1615,308 @@ public class AddAidController {
         }
     }
 
-    // =========================================================================
-    //  VALIDATION
-    // =========================================================================
+    private void generateAndSavePDF(List<BeneficiaryCluster> beneficiaries) {
+        PageSize selectedPageSize = PageSize.A4;
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save Aid Distribution PDF");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files (.pdf)", ".pdf"));
+        chooser.setInitialFileName("AidDistribution_"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+                + ".pdf");
+        File file = chooser.showSaveDialog(dialogStage);
+        if (file == null) return;
+
+        PdfProgressRunner.run(
+                dialogStage,
+
+                // ← your own buildPDF — unchanged
+                progress -> buildPDF(file, beneficiaries, selectedPageSize, progress),
+
+                // ← on success
+                () -> {
+                    AlertDialogManager.showInfo("PDF Saved",
+                            "PDF successfully saved to:\n" + file.getAbsolutePath());
+                    try {
+                        if (java.awt.Desktop.isDesktopSupported()) {
+                            java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                            if (desktop.isSupported(java.awt.Desktop.Action.OPEN))
+                                desktop.open(file);
+                        }
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                },
+
+                // ← on fail
+                errorMsg -> AlertDialogManager.showError("PDF Error",
+                        "Failed to generate PDF:\n" + errorMsg)
+        );
+    }
+    private void buildPDF(File file, List<BeneficiaryCluster> beneficiaries,
+                          PageSize selectedPageSize,
+                          PdfProgressRunner.PdfProgressCallback progress) throws Exception {
+
+        float pageWidth = selectedPageSize.getWidth();
+
+        progress.update(8.0, "Creating fonts...");
+        PdfFont fontBold   = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        PdfFont fontMono   = PdfFontFactory.createFont(StandardFonts.COURIER);
+
+        String algorithm = isFCMSelected()
+                ? "Fuzzy C-Means (FCM) Clustering — 3 Clusters"
+                : "K-Means Clustering — 3 Clusters";
+        String timestamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a"));
+
+        progress.update(12.0, "Loading beneficiary names...");
+        List<Integer> ids = beneficiaries.stream()
+                .map(BeneficiaryCluster::getBeneficiaryId).collect(Collectors.toList());
+        Map<Integer, String> nameMap = aidDAO.getBeneficiaryNames(ids);
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FIRST PASS — write to memory ByteArrayOutputStream
+        // ═══════════════════════════════════════════════════════════════════════
+        progress.update(18.0, "Building document (Pass 1 of 2)...");
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+        PdfWriter   writer1 = new PdfWriter(baos);
+        PdfDocument pdfDoc1 = new PdfDocument(writer1);
+        Document    doc1    = new Document(pdfDoc1, selectedPageSize);
+        doc1.setMargins(36, 36, 54, 36);
+
+        // ── Header Table ────────────────────────────────────────────────────────
+        progress.update(22.0, "Writing report header...");
+        Table headerTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
+                .useAllAvailableWidth().setMarginBottom(4);
+        Cell titleCell = new Cell()
+                .add(new Paragraph("Aid Distribution Report")
+                        .setFont(fontBold).setFontSize(20).setFontColor(COLOR_WHITE))
+                .add(new Paragraph("Beneficiary Priority Clustering")
+                        .setFont(fontNormal).setFontSize(11)
+                        .setFontColor(new DeviceRgb(189, 215, 238)))
+                .setBackgroundColor(COLOR_HEADER_BG).setPadding(14)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
+        Cell metaCell = new Cell()
+                .add(new Paragraph("RespondPH")
+                        .setFont(fontBold).setFontSize(13).setFontColor(COLOR_WHITE)
+                        .setTextAlignment(TextAlignment.RIGHT))
+                .add(new Paragraph(timestamp)
+                        .setFont(fontNormal).setFontSize(8)
+                        .setFontColor(new DeviceRgb(189, 215, 238))
+                        .setTextAlignment(TextAlignment.RIGHT))
+                .setBackgroundColor(COLOR_HEADER_BG).setPadding(14)
+                .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
+                .setVerticalAlignment(com.itextpdf.layout.properties.VerticalAlignment.MIDDLE);
+        headerTable.addCell(titleCell).addCell(metaCell);
+        doc1.add(headerTable);
+
+        // ── Meta Table ──────────────────────────────────────────────────────────
+        progress.update(26.0, "Writing metadata...");
+        DeviceRgb metaBg = new DeviceRgb(240, 244, 248);
+        Table metaTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
+                .useAllAvailableWidth().setBackgroundColor(metaBg)
+                .setBorder(new SolidBorder(new DeviceRgb(190, 210, 230), 1))
+                .setMarginTop(10).setMarginBottom(14);
+        addMetaRow(metaTable, "Distribution Scope",  getDistributionScopeText(), fontBold, fontNormal);
+        addMetaRow(metaTable, "Algorithm",            algorithm,                  fontBold, fontNormal);
+        addMetaRow(metaTable, "Total Recipients",
+                beneficiaries.size() + " beneficiaries",                      fontBold, fontNormal);
+        addMetaRow(metaTable, "Generated On",         timestamp,                  fontBold, fontNormal);
+        doc1.add(metaTable);
+
+        // ── Cluster Sections ────────────────────────────────────────────────────
+        progress.update(30.0, "Calculating cluster groups...");
+        Map<Integer, String>  clusterToPriority = buildClusterPriorityMap(beneficiaries);
+        Map<Integer, Double>  clusterSums       = new HashMap<>();
+        Map<Integer, Integer> clusterCounts     = new HashMap<>();
+        for (BeneficiaryCluster b : beneficiaries) {
+            int c = b.getCluster();
+            clusterSums.put(c,   clusterSums.getOrDefault(c,   0.0) + b.getFinalScore());
+            clusterCounts.put(c, clusterCounts.getOrDefault(c, 0)   + 1);
+        }
+        Map<Integer, Double> clusterAvg = new HashMap<>();
+        for (Integer c : clusterSums.keySet())
+            clusterAvg.put(c, clusterSums.get(c) / clusterCounts.get(c));
+        List<Integer> sortedClusters = new ArrayList<>(clusterAvg.keySet());
+        sortedClusters.sort((a, b) -> Double.compare(clusterAvg.get(b), clusterAvg.get(a)));
+        Map<Integer, List<BeneficiaryCluster>> byCluster = new HashMap<>();
+        for (BeneficiaryCluster b : beneficiaries)
+            byCluster.computeIfAbsent(b.getCluster(), k -> new ArrayList<>()).add(b);
+
+        DeviceRgb[] accentColors = { COLOR_HIGH, COLOR_MODERATE, COLOR_LOW };
+        int rank = 0, overallRank = 1;
+        int totalClusters = sortedClusters.size();
+        int clusterIdx    = 0;
+
+        for (Integer clusterNum : sortedClusters) {
+            clusterIdx++;
+            double clusterPct = 30.0 + (clusterIdx / (double) totalClusters) * 35.0;
+            String priorityName = clusterToPriority.getOrDefault(clusterNum, "Low Priority");
+            progress.update(clusterPct, "Writing " + priorityName + " group...");
+
+            List<BeneficiaryCluster> members =
+                    byCluster.getOrDefault(clusterNum, new ArrayList<>());
+            if (members.isEmpty()) { rank++; continue; }
+            members.sort((b1, b2) -> Double.compare(b2.getFinalScore(), b1.getFinalScore()));
+
+            DeviceRgb accentColor = rank < accentColors.length ? accentColors[rank] : COLOR_LOW;
+            DeviceRgb lightAccent = lighten(accentColor, 0.88f);
+
+            Paragraph sectionHeading = new Paragraph()
+                    .add(new Text("  " + priorityName.toUpperCase() + "  ")
+                            .setFont(fontBold).setFontSize(11).setFontColor(COLOR_WHITE))
+                    .add(new Text("   " + members.size() + " beneficiaries")
+                            .setFont(fontNormal).setFontSize(10)
+                            .setFontColor(new DeviceRgb(220, 230, 240)))
+                    .add(new Text("   Cluster " + clusterNum + "   |   Avg Score: "
+                            + String.format("%.3f", clusterAvg.get(clusterNum)))
+                            .setFont(fontNormal).setFontSize(9)
+                            .setFontColor(new DeviceRgb(200, 215, 230)))
+                    .setBackgroundColor(accentColor).setPadding(7)
+                    .setMarginTop(6).setMarginBottom(0);
+            doc1.add(sectionHeading);
+
+            Table table = new Table(UnitValue.createPercentArray(new float[]{6, 34, 14, 22, 24}))
+                    .useAllAvailableWidth().setMarginBottom(10);
+            String[] colHeaders = { "#", "Name", "Beneficiary ID", "Priority", "Score" };
+            for (String col : colHeaders) {
+                table.addHeaderCell(new Cell()
+                        .add(new Paragraph(col).setFont(fontBold).setFontSize(9)
+                                .setFontColor(COLOR_WHITE))
+                        .setBackgroundColor(darken(accentColor, 0.18f)).setPadding(5)
+                        .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
+            }
+            boolean alt = false;
+            for (BeneficiaryCluster b : members) {
+                DeviceRgb rowBg = alt ? lightAccent : COLOR_WHITE;
+                alt = !alt;
+                String name = nameMap.getOrDefault(b.getBeneficiaryId(), "Unknown");
+                addTableRow(table, rowBg, fontNormal, fontMono,
+                        String.valueOf(overallRank++), name,
+                        String.valueOf(b.getBeneficiaryId()), priorityName,
+                        String.format("%.3f", b.getFinalScore()));
+            }
+            doc1.add(table);
+            rank++;
+        }
+
+        // ── Footer Separator ────────────────────────────────────────────────────
+        progress.update(68.0, "Writing summary table...");
+        doc1.add(new Paragraph(" ").setMarginTop(10).setMarginBottom(0));
+        LineSeparator separator = new LineSeparator(
+                new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f));
+        separator.setStrokeColor(new DeviceRgb(190, 200, 210));
+        separator.setMarginBottom(8);
+        doc1.add(separator);
+
+        // ── Summary Table ────────────────────────────────────────────────────────
+        Paragraph summaryTitle = new Paragraph("Distribution Summary")
+                .setFont(fontBold).setFontSize(13).setFontColor(COLOR_HEADER_BG)
+                .setMarginBottom(6).setMarginTop(4);
+        doc1.add(summaryTitle);
+
+        Map<String, List<BeneficiaryCluster>> byPriority =
+                groupBeneficiariesByPriority(beneficiaries);
+        Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{40, 30, 30}))
+                .useAllAvailableWidth().setMarginBottom(14);
+        for (String col : new String[]{"Priority Group", "Count", "Avg Score"}) {
+            summaryTable.addHeaderCell(new Cell()
+                    .add(new Paragraph(col).setFont(fontBold).setFontSize(10)
+                            .setFontColor(COLOR_WHITE))
+                    .setBackgroundColor(COLOR_HEADER_BG).setPadding(6)
+                    .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
+        }
+
+        String[]    priorityNames = {"High Priority", "Moderate Priority", "Low Priority"};
+        DeviceRgb[] rowColors     = {COLOR_HIGH, COLOR_MODERATE, COLOR_LOW};
+        int activePriorities = 0;
+        for (int pIdx = 0; pIdx < priorityNames.length; pIdx++) {
+            List<BeneficiaryCluster> group =
+                    byPriority.getOrDefault(priorityNames[pIdx], new ArrayList<>());
+            if (group.isEmpty()) continue;
+            double grpAvg = group.stream()
+                    .mapToDouble(BeneficiaryCluster::getFinalScore).average().orElse(0.0);
+            DeviceRgb light = lighten(rowColors[pIdx], 0.88f);
+            summaryTable.addCell(styledSummaryCell(
+                    priorityNames[pIdx],           fontBold,   10, light, rowColors[pIdx]));
+            summaryTable.addCell(styledSummaryCell(
+                    String.valueOf(group.size()),   fontNormal, 10, light, rowColors[pIdx]));
+            summaryTable.addCell(styledSummaryCell(
+                    String.format("%.3f", grpAvg), fontNormal, 10, light, rowColors[pIdx]));
+            activePriorities++;
+        }
+
+        double totalAvg = beneficiaries.stream()
+                .mapToDouble(BeneficiaryCluster::getFinalScore).average().orElse(0.0);
+        DeviceRgb totalBg = new DeviceRgb(220, 230, 240);
+        summaryTable.addCell(styledSummaryCell(
+                "TOTAL (" + activePriorities + " group"
+                        + (activePriorities != 1 ? "s" : "") + ")",
+                fontBold, 10, totalBg, COLOR_HEADER_BG));
+        summaryTable.addCell(styledSummaryCell(
+                String.valueOf(beneficiaries.size()), fontBold, 10, totalBg, COLOR_HEADER_BG));
+        summaryTable.addCell(styledSummaryCell(
+                String.format("%.3f", totalAvg), fontBold, 10, totalBg, COLOR_HEADER_BG));
+        doc1.add(summaryTable);
+
+        // ── Footer Note ─────────────────────────────────────────────────────────
+        doc1.add(new Paragraph(
+                "This report was generated automatically by RespondPH. "
+                        + "Beneficiary priority levels are determined by clustering algorithms "
+                        + "applied to vulnerability and needs-assessment scores.")
+                .setFont(fontNormal).setFontSize(8)
+                .setFontColor(new DeviceRgb(120, 130, 140))
+                .setTextAlignment(TextAlignment.CENTER).setMarginTop(10));
+
+        // ── Close first pass ─────────────────────────────────────────────────────
+        progress.update(72.0, "Finalizing first pass...");
+        doc1.close(); // also closes pdfDoc1
+
+        // ── Count pages by reopening bytes ───────────────────────────────────────
+        progress.update(75.0, "Counting pages...");
+        byte[] firstPassBytes = baos.toByteArray();
+
+        int totalPages;
+        try (PdfDocument counter = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(firstPassBytes)))) {
+            totalPages = counter.getNumberOfPages(); // ← safe, fresh open just for reading
+        } // auto-closes here
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SECOND PASS — stamp "Page X of Y" on every page, write to final file
+        // ═══════════════════════════════════════════════════════════════════════
+        progress.update(78.0, "Stamping page numbers (Pass 2 of 2)...");
+
+        PdfDocument pdfDoc2 = new PdfDocument(
+                new com.itextpdf.kernel.pdf.PdfReader(
+                        new java.io.ByteArrayInputStream(firstPassBytes)),
+                new PdfWriter(file));
+
+        PdfFont stampFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        for (int i = 1; i <= totalPages; i++) {
+            double stampPct = 78.0 + (i / (double) totalPages) * 18.0;
+            progress.update(stampPct, "Stamping page " + i + " of " + totalPages + "...");
+
+            com.itextpdf.kernel.pdf.PdfPage page = pdfDoc2.getPage(i);
+            com.itextpdf.kernel.pdf.canvas.PdfCanvas canvas =
+                    new com.itextpdf.kernel.pdf.canvas.PdfCanvas(page);
+            String pageText = "Page " + i + " of " + totalPages;
+            canvas.beginText()
+                    .setFontAndSize(stampFont, 8)
+                    .setColor(new DeviceRgb(150, 160, 170), true)
+                    .moveText(pageWidth / 2 - 20, 22)
+                    .showText(pageText)
+                    .endText()
+                    .release();
+        }
+
+        progress.update(97.0, "Saving file to disk...");
+        pdfDoc2.close(); // ← writes final PDF to actual file
+    }
+
 
     private boolean validateSelection() {
         if (aidTypeComboBox.getValue() == null) {
@@ -1994,10 +2123,12 @@ public class AddAidController {
                 return null;
             }
         };
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
         task.setOnSucceeded(e -> {
             closeProgressDialog();
             showPrintCustomDialog(lastPreviewResult);
+            shutDownExecutor(executor);
         });
 
         task.setOnFailed(e -> {
@@ -2007,14 +2138,16 @@ public class AddAidController {
                     "Failed to prepare print dialog: " +
                             (exception != null ? exception.getMessage() : "Unknown error"));
             exception.printStackTrace();
+            shutDownExecutor(executor);
         });
 
         progressBar.progressProperty().bind(task.progressProperty());
         progressLabel.textProperty().bind(task.messageProperty());
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+
+        executor.submit(task);
+
+
     }
 
     private void createProgressDialog(String initialMessage) {

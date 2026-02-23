@@ -14,8 +14,8 @@
         </padding>
         <FontAwesomeIconView glyphName="EDIT" size="22" styleClass="header-icon" />
         <VBox spacing="2">
-            <Label styleClass="dialog-title" text="Edit Administrator" />
-            <Label styleClass="dialog-subtitle" text="Update administrator details. Fields marked with * are required." />
+            <Label styleClass="dialog-title" text="Edit User" />
+            <Label styleClass="dialog-subtitle" text="Update user details. Fields marked with * are required." />
         </VBox>
         <Region HBox.hgrow="ALWAYS" />
         <Button fx:id="closeButton" styleClass="dialog-close">
@@ -36,13 +36,7 @@
     </VBox>
 
     <!-- ==================== SCROLLABLE FORM ==================== -->
-    <ScrollPane fitToWidth="true"
-                hbarPolicy="NEVER"
-                vbarPolicy="AS_NEEDED"
-                styleClass="dialog-scroll"
-                VBox.vgrow="ALWAYS"
-                maxHeight="520"
-                minHeight="200">
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="520" minHeight="200" styleClass="dialog-scroll" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
 
         <VBox spacing="24" styleClass="dialog-body">
             <padding>
@@ -63,8 +57,7 @@
                     <Label styleClass="field-label" text="Username *" />
                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
                         <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                        <TextField fx:id="usernameField" promptText="Enter username"
-                                   styleClass="field-input" HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="usernameField" promptText="Enter username" styleClass="field-input" HBox.hgrow="ALWAYS" />
                     </HBox>
                 </VBox>
 
@@ -102,8 +95,7 @@
                         <Label styleClass="field-label" text="First Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="firstNameField" promptText="Enter first name"
-                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -111,8 +103,7 @@
                         <Label styleClass="field-label" text="Middle Name" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="middleNameField" promptText="Middle name"
-                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="middleNameField" promptText="Middle name" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
 
@@ -120,8 +111,7 @@
                         <Label styleClass="field-label" text="Last Name *" />
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
-                            <TextField fx:id="lastNameField" promptText="Last name"
-                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="lastNameField" promptText="Last name" styleClass="field-input" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
                 </GridPane>
@@ -143,11 +133,7 @@
                     <Label styleClass="field-label" text="Role *" />
                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
                         <FontAwesomeIconView glyphName="ID_BADGE" size="14" styleClass="field-icon" />
-                        <ComboBox fx:id="roleComboBox"
-                                  promptText="Select a role"
-                                  styleClass="field-input"
-                                  HBox.hgrow="ALWAYS"
-                                  maxWidth="1.7976931348623157E308" />
+                        <ComboBox fx:id="roleComboBox" maxWidth="1.7976931348623157E308" promptText="Select a role" styleClass="field-input" HBox.hgrow="ALWAYS" />
                     </HBox>
                 </VBox>
 
@@ -176,7 +162,7 @@
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
                     <FontAwesomeIconView glyphName="CHECK" size="16" styleClass="btn-icon" />
-                    <Label styleClass="btn-text" text="Update Admin" />
+                    <Label styleClass="btn-text" text="Update" />
                 </HBox>
             </graphic>
         </Button>

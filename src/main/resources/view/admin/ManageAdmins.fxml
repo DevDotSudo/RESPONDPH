@@ -12,7 +12,7 @@
 
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="USERS" size="24" styleClass="page-icon" />
-                <Label styleClass="page-title" text="Manage Admins" />
+                <Label styleClass="page-title" text="Manage User" />
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
@@ -37,7 +37,7 @@
                     <graphic>
                         <HBox alignment="CENTER" spacing="8">
                             <FontAwesomeIconView glyphName="PLUS_CIRCLE" size="14" styleClass="button-icon" />
-                            <Label styleClass="button-label" text="Add Admin" />
+                            <Label styleClass="button-label" text="Add User" />
                         </HBox>
                     </graphic>
                 </Button>
@@ -66,7 +66,7 @@
                     <TableColumn fx:id="mNameColumn" prefWidth="150" text="Middle Name" />
                     <TableColumn fx:id="lNameColumn" prefWidth="150" text="Last Name" />
                     <TableColumn fx:id="regDateColumn" prefWidth="180" text="Registered Date" />
-                    <TableColumn fx:id="roleColumn"     text="Role"         prefWidth="100" />
+                    <TableColumn fx:id="roleColumn" prefWidth="100" text="Role" />
                     <TableColumn fx:id="actionsColumn" maxWidth="120" minWidth="120" text="Actions" />
                 </columns>
                 <columnResizePolicy>

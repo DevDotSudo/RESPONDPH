@@ -20,6 +20,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import java.util.List;
+import com.ionres.respondph.beneficiary.ViewInfoAndScoreController;
 
 public class BeneficiaryController {
 
@@ -88,6 +89,8 @@ public class BeneficiaryController {
         refreshButton.setOnAction(handlers);
         searchBtn.setOnAction(handlers);
         addButton.setOnAction(handlers);
+        setupDoubleClickToView();
+
     }
 
     private void handleActions(ActionEvent event) {
@@ -100,6 +103,56 @@ public class BeneficiaryController {
             setSearchFld();
         } else if (src == addButton) {
             handleAddBeneficiary();
+        }
+    }
+    private void setupDoubleClickToView() {
+        beneficiaryTable.setRowFactory(tv -> {
+            TableRow<BeneficiaryModel> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    BeneficiaryModel selected = row.getItem();
+                    showViewInfoAndScoreDialog(selected);
+                }
+            });
+            return row;
+        });
+    }
+    private void showViewInfoAndScoreDialog(BeneficiaryModel bm) {
+        try {
+            // Load full decrypted data by ID
+            BeneficiaryModel fullBm = beneficiaryService.getBeneficiaryById(bm.getId());
+            if (fullBm == null) {
+                AlertDialogManager.showError("Data Error",
+                        "Unable to load beneficiary data. The record may have been deleted.");
+                return;
+            }
+
+            // Create a new Stage (dialog window)
+            javafx.stage.Stage dialog = new javafx.stage.Stage();
+            dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            dialog.initOwner(rootPane.getScene().getWindow());
+            dialog.setTitle("Beneficiary Info & Score — " +
+                    fullBm.getFirstname() + " " + fullBm.getLastname());
+            dialog.setResizable(true);
+
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/beneficiary/ViewInfoAndViewScore.fxml")
+            );
+            javafx.scene.Parent root = loader.load();
+
+            ViewInfoAndScoreController controller = loader.getController();
+            controller.setBeneficiary(fullBm);
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            dialog.setScene(scene);
+            dialog.setMinWidth(820);
+            dialog.setMinHeight(600);
+            dialog.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Dialog Error",
+                    "Unable to open beneficiary view: " + e.getMessage());
         }
     }
 

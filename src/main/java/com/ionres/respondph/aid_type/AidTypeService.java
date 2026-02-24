@@ -15,4 +15,5 @@ public interface AidTypeService {
     public List<AidTypeModel> searchAidType(String searchTxt);
     List<Integer> getAllAidTypeIds();
     boolean hasAnyAidTypes();
+    List<AidTypeModelComboBox> findAll();
 }

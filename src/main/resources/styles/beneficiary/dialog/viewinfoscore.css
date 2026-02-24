@@ -1,0 +1,396 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   viewInfoScore.css — Beneficiary Profile & Vulnerability Score Dialog
+   Theme: mirrors AddBeneficiariesDialog — dark navy · orange accent
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ───────────────────────────────────────────────────────────────── */
+.dialog-root {
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0.0, 0, 4);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.dialog-header {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-radius: 8px 8px 0 0;
+}
+
+/* Avatar circle */
+.avatar-circle {
+    -fx-background-color: rgba(249,115,22,0.15);
+    -fx-border-color: rgba(249,115,22,0.40);
+    -fx-border-width: 2px;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-min-width: 46px;
+    -fx-min-height: 46px;
+    -fx-pref-width: 46px;
+    -fx-pref-height: 46px;
+    -fx-max-width: 46px;
+    -fx-max-height: 46px;
+    -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.25), 10, 0.0, 0, 0);
+}
+
+.header-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+    -glyph-size: 22px;
+}
+
+.dialog-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 21px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 1);
+}
+
+.dialog-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.85);
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.reg-meta-label {
+    -fx-text-fill: rgba(148,163,184,0.45);
+    -fx-font-size: 9.5px;
+    -fx-font-weight: 700;
+}
+.reg-meta-value {
+    -fx-text-fill: rgba(226,232,240,0.90);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 700;
+}
+.reg-meta-by {
+    -fx-text-fill: rgba(148,163,184,0.50);
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+}
+
+/* ── Close button ───────────────────────────────────────────────────────── */
+.dialog-close {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 14px;
+    -fx-cursor: hand;
+    -fx-min-height: 42px;
+    -fx-pref-height: 42px;
+    -fx-max-height: 42px;
+}
+.dialog-close:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+.dialog-close:pressed {
+    -fx-background-color: rgba(239,68,68,0.18);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+.close-icon { -fx-fill: rgba(248,250,252,0.95); }
+.close-btn-text {
+    -fx-text-fill: rgba(248,250,252,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+/* ── Scroll ─────────────────────────────────────────────────────────────── */
+.dialog-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+.dialog-scroll .viewport { -fx-background-color: transparent; }
+.dialog-scroll .corner   { -fx-background-color: transparent; }
+
+.dialog-scroll .scroll-bar:vertical,
+.dialog-scroll .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
+}
+.dialog-scroll .scroll-bar .track {
+    -fx-background-color: rgba(148,163,184,0.08);
+    -fx-background-radius: 6px;
+}
+.dialog-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(249,115,22,0.30);
+    -fx-background-radius: 6px;
+}
+.dialog-scroll .scroll-bar .thumb:hover   { -fx-background-color: rgba(249,115,22,0.50); }
+.dialog-scroll .scroll-bar .thumb:pressed { -fx-background-color: rgba(249,115,22,0.70); }
+.dialog-scroll .increment-button,
+.dialog-scroll .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+.dialog-body { -fx-background-color: transparent; }
+
+/* ── Separator ──────────────────────────────────────────────────────────── */
+.separator { -fx-padding: 0; }
+.separator .line {
+    -fx-background-color: rgba(148,163,184,0.12);
+    -fx-border-color: transparent;
+}
+
+/* ── Section card ───────────────────────────────────────────────────────── */
+.form-section {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 20px 20px 18px 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
+}
+
+.section-header {
+    -fx-padding: 0 0 12px 0;
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.section-icon  { -fx-fill: rgba(249,115,22,0.90); }
+
+.section-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 16.5px;
+    -fx-font-weight: 900;
+}
+
+.section-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.75);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(249,115,22,0.10);
+    -fx-background-radius: 12px;
+    -fx-padding: 4px 12px;
+}
+
+/* ── Field cells ────────────────────────────────────────────────────────── */
+.field-cell { -fx-spacing: 6px; }
+
+.field-label {
+    -fx-text-fill: rgba(100,116,139,0.90);
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 700;
+}
+
+.field-value {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-wrap-text: true;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCORE DIVIDER
+   ═══════════════════════════════════════════════════════════════════════════ */
+.divider-line {
+    -fx-background-color: rgba(148,163,184,0.13);
+    -fx-pref-height: 1px;
+    -fx-min-height:  1px;
+    -fx-max-height:  1px;
+}
+
+.score-divider-badge {
+    -fx-background-color: rgba(249,115,22,0.09);
+    -fx-border-color: rgba(249,115,22,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-padding: 6px 16px;
+}
+
+.score-badge-icon {
+    -fx-fill: rgba(249,115,22,0.88);
+    -glyph-size: 13px;
+}
+
+.score-divider-text {
+    -fx-text-fill: rgba(249,115,22,0.88);
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+/* ── Aid Type ComboBox ──────────────────────────────────────────────────── */
+.aid-type-combo {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.aid-type-combo > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(226,232,240,0.92);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 8px;
+}
+.aid-type-combo .arrow-button { -fx-background-color: transparent; -fx-padding: 0 10px 0 6px; }
+.aid-type-combo .arrow         { -fx-background-color: rgba(148,163,184,0.55); }
+.aid-type-combo:hover          { -fx-border-color: rgba(249,115,22,0.45); -fx-background-color: rgba(255,255,255,0.06); }
+.aid-type-combo:showing        { -fx-border-color: #f97316; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
+
+.combo-box-popup .list-view {
+    -fx-background-color: #0f172a;
+    -fx-border-color: rgba(148,163,184,0.25);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 16, 0.0, 0, 4);
+}
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 700;
+    -fx-padding: 11px 12px;
+    -fx-background-radius: 5px;
+}
+.combo-box-popup .list-view .list-cell:hover    { -fx-background-color: rgba(249,115,22,0.12); -fx-text-fill: rgba(248,250,252,0.98); }
+.combo-box-popup .list-view .list-cell:selected { -fx-background-color: rgba(249,115,22,0.22); -fx-text-fill: rgba(248,250,252,0.98); -fx-font-weight: 800; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NO SCORE PANE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.no-score-pane {
+    -fx-background-color: rgba(148,163,184,0.04);
+    -fx-border-color: rgba(148,163,184,0.10);
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 36px 24px;
+}
+.no-score-icon  { -fx-fill: rgba(148,163,184,0.35); -glyph-size: 32px; }
+.no-score-text  {
+    -fx-text-fill: rgba(148,163,184,0.75);
+    -fx-font-size: 14.5px;
+    -fx-font-weight: 700;
+}
+.no-score-sub   {
+    -fx-text-fill: rgba(148,163,184,0.48);
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-alignment: CENTER;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCORE CARDS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.score-card {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: rgba(148,163,184,0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 14px 14px 16px 14px;
+    -fx-spacing: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0.0, 0, 2);
+}
+.score-card:hover {
+    -fx-border-color: rgba(249,115,22,0.30);
+    -fx-background-color: rgba(249,115,22,0.04);
+}
+
+.score-card-label {
+    -fx-text-fill: rgba(100,116,139,0.90);
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
+.score-card-value {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+}
+
+/* ── Progress Bars ───────────────────────────────────────────────────────── */
+.score-bar {
+    -fx-pref-height: 5px;
+    -fx-min-height:  5px;
+    -fx-max-height:  5px;
+}
+.score-bar > .bar {
+    -fx-background-color: linear-gradient(to right, rgba(249,115,22,0.80), #f97316);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+}
+.score-bar > .track {
+    -fx-background-color: rgba(148,163,184,0.09);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+}
+.score-bar-low > .bar    { -fx-background-color: linear-gradient(to right, #3b82f6, #60a5fa); }
+.score-bar-medium > .bar { -fx-background-color: linear-gradient(to right, #f59e0b, #fbbf24); }
+.score-bar-high > .bar   { -fx-background-color: linear-gradient(to right, #ef4444, #f97316); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOTAL SCORE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.total-score-box {
+    -fx-background-color: rgba(249,115,22,0.07);
+    -fx-border-color: rgba(249,115,22,0.28);
+    -fx-border-width: 1.5px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 22px 56px;
+    -fx-spacing: 4px;
+    -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.10), 18, 0.0, 0, 0);
+}
+
+.total-score-label {
+    -fx-text-fill: rgba(249,115,22,0.68);
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+}
+
+.total-score-value {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 46px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 12, 0.0, 0, 0);
+}
+
+.total-score-category {
+    -fx-text-fill: rgba(249,115,22,0.80);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dialog-footer {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px 0 0 0;
+    -fx-background-radius: 0 0 8px 8px;
+}
+
+/* ── Focus suppression ──────────────────────────────────────────────────── */
+.button:focused,
+.combo-box:focused {
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}

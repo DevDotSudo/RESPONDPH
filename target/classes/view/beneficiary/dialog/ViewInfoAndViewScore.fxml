@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="750" spacing="0" styleClass="dialog-root" stylesheets="@/styles/beneficiary/dialog/viewinfoscore.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.ViewInfoAndScoreController">
+
+    <!-- ══ HEADER ══ -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
+        <padding><Insets bottom="18" left="24" right="24" top="18" /></padding>
+
+        <!-- Avatar circle -->
+        <StackPane styleClass="avatar-circle">
+            <FontAwesomeIconView glyphName="USER" styleClass="header-icon" />
+        </StackPane>
+
+        <VBox spacing="3">
+            <Label fx:id="fullNameLabel" styleClass="dialog-title" text="Beneficiary Profile" />
+            <Label fx:id="beneficiaryIdLabel" styleClass="dialog-subtitle" text="ID #—" />
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <!-- Registered meta -->
+        <VBox alignment="CENTER_RIGHT" spacing="2">
+            <Label styleClass="reg-meta-label" text="REGISTERED" />
+            <Label fx:id="regDateLabel" styleClass="reg-meta-value" text="—" />
+            <Label fx:id="addedByLabel" styleClass="reg-meta-by" text="by —" />
+        </VBox>
+
+    </HBox>
+
+    <!-- ══ SCROLL BODY ══ -->
+    <ScrollPane fx:id="mainScroll" fitToWidth="true" styleClass="dialog-scroll" VBox.vgrow="ALWAYS">
+        <VBox spacing="20" styleClass="dialog-body">
+            <padding><Insets bottom="24" left="24" right="24" top="20" /></padding>
+
+            <!-- ── SECTION: Personal Information ── -->
+            <VBox spacing="16" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="ID_CARD" size="16" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Personal Information" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Section 1 of 4" />
+                </HBox>
+
+                <!-- Row: First / Middle / Last -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.4" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="FIRST NAME" />
+                        <Label fx:id="firstnameLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="MIDDLE NAME" />
+                        <Label fx:id="middlenameLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="LAST NAME" />
+                        <Label fx:id="lastnameLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+                <!-- Row: Birthdate / Gender / Marital Status -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.4" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="BIRTHDATE" />
+                        <Label fx:id="birthdateLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="GENDER" />
+                        <Label fx:id="genderLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="MARITAL STATUS" />
+                        <Label fx:id="maritalStatusLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+                <!-- Row: Solo Parent / Mobile / Barangay -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.4" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="SOLO PARENT" />
+                        <Label fx:id="soloParentLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="MOBILE NUMBER" />
+                        <Label fx:id="mobileLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="BARANGAY" />
+                        <Label fx:id="barangayLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <Separator />
+
+            <!-- ── SECTION: Socioeconomic & Living Conditions ── -->
+            <VBox spacing="16" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="BUILDING" size="16" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Socioeconomic &amp; Living Conditions" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Section 2 of 4" />
+                </HBox>
+
+                <!-- Row: Employment / Income / Education -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.4" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="EMPLOYMENT STATUS" />
+                        <Label fx:id="employmentLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="MONTHLY INCOME" />
+                        <Label fx:id="incomeLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="EDUCATION LEVEL" />
+                        <Label fx:id="educationLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+                <!-- Row: House Type / Ownership / Digital Access -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.3" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.4" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="HOUSE TYPE" />
+                        <Label fx:id="houseTypeLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="OWNERSHIP STATUS" />
+                        <Label fx:id="ownershipLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="DIGITAL ACCESS" />
+                        <Label fx:id="digitalAccessLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+                <!-- Row: Clean Water / Sanitation -->
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="CLEAN WATER ACCESS" />
+                        <Label fx:id="cleanWaterLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="SANITATION FACILITY" />
+                        <Label fx:id="sanitationLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <Separator />
+
+            <!-- ── SECTION: Health & Disability ── -->
+            <VBox spacing="16" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="HEARTBEAT" size="16" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Health &amp; Disability" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Section 3 of 4" />
+                </HBox>
+
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="HEALTH CONDITION" />
+                        <Label fx:id="healthConditionLabel" styleClass="field-value" text="—" wrapText="true" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="DISABILITY TYPE" />
+                        <Label fx:id="disabilityTypeLabel" styleClass="field-value" text="—" wrapText="true" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <Separator />
+
+            <!-- ── SECTION: Location ── -->
+            <VBox spacing="16" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="MAP_MARKER" size="16" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Location" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Section 4 of 4" />
+                </HBox>
+
+                <GridPane hgap="16" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                    </columnConstraints>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="LATITUDE" />
+                        <Label fx:id="latitudeLabel" styleClass="field-value" text="—" />
+                    </VBox>
+                    <VBox styleClass="field-cell" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label styleClass="field-label" text="LONGITUDE" />
+                        <Label fx:id="longitudeLabel" styleClass="field-value" text="—" />
+                    </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+            </VBox>
+
+            <Separator />
+
+            <!-- ── SCORE DIVIDER ── -->
+            <HBox alignment="CENTER" spacing="14">
+                <Region styleClass="divider-line" HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER" spacing="8" styleClass="score-divider-badge">
+                    <FontAwesomeIconView glyphName="BAR_CHART" styleClass="score-badge-icon" />
+                    <Label fx:id="scoreSectionTitleLabel" styleClass="score-divider-text" text="HOUSEHOLD VULNERABILITY SCORES" />
+                </HBox>
+                <ComboBox fx:id="aidTypeComboBox" promptText="Select Aid Type" styleClass="aid-type-combo" />
+                <Region styleClass="divider-line" HBox.hgrow="ALWAYS" />
+            </HBox>
+
+            <!-- ── No Score Notice ── -->
+            <VBox fx:id="noScorePane" alignment="CENTER" managed="false" spacing="8" styleClass="no-score-pane" visible="false">
+                <FontAwesomeIconView glyphName="INFO_CIRCLE" styleClass="no-score-icon" />
+                <Label styleClass="no-score-text" text="No household score computed yet." />
+                <Label styleClass="no-score-sub" text="Scores are generated when this beneficiary is linked to a disaster event." wrapText="true" />
+            </VBox>
+
+            <!-- ── Score Cards Grid ── -->
+            <GridPane fx:id="scoreGrid" hgap="12" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                </columnConstraints>
+
+                <!-- Row 0 -->
+                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label styleClass="score-card-label" text="Age Score" />
+                    <Label fx:id="ageScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="ageScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label styleClass="score-card-label" text="Gender Score" />
+                    <Label fx:id="genderScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="genderScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label styleClass="score-card-label" text="Marital Status" />
+                    <Label fx:id="maritalScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="maritalScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                    <Label styleClass="score-card-label" text="Solo Parent" />
+                    <Label fx:id="soloParentScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="soloParentScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+
+                <!-- Row 1 -->
+                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label styleClass="score-card-label" text="Disability" />
+                    <Label fx:id="disabilityScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="disabilityScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label styleClass="score-card-label" text="Health Condition" />
+                    <Label fx:id="healthScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="healthScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <Label styleClass="score-card-label" text="Clean Water" />
+                    <Label fx:id="cleanWaterScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="cleanWaterScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                    <Label styleClass="score-card-label" text="Sanitation" />
+                    <Label fx:id="sanitationScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="sanitationScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+
+                <!-- Row 2 -->
+                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                    <Label styleClass="score-card-label" text="House Type" />
+                    <Label fx:id="houseScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="houseScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <Label styleClass="score-card-label" text="Ownership" />
+                    <Label fx:id="ownershipScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="ownershipScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                    <Label styleClass="score-card-label" text="Damage Severity" />
+                    <Label fx:id="damageScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="damageScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                    <Label styleClass="score-card-label" text="Employment" />
+                    <Label fx:id="employmentScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="employmentScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+
+                <!-- Row 3 -->
+                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                    <Label styleClass="score-card-label" text="Monthly Income" />
+                    <Label fx:id="incomeScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="incomeScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                    <Label styleClass="score-card-label" text="Education Level" />
+                    <Label fx:id="educationScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="educationScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                    <Label styleClass="score-card-label" text="Digital Access" />
+                    <Label fx:id="digitalScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="digitalScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                    <Label styleClass="score-card-label" text="Dependency Ratio" />
+                    <Label fx:id="dependencyScoreLabel" styleClass="score-card-value" text="—" />
+                    <ProgressBar fx:id="dependencyScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+
+            <!-- ── Total Score ── -->
+            <HBox alignment="CENTER">
+                <VBox alignment="CENTER" styleClass="total-score-box">
+                    <Label fx:id="totalScoreTitleLabel" styleClass="total-score-label" text="FINAL SCORE" />
+                    <Label fx:id="totalScoreLabel" styleClass="total-score-value" text="—" />
+                    <Label fx:id="totalScoreCategory" styleClass="total-score-category" text="" />
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- ══ FOOTER ══ -->
+    <HBox alignment="CENTER_RIGHT" styleClass="dialog-footer">
+        <padding><Insets bottom="16" left="24" right="24" top="16" /></padding>
+        <Button fx:id="closeButton" onAction="#handleClose" styleClass="dialog-close">
+            <graphic>
+                <HBox alignment="CENTER" spacing="8">
+                    <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon" />
+                    <Label styleClass="close-btn-text" text="Close" />
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+</VBox>

@@ -18,8 +18,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import java.util.List;
+import com.ionres.respondph.beneficiary.ViewInfoAndScoreController;
 
 public class BeneficiaryController {
 
@@ -88,6 +90,8 @@ public class BeneficiaryController {
         refreshButton.setOnAction(handlers);
         searchBtn.setOnAction(handlers);
         addButton.setOnAction(handlers);
+        setupDoubleClickToView();
+
     }
 
     private void handleActions(ActionEvent event) {
@@ -100,6 +104,60 @@ public class BeneficiaryController {
             setSearchFld();
         } else if (src == addButton) {
             handleAddBeneficiary();
+        }
+    }
+    private void setupDoubleClickToView() {
+        beneficiaryTable.setRowFactory(tv -> {
+            TableRow<BeneficiaryModel> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    BeneficiaryModel selected = row.getItem();
+                    showViewInfoAndScoreDialog(selected);
+                }
+            });
+            return row;
+        });
+    }
+    private void showViewInfoAndScoreDialog(BeneficiaryModel bm) {
+        // Resolve owner window before entering the lambda
+        Stage ownerStage = (rootPane.getScene() != null)
+                ? (Stage) rootPane.getScene().getWindow()
+                : null;
+
+        // Load the full decrypted record first — fail fast before opening the dialog
+        BeneficiaryModel fullBm;
+        try {
+            fullBm = beneficiaryService.getBeneficiaryById(bm.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Data Error",
+                    "Unable to load beneficiary data: " + e.getMessage());
+            return;
+        }
+
+        if (fullBm == null) {
+            AlertDialogManager.showError("Data Error",
+                    "Unable to load beneficiary data. The record may have been deleted.");
+            return;
+        }
+
+        try {
+            DialogManager.<ViewInfoAndScoreController>showDynamic(
+                    "/view/beneficiary/dialog/ViewInfoAndViewScore.fxml",
+                    ownerStage,
+                    controller -> controller.setBeneficiary(fullBm),
+                    stage -> {
+                        stage.setTitle("Beneficiary Info & Score — "
+                                + fullBm.getFirstname() + " " + fullBm.getLastname());
+                        stage.setResizable(true);
+                        stage.setMinWidth(860);
+                        stage.setMinHeight(600);
+                    }
+            );
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Dialog Error",
+                    "Unable to open beneficiary view: " + e.getMessage());
         }
     }
 

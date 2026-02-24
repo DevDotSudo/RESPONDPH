@@ -136,7 +136,6 @@ public class AidDAOImpl implements AidDAO {
             }
         }
 
-        // ── STEP 2: Now open the main query connection ─────────────────────
         String sql;
         if (disasterId > 0) {
             sql = "SELECT ahs.beneficiary_id, ahs.final_score, ahs.score_category, " +

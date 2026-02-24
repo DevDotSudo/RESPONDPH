@@ -158,6 +158,8 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             if (bm == null || bm.getId() <= 0) {
                 throw ExceptionFactory.missingField("Beneficiary ID");
             }
+            double recalculatedAgeScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(bm.getBirthDate());
+
 
             String encryptedFirstname = CRYPTO.encryptWithOneParameter(bm.getFirstname());
             String encryptedMiddlename = CRYPTO.encryptWithOneParameter(bm.getMiddlename());
@@ -189,7 +191,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                     encryptedLastname,
                     encryptedBirthDate,
                     encryptedBarangay,
-                    bm.getAgeScore(), // Pass age score (not encrypted)
+                    recalculatedAgeScore, // Pass age score (not encrypted)
                     encryptedGender,
                     encryptedMaritalStatus,
                     encryptedSoloParentStatus,

@@ -104,6 +104,7 @@ public class MainFrameController {
     private ScrollPane newsLogScroll;
     private HBox       newsDotBar;
     private Label      newsCountLabel;
+    private Label      newsStepLabel;      // ← NEW: shows current step (Step 1/3, Parsing, etc.)
     private Label      streamingLabel;
     private Label      tickLabel;
     private int        confirmedNewsCount = 0;
@@ -126,13 +127,10 @@ public class MainFrameController {
     public void initialize() {
         INSTANCE = this;
 
-        // Guard: admin may be null during token auto-login (session set after FXML loads)
         AdminModel currentAdmin = SessionManager.getInstance().getCurrentAdmin();
         if (currentAdmin != null && currentAdmin.getRole() != null) {
             System.out.println(">>> initialize role: " + currentAdmin.getRole());
             applyRoleVisibility(currentAdmin.getRole());
-
-
         }
 
         if (smsMinimizeBtn != null) smsMinimizeBtn.setOnAction(e -> minimizeSmsToFooter());
@@ -173,7 +171,6 @@ public class MainFrameController {
             loadPage("/view/dashboard/Dashboard.fxml");
             activeButton(dashboardBtn);
         } else if (role.equals("Brgy_Sec") || role.equals("MSWDO")) {
-            // Load their default starting page instead
             loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
             activeButton(manageBeneficiariesBtn);
         }
@@ -391,6 +388,9 @@ public class MainFrameController {
         newsFooterText = header;
         if (newsMinimized) refreshFooter();
 
+        // Always update the step label so something is always visible
+        updateStepLabel(header);
+
         if (newsLogBox == null) return;
 
         // ── Route to the appropriate handler ─────────────────────────────────
@@ -411,7 +411,7 @@ public class MainFrameController {
         // Inline live writing / searching label (no dedicated row, just tick)
         if (header.startsWith("Writing news…")
                 || header.startsWith("Searching…")
-                || header.startsWith("Using gemini")        // model switch messages
+                || header.startsWith("Using gemini")
                 || header.startsWith("Switching to")
                 || header.startsWith("Found ")
                 || header.startsWith("All models")) {
@@ -440,7 +440,31 @@ public class MainFrameController {
         if (header.startsWith("Cancelled")) {
             commitStreamingLabel(); clearTickLabel(); stopPulse();
             appendRow("🚫 Generation cancelled.", RowKind.INFO);
+            return;
         }
+
+        // ── Catch-all: Step X/3, Fetching, Parsing, Translating, Error, etc. ──
+        // These were previously silently swallowed. Now they appear in the log.
+        if (header.startsWith("Step ")
+                || header.startsWith("Fetching")
+                || header.startsWith("Parsing")
+                || header.startsWith("Translating")
+                || header.startsWith("Weather")
+                || header.startsWith("Selecting")
+                || header.startsWith("Error")) {
+            commitStreamingLabel();
+            clearTickLabel();
+            String emoji = header.startsWith("Error") ? "❌"
+                    : header.startsWith("Step 1") ? "📡"
+                    : header.startsWith("Step 2") ? "🤖"
+                    : header.startsWith("Step 3") ? "🌐"
+                    : "⚙️";
+            appendRow(emoji + " " + header, RowKind.INFO);
+            return;
+        }
+
+        // Final fallback — append as an info row so nothing is ever lost
+        appendRow("ℹ️ " + header, RowKind.INFO);
     }
 
     public void hideNewsProgress() {
@@ -550,11 +574,21 @@ public class MainFrameController {
         pane.setMaxWidth(Double.MAX_VALUE);
         pane.setPadding(new Insets(4, 0, 0, 0));
 
+        // Topic label (dim, italic)
         Label topicLabel = new Label("Topic: " + (topic != null ? topic : "…"));
         topicLabel.setStyle(
                 "-fx-text-fill: rgba(255,255,255,0.50); " +
                         "-fx-font-size: 11px; -fx-font-style: italic;");
 
+        // ── NEW: Step label — shows current pipeline step prominently ──────────
+        newsStepLabel = new Label("Initializing…");
+        newsStepLabel.setWrapText(true);
+        newsStepLabel.setMaxWidth(Double.MAX_VALUE);
+        newsStepLabel.setStyle(
+                "-fx-text-fill: rgba(255,255,255,0.88); " +
+                        "-fx-font-size: 11.5px; -fx-font-weight: bold;");
+
+        // Dot bar
         newsDotBar = new HBox(6);
         newsDotBar.setAlignment(Pos.CENTER_LEFT);
         for (int i = 0; i < 5; i++) {
@@ -571,6 +605,7 @@ public class MainFrameController {
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
         dotRow.setAlignment(Pos.CENTER_LEFT);
 
+        // Log box
         newsLogBox = new VBox(3);
         newsLogBox.setFillWidth(true);
         newsLogBox.setPadding(new Insets(6, 8, 6, 8));
@@ -587,7 +622,8 @@ public class MainFrameController {
                 "-fx-background: transparent; -fx-background-color: transparent; " +
                         "-fx-border-color: transparent; -fx-padding: 0;");
 
-        pane.getChildren().addAll(topicLabel, dotRow, newsLogScroll);
+        // Stack: topic → step label → dots → log
+        pane.getChildren().addAll(topicLabel, newsStepLabel, dotRow, newsLogScroll);
         return pane;
     }
 
@@ -606,11 +642,9 @@ public class MainFrameController {
     /**
      * Called when NewsGeneratorService emits "N of 5 items found (Xs)".
      *
-     * FIX: The dot counter was broken because:
-     * 1. confirmedNewsCount was never reset between generations (now fixed in resetNewsLogState).
-     * 2. The regex in setNewsProgress didn't match "N of 5 items found" (now fixed to
-     *    "\\d+ of \\d+ items? found.*" which handles singular/plural).
-     * 3. The header is parsed as split(" ")[0] to get N — this works for "1 of 5 items found (3s)".
+     * The regex in setNewsProgress matches "\\d+ of \\d+ items? found.*"
+     * which handles both singular ("item") and plural ("items").
+     * header.split(" ")[0] extracts the N value.
      */
     private void handleItemConfirmed(String header, String streamTail) {
         int n = 0;
@@ -618,7 +652,7 @@ public class MainFrameController {
             n = Integer.parseInt(header.split(" ")[0]);
         } catch (NumberFormatException ignored) {}
 
-        // Fill dots from the last confirmed count up to n (handles 1→2→3→4→5 in order)
+        // Fill dots from the last confirmed count up to n
         if (n > confirmedNewsCount) {
             for (int i = confirmedNewsCount; i < n && i < 5; i++) {
                 fillDot(i);
@@ -630,7 +664,9 @@ public class MainFrameController {
             newsFooterText = n + " of 5 items found";
             if (newsMinimized) refreshFooter();
 
-            // Append a confirmation row in the log
+            // Update step label to reflect confirmed count
+            updateStepLabel("Item " + n + " of 5 confirmed");
+
             clearTickLabel();
             appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
         }
@@ -649,6 +685,7 @@ public class MainFrameController {
         for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
         confirmedNewsCount = 5;
         if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
+        updateStepLabel("✓ Generation complete");
         newsFooterText = "5 of 5 items found ✓";
         if (newsMinimized) refreshFooter();
     }
@@ -714,6 +751,19 @@ public class MainFrameController {
             case INFO   -> row.setStyle("-fx-text-fill: rgba(255,255,255,0.42); -fx-font-size: 11px;");
         }
         return row;
+    }
+
+    // ── Step label ────────────────────────────────────────────────────────────
+
+    /**
+     * Updates the prominent step label shown above the dot bar.
+     * This is the primary fix: previously all "Step X/3 — …", "Parsing…",
+     * "Fetching RSS…", "Translating…" messages were silently dropped.
+     * Now they are always displayed here.
+     */
+    private void updateStepLabel(String text) {
+        if (newsStepLabel == null || text == null || text.isBlank()) return;
+        newsStepLabel.setText(text);
     }
 
     // ── Streaming label ───────────────────────────────────────────────────────
@@ -826,13 +876,17 @@ public class MainFrameController {
         if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; }
     }
 
-    /** Resets all news log state. Called at start of every new generation. */
+    /**
+     * Resets all news log state. Called at the start of every new generation
+     * to ensure dots start from 0, step label resets, and no stale refs remain.
+     */
     private void resetNewsLogState() {
-        confirmedNewsCount = 0;  // ← critical: ensures dots start from 0 each run
+        confirmedNewsCount = 0;      // ← critical: dots start from 0 each run
         newsLogBox         = null;
         newsLogScroll      = null;
         newsDotBar         = null;
         newsCountLabel     = null;
+        newsStepLabel      = null;   // ← reset step label ref
         streamingLabel     = null;
         tickLabel          = null;
     }
@@ -1006,7 +1060,7 @@ public class MainFrameController {
     }
 
     private void setVisible(Button sectionBtn, VBox sectionContent, boolean visible) {
-        if (sectionBtn != null) {          // ← add null check
+        if (sectionBtn != null) {
             sectionBtn.setVisible(visible);
             sectionBtn.setManaged(visible);
         }

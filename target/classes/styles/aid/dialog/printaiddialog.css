@@ -202,13 +202,17 @@
     -fx-background-radius: 4px;
 }
 
+.field-checkbox .box .mark {
+    -fx-background-color: transparent;
+}
+
+.field-checkbox:selected .box .mark {
+    -fx-background-color: transparent;
+}
+
 .field-checkbox:selected .box {
     -fx-background-color: rgba(249,115,22,0.85);
     -fx-border-color: rgba(249,115,22,0.90);
-}
-
-.field-checkbox .box .mark {
-    -fx-background-color: white;
 }
 
 /* ---------- TEXT INPUT ---------- */
@@ -448,3 +452,4 @@
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
 }
+

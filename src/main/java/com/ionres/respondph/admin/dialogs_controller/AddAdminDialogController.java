@@ -51,7 +51,6 @@ public class AddAdminDialogController {
         else if (src == closeButton) close();
     }
 
-
     public void setDialogStage(Stage stage)             { this.dialogStage = stage; }
     public Stage getDialogStage()                       { return dialogStage; }
     public void setAdminService(AdminService service)   { this.adminService = service; }
@@ -140,7 +139,6 @@ public class AddAdminDialogController {
 
         return true;
     }
-
 
     private void clearFields() {
         usernameField.clear();

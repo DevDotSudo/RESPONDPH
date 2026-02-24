@@ -555,10 +555,6 @@ public class PrintAidDialogController {
     private void showAidSummary() { aidSummary.setVisible(true);  aidSummary.setManaged(true);  }
     private void hideAidSummary() { aidSummary.setVisible(false); aidSummary.setManaged(false); }
 
-    // =========================================================================
-    //  VALIDATION
-    // =========================================================================
-
     private boolean validate() {
         if (aidNameComboBox.getValue() == null) {
             AlertDialogManager.showWarning("Validation", "Please select an Aid Name.");
@@ -570,10 +566,6 @@ public class PrintAidDialogController {
         }
         return true;
     }
-
-    // =========================================================================
-    //  PREVIEW
-    // =========================================================================
 
     private void handlePreview() {
         if (!validate()) return;

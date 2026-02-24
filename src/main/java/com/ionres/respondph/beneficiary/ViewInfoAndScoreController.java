@@ -6,6 +6,7 @@ import com.ionres.respondph.util.AppContext;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -24,6 +25,8 @@ public class ViewInfoAndScoreController {
 
     private static final Logger LOGGER = Logger.getLogger(ViewInfoAndScoreController.class.getName());
 
+    @FXML private VBox root;
+    @FXML private ScrollPane mainScroll;
     // ── Header ──
     @FXML private Label fullNameLabel;
     @FXML private Label beneficiaryIdLabel;
@@ -110,15 +113,24 @@ public class ViewInfoAndScoreController {
 
     // ── State ──
     private int currentBeneficiaryId;
+    private double xOffset, yOffset;
+    private Stage dialogStage;
 
+    @FXML
+    private void initialize() {
+        makeDraggable();
+    }
 
     public void setBeneficiary(BeneficiaryModel bm) {
         this.currentBeneficiaryId = bm.getId();
         populatePersonalInfo(bm);
         loadAidTypeComboBox();
-        // Default: load raw household scores (no aid type selected)
+        javafx.application.Platform.runLater(() -> mainScroll.setVvalue(0.0));
     }
 
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
+    }
 
 
     private void loadAidTypeComboBox() {
@@ -134,7 +146,6 @@ public class ViewInfoAndScoreController {
 
             aidTypeComboBox.setItems(FXCollections.observableArrayList(options));
 
-            // Display aid_name in the combobox
             aidTypeComboBox.setCellFactory(lv -> new ListCell<>() {
                 @Override
                 protected void updateItem(AidTypeModelComboBox item, boolean empty) {
@@ -162,8 +173,6 @@ public class ViewInfoAndScoreController {
                     }
             );
 
-            // Pre-select "None" — this will trigger the listener above,
-            // so remove the duplicate call from setBeneficiary()
             aidTypeComboBox.getSelectionModel().selectFirst();
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Could not load aid types for combobox", e);
@@ -342,7 +351,6 @@ public class ViewInfoAndScoreController {
         return null;
     }
 
-    /** Fetches the most recent aid_and_household_score row for the given beneficiary + aid type. */
     private AidAndHouseholdScoreRow fetchAidHouseholdScore(int beneficiaryId, int aidTypeId) {
         String sql = "SELECT * FROM aid_and_household_score " +
                 "WHERE beneficiary_id = ? AND aid_type_id = ? " +
@@ -354,25 +362,25 @@ public class ViewInfoAndScoreController {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     AidAndHouseholdScoreRow row = new AidAndHouseholdScoreRow();
-                    row.ageScore             = rs.getDouble("age_score");
-                    row.genderScore          = rs.getDouble("gender_score");
-                    row.maritalStatusScore   = rs.getDouble("marital_status_score");
-                    row.soloParentScore      = rs.getDouble("solo_parent_score");
-                    row.disabilityScore      = rs.getDouble("disability_score");
-                    row.healthConditionScore = rs.getDouble("health_condition_score");
-                    row.cleanWaterScore      = rs.getDouble("access_to_clean_water_score");
-                    row.sanitationScore      = rs.getDouble("sanitation_facilities_score");
+                    row.ageScore              = rs.getDouble("age_score");
+                    row.genderScore           = rs.getDouble("gender_score");
+                    row.maritalStatusScore    = rs.getDouble("marital_status_score");
+                    row.soloParentScore       = rs.getDouble("solo_parent_score");
+                    row.disabilityScore       = rs.getDouble("disability_score");
+                    row.healthConditionScore  = rs.getDouble("health_condition_score");
+                    row.cleanWaterScore       = rs.getDouble("access_to_clean_water_score");
+                    row.sanitationScore       = rs.getDouble("sanitation_facilities_score");
                     row.houseConstructionScore = rs.getDouble("house_construction_type_score");
-                    row.ownershipScore       = rs.getDouble("ownership_score");
-                    row.damageSeverityScore  = rs.getDouble("damage_severity_score");
-                    row.employmentStatusScore = rs.getDouble("employment_status_score");
-                    row.monthlyIncomeScore   = rs.getDouble("monthly_income_score");
-                    row.educationLevelScore  = rs.getDouble("education_level_score");
-                    row.digitalAccessScore   = rs.getDouble("digital_access_score");
-                    row.dependencyRatioScore = rs.getObject("dependency_ratio_score") != null
+                    row.ownershipScore        = rs.getDouble("ownership_score");
+                    row.damageSeverityScore   = rs.getDouble("damage_severity_score");
+                    row.employmentStatusScore  = rs.getDouble("employment_status_score");
+                    row.monthlyIncomeScore    = rs.getDouble("monthly_income_score");
+                    row.educationLevelScore   = rs.getDouble("education_level_score");
+                    row.digitalAccessScore    = rs.getDouble("digital_access_score");
+                    row.dependencyRatioScore  = rs.getObject("dependency_ratio_score") != null
                             ? rs.getDouble("dependency_ratio_score") : null;
-                    row.finalScore           = rs.getDouble("final_score");
-                    row.scoreCategory        = rs.getString("score_category");
+                    row.finalScore            = rs.getDouble("final_score");
+                    row.scoreCategory         = rs.getString("score_category");
                     return row;
                 }
             }
@@ -432,6 +440,24 @@ public class ViewInfoAndScoreController {
     private void handleClose() {
         Stage stage = (Stage) closeButton.getScene().getWindow();
         stage.close();
+    }
+
+    // ─────────────────────────────────────────────
+    //  Draggable
+    // ─────────────────────────────────────────────
+
+    private void makeDraggable() {
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            if (dialogStage != null) {
+                dialogStage.setX(e.getScreenX() - xOffset);
+                dialogStage.setY(e.getScreenY() - yOffset);
+            }
+        });
     }
 
     // ─────────────────────────────────────────────

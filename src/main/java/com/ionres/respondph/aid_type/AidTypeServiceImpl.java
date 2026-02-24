@@ -262,5 +262,16 @@ public class AidTypeServiceImpl implements AidTypeService{
         }
     }
 
+    @Override
+    public List<AidTypeModelComboBox> findAll() {
+        try {
+            return aidTypeDAO.findAll();
+        } catch (Exception e) {
+            System.err.println("Error fetching aid types for combo box: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
 
 }

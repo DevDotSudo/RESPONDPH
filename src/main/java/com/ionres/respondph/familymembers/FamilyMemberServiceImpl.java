@@ -1,5 +1,6 @@
 package com.ionres.respondph.familymembers;
 
+import com.ionres.respondph.beneficiary.AgeScoreCalculate;
 import com.ionres.respondph.common.model.BeneficiaryModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
@@ -160,6 +161,7 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
                 throw ExceptionFactory.missingField("Family Member ID");
             }
 
+            double recalculatedAgeScore = AgeScoreCalculate.calculateAgeScoreFromBirthdate(fm.getBirthDate());
 
             String encryptedFirstname = cs.encryptWithOneParameter(fm.getFirstName());
             String encryptedMiddlename = cs.encryptWithOneParameter(fm.getMiddleName());
@@ -181,7 +183,7 @@ public class FamilyMemberServiceImpl implements FamilyMemberService{
             encryptedFm.setLastName(encryptedLastname);
             encryptedFm.setRelationshipToBeneficiary(encryptedRelationship);
             encryptedFm.setBirthDate(encryptedBirthDate);
-            encryptedFm.setAgeScore(fm.getAgeScore());
+            encryptedFm.setAgeScore(recalculatedAgeScore);
             encryptedFm.setGender(encryptedGender);
             encryptedFm.setMaritalStatus(encryptedMaritalStatus);
             encryptedFm.setDisabilityType(encryptedDisabilityType);

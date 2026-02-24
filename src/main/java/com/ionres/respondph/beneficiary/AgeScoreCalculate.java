@@ -21,7 +21,7 @@ public class AgeScoreCalculate {
         if (age < 0) {
             return 0.0;
         } else if (age <= 4) {
-            return 1.0;
+            return 0.9;
         } else if (age <= 14) {
             return 0.7;
         } else if (age <= 24) {
@@ -31,7 +31,7 @@ public class AgeScoreCalculate {
         } else if (age <= 64) {
             return 0.5;
         } else {
-            return 1.0;
+            return 0.9;
         }
     }
 

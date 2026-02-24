@@ -160,7 +160,7 @@
             <graphic>
                 <HBox alignment="CENTER" spacing="10">
                     <FontAwesomeIconView glyphName="SAVE" size="16" styleClass="evacuation-button-icon" />
-                    <Label styleClass="evacuation-button-label" text="Update Center" />
+                    <Label styleClass="evacuation-button-label" text="Update Site" />
                 </HBox>
             </graphic>
         </Button>

@@ -6,8 +6,8 @@ import com.ionres.respondph.disaster_damage.DisasterDamageController;
 import com.ionres.respondph.disaster_damage.DisasterDamageModel;
 import com.ionres.respondph.disaster_damage.DisasterDamageService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.SessionManager;
 import com.ionres.respondph.util.UpdateTrigger;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,16 +32,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Dropdown strategy — identical to DashboardController and AddFamilyController.
+ * Dropdown strategy — StackPane overlay pattern.
  *
- * Both beneficiary and disaster search fields use the VBox-wrapper pattern:
+ * Both search fields (beneficiary + disaster) use:
  *
- *   wrapVBox (spacing=0)
- *     ├── HBox inputRow   — always managed/visible
- *     └── ListView list   — managed=false/visible=false when closed
+ *   StackPane (height locked to 44px)
+ *     ├── HBox inputRow     — always visible, sizes the StackPane
+ *     └── ListView list     — translateY=44, viewOrder=-1, floats over content below
  *
- * showDropdown / hideDropdown toggle setManaged()+setVisible() only.
- * No editable ComboBox, no Popup, no coordinate math.
+ * The ListView is always managed=true. Showing/hiding is done via setVisible() only.
+ * translateY moves it below the input row without affecting layout flow.
+ * viewOrder=-1 renders it on top of sibling nodes.
+ * The parent form-section has viewOrder=-1 so it paints above sections below it.
+ *
+ * Chevron icons (fx:id injected) are clickable toggles:
+ *   - Empty field  → show ALL items
+ *   - Typed field  → show current filtered results
+ *   - Open list    → close list
+ * Chevron rotates 180° when open, back to 0° when closed.
  */
 public class AddDisasterDamageDialogController {
 
@@ -49,14 +57,16 @@ public class AddDisasterDamageDialogController {
     @FXML private VBox root;
 
     // Beneficiary search
-    @FXML private HBox             beneficiaryInputRow;
-    @FXML private TextField        beneficiarySearchFld;
-    @FXML private ListView<String> beneficiarySearchList;
+    @FXML private HBox                beneficiaryInputRow;
+    @FXML private TextField           beneficiarySearchFld;
+    @FXML private ListView<String>    beneficiarySearchList;
+    @FXML private FontAwesomeIconView beneficiaryCaretIcon;
 
     // Disaster search
-    @FXML private HBox             disasterInputRow;
-    @FXML private TextField        disasterSearchFld;
-    @FXML private ListView<String> disasterSearchList;
+    @FXML private HBox                disasterInputRow;
+    @FXML private TextField           disasterSearchFld;
+    @FXML private ListView<String>    disasterSearchList;
+    @FXML private FontAwesomeIconView disasterCaretIcon;
 
     // Other fields
     @FXML private ComboBox<String> damageSeverityFld;
@@ -136,7 +146,7 @@ public class AddDisasterDamageDialogController {
     private void setupKeyHandlers() {
         root.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ESCAPE) {
-                if (isBeneficiaryDropdownVisible()) hideBeneficiaryDropdown();
+                if (isBeneficiaryDropdownVisible())  hideBeneficiaryDropdown();
                 else if (isDisasterDropdownVisible()) hideDisasterDropdown();
                 else exitBtn.fire();
             }
@@ -169,7 +179,7 @@ public class AddDisasterDamageDialogController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // Beneficiary dropdown — dashboard pattern
+    // Beneficiary dropdown
     // ═════════════════════════════════════════════════════════════════════════
 
     private void setupBeneficiaryDropdown() {
@@ -188,6 +198,7 @@ public class AddDisasterDamageDialogController {
             }
         });
 
+        // Row click — capture before focus-lost fires
         beneficiarySearchList.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 isBeneficiarySelecting = true;
@@ -200,6 +211,7 @@ public class AddDisasterDamageDialogController {
             }
         });
 
+        // Keyboard navigation inside list
         beneficiarySearchList.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 String sel = beneficiarySearchList.getSelectionModel().getSelectedItem();
@@ -217,7 +229,8 @@ public class AddDisasterDamageDialogController {
             if (suppressBeneficiaryListener) return;
             if (selectedBeneficiary != null) selectedBeneficiary = null;
 
-            String filter = newVal == null ? "" : newVal.trim().replaceAll("\\s+", " ").toLowerCase();
+            String filter = newVal == null ? ""
+                    : newVal.trim().replaceAll("\\s+", " ").toLowerCase();
 
             if (filter.isEmpty()) {
                 beneficiaryItems.clear();
@@ -237,10 +250,14 @@ public class AddDisasterDamageDialogController {
             else                     hideBeneficiaryDropdown();
         });
 
+        // DOWN arrow moves focus into list
         beneficiarySearchFld.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case DOWN -> {
-                    if (!isBeneficiaryDropdownVisible()) showBeneficiaryDropdown();
+                    if (!isBeneficiaryDropdownVisible()) {
+                        populateAllBeneficiaries();
+                        showBeneficiaryDropdown();
+                    }
                     beneficiarySearchList.requestFocus();
                     beneficiarySearchList.getSelectionModel().select(0);
                     e.consume();
@@ -249,9 +266,38 @@ public class AddDisasterDamageDialogController {
             }
         });
 
+        // Focus lost — hide unless user is clicking a row
         beneficiarySearchFld.focusedProperty().addListener((obs, was, focused) -> {
-            if (!focused && !isBeneficiarySelecting) Platform.runLater(this::hideBeneficiaryDropdown);
+            if (!focused && !isBeneficiarySelecting)
+                Platform.runLater(this::hideBeneficiaryDropdown);
         });
+
+        // ── Chevron / input row click — toggle dropdown ───────────────────────
+        beneficiaryInputRow.setOnMouseClicked(e -> {
+            // Let the TextField handle its own clicks normally
+            if (e.getTarget() == beneficiarySearchFld) return;
+
+            if (isBeneficiaryDropdownVisible()) {
+                hideBeneficiaryDropdown();
+            } else {
+                String current = beneficiarySearchFld.getText();
+                if (current == null || current.isBlank()) {
+                    populateAllBeneficiaries();
+                } // else the text listener already populated filtered items
+                if (!beneficiaryItems.isEmpty()) showBeneficiaryDropdown();
+                beneficiarySearchFld.requestFocus();
+            }
+            e.consume();
+        });
+    }
+
+    /** Fills beneficiaryItems with the full unfiltered list. */
+    private void populateAllBeneficiaries() {
+        if (allBeneficiaries == null) return;
+        List<String> all = allBeneficiaries.stream()
+                .map(this::beneficiaryDisplay)
+                .collect(Collectors.toList());
+        beneficiaryItems.setAll(all);
     }
 
     private void showBeneficiaryDropdown() {
@@ -261,15 +307,16 @@ public class AddDisasterDamageDialogController {
         beneficiarySearchList.setMinHeight(h);
         beneficiarySearchList.setMaxHeight(h);
         beneficiarySearchList.setVisible(true);
-        beneficiarySearchList.setManaged(true);
+        // managed stays true always — StackPane height is locked to 44px
         if (!beneficiaryInputRow.getStyleClass().contains("beneficiary-search-open"))
             beneficiaryInputRow.getStyleClass().add("beneficiary-search-open");
+        if (beneficiaryCaretIcon != null) beneficiaryCaretIcon.setRotate(180);
     }
 
     private void hideBeneficiaryDropdown() {
         beneficiarySearchList.setVisible(false);
-        beneficiarySearchList.setManaged(false);
         beneficiaryInputRow.getStyleClass().remove("beneficiary-search-open");
+        if (beneficiaryCaretIcon != null) beneficiaryCaretIcon.setRotate(0);
     }
 
     private boolean isBeneficiaryDropdownVisible() {
@@ -297,7 +344,7 @@ public class AddDisasterDamageDialogController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // Disaster dropdown — same pattern
+    // Disaster dropdown
     // ═════════════════════════════════════════════════════════════════════════
 
     private void setupDisasterDropdown() {
@@ -316,6 +363,7 @@ public class AddDisasterDamageDialogController {
             }
         });
 
+        // Row click — capture before focus-lost fires
         disasterSearchList.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 isDisasterSelecting = true;
@@ -328,6 +376,7 @@ public class AddDisasterDamageDialogController {
             }
         });
 
+        // Keyboard navigation inside list
         disasterSearchList.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 String sel = disasterSearchList.getSelectionModel().getSelectedItem();
@@ -345,7 +394,8 @@ public class AddDisasterDamageDialogController {
             if (suppressDisasterListener) return;
             if (selectedDisaster != null) selectedDisaster = null;
 
-            String filter = newVal == null ? "" : newVal.trim().replaceAll("\\s+", " ").toLowerCase();
+            String filter = newVal == null ? ""
+                    : newVal.trim().replaceAll("\\s+", " ").toLowerCase();
 
             if (filter.isEmpty()) {
                 disasterItems.clear();
@@ -365,10 +415,14 @@ public class AddDisasterDamageDialogController {
             else                     hideDisasterDropdown();
         });
 
+        // DOWN arrow moves focus into list
         disasterSearchFld.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case DOWN -> {
-                    if (!isDisasterDropdownVisible()) showDisasterDropdown();
+                    if (!isDisasterDropdownVisible()) {
+                        populateAllDisasters();
+                        showDisasterDropdown();
+                    }
                     disasterSearchList.requestFocus();
                     disasterSearchList.getSelectionModel().select(0);
                     e.consume();
@@ -377,9 +431,37 @@ public class AddDisasterDamageDialogController {
             }
         });
 
+        // Focus lost — hide unless user is clicking a row
         disasterSearchFld.focusedProperty().addListener((obs, was, focused) -> {
-            if (!focused && !isDisasterSelecting) Platform.runLater(this::hideDisasterDropdown);
+            if (!focused && !isDisasterSelecting)
+                Platform.runLater(this::hideDisasterDropdown);
         });
+
+        // ── Chevron / input row click — toggle dropdown ───────────────────────
+        disasterInputRow.setOnMouseClicked(e -> {
+            if (e.getTarget() == disasterSearchFld) return;
+
+            if (isDisasterDropdownVisible()) {
+                hideDisasterDropdown();
+            } else {
+                String current = disasterSearchFld.getText();
+                if (current == null || current.isBlank()) {
+                    populateAllDisasters();
+                }
+                if (!disasterItems.isEmpty()) showDisasterDropdown();
+                disasterSearchFld.requestFocus();
+            }
+            e.consume();
+        });
+    }
+
+    /** Fills disasterItems with the full unfiltered list. */
+    private void populateAllDisasters() {
+        if (allDisasters == null) return;
+        List<String> all = allDisasters.stream()
+                .map(this::disasterDisplay)
+                .collect(Collectors.toList());
+        disasterItems.setAll(all);
     }
 
     private void showDisasterDropdown() {
@@ -389,15 +471,15 @@ public class AddDisasterDamageDialogController {
         disasterSearchList.setMinHeight(h);
         disasterSearchList.setMaxHeight(h);
         disasterSearchList.setVisible(true);
-        disasterSearchList.setManaged(true);
         if (!disasterInputRow.getStyleClass().contains("beneficiary-search-open"))
             disasterInputRow.getStyleClass().add("beneficiary-search-open");
+        if (disasterCaretIcon != null) disasterCaretIcon.setRotate(180);
     }
 
     private void hideDisasterDropdown() {
         disasterSearchList.setVisible(false);
-        disasterSearchList.setManaged(false);
         disasterInputRow.getStyleClass().remove("beneficiary-search-open");
+        if (disasterCaretIcon != null) disasterCaretIcon.setRotate(0);
     }
 
     private boolean isDisasterDropdownVisible() {
@@ -499,9 +581,9 @@ public class AddDisasterDamageDialogController {
                 new FileChooser.ExtensionFilter("All Files", "*.*")
         );
 
-        String home = System.getProperty("user.home");
-        File oneDrive = new File(home + "/OneDrive/Pictures");
-        File pictures = new File(home + "/Pictures");
+        String home     = System.getProperty("user.home");
+        File   oneDrive = new File(home + "/OneDrive/Pictures");
+        File   pictures = new File(home + "/Pictures");
         if      (oneDrive.exists()) chooser.setInitialDirectory(oneDrive);
         else if (pictures.exists()) chooser.setInitialDirectory(pictures);
         else                        chooser.setInitialDirectory(new File(home));
@@ -511,12 +593,12 @@ public class AddDisasterDamageDialogController {
 
         try {
             if (file.length() > 5 * 1024 * 1024) {
-                AlertDialogManager.showWarning("File Too Large", "Please select an image under 5MB.");
+                AlertDialogManager.showWarning("File Too Large",
+                        "Please select an image under 5MB.");
                 return;
             }
 
             selectedImageBytes = java.nio.file.Files.readAllBytes(file.toPath());
-
             damagePhotoView.setImage(new Image(file.toURI().toString()));
             imagePlaceholder.setVisible(false);
             imagePlaceholder.setManaged(false);
@@ -553,12 +635,12 @@ public class AddDisasterDamageDialogController {
         try {
             if (!validateInput()) return;
 
-            String damageSeverity  = damageSeverityFld.getValue();
-            String verifiedBy      = verifiedByFld.getText().trim();
-            String notes           = notesFld.getText().trim();
-            String assessmentDate  = assessmentDatePicker.getValue() != null
+            String damageSeverity = damageSeverityFld.getValue();
+            String verifiedBy     = verifiedByFld.getText().trim();
+            String notes          = notesFld.getText().trim();
+            String assessmentDate = assessmentDatePicker.getValue() != null
                     ? assessmentDatePicker.getValue().toString() : "";
-            String regDate         = LocalDateTime.now()
+            String regDate        = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
             DisasterDamageModel record = new DisasterDamageModel(
@@ -570,9 +652,10 @@ public class AddDisasterDamageDialogController {
 
             boolean success = disasterDamageService.createDisasterDamage(record);
             if (success) {
-                int beneficiaryId = selectedBeneficiary.getBeneficiaryId();
-                boolean cascadeOk = new UpdateTrigger()
-                        .triggerCascadeUpdateWithDisaster(beneficiaryId, selectedDisaster.getDisasterId());
+                int     beneficiaryId = selectedBeneficiary.getBeneficiaryId();
+                boolean cascadeOk     = new UpdateTrigger()
+                        .triggerCascadeUpdateWithDisaster(
+                                beneficiaryId, selectedDisaster.getDisasterId());
 
                 if (cascadeOk) {
                     AlertDialogManager.showSuccess("Success",

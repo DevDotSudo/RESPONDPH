@@ -71,6 +71,7 @@
     -fx-background: transparent;
     -fx-padding: 0;
 }
+
 .dialog-scroll .viewport { -fx-background-color: transparent; }
 .dialog-scroll .corner { -fx-background-color: transparent; }
 
@@ -753,6 +754,7 @@
     -fx-background-radius: 6px 6px 0 0;
     -fx-border-radius: 6px 6px 0 0;
 }
+
 .beneficiary-search-open .beneficiary-caret-icon {
     -fx-fill: rgba(249, 115, 22, 0.90);
 }

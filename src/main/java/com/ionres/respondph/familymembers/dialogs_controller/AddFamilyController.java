@@ -7,6 +7,7 @@ import com.ionres.respondph.familymembers.FamilyMembersController;
 import com.ionres.respondph.familymembers.FamilyMembersModel;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.UpdateTrigger;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,42 +27,46 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Dropdown strategy — identical to DashboardController's map search:
+ * Dropdown strategy — StackPane overlay pattern.
  *
- *   searchBoxWrap (VBox, spacing=0)
- *     ├── beneficiaryInputRow (HBox — the visible text field row, always managed)
- *     └── beneficiarySearchList (ListView — managed=false/visible=false when closed)
+ *   StackPane (height locked to 44px)
+ *     ├── HBox beneficiaryInputRow  — always visible, sizes the StackPane
+ *     └── ListView beneficiarySearchList — translateY=44, viewOrder=-1,
+ *                                          floats over content below
  *
- * Showing the list: setManaged(true) + setVisible(true) + size it.
- * Hiding the list: setManaged(false) + setVisible(false).
+ * The ListView is always managed=true. Show/hide via setVisible() only.
+ * The parent form-section has viewOrder=-1 so it paints above sections below.
  *
- * No AnchorPane overlay, no sceneToLocal() math, no applyCss() bootstrapping,
- * no viewOrder tricks. The ScrollPane content simply grows to accommodate the
- * open list, exactly like the dashboard search box.
+ * Chevron (fx:id="beneficiaryCaretIcon") is a clickable toggle:
+ *   - Empty field  → show ALL beneficiaries
+ *   - Typed field  → show current filtered results
+ *   - Open list    → close list
+ * Chevron rotates 180° when open, resets to 0° when closed.
  */
 public class AddFamilyController {
 
     // ── FXML ─────────────────────────────────────────────────────────────────
     @FXML private VBox root;
-    @FXML private TextField firstNameFld;
-    @FXML private TextField middleNameFld;
-    @FXML private TextField lastNameFld;
-    @FXML private DatePicker birthDatePicker;
-    @FXML private ComboBox<String> genderSelection;
-    @FXML private ComboBox<String> maritalStatusSelection;
-    @FXML private ComboBox<String> disabilityTypeSelection;
-    @FXML private ComboBox<String> healthConditionSelection;
-    @FXML private ComboBox<String> employmentStatusSelection;
-    @FXML private ComboBox<String> educationLevelSelection;
-    @FXML private ComboBox<String> relationshipSelection;
-    @FXML private TextArea notesFld;
-    @FXML private Button saveBtn;
-    @FXML private Button exitBtn;
+    @FXML private TextField            firstNameFld;
+    @FXML private TextField            middleNameFld;
+    @FXML private TextField            lastNameFld;
+    @FXML private DatePicker           birthDatePicker;
+    @FXML private ComboBox<String>     genderSelection;
+    @FXML private ComboBox<String>     maritalStatusSelection;
+    @FXML private ComboBox<String>     disabilityTypeSelection;
+    @FXML private ComboBox<String>     healthConditionSelection;
+    @FXML private ComboBox<String>     employmentStatusSelection;
+    @FXML private ComboBox<String>     educationLevelSelection;
+    @FXML private ComboBox<String>     relationshipSelection;
+    @FXML private TextArea             notesFld;
+    @FXML private Button               saveBtn;
+    @FXML private Button               exitBtn;
 
     // ── Beneficiary search ────────────────────────────────────────────────────
-    @FXML private HBox             beneficiaryInputRow;
-    @FXML private TextField        beneficiaryNameFld;
-    @FXML private ListView<String> beneficiarySearchList;
+    @FXML private HBox                 beneficiaryInputRow;
+    @FXML private TextField            beneficiaryNameFld;
+    @FXML private ListView<String>     beneficiarySearchList;
+    @FXML private FontAwesomeIconView  beneficiaryCaretIcon;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private final ObservableList<String> searchItems = FXCollections.observableArrayList();
@@ -102,6 +107,7 @@ public class AddFamilyController {
         setupKeyHandlers();
         setupDropdown();
         wireSearchTextField();
+        wireChevronToggle();
     }
 
     // ── Key shortcuts ─────────────────────────────────────────────────────────
@@ -133,15 +139,13 @@ public class AddFamilyController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // Dropdown — dashboard pattern
+    // Dropdown setup
     // ═════════════════════════════════════════════════════════════════════════
 
     private void setupDropdown() {
         beneficiarySearchList.setItems(searchItems);
         beneficiarySearchList.setFixedCellSize(40);
 
-        // Width mirrors the input row; set here and also locked in CSS.
-        // The FXML default is managed=false + visible=false (list starts closed).
         beneficiarySearchList.setCellFactory(lv -> new ListCell<>() {
             {
                 setMaxWidth(Double.MAX_VALUE);
@@ -155,7 +159,7 @@ public class AddFamilyController {
             }
         });
 
-        // MOUSE_PRESSED fires before TextField loses focus — capture selection here.
+        // MOUSE_PRESSED fires before TextField loses focus — capture selection here
         beneficiarySearchList.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 isSelectingFromList = true;
@@ -164,7 +168,7 @@ public class AddFamilyController {
                     String item = searchItems.get(index);
                     if (item != null && !item.isBlank()) handleBeneficiarySelected(item);
                 }
-                e.consume(); // prevent focus leaving the TextField
+                e.consume();
             }
         });
 
@@ -190,7 +194,6 @@ public class AddFamilyController {
         beneficiaryNameFld.textProperty().addListener((obs, oldVal, newVal) -> {
             if (suppressListener) return;
 
-            // Typing clears any previously confirmed selection
             if (selectedBeneficiary != null) selectedBeneficiary = null;
 
             String filter = (newVal == null)
@@ -221,14 +224,18 @@ public class AddFamilyController {
         beneficiaryNameFld.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case DOWN -> {
-                    if (!isDropdownVisible()) showDropdown();
-                    beneficiarySearchList.requestFocus();
-                    beneficiarySearchList.getSelectionModel().select(0);
+                    if (!isDropdownVisible()) {
+                        populateAllBeneficiaries();
+                        if (!searchItems.isEmpty()) showDropdown();
+                    }
+                    if (isDropdownVisible()) {
+                        beneficiarySearchList.requestFocus();
+                        beneficiarySearchList.getSelectionModel().select(0);
+                    }
                     e.consume();
                 }
                 case ESCAPE -> { hideDropdown(); e.consume(); }
                 case ENTER  -> {
-                    // If nothing selected in list, submit the form
                     if (!isDropdownVisible()) saveBtn.fire();
                     e.consume();
                 }
@@ -241,12 +248,39 @@ public class AddFamilyController {
         });
     }
 
+    // ── Chevron / input row click toggle ──────────────────────────────────────
+
+    private void wireChevronToggle() {
+        beneficiaryInputRow.setOnMouseClicked(e -> {
+            // Let the TextField handle its own clicks normally
+            if (e.getTarget() == beneficiaryNameFld) return;
+
+            if (isDropdownVisible()) {
+                hideDropdown();
+            } else {
+                String current = beneficiaryNameFld.getText();
+                if (current == null || current.isBlank()) {
+                    populateAllBeneficiaries();
+                }
+                // else text listener already populated filtered results
+                if (!searchItems.isEmpty()) showDropdown();
+                beneficiaryNameFld.requestFocus();
+            }
+            e.consume();
+        });
+    }
+
+    /** Fills searchItems with the full unfiltered beneficiary list. */
+    private void populateAllBeneficiaries() {
+        if (allBeneficiaries == null) return;
+        List<String> all = allBeneficiaries.stream()
+                .map(this::displayText)
+                .collect(Collectors.toList());
+        searchItems.setAll(all);
+    }
+
     // ── Show / hide ───────────────────────────────────────────────────────────
 
-    /**
-     * Mirrors DashboardController.showInlineDropdown() exactly:
-     * compute height from row count, then setVisible+setManaged.
-     */
     private void showDropdown() {
         int    rows = Math.min(8, Math.max(1, searchItems.size()));
         double h    = rows * beneficiarySearchList.getFixedCellSize() + 2;
@@ -255,21 +289,19 @@ public class AddFamilyController {
         beneficiarySearchList.setMinHeight(h);
         beneficiarySearchList.setMaxHeight(h);
 
+        // managed stays true always — StackPane height is locked to 44px
         beneficiarySearchList.setVisible(true);
-        beneficiarySearchList.setManaged(true);
 
-        if (!beneficiaryInputRow.getStyleClass().contains("beneficiary-search-open")) {
+        if (!beneficiaryInputRow.getStyleClass().contains("beneficiary-search-open"))
             beneficiaryInputRow.getStyleClass().add("beneficiary-search-open");
-        }
+
+        if (beneficiaryCaretIcon != null) beneficiaryCaretIcon.setRotate(180);
     }
 
-    /**
-     * Mirrors DashboardController.hideInlineDropdown() exactly.
-     */
     private void hideDropdown() {
         beneficiarySearchList.setVisible(false);
-        beneficiarySearchList.setManaged(false);
         beneficiaryInputRow.getStyleClass().remove("beneficiary-search-open");
+        if (beneficiaryCaretIcon != null) beneficiaryCaretIcon.setRotate(0);
     }
 
     private boolean isDropdownVisible() {
@@ -278,9 +310,8 @@ public class AddFamilyController {
 
     // ── Confirm pick ──────────────────────────────────────────────────────────
 
-    /** Mirrors DashboardController.handleBeneficiarySelected(). */
     private void handleBeneficiarySelected(String chosenDisplayText) {
-        isSelectingFromList = false; // reset guard so focus-lost can work normally
+        isSelectingFromList = false;
 
         if (chosenDisplayText == null || chosenDisplayText.isBlank()) return;
 
@@ -340,7 +371,8 @@ public class AddFamilyController {
             allBeneficiaries.sort(Comparator.comparing(b -> b.getFirstName().toLowerCase()));
         } catch (Exception e) {
             e.printStackTrace();
-            AlertDialogManager.showError("Load Error", "Error loading beneficiaries: " + e.getMessage());
+            AlertDialogManager.showError("Load Error",
+                    "Error loading beneficiaries: " + e.getMessage());
         }
     }
 
@@ -385,7 +417,8 @@ public class AddFamilyController {
                 familyMembersController.loadTable();
                 clearFields();
             } else {
-                AlertDialogManager.showError("Error", "Failed to add family member. Please try again.");
+                AlertDialogManager.showError("Error",
+                        "Failed to add family member. Please try again.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -399,7 +432,8 @@ public class AddFamilyController {
 
     private boolean validateInput() {
         if (selectedBeneficiary == null) {
-            AlertDialogManager.showWarning("Validation Error", "Please search and select a beneficiary.");
+            AlertDialogManager.showWarning("Validation Error",
+                    "Please search and select a beneficiary.");
             beneficiaryNameFld.requestFocus(); return false;
         }
         if (firstNameFld.getText().trim().isEmpty()) {
@@ -416,7 +450,8 @@ public class AddFamilyController {
         }
         if (relationshipSelection.getValue() == null
                 || relationshipSelection.getValue().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Relationship to beneficiary is required.");
+            AlertDialogManager.showWarning("Validation Error",
+                    "Relationship to beneficiary is required.");
             relationshipSelection.requestFocus(); return false;
         }
         if (birthDatePicker.getValue() == null) {

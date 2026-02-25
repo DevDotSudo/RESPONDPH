@@ -7,27 +7,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<!--
-    DROPDOWN STRATEGY — identical to the Dashboard map search:
-
-    The beneficiary search is a VBox wrapper (fx:id="searchBoxWrap") that holds:
-      1. The TextField  — always visible/managed
-      2. The ListView   — managed="false" visible="false" by default
-
-    The controller shows/hides the ListView with setVisible()+setManaged() only,
-    exactly like DashboardController.showInlineDropdown() / hideInlineDropdown().
-
-    WHY THIS WORKS (and the AnchorPane overlay did not):
-      • The ListView is INSIDE the ScrollPane's content VBox, so it scrolls with
-        the form and is never clipped by an outer rounded-corner border-radius.
-      • managed=false means it does NOT affect the flow layout of the VBox while
-        hidden — it pops into existence below the TextField when shown.
-      • No sceneToLocal() math, no applyCss() bootstrapping, no viewOrder hacks.
-      • The ScrollPane content expands to accommodate the open list naturally.
-
-    The root is back to a plain VBox (the visible dialog card) — no AnchorPane
-    wrapper needed since we are no longer absolutely positioning anything.
--->
 <VBox fx:id="root" prefHeight="800.0" prefWidth="1100.0" styleClass="dialog-root"
       stylesheets="@/styles/family/dialog/addfamilydialog.css"
       xmlns="http://javafx.com/javafx/17.0.12"
@@ -58,7 +37,7 @@
             <padding><Insets bottom="24" left="24" right="24" top="20" /></padding>
 
             <!-- ── SECTION 1: SELECT BENEFICIARY ── -->
-            <VBox spacing="18" styleClass="form-section">
+            <VBox spacing="18" styleClass="form-section" viewOrder="-1">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="SEARCH" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Select Beneficiary" />
@@ -79,18 +58,18 @@
                     <Label styleClass="field-label" text="Search Beneficiary Name *" />
 
                     <!--
-                        searchBoxWrap: mirrors dashboard's searchBoxWrap exactly.
-                        spacing="0" so the TextField and ListView are flush against
-                        each other with no gap — giving the seamless joined look.
-                        pickOnBounds="false" so clicks pass through the transparent
-                        area around the TextField when the list is hidden.
+                        StackPane is height-locked to 44px.
+                        The ListView floats below via translateY=44 + viewOrder=-1.
+                        The parent form-section has viewOrder=-1 so it paints above
+                        all sections below it when the list is open.
                     -->
-                    <VBox fx:id="searchBoxWrap" spacing="0" pickOnBounds="false">
+                    <StackPane fx:id="searchBoxWrap" minHeight="44" prefHeight="44" maxHeight="44">
 
-                        <!-- The input row — always visible -->
+                        <!-- Input row — always visible, sizes the StackPane -->
                         <HBox fx:id="beneficiaryInputRow"
                               alignment="CENTER_LEFT" spacing="10"
-                              styleClass="flat-input,beneficiary-search-input">
+                              styleClass="flat-input,beneficiary-search-input"
+                              StackPane.alignment="TOP_CENTER">
                             <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
                             <TextField fx:id="beneficiaryNameFld"
                                        promptText="Type to search beneficiary name or ID"
@@ -102,17 +81,19 @@
                         </HBox>
 
                         <!--
-                            The dropdown list — hidden by default.
-                            managed="false" means it takes no vertical space when hidden,
-                            so it never pushes the form sections below it downward.
-                            When shown (managed=true + visible=true), it expands into
-                            the flow below the input row, exactly as in the dashboard.
+                            ListView floats over everything below.
+                            translateY=44 pushes it just below the input row.
+                            viewOrder=-1 renders it on top of sibling nodes.
+                            managed=true always — StackPane height locked to 44px.
                         -->
                         <ListView fx:id="beneficiarySearchList"
                                   styleClass="search-popup-list"
-                                  managed="false"
-                                  visible="false" />
-                    </VBox>
+                                  translateY="44"
+                                  viewOrder="-1"
+                                  visible="false"
+                                  StackPane.alignment="TOP_CENTER" />
+
+                    </StackPane>
                 </VBox>
             </VBox>
 

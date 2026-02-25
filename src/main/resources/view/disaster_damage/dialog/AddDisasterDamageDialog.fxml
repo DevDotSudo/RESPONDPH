@@ -9,18 +9,6 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<!--
-    DROPDOWN STRATEGY — identical to DashboardController and AddFamilyController:
-
-    Both search fields (beneficiary + disaster) use the VBox-wrapper pattern:
-
-      searchBoxWrap (VBox, spacing=0)
-        ├── HBox (the visible input row — always managed/visible)
-        └── ListView (managed=false + visible=false when closed)
-
-    Controller shows/hides each ListView with setManaged()+setVisible() only.
-    No ComboBox editable hack, no Popup, no coordinate math.
--->
 <VBox fx:id="root" prefHeight="900.0" prefWidth="1200.0" spacing="0"
       styleClass="dialog-root"
       stylesheets="@/styles/disaster_damage/dialog/adddisasterdamagedialog.css"
@@ -52,7 +40,7 @@
             <padding><Insets bottom="24" left="24" right="24" top="20" /></padding>
 
             <!-- ── SECTION 1: SEARCH ── -->
-            <VBox spacing="18" styleClass="form-section">
+            <VBox spacing="18" styleClass="form-section" viewOrder="-1">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="SEARCH" size="18" styleClass="section-icon" />
                     <Label styleClass="section-title" text="Search" />
@@ -80,52 +68,55 @@
                     <!-- LEFT: Beneficiary search -->
                     <VBox spacing="8" GridPane.columnIndex="0">
                         <Label styleClass="field-label" text="Search Beneficiary *" />
-                        <!--
-                            beneficiarySearchWrap: VBox wrapper (spacing=0) so the
-                            ListView flows directly below the input row with no gap.
-                        -->
-                        <VBox fx:id="beneficiarySearchWrap" spacing="0" pickOnBounds="false">
+                        <StackPane fx:id="beneficiarySearchWrap"
+                                   minHeight="44" prefHeight="44" maxHeight="44">
                             <HBox fx:id="beneficiaryInputRow"
                                   alignment="CENTER_LEFT" spacing="10"
-                                  styleClass="flat-input,beneficiary-search-input">
+                                  styleClass="flat-input,beneficiary-search-input"
+                                  StackPane.alignment="TOP_CENTER">
                                 <FontAwesomeIconView glyphName="USER" size="14" styleClass="field-icon" />
                                 <TextField fx:id="beneficiarySearchFld"
                                            promptText="Type to search beneficiary name or ID"
                                            styleClass="field-input"
                                            HBox.hgrow="ALWAYS" />
-                                <FontAwesomeIconView glyphName="CHEVRON_DOWN" size="11"
+                                <FontAwesomeIconView fx:id="beneficiaryCaretIcon"
+                                                     glyphName="CHEVRON_DOWN" size="11"
                                                      styleClass="beneficiary-caret-icon" />
                             </HBox>
                             <ListView fx:id="beneficiarySearchList"
                                       styleClass="search-popup-list"
-                                      managed="false"
-                                      visible="false" />
-                        </VBox>
+                                      translateY="44"
+                                      viewOrder="-1"
+                                      visible="false"
+                                      StackPane.alignment="TOP_CENTER" />
+                        </StackPane>
                     </VBox>
 
                     <!-- RIGHT: Disaster search -->
                     <VBox spacing="8" GridPane.columnIndex="1">
                         <Label styleClass="field-label" text="Search Disaster *" />
-                        <!--
-                            disasterSearchWrap: same pattern as beneficiarySearchWrap.
-                        -->
-                        <VBox fx:id="disasterSearchWrap" spacing="0" pickOnBounds="false">
+                        <StackPane fx:id="disasterSearchWrap"
+                                   minHeight="44" prefHeight="44" maxHeight="44">
                             <HBox fx:id="disasterInputRow"
                                   alignment="CENTER_LEFT" spacing="10"
-                                  styleClass="flat-input,beneficiary-search-input">
+                                  styleClass="flat-input,beneficiary-search-input"
+                                  StackPane.alignment="TOP_CENTER">
                                 <FontAwesomeIconView glyphName="FIRE" size="14" styleClass="field-icon" />
                                 <TextField fx:id="disasterSearchFld"
                                            promptText="Type to search disaster name or ID"
                                            styleClass="field-input"
                                            HBox.hgrow="ALWAYS" />
-                                <FontAwesomeIconView glyphName="CHEVRON_DOWN" size="11"
+                                <FontAwesomeIconView fx:id="disasterCaretIcon"
+                                                     glyphName="CHEVRON_DOWN" size="11"
                                                      styleClass="beneficiary-caret-icon" />
                             </HBox>
                             <ListView fx:id="disasterSearchList"
                                       styleClass="search-popup-list"
-                                      managed="false"
-                                      visible="false" />
-                        </VBox>
+                                      translateY="44"
+                                      viewOrder="-1"
+                                      visible="false"
+                                      StackPane.alignment="TOP_CENTER" />
+                        </StackPane>
                     </VBox>
 
                     <rowConstraints><RowConstraints /></rowConstraints>

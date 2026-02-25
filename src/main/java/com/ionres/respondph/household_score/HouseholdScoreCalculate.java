@@ -773,8 +773,8 @@ public class HouseholdScoreCalculate {
         if (access == null) return 0.0;
         String lower = access.trim().toLowerCase();
         if (lower.contains("affected")) return vulnScores.getAffectedScore();
-        if (lower.contains("partially damage")) return vulnScores.getPartiallyScore();
-        if (lower.contains("totally damage")) return vulnScores.getTotallyScore();
+        if (lower.contains("partially damaged")) return vulnScores.getPartiallyScore();
+        if (lower.contains("totally damaged")) return vulnScores.getTotallyScore();
         return 0.0;
     }
 

@@ -16,4 +16,5 @@ public interface AidTypeService {
     List<Integer> getAllAidTypeIds();
     boolean hasAnyAidTypes();
     List<AidTypeModelComboBox> findAll();
+    public int getLatestAidTypeId();
 }

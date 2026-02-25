@@ -493,15 +493,11 @@ public class AddAidTypeController {
 
     private int getLatestAidTypeId() {
         try {
-            List<AidTypeModel> allAidTypes = aidTypeService.getAllAidType();
-            if (allAidTypes != null && !allAidTypes.isEmpty()) {
-                return allAidTypes.get(allAidTypes.size() - 1).getAidTypeId();
-            }
+            return aidTypeService.getLatestAidTypeId();
         } catch (Exception e) {
             System.err.println("Error getting latest aid type ID: " + e.getMessage());
-            e.printStackTrace();
+            return -1;
         }
-        return -1;
     }
 
     private static class BeneficiaryDisasterPair {

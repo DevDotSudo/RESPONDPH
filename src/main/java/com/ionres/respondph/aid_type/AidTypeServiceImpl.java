@@ -66,6 +66,10 @@ public class AidTypeServiceImpl implements AidTypeService{
         }
 
     }
+    @Override
+    public int getLatestAidTypeId() {
+        return aidTypeDAO.getLatestAidTypeId();
+    }
 
     @Override
     public List<AidTypeModel> getAllAidType() {

@@ -746,3 +746,107 @@
 
 .btn-icon { -fx-fill: rgba(255,255,255,0.98); }
 .btn-text { -fx-text-fill: rgba(255,255,255,0.98); -fx-font-weight: 900; }
+
+.beneficiary-search-open {
+    -fx-border-color: rgba(249, 115, 22, 0.80);
+    -fx-background-color: rgba(249, 115, 22, 0.05);
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-border-radius: 6px 6px 0 0;
+}
+.beneficiary-search-open .beneficiary-caret-icon {
+    -fx-fill: rgba(249, 115, 22, 0.90);
+}
+
+/* Caret icon — default */
+.beneficiary-caret-icon {
+    -fx-fill: rgba(148, 163, 184, 0.50);
+}
+
+/* ── Dropdown ListView container ── */
+.search-popup-list {
+    -fx-background-color: #1a2537;
+    -fx-border-color: rgba(249, 115, 22, 0.75);
+    -fx-border-width: 0 1px 1px 1px;   /* no top border — joins input row */
+    -fx-background-radius: 0 0 6px 6px;
+    -fx-border-radius: 0 0 6px 6px;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.55), 20, 0.0, 0, 6);
+}
+
+/* Suppress horizontal scrollbar */
+.search-popup-list .scroll-bar:horizontal {
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-opacity: 0;
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+.search-popup-list .corner {
+    -fx-background-color: transparent;
+}
+
+/* Slim vertical scrollbar */
+.search-popup-list .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 6px;
+}
+.search-popup-list .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+.search-popup-list .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(249, 115, 22, 0.40);
+    -fx-background-radius: 3px;
+}
+.search-popup-list .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(249, 115, 22, 0.70);
+}
+.search-popup-list .scroll-bar:vertical .increment-button,
+.search-popup-list .scroll-bar:vertical .decrement-button {
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-opacity: 0;
+    -fx-padding: 0;
+}
+
+/* Rows — default */
+.search-popup-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-padding: 0 16px;
+    -fx-border-color: rgba(148, 163, 184, 0.06);
+    -fx-border-width: 0 0 1px 0;
+    -fx-wrap-text: false;
+}
+
+/* Hover */
+.search-popup-list .list-cell:hover {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-border-color: transparent;
+}
+
+/* Keyboard-selected */
+.search-popup-list .list-cell:selected,
+.search-popup-list .list-cell:filled:selected {
+    -fx-background-color: #ea580c;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-border-color: transparent;
+}
+
+/* Selected + hovered */
+.search-popup-list .list-cell:filled:selected:hover {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: transparent;
+}
+
+/* Empty cells */
+.search-popup-list .list-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}

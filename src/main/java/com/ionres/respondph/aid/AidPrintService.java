@@ -381,7 +381,7 @@ public class AidPrintService {
         Label republic = new Label("Republic of the Philippines");
         republic.setStyle("-fx-font-size: 9; -fx-text-fill: #555; -fx-alignment: center;");
 
-        Label title = new Label("MUNICIPAL OF BANATE DISASTER RISK REDUCTION AND MANAGEMENT");
+        Label title = new Label("MUNICIPALITY OF BANATE DISASTER RISK REDUCTION AND MANAGEMENT");
         title.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-alignment: center;");
 
         Label reportTypeLabel = new Label(reportTitle);

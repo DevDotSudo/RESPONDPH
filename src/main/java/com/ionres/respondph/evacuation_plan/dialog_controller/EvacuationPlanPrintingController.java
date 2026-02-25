@@ -1027,7 +1027,7 @@ public class EvacuationPlanPrintingController {
         headerTable.addCell(new Cell()
                 .add(new Paragraph(reportType.toUpperCase())
                         .setFont(fontBold).setFontSize(18).setFontColor(PDF_WHITE))
-                .add(new Paragraph("MUNICIPAL OF BANATE Disaster Risk Reduction and Management")
+                .add(new Paragraph("MUNICIPALITY OF BANATE Disaster Risk Reduction and Management")
                         .setFont(fontNormal).setFontSize(10)
                         .setFontColor(new DeviceRgb(189, 215, 238)))
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)

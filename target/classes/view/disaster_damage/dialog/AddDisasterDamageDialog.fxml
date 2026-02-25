@@ -150,8 +150,8 @@
                                       styleClass="field-combo" HBox.hgrow="ALWAYS">
                                 <items><FXCollections fx:factory="observableArrayList">
                                     <String fx:value="Affected" />
-                                    <String fx:value="Partially Damage" />
-                                    <String fx:value="Totally Damage" />
+                                    <String fx:value="Partially Damaged" />
+                                    <String fx:value="Totally Damaged" />
                                 </FXCollections></items>
                             </ComboBox>
                         </HBox>

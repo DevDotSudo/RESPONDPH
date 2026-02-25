@@ -15,4 +15,5 @@ public interface AidTypeDAO {
 
     List<Integer> getAllAidTypeIds();
     boolean hasAnyAidTypes();
+    public int getLatestAidTypeId();
 }

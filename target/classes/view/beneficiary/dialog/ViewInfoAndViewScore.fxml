@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" prefHeight="750" spacing="0" styleClass="dialog-root" stylesheets="@/styles/beneficiary/dialog/viewinfoscore.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.ViewInfoAndScoreController">
+<VBox fx:id="root" prefHeight="750.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/beneficiary/dialog/viewinfoscore.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.beneficiary.ViewInfoAndScoreController">
 
     <!-- ══ HEADER ══ -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -286,6 +286,7 @@
                     <ColumnConstraints percentWidth="25" />
                     <ColumnConstraints percentWidth="25" />
                     <ColumnConstraints percentWidth="25" />
+               <ColumnConstraints minWidth="10.0" percentWidth="25.0" prefWidth="100.0" />
                 </columnConstraints>
 
                 <!-- Row 0 -->
@@ -311,87 +312,83 @@
                 </VBox>
 
                 <!-- Row 1 -->
-                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <VBox styleClass="score-card" GridPane.columnIndex="4">
                     <Label styleClass="score-card-label" text="Disability" />
                     <Label fx:id="disabilityScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="disabilityScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <VBox styleClass="score-card" GridPane.rowIndex="1">
                     <Label styleClass="score-card-label" text="Health Condition" />
                     <Label fx:id="healthScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="healthScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <Label styleClass="score-card-label" text="Clean Water" />
                     <Label fx:id="cleanWaterScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="cleanWaterScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <Label styleClass="score-card-label" text="Sanitation" />
                     <Label fx:id="sanitationScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="sanitationScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
 
                 <!-- Row 2 -->
-                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="1">
                     <Label styleClass="score-card-label" text="House Type" />
                     <Label fx:id="houseScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="houseScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <VBox styleClass="score-card" GridPane.columnIndex="4" GridPane.rowIndex="1">
                     <Label styleClass="score-card-label" text="Ownership" />
                     <Label fx:id="ownershipScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="ownershipScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <VBox styleClass="score-card" GridPane.rowIndex="2">
                     <Label styleClass="score-card-label" text="Damage Severity" />
                     <Label fx:id="damageScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="damageScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <Label styleClass="score-card-label" text="Employment" />
                     <Label fx:id="employmentScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="employmentScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
 
                 <!-- Row 3 -->
-                <VBox styleClass="score-card" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <Label styleClass="score-card-label" text="Monthly Income" />
                     <Label fx:id="incomeScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="incomeScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="2">
                     <Label styleClass="score-card-label" text="Education Level" />
                     <Label fx:id="educationScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="educationScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <VBox styleClass="score-card" GridPane.columnIndex="4" GridPane.rowIndex="2">
                     <Label styleClass="score-card-label" text="Digital Access" />
                     <Label fx:id="digitalScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="digitalScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
                 </VBox>
-                <VBox styleClass="score-card" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                <VBox styleClass="score-card" GridPane.rowIndex="3">
                     <Label styleClass="score-card-label" text="Dependency Ratio" />
                     <Label fx:id="dependencyScoreLabel" styleClass="score-card-value" text="—" />
                     <ProgressBar fx:id="dependencyScoreBar" maxWidth="Infinity" progress="0" styleClass="score-bar" />
+                </VBox>
+                <VBox alignment="CENTER" styleClass="total-score-box" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.rowIndex="3">
+                    <Label fx:id="totalScoreTitleLabel" styleClass="total-score-label" text="FINAL SCORE" />
+                    <Label fx:id="totalScoreLabel" styleClass="total-score-value" text="—" />
+                    <Label fx:id="totalScoreCategory" styleClass="total-score-category" text="" />
                 </VBox>
             <rowConstraints>
                <RowConstraints />
                <RowConstraints />
                <RowConstraints />
                <RowConstraints />
+               <RowConstraints />
             </rowConstraints>
             </GridPane>
-
-            <!-- ── Total Score ── -->
-            <HBox alignment="CENTER">
-                <VBox alignment="CENTER" styleClass="total-score-box">
-                    <Label fx:id="totalScoreTitleLabel" styleClass="total-score-label" text="FINAL SCORE" />
-                    <Label fx:id="totalScoreLabel" styleClass="total-score-value" text="—" />
-                    <Label fx:id="totalScoreCategory" styleClass="total-score-category" text="" />
-                </VBox>
-            </HBox>
-
         </VBox>
     </ScrollPane>
 

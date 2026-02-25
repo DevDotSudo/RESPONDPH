@@ -316,6 +316,21 @@ public class AidTypeDAOImpl implements AidTypeDAO{
         return false;
     }
 
+    @Override
+    public int getLatestAidTypeId() {
+        String sql = "SELECT MAX(aid_type_id) FROM aid_type";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting latest aid type ID: " + e.getMessage());
+        }
+        return -1;
+    }
+
 
 
 

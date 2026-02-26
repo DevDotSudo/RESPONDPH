@@ -7,10 +7,7 @@ import com.ionres.respondph.util.AlertDialogManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -24,6 +21,8 @@ public class EditAdminDialogController {
     @FXML private TextField middleNameField;
 
     @FXML private TextField lastNameField;
+    @FXML private PasswordField newPasswordField;
+    @FXML private PasswordField confirmPasswordField;
 
     @FXML private Label errorLabel;
 
@@ -125,6 +124,24 @@ public class EditAdminDialogController {
             return false;
         }
 
+        String newPassword = newPasswordField.getText();
+        String confirmPassword = confirmPasswordField.getText();
+
+        if (!newPassword.isEmpty() || !confirmPassword.isEmpty()) {
+            if (newPassword.length() < 6) {
+                AlertDialogManager.showWarning("Validation Error",
+                        "New password must be at least 6 characters.");
+                newPasswordField.requestFocus();
+                return false;
+            }
+            if (!newPassword.equals(confirmPassword)) {
+                AlertDialogManager.showWarning("Validation Error",
+                        "Passwords do not match.");
+                confirmPasswordField.requestFocus();
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -133,29 +150,30 @@ public class EditAdminDialogController {
         firstNameField.setText("");
         middleNameField.setText("");
         lastNameField.setText("");
+        newPasswordField.setText("");
+        confirmPasswordField.setText("");
     }
 
     public boolean updateAdminInfo() {
         try {
             AdminModel admin = selectedAdmin;
 
-            String username = usernameField.getText().trim();
-            String fname = firstNameField.getText().trim();
-            String mname = middleNameField.getText().trim();
-            String lname = lastNameField.getText().trim();
-
-            admin.setUsername(username);
-            admin.setFirstname(fname);
-            admin.setMiddlename(mname);
-            admin.setLastname(lname);
+            admin.setUsername(usernameField.getText().trim());
+            admin.setFirstname(firstNameField.getText().trim());
+            admin.setMiddlename(middleNameField.getText().trim());
+            admin.setLastname(lastNameField.getText().trim());
             admin.setRole(roleComboBox.getValue());
 
-
+            String newPassword = newPasswordField.getText();
+            if (!newPassword.isEmpty()) {
+                admin.setPassword(newPassword);
+            } else {
+                admin.setPassword(null);
+            }
             boolean updated = adminService.updateAdmin(admin);
-
             if (updated) {
                 AlertDialogManager.showSuccess("Update Successful",
-                        "Admin information has been successfully updated.");
+                        "The information has been successfully updated.");
                 return true;
             } else {
                 AlertDialogManager.showError("Update Failed",
@@ -166,7 +184,7 @@ public class EditAdminDialogController {
         } catch (Exception ex) {
             ex.printStackTrace();
             AlertDialogManager.showError("Update Error",
-                    "An error occurred while updating admin: " + ex.getMessage());
+                    "An error occurred while updating info: " + ex.getMessage());
             return false;
         }
     }

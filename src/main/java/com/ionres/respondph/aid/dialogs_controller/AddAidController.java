@@ -1697,7 +1697,7 @@ public class AddAidController {
                 .setBackgroundColor(COLOR_HEADER_BG).setPadding(14)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
         Cell metaCell = new Cell()
-                .add(new Paragraph("RespondPH")
+                .add(new Paragraph("RESPOND-PH")
                         .setFont(fontBold).setFontSize(13).setFontColor(COLOR_WHITE)
                         .setTextAlignment(TextAlignment.RIGHT))
                 .add(new Paragraph(timestamp)

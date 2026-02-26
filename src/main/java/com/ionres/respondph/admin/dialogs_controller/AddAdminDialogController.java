@@ -84,7 +84,12 @@ public class AddAdminDialogController {
 
             admin.setRole(roleComboBox.getValue());
 
-            adminService.createAdmin(admin);
+            boolean created = adminService.createAdmin(admin);
+
+            if (!created) {
+                AlertDialogManager.showError("Create Failed", "An unexpected error occurred.");
+                return;
+            }
 
             AlertDialogManager.showSuccess("Admin Created",
                     "New administrator has been successfully added to the system.");

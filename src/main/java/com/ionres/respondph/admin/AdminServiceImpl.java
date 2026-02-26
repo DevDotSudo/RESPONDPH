@@ -77,6 +77,15 @@ public class AdminServiceImpl implements AdminService {
                 throw ExceptionFactory.missingField("Role");
             }
 
+            // ✅ Check duplicate BEFORE encrypting, using decrypted data
+            boolean usernameExists = getAllAdmins().stream()
+                    .anyMatch(a -> a.getUsername().equalsIgnoreCase(admin.getUsername().trim()));
+
+            if (usernameExists) {
+                throw ExceptionFactory.duplicate("Admin", admin.getUsername());
+            }
+
+            // Proceed with encryption and saving
             List<String> encryptedData = CRYPTO.encrypt(
                     admin.getUsername(),
                     admin.getFirstname(),
@@ -88,17 +97,12 @@ public class AdminServiceImpl implements AdminService {
 
             String hashedPassword    = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
             String encryptedUsername = encryptedData.get(0);
-            String encryptedFname   = encryptedData.get(1);
-            String encryptedMname   = encryptedData.get(2);
-            String encryptedLname   = encryptedData.get(3);
-            String encryptedRegDate = encryptedData.get(4);
+            String encryptedFname    = encryptedData.get(1);
+            String encryptedMname    = encryptedData.get(2);
+            String encryptedLname    = encryptedData.get(3);
+            String encryptedRegDate  = encryptedData.get(4);
             String encryptedRole     = encryptedData.get(5);
 
-            if (adminDao.existsByUsername(encryptedUsername)) {
-                throw ExceptionFactory.duplicate("Admin", admin.getUsername());
-            }
-
-            // Build model with role — role is stored as plain text (not encrypted)
             AdminModel toSave = new AdminModel(
                     encryptedUsername,
                     encryptedFname,
@@ -106,7 +110,7 @@ public class AdminServiceImpl implements AdminService {
                     encryptedLname,
                     encryptedRegDate,
                     hashedPassword,
-                    encryptedRole     // plain text role
+                    encryptedRole
             );
 
             boolean saved = adminDao.saving(toSave);
@@ -120,7 +124,7 @@ public class AdminServiceImpl implements AdminService {
             return false;
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error creating admin", ex);
-            return false;
+            throw new RuntimeException(ex.getMessage(), ex); // ✅ re-throw so UI gets the message
         }
     }
 
@@ -154,7 +158,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
 
     @Override
     public boolean updateAdmin(AdminModel admin) {
@@ -164,6 +167,14 @@ public class AdminServiceImpl implements AdminService {
             }
             if (admin.getRole() == null || admin.getRole().isBlank()) {
                 throw ExceptionFactory.missingField("Role");
+            }
+
+            boolean usernameExists = getAllAdmins().stream()
+                    .anyMatch(a -> a.getId() != admin.getId() &&
+                            a.getUsername().equalsIgnoreCase(admin.getUsername().trim()));
+
+            if (usernameExists) {
+                throw ExceptionFactory.duplicate("User", admin.getUsername());
             }
 
             List<String> encryptedData = CRYPTO.encryptUpdate(
@@ -179,11 +190,15 @@ public class AdminServiceImpl implements AdminService {
             admin.setMiddlename(encryptedData.get(2));
             admin.setLastname(encryptedData.get(3));
             admin.setRole(encryptedData.get(4));
-            // role stays as-is (plain text, already set on the model)
+
+            if (admin.getPassword() != null && !admin.getPassword().isBlank()) {
+                String hashed = BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt());
+                admin.setPassword(hashed);
+            }
 
             boolean updated = adminDao.update(admin);
             if (!updated) {
-                throw ExceptionFactory.failedToCreate("Admin");
+                throw ExceptionFactory.failedToCreate("User");
             }
             return true;
 
@@ -192,7 +207,7 @@ public class AdminServiceImpl implements AdminService {
             return false;
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error updating admin", ex);
-            return false;
+            throw new RuntimeException(ex.getMessage(), ex); // ✅ re-throw so UI gets the message
         }
     }
 

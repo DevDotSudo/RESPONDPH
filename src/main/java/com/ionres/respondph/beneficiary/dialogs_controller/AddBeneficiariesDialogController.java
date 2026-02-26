@@ -287,6 +287,10 @@ public class AddBeneficiariesDialogController {
                 DashboardRefresher.refreshDisasterInSend();
                 DashboardRefresher.refreshMapInDisasterMapping();
                 DashboardRefresher.refreshBeneficiarySelectionTable();
+                // Close dialog after successful transaction
+                if (dialogStage != null) {
+                    dialogStage.hide();
+                }
             } else {
                 javax.swing.JOptionPane.showMessageDialog(
                         null,

@@ -96,6 +96,10 @@ public class AddEvacSiteController {
                 clearFields();
                 DashboardRefresher.refresh();
                 DashboardRefresher.refreshEvacSiteMap();
+                // Close dialog after successful add
+                if (dialogStage != null) {
+                    dialogStage.hide();
+                }
             } else {
                 AlertDialogManager.showError("Error", "Failed to add evacuation site. Please try again.");
             }

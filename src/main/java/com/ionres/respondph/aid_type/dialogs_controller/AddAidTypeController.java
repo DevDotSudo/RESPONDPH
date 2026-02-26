@@ -397,6 +397,15 @@ public class AddAidTypeController {
                             successCount + " of " + total +
                             " household score(s) calculated for all beneficiaries.");
 
+            // Close the add-aid-type dialog (owner of the progress dialog)
+            try {
+                java.awt.Window w = null;
+                if (root.getScene() != null && root.getScene().getWindow() != null) {
+                    javafx.stage.Window win = root.getScene().getWindow();
+                    if (win instanceof Stage) ((Stage) win).hide();
+                }
+            } catch (Exception ignore) {}
+
             DashboardRefresher.refreshComboBoxOfDNAndAN();
             DashboardRefresher.refresh();
             clearFields();
@@ -413,6 +422,14 @@ public class AddAidTypeController {
                     "Aid type created, but there was an error calculating household scores.\n" +
                             (ex != null ? ex.getMessage() : "Unknown error"));
             if (ex != null) ex.printStackTrace();
+
+            // Close the add-aid-type dialog (owner of the progress dialog)
+            try {
+                if (root.getScene() != null && root.getScene().getWindow() != null) {
+                    javafx.stage.Window win = root.getScene().getWindow();
+                    if (win instanceof Stage) ((Stage) win).hide();
+                }
+            } catch (Exception ignore) {}
 
             DashboardRefresher.refreshComboBoxOfDNAndAN();
             DashboardRefresher.refresh();

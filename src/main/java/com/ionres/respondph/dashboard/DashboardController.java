@@ -49,7 +49,11 @@ public class DashboardController {
     @FXML private Label currentDateLabel;
     @FXML private Label currentTimeLabel;
     @FXML private Label totalEvacutaionSiteLabel;
-    @FXML private Label adminNameLabel;
+    @FXML private Label adminNameText;
+    @FXML private HBox adminNameLabel;          // the clickable admin row
+    @FXML private StackPane adminAreaPane;
+    @FXML private VBox adminDropdown;
+    @FXML private HBox changePasswordMenuItem;  // fx:id is on the HBox row
     @FXML private Button searchToggleBtn;
     @FXML private TextField beneficiarySearchBox;
     @FXML private HBox searchOverlay;
@@ -60,25 +64,45 @@ public class DashboardController {
     @FXML private VBox searchBoxWrap;
     @FXML private ListView<String> beneficiarySearchList;
 
+    // ── Change password FXML ──────────────────────────────────────────────────
+    @FXML private StackPane changePasswordOverlay;
+    @FXML private VBox changePasswordDialog;
+    @FXML private PasswordField currentPasswordField;
+    @FXML private PasswordField newPasswordField;
+    @FXML private PasswordField confirmPasswordField;
+    @FXML private Button closePasswordDialogBtn;
+    @FXML private Button cancelPasswordBtn;
+    @FXML private Button confirmPasswordBtn;
+    @FXML private Button toggleCurrentPwBtn;
+    @FXML private Button toggleNewPwBtn;
+    @FXML private Button toggleConfirmPwBtn;
+    @FXML private Label passwordMessageLabel;
+
+    // ── Password visibility state ─────────────────────────────────────────────
+    private boolean showCurrentPw = false;
+    private boolean showNewPw     = false;
+    private boolean showConfirmPw = false;
+    private TextField currentPwVisible;
+    private TextField newPwVisible;
+    private TextField confirmPwVisible;
+
     // ── Marker images ─────────────────────────────────────────────────────────
     private Image personMarker;
     private Image evacSiteMarker;
 
-    private static final double MIN_ZOOM_FOR_MARKERS = 16.0;
-    private static final double MARKER_WIDTH = 32;
-    private static final double MARKER_HEIGHT = 32;
-    private static final double MARKER_OFFSET_Y = MARKER_HEIGHT;
-    private static final double EVAC_MARKER_WIDTH = 32;
-    private static final double EVAC_MARKER_HEIGHT = 32;
-    private static final double EVAC_MARKER_OFFSET_Y = EVAC_MARKER_HEIGHT;
+    private static final double MIN_ZOOM_FOR_MARKERS  = 16.0;
+    private static final double MARKER_WIDTH          = 32;
+    private static final double MARKER_HEIGHT         = 32;
+    private static final double MARKER_OFFSET_Y       = MARKER_HEIGHT;
+    private static final double EVAC_MARKER_WIDTH     = 32;
+    private static final double EVAC_MARKER_HEIGHT    = 32;
+    private static final double EVAC_MARKER_OFFSET_Y  = EVAC_MARKER_HEIGHT;
 
     // ── Drag / zoom ───────────────────────────────────────────────────────────
     private double dragStartX, dragStartY;
     private double currentCenterLat;
     private double currentCenterLon;
     private double currentZoom = 13.0;
-
-    // ── Drag threshold — prevents accidental pan on click ─────────────────────
     private boolean isDragging = false;
     private static final double DRAG_THRESHOLD = 4.0;
 
@@ -86,7 +110,7 @@ public class DashboardController {
     private BeneficiaryMarker selectedBeneficiary = null;
     private VBox infoPanel;
 
-    // ── Search dropdown ───────────────────────────────────────────────────────
+    // ── Search ────────────────────────────────────────────────────────────────
     private final ObservableList<String> searchItems = FXCollections.observableArrayList();
     private boolean suppressListener = false;
 
@@ -112,16 +136,10 @@ public class DashboardController {
         System.out.println("=== DashboardController.initialize() ===");
         if (admin1 != null) System.out.println("Username: " + admin1.getUsername());
 
-        // FIX #1: Wire searchToggleBtn here (before Platform.runLater) — FXML
-        // injection is complete at initialize() time, so this is safe.
         searchToggleBtn.setOnAction(e -> searchToggle());
 
-        // FIX #2: Merged into a SINGLE Platform.runLater block so all UI setup
-        // runs in one consistent pass on the FX thread, eliminating race conditions
-        // between the two previously separate runLater calls.
         Platform.runLater(() -> {
 
-            // ── searchOverlay sizing ──────────────────────────────────────
             if (searchOverlay != null) {
                 searchOverlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
                 searchOverlay.setPickOnBounds(false);
@@ -129,11 +147,9 @@ public class DashboardController {
                 searchOverlay.setPadding(new Insets(10, 10, 0, 0));
             }
 
-            // ── Load marker images ────────────────────────────────────────
             try {
                 personMarker = new Image(getClass().getResourceAsStream("/images/person_marker.png"));
                 if (personMarker.isError()) personMarker = null;
-
                 evacSiteMarker = new Image(getClass().getResourceAsStream("/images/location-pin.png"));
                 if (evacSiteMarker.isError()) evacSiteMarker = null;
             } catch (Exception e) {
@@ -141,7 +157,6 @@ public class DashboardController {
                 evacSiteMarker = null;
             }
 
-            // ── Init map ──────────────────────────────────────────────────
             mapping.init(mapContainer);
             mapping.setAfterRedraw(() -> {
                 drawBoundary();
@@ -152,49 +167,40 @@ public class DashboardController {
 
             buildInfoPanel();
             wireSearchComboBoxInline();
+            wireAdminDropdown();
+            wireChangePasswordDialog();
 
-            // ── Mouse pressed ─────────────────────────────────────────────
             mapContainer.setOnMousePressed(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
                     isDragging = false;
-                    // Dismiss panel when clicking empty map area
                     BeneficiaryMarker hit = findMarkerAtScreen(e.getX(), e.getY());
-                    if (hit == null && selectedBeneficiary != null) {
-                        dismissPanel();
-                    }
+                    if (hit == null && selectedBeneficiary != null) dismissPanel();
                     dragStartX = e.getX();
                     dragStartY = e.getY();
                 }
             });
 
-            // ── Mouse dragged ─────────────────────────────────────────────
             mapContainer.setOnMouseDragged(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
                     double dx = e.getX() - dragStartX;
                     double dy = e.getY() - dragStartY;
-
                     if (!isDragging) {
                         if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
                         isDragging = true;
                     }
-
                     dragStartX = e.getX();
                     dragStartY = e.getY();
-
-                    double tilesOnScreen = Math.pow(2, currentZoom);
+                    double tilesOnScreen  = Math.pow(2, currentZoom);
                     double degPerPixelLon = 360.0 / (tilesOnScreen * 256.0);
                     double degPerPixelLat = degPerPixelLon * Math.cos(Math.toRadians(currentCenterLat));
-
                     currentCenterLon -= dx * degPerPixelLon;
                     currentCenterLat += dy * degPerPixelLat;
                     mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
                 }
             });
 
-            // ── Mouse released ────────────────────────────────────────────
             mapContainer.setOnMouseReleased(e -> isDragging = false);
 
-            // ── Double click — show info panel ────────────────────────────
             mapContainer.setOnMouseClicked(e -> {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                     if (isDragging) return;
@@ -203,7 +209,6 @@ public class DashboardController {
                 }
             });
 
-            // ── Scroll to zoom ────────────────────────────────────────────
             mapContainer.setOnScroll(e -> {
                 double delta = e.getDeltaY() > 0 ? 0.5 : -0.5;
                 currentZoom = Math.max(10.0, Math.min(19.0, currentZoom + delta));
@@ -220,7 +225,6 @@ public class DashboardController {
             centerDelay.setCycleCount(1);
             centerDelay.play();
 
-            // ── Clock ─────────────────────────────────────────────────────
             DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
             DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm:ss a");
             Timeline clock = new Timeline(
@@ -234,38 +238,221 @@ public class DashboardController {
             clock.setCycleCount(Timeline.INDEFINITE);
             clock.play();
 
-            // ── Admin name ────────────────────────────────────────────────
             SessionManager.getInstance().setOnSessionChanged(() -> {
                 AdminModel admin = SessionManager.getInstance().getCurrentAdmin();
                 if (admin != null) {
                     String display = (admin.getFirstname() != null && !admin.getFirstname().isEmpty())
                             ? admin.getFirstname() + " " + admin.getLastname()
                             : admin.getUsername();
-                    adminNameLabel.setText(admin.getRole() + " : " + display);
+                    adminNameText.setText(admin.getRole() + " : " + display);
                 }
             });
         });
     }
 
-    // Tracks whether the user is actively pressing on the search list.
-    // Used to suppress focus-lost hiding so the selection always completes.
+    // ═════════════════════════════════════════════════════════════════════════
+    // Admin dropdown
+    // ═════════════════════════════════════════════════════════════════════════
+    private void wireAdminDropdown() {
+
+        // Set cursors programmatically (FXML cursor attribute not supported for Cursor.HAND)
+        adminNameLabel.setCursor(javafx.scene.Cursor.HAND);
+        changePasswordMenuItem.setCursor(javafx.scene.Cursor.HAND);
+
+        // Toggle dropdown on click
+        adminNameLabel.setOnMouseClicked(e -> {
+            boolean open = !adminDropdown.isVisible();
+            adminDropdown.setVisible(open);
+            adminDropdown.setManaged(open);
+            e.consume();
+        });
+
+        // Close when clicking anywhere outside the adminAreaPane
+        adminAreaPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.addEventFilter(
+                        javafx.scene.input.MouseEvent.MOUSE_PRESSED,
+                        e -> {
+                            if (!adminDropdown.isVisible()) return;
+                            boolean insidePane = adminAreaPane
+                                    .localToScene(adminAreaPane.getBoundsInLocal())
+                                    .contains(e.getSceneX(), e.getSceneY());
+                            if (!insidePane) {
+                                adminDropdown.setVisible(false);
+                                adminDropdown.setManaged(false);
+                            }
+                        });
+            }
+        });
+
+        // "Change Password" row click
+        changePasswordMenuItem.setOnMouseClicked(e -> {
+            adminDropdown.setVisible(false);
+            adminDropdown.setManaged(false);
+            openChangePasswordDialog();
+            e.consume();
+        });
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Change password dialog
+    // ═════════════════════════════════════════════════════════════════════════
+    private void wireChangePasswordDialog() {
+        currentPwVisible = buildVisibleField(currentPasswordField);
+        newPwVisible      = buildVisibleField(newPasswordField);
+        confirmPwVisible  = buildVisibleField(confirmPasswordField);
+
+        toggleCurrentPwBtn.setOnAction(e -> {
+            showCurrentPw = !showCurrentPw;
+            togglePasswordVisibility(currentPasswordField, currentPwVisible,
+                    toggleCurrentPwBtn, showCurrentPw);
+        });
+        toggleNewPwBtn.setOnAction(e -> {
+            showNewPw = !showNewPw;
+            togglePasswordVisibility(newPasswordField, newPwVisible,
+                    toggleNewPwBtn, showNewPw);
+        });
+        toggleConfirmPwBtn.setOnAction(e -> {
+            showConfirmPw = !showConfirmPw;
+            togglePasswordVisibility(confirmPasswordField, confirmPwVisible,
+                    toggleConfirmPwBtn, showConfirmPw);
+        });
+
+        closePasswordDialogBtn.setOnAction(e -> closeChangePasswordDialog());
+        cancelPasswordBtn.setOnAction(e -> closeChangePasswordDialog());
+
+        // Click the dark backdrop to close
+        changePasswordOverlay.setOnMouseClicked(e -> {
+            if (e.getTarget() == changePasswordOverlay) closeChangePasswordDialog();
+        });
+
+        confirmPasswordBtn.setOnAction(e -> handleChangePassword());
+    }
+
+    private TextField buildVisibleField(PasswordField pf) {
+        TextField tf = new TextField();
+        tf.setPromptText(pf.getPromptText());
+        tf.getStyleClass().add("cpd-input");
+        tf.setVisible(false);
+        tf.setManaged(false);
+        HBox.setHgrow(tf, Priority.ALWAYS);
+        tf.textProperty().bindBidirectional(pf.textProperty());
+        return tf;
+    }
+
+    private void togglePasswordVisibility(PasswordField pf, TextField tf,
+                                          Button eyeBtn, boolean show) {
+        HBox parent = (HBox) pf.getParent();
+        if (show) {
+            int idx = parent.getChildren().indexOf(pf);
+            if (idx >= 0 && !parent.getChildren().contains(tf)) {
+                parent.getChildren().add(idx, tf);
+            }
+            pf.setVisible(false);
+            pf.setManaged(false);
+            tf.setVisible(true);
+            tf.setManaged(true);
+            eyeBtn.setOpacity(1.0);
+        } else {
+            pf.setVisible(true);
+            pf.setManaged(true);
+            tf.setVisible(false);
+            tf.setManaged(false);
+            eyeBtn.setOpacity(0.45);
+        }
+    }
+
+    private void openChangePasswordDialog() {
+        currentPasswordField.clear();
+        newPasswordField.clear();
+        confirmPasswordField.clear();
+        hidePasswordMessage();
+
+        if (showCurrentPw) { showCurrentPw = false;
+            togglePasswordVisibility(currentPasswordField, currentPwVisible, toggleCurrentPwBtn, false); }
+        if (showNewPw)     { showNewPw = false;
+            togglePasswordVisibility(newPasswordField, newPwVisible, toggleNewPwBtn, false); }
+        if (showConfirmPw) { showConfirmPw = false;
+            togglePasswordVisibility(confirmPasswordField, confirmPwVisible, toggleConfirmPwBtn, false); }
+
+        changePasswordOverlay.setVisible(true);
+        changePasswordOverlay.setManaged(true);
+        Platform.runLater(() -> currentPasswordField.requestFocus());
+    }
+
+    private void closeChangePasswordDialog() {
+        changePasswordOverlay.setVisible(false);
+        changePasswordOverlay.setManaged(false);
+    }
+
+    private void handleChangePassword() {
+        String current = currentPasswordField.getText().trim();
+        String newPw   = newPasswordField.getText();
+        String confirm = confirmPasswordField.getText();
+
+        if (current.isEmpty() || newPw.isEmpty() || confirm.isEmpty()) {
+            showPasswordMessage("All fields are required.", false);
+            return;
+        }
+        if (newPw.length() < 8) {
+            showPasswordMessage("New password must be at least 8 characters.", false);
+            return;
+        }
+        if (!newPw.equals(confirm)) {
+            showPasswordMessage("New password and confirmation do not match.", false);
+            return;
+        }
+        if (newPw.equals(current)) {
+            showPasswordMessage("New password must differ from the current password.", false);
+            return;
+        }
+
+        AdminModel admin = SessionManager.getInstance().getCurrentAdmin();
+        if (admin == null) {
+            showPasswordMessage("Session expired. Please log in again.", false);
+            return;
+        }
+
+        boolean success = dashBoardService.changePassword(admin.getId(), current, newPw);
+        if (success) {
+            showPasswordMessage("Password updated successfully!", true);
+            Timeline close = new Timeline(
+                    new KeyFrame(Duration.seconds(1.5), e -> closeChangePasswordDialog()));
+            close.setCycleCount(1);
+            close.play();
+        } else {
+            showPasswordMessage("Current password is incorrect.", false);
+        }
+    }
+
+    private void showPasswordMessage(String message, boolean isSuccess) {
+        passwordMessageLabel.setText(message);
+        passwordMessageLabel.getStyleClass().removeAll("cpd-message-error", "cpd-message-success");
+        passwordMessageLabel.getStyleClass().add(isSuccess ? "cpd-message-success" : "cpd-message-error");
+        passwordMessageLabel.setVisible(true);
+        passwordMessageLabel.setManaged(true);
+    }
+
+    private void hidePasswordMessage() {
+        passwordMessageLabel.setVisible(false);
+        passwordMessageLabel.setManaged(false);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Search
+    // ═════════════════════════════════════════════════════════════════════════
     private boolean isSelectingFromList = false;
 
     private void wireSearchComboBoxInline() {
         beneficiarySearchList.setItems(searchItems);
         beneficiarySearchList.setFixedCellSize(36);
-
-        // FIX — width: lock list to exactly the TextField width (280px) so it
-        // never overflows. Also set a custom cell factory with text ellipsis so
-        // long names don't burst out of the cell or create a horizontal scrollbar.
         beneficiarySearchList.setPrefWidth(280);
         beneficiarySearchList.setMinWidth(280);
         beneficiarySearchList.setMaxWidth(280);
         beneficiarySearchList.setCellFactory(lv -> new ListCell<>() {
             {
-                // Clip text to cell width; show "…" when truncated
                 setMaxWidth(Double.MAX_VALUE);
-                setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+                setTextOverrun(OverrunStyle.ELLIPSIS);
                 setWrapText(false);
             }
             @Override
@@ -275,49 +462,29 @@ public class DashboardController {
             }
         });
 
-        // FIX — capture selection on MOUSE_PRESSED, not MOUSE_CLICKED.
-        // MOUSE_PRESSED fires BEFORE the TextField loses focus, so the item is
-        // reliably captured. We also set isSelectingFromList=true here so the
-        // focus-lost listener knows not to hide the dropdown prematurely.
         beneficiarySearchList.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 isSelectingFromList = true;
-                // getSelectionModel().getSelectedItem() may not yet reflect the
-                // pressed row — use the index under the cursor instead.
                 int index = (int) (e.getY() / beneficiarySearchList.getFixedCellSize());
                 if (index >= 0 && index < searchItems.size()) {
                     String item = searchItems.get(index);
-                    if (item != null && !item.isBlank()) {
-                        handleBeneficiarySelected(item);
-                    }
+                    if (item != null && !item.isBlank()) handleBeneficiarySelected(item);
                 }
-                e.consume(); // prevent focus from leaving the TextField via this click
+                e.consume();
             }
         });
 
-        // Typing filter
         beneficiarySearchBox.textProperty().addListener((obs, oldVal, newVal) -> {
             if (suppressListener) return;
-
             String filter = (newVal == null) ? "" : newVal.trim().toLowerCase();
-            if (filter.isEmpty()) {
-                searchItems.clear();
-                hideInlineDropdown();
-                return;
-            }
-
+            if (filter.isEmpty()) { searchItems.clear(); hideInlineDropdown(); return; }
             List<String> filtered = beneficiaries.stream()
                     .filter(b -> b.name != null && b.name.toLowerCase().contains(filter))
-                    .map(b -> b.name)
-                    .collect(Collectors.toList());
-
+                    .map(b -> b.name).collect(Collectors.toList());
             searchItems.setAll(filtered);
-
-            if (!filtered.isEmpty()) showInlineDropdown();
-            else hideInlineDropdown();
+            if (!filtered.isEmpty()) showInlineDropdown(); else hideInlineDropdown();
         });
 
-        // Keyboard navigation
         beneficiarySearchBox.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case DOWN -> {
@@ -326,10 +493,7 @@ public class DashboardController {
                     beneficiarySearchList.getSelectionModel().select(0);
                     e.consume();
                 }
-                case ESCAPE -> {
-                    hideInlineDropdown();
-                    e.consume();
-                }
+                case ESCAPE -> { hideInlineDropdown(); e.consume(); }
                 case ENTER -> {
                     String selected = beneficiarySearchList.getSelectionModel().getSelectedItem();
                     if (selected != null) handleBeneficiarySelected(selected);
@@ -338,24 +502,17 @@ public class DashboardController {
             }
         });
 
-        // FIX — focus-lost: only hide the dropdown when focus leaves AND the user
-        // is NOT in the middle of pressing a list item. isSelectingFromList is
-        // reset inside handleBeneficiarySelected after the selection completes.
         beneficiarySearchBox.focusedProperty().addListener((obs, was, isFocused) -> {
-            if (!isFocused && !isSelectingFromList) {
-                Platform.runLater(this::hideInlineDropdown);
-            }
+            if (!isFocused && !isSelectingFromList) Platform.runLater(this::hideInlineDropdown);
         });
     }
 
     private void showInlineDropdown() {
         int visibleRows = Math.min(8, searchItems.size());
         double height = visibleRows * beneficiarySearchList.getFixedCellSize() + 2;
-
         beneficiarySearchList.setPrefHeight(height);
         beneficiarySearchList.setMinHeight(height);
         beneficiarySearchList.setMaxHeight(height);
-
         beneficiarySearchList.setVisible(true);
         beneficiarySearchList.setManaged(true);
     }
@@ -366,35 +523,18 @@ public class DashboardController {
     }
 
     private void handleBeneficiarySelected(String selected) {
-        // Always reset the selection guard so the focus-lost listener
-        // can operate normally after this call completes.
         isSelectingFromList = false;
-
         if (selected == null || selected.isBlank()) return;
-
         BeneficiaryMarker found = beneficiaries.stream()
-                .filter(b -> selected.equals(b.name))
-                .findFirst()
-                .orElse(null);
-
+                .filter(b -> selected.equals(b.name)).findFirst().orElse(null);
         if (found == null) return;
-
-        // Show the info panel on the map
         selectBeneficiary(found, true);
-
         suppressListener = true;
-
         hideInlineDropdown();
-        if (beneficiarySearchList != null) {
-            beneficiarySearchList.getSelectionModel().clearSelection();
-        }
-
+        if (beneficiarySearchList != null) beneficiarySearchList.getSelectionModel().clearSelection();
         searchItems.clear();
         beneficiarySearchBox.clear();
-
         suppressListener = false;
-
-        // Return focus to search box so user can search again immediately
         Platform.runLater(() -> beneficiarySearchBox.requestFocus());
     }
 
@@ -402,7 +542,6 @@ public class DashboardController {
         boolean nowVisible = !searchBoxWrap.isVisible();
         searchBoxWrap.setVisible(nowVisible);
         searchBoxWrap.setManaged(nowVisible);
-
         if (nowVisible) {
             suppressListener = true;
             beneficiarySearchBox.clear();
@@ -416,23 +555,22 @@ public class DashboardController {
         }
     }
 
-    // ── Card listeners ────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Card listeners
+    // ═════════════════════════════════════════════════════════════════════════
     private void wireCardListeners() {
         cardBeneficiary.setCursor(javafx.scene.Cursor.HAND);
         cardBeneficiary.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY) onBeneficiaryCardClicked();
         });
-
         cardDisasters.setCursor(javafx.scene.Cursor.HAND);
         cardDisasters.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY) onDisastersCardClicked();
         });
-
         cardAids.setCursor(javafx.scene.Cursor.HAND);
         cardAids.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY) onAidsCardClicked();
         });
-
         cardEvacuationSite.setCursor(javafx.scene.Cursor.HAND);
         cardEvacuationSite.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY) onEvacuationSiteCardClicked();
@@ -442,17 +580,13 @@ public class DashboardController {
     private void activeButton(Button btn) {
         MainFrameController frame = MainFrameController.getInstance();
         if (btn == null || frame == null) return;
-
         if (frame.activeBtn != null) {
             frame.activeBtn.getStyleClass().remove("nav-button-active");
             frame.activeBtn.getStyleClass().remove("nav-button-child-active");
         }
-
         frame.activeBtn = btn;
-
         String cls = btn.getStyleClass().contains("nav-button-child")
                 ? "nav-button-child-active" : "nav-button-active";
-
         if (!frame.activeBtn.getStyleClass().contains(cls)) frame.activeBtn.getStyleClass().add(cls);
     }
 
@@ -461,19 +595,16 @@ public class DashboardController {
         loadPage("/view/beneficiary/ManageBeneficiaries.fxml");
         activeButton(MainFrameController.getInstance().manageBeneficiariesBtn);
     }
-
     private void onDisastersCardClicked() {
         MainFrameController.getInstance().openDisasterSection();
         loadPage("/view/disaster/Disaster.fxml");
         activeButton(MainFrameController.getInstance().disasterBtn);
     }
-
     private void onAidsCardClicked() {
         MainFrameController.getInstance().openAidsSection();
         loadPage("/view/aid/Aid.fxml");
         activeButton(MainFrameController.getInstance().aidBtn);
     }
-
     private void onEvacuationSiteCardClicked() {
         MainFrameController.getInstance().openEvacSection();
         loadPage("/view/evac_site/EvacSite.fxml");
@@ -483,7 +614,6 @@ public class DashboardController {
     private void loadPage(String fxml) {
         MainFrameController frame = MainFrameController.getInstance();
         if (frame == null) return;
-
         SceneManager.SceneEntry<?> e = SceneManager.load(fxml);
         Parent root = e.getRoot();
         if (root instanceof Region r) {
@@ -494,16 +624,18 @@ public class DashboardController {
         frame.contentArea.getChildren().setAll(root);
     }
 
-    // ── Info panel ────────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Info panel
+    // ═════════════════════════════════════════════════════════════════════════
     private void buildInfoPanel() {
         infoPanel = new VBox(0);
         infoPanel.setStyle(
-                "-fx-background-color: #2d3b4f;" +
-                        "-fx-border-color: rgba(249,115,22,0.50);" +
-                        "-fx-border-width: 1.5px;" +
-                        "-fx-border-radius: 8px;" +
-                        "-fx-background-radius: 8px;" +
-                        "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
+                "-fx-background-color:#2d3b4f;" +
+                        "-fx-border-color:rgba(249,115,22,0.50);" +
+                        "-fx-border-width:1.5px;" +
+                        "-fx-border-radius:8px;" +
+                        "-fx-background-radius:8px;" +
+                        "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
         );
         infoPanel.setVisible(false);
         infoPanel.setMouseTransparent(false);
@@ -513,7 +645,6 @@ public class DashboardController {
 
     private void populateInfoPanel(BeneficiaryMarker b) {
         infoPanel.getChildren().clear();
-
         List<FamilyMemberModel> members = dashBoardService.getFamilyMembers(b.id);
         int memberCount = members != null ? members.size() : 0;
 
@@ -523,128 +654,66 @@ public class DashboardController {
         infoPanel.setMaxHeight(Region.USE_PREF_SIZE);
 
         Label headerLbl = new Label("BENEFICIARY");
-        headerLbl.setStyle(
-                "-fx-text-fill: rgba(249,115,22,0.90);" +
-                        "-fx-font-size: 9px;" +
-                        "-fx-font-weight: 700;" +
-                        "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
-        );
-
+        headerLbl.setStyle("-fx-text-fill:rgba(249,115,22,0.90);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         Region hSpacer = new Region();
         HBox.setHgrow(hSpacer, Priority.ALWAYS);
-
         Button closeBtn = new Button("×");
         applyCloseBtnStyle(closeBtn);
         closeBtn.setOnAction(e -> dismissPanel());
-
         HBox headerRow = new HBox(6, headerLbl, hSpacer, closeBtn);
         headerRow.setAlignment(Pos.CENTER_LEFT);
         headerRow.setPadding(new Insets(8, 10, 6, 12));
-
         Region topDiv = new Region();
         topDiv.setPrefHeight(1);
-        topDiv.setStyle("-fx-background-color: rgba(249,115,22,0.28);");
-
+        topDiv.setStyle("-fx-background-color:rgba(249,115,22,0.28);");
         Label beneIdLbl = new Label("ID #" + b.id);
-        beneIdLbl.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.50);" +
-                        "-fx-font-size: 9px;" +
-                        "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
-        );
-
+        beneIdLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         Label beneNameLbl = new Label(b.name != null ? b.name : "Unknown");
-        beneNameLbl.setStyle(
-                "-fx-text-fill: #f1f5f9;" +
-                        "-fx-font-size: 13px;" +
-                        "-fx-font-weight: 800;" +
-                        "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
-        );
-
+        beneNameLbl.setStyle("-fx-text-fill:#f1f5f9;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         VBox beneBox = new VBox(2, beneIdLbl, beneNameLbl);
         beneBox.setPadding(new Insets(7, 12, 8, 12));
-        beneBox.setStyle("-fx-background-color: rgba(249,115,22,0.07);");
-
+        beneBox.setStyle("-fx-background-color:rgba(249,115,22,0.07);");
         infoPanel.getChildren().addAll(headerRow, topDiv, beneBox);
 
         if (memberCount > 0) {
             Region midDiv = new Region();
             midDiv.setPrefHeight(1);
-            midDiv.setStyle("-fx-background-color: rgba(255,255,255,0.06);");
-
+            midDiv.setStyle("-fx-background-color:rgba(255,255,255,0.06);");
             Label familyLbl = new Label("Family Members");
-            familyLbl.setStyle(
-                    "-fx-text-fill: rgba(148,163,184,0.65);" +
-                            "-fx-font-size: 9px;" +
-                            "-fx-font-weight: 700;" +
-                            "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
-            );
-
+            familyLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
             Label countLbl = new Label(memberCount + (memberCount != 1 ? " members" : " member"));
-            countLbl.setStyle(
-                    "-fx-text-fill: rgba(249,115,22,0.75);" +
-                            "-fx-font-size: 9px;" +
-                            "-fx-background-color: rgba(249,115,22,0.10);" +
-                            "-fx-background-radius: 3px;" +
-                            "-fx-border-color: rgba(249,115,22,0.25);" +
-                            "-fx-border-radius: 3px;" +
-                            "-fx-border-width: 1px;" +
-                            "-fx-padding: 1px 6px;"
-            );
-
+            countLbl.setStyle("-fx-text-fill:rgba(249,115,22,0.75);-fx-font-size:9px;-fx-background-color:rgba(249,115,22,0.10);-fx-background-radius:3px;-fx-border-color:rgba(249,115,22,0.25);-fx-border-radius:3px;-fx-border-width:1px;-fx-padding:1px 6px;");
             Region fs = new Region();
             HBox.setHgrow(fs, Priority.ALWAYS);
-
             HBox familyRow = new HBox(6, familyLbl, fs, countLbl);
             familyRow.setAlignment(Pos.CENTER_LEFT);
             familyRow.setPadding(new Insets(7, 12, 4, 12));
-
             VBox membersBox = new VBox(0);
             for (int i = 0; i < members.size(); i++) {
                 FamilyMemberModel m = members.get(i);
-
                 Label mName = new Label(m.getFullName());
-                mName.setStyle(
-                        "-fx-text-fill: #cbd5e1;" +
-                                "-fx-font-size: 12px;" +
-                                "-fx-font-weight: 600;" +
-                                "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
-                );
-
+                mName.setStyle("-fx-text-fill:#cbd5e1;-fx-font-size:12px;-fx-font-weight:600;-fx-font-family:'Inter','Segoe UI',sans-serif;");
                 Label mId = new Label("ID #" + m.getFamilyMemberId());
-                mId.setStyle(
-                        "-fx-text-fill: rgba(148,163,184,0.40);" +
-                                "-fx-font-size: 9px;" +
-                                "-fx-font-family: 'Inter','Segoe UI',sans-serif;"
-                );
-
+                mId.setStyle("-fx-text-fill:rgba(148,163,184,0.40);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
                 VBox mRow = new VBox(1, mName, mId);
                 mRow.setPadding(new Insets(6, 12, 6, 12));
-                if (i % 2 == 0) mRow.setStyle("-fx-background-color: rgba(255,255,255,0.02);");
-
+                if (i % 2 == 0) mRow.setStyle("-fx-background-color:rgba(255,255,255,0.02);");
                 membersBox.getChildren().add(mRow);
-
                 if (i < members.size() - 1) {
                     Region sep = new Region();
                     sep.setPrefHeight(1);
-                    sep.setStyle("-fx-background-color: rgba(255,255,255,0.04);");
+                    sep.setStyle("-fx-background-color:rgba(255,255,255,0.04);");
                     membersBox.getChildren().add(sep);
                 }
             }
-
             ScrollPane scroll = new ScrollPane(membersBox);
             scroll.setFitToWidth(true);
             scroll.setFitToHeight(false);
             scroll.setMaxHeight(200);
-            scroll.setStyle(
-                    "-fx-background-color:transparent;" +
-                            "-fx-background:transparent;" +
-                            "-fx-border-color:transparent;" +
-                            "-fx-padding:0;"
-            );
+            scroll.setStyle("-fx-background-color:transparent;-fx-background:transparent;-fx-border-color:transparent;-fx-padding:0;");
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scroll.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, javafx.event.Event::consume);
-
             infoPanel.getChildren().addAll(midDiv, familyRow, scroll);
         }
 
@@ -653,21 +722,11 @@ public class DashboardController {
         infoPanel.getChildren().add(bottomPad);
     }
 
-    // FIX #6: selectBeneficiary — removed double-redraw when centerMap=false.
-    // Previously, mapping.redraw() was called inside Platform.runLater() alongside
-    // clampAndPositionPanel(), which then triggered setAfterRedraw → repositionPanel()
-    // for a second redundant repositioning pass. Now we only call clampAndPositionPanel()
-    // directly; the redraw is handled separately and only when needed.
     private void selectBeneficiary(BeneficiaryMarker b, boolean centerMap) {
         selectedBeneficiary = b;
-
         populateInfoPanel(b);
-
-        // Keep invisible during layout so the user never sees it flash at 0,0.
-        // opacity=0 + visible=true means it participates in layout but is not seen.
         infoPanel.setVisible(true);
         infoPanel.setOpacity(0);
-
         if (centerMap) {
             currentCenterLat = b.lat;
             currentCenterLon = b.lon;
@@ -675,22 +734,9 @@ public class DashboardController {
             mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
             mapping.redraw();
         }
-
-        // Use TWO nested Platform.runLater calls.
-        //
-        // Why two levels?
-        //   • First runLater: JavaFX processes the scene pulse triggered by
-        //     populateInfoPanel (children added) and setVisible(true). After this
-        //     pulse the scene graph knows the panel exists and has measured it.
-        //   • Second runLater: NOW getWidth()/getHeight() reflect real values
-        //     because the pulse that measured the node has fully committed.
-        //     This is the earliest safe point to read dimensions and position.
-        //
-        // This is the standard JavaFX pattern for "do X after next layout pulse".
         Platform.runLater(() -> Platform.runLater(() -> {
             clampAndPositionPanel();
             showWithFade(infoPanel);
-
             if (centerMap) {
                 Timeline settle = new Timeline(
                         new KeyFrame(Duration.millis(150), ev -> clampAndPositionPanel()),
@@ -706,48 +752,32 @@ public class DashboardController {
     }
 
     private void repositionPanel() {
-        if (selectedBeneficiary == null) return;
-        if (infoPanel == null || !infoPanel.isVisible()) return;
+        if (selectedBeneficiary == null || infoPanel == null || !infoPanel.isVisible()) return;
         Platform.runLater(this::clampAndPositionPanel);
     }
 
     private void clampAndPositionPanel() {
         if (selectedBeneficiary == null || infoPanel == null || !mapping.isInitialized()) return;
-
         try {
             Mapping.Point p = mapping.latLonToScreen(selectedBeneficiary.lat, selectedBeneficiary.lon);
-
             double mapW = mapContainer.getWidth();
             double mapH = mapContainer.getHeight();
             if (mapW <= 0 || mapH <= 0) return;
-
-            // Always use prefWidth/prefHeight as the authoritative size source.
-            // getWidth()/getHeight() return 0 for nodes that haven't been through
-            // a full scene layout pulse (e.g. first render), while prefWidth/prefHeight
-            // compute from content regardless of render state.
             double pw = infoPanel.prefWidth(-1);
             if (pw <= 0) pw = 220;
-
             double maxAllowedH = mapH - 16;
             infoPanel.setMaxHeight(maxAllowedH);
-
             double ph = infoPanel.prefHeight(pw);
             if (ph <= 0) ph = 100;
             if (ph > maxAllowedH) ph = maxAllowedH;
-
-            // Horizontally center over marker; clamp to map edges
             double tx = p.x - (pw / 2.0);
             tx = Math.max(4, Math.min(tx, mapW - pw - 4));
-
-            // Try to show above the marker; flip below if not enough space
             double ty = p.y - MARKER_OFFSET_Y - ph;
             if (ty < 4) ty = p.y;
             if (ty + ph > mapH - 4) ty = mapH - ph - 4;
             ty = Math.max(4, ty);
-
             infoPanel.setLayoutX(tx);
             infoPanel.setLayoutY(ty);
-
         } catch (Exception ignored) {}
     }
 
@@ -757,84 +787,62 @@ public class DashboardController {
         mapping.redraw();
     }
 
-    // ── Marker hit detection ──────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Marker hit detection
+    // ═════════════════════════════════════════════════════════════════════════
     private BeneficiaryMarker findMarkerAtScreen(double sx, double sy) {
         if (!mapping.isInitialized()) return null;
-
         boolean useImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
-
         for (BeneficiaryMarker b : beneficiaries) {
             if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
             if (!isPointInPolygon(b.lon, b.lat, boundary)) continue;
-
             try {
                 Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
-
                 double hx, hy, hw, hh;
-
                 if (useImage && personMarker != null) {
-                    hx = p.x - MARKER_WIDTH / 2;
-                    hy = p.y - MARKER_OFFSET_Y;
-                    hw = MARKER_WIDTH;
-                    hh = MARKER_HEIGHT;
+                    hx = p.x - MARKER_WIDTH / 2; hy = p.y - MARKER_OFFSET_Y;
+                    hw = MARKER_WIDTH; hh = MARKER_HEIGHT;
                 } else {
-                    double r = 8;
-                    hx = p.x - r;
-                    hy = p.y - r;
-                    hw = r * 2;
-                    hh = r * 2;
+                    double r = 8; hx = p.x - r; hy = p.y - r; hw = r * 2; hh = r * 2;
                 }
-
                 if (sx >= hx && sx <= hx + hw && sy >= hy && sy <= hy + hh) return b;
             } catch (Exception ignored) {}
         }
-
         return null;
     }
 
-    // ── Center on boundary ────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Center on boundary
+    // ═════════════════════════════════════════════════════════════════════════
     private void centerMapOnBoundary() {
         if (boundary == null || boundary.length == 0) return;
-
         double minLat = Double.MAX_VALUE, maxLat = -Double.MAX_VALUE;
         double minLon = Double.MAX_VALUE, maxLon = -Double.MAX_VALUE;
-
         for (double[] pt : boundary) {
             if (pt[0] < minLat) minLat = pt[0];
             if (pt[0] > maxLat) maxLat = pt[0];
             if (pt[1] < minLon) minLon = pt[1];
             if (pt[1] > maxLon) maxLon = pt[1];
         }
-
         currentCenterLat = (minLat + maxLat) / 2.0;
         currentCenterLon = (minLon + maxLon) / 2.0;
         currentZoom = 13.0;
-
         mapping.setCenter(currentCenterLat, currentCenterLon, currentZoom);
         Platform.runLater(mapping::redraw);
     }
 
-    // ── Data loaders ──────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Data loaders
+    // ═════════════════════════════════════════════════════════════════════════
     public void loadBeneficiariesFromDb() {
         beneficiaries.clear();
         beneficiaries.addAll(dashBoardService.getBeneficiaries());
-
-        // FIX #4: Always refresh searchItems from the newly loaded beneficiaries,
-        // regardless of search box visibility. The search box starts hidden, so
-        // the old visibility-gated check meant the list was NEVER populated on
-        // load. Now we always rebuild the backing data; the dropdown itself only
-        // shows when the user types, which is correct behavior.
-        List<String> names = beneficiaries.stream()
-                .filter(b -> b.name != null && !b.name.isBlank())
-                .map(b -> b.name)
-                .collect(Collectors.toList());
-
-        // Only refresh visible dropdown if it's currently open and showing results
         if (beneficiarySearchList != null && beneficiarySearchList.isVisible()) {
+            List<String> names = beneficiaries.stream()
+                    .filter(b -> b.name != null && !b.name.isBlank())
+                    .map(b -> b.name).collect(Collectors.toList());
             searchItems.setAll(names);
         }
-        // (searchItems will be rebuilt on next keystroke from the full beneficiaries list)
-
         mapping.redraw();
     }
 
@@ -852,40 +860,33 @@ public class DashboardController {
         loadEvacSitesFromDb();
     }
 
-    // ── Drawing ───────────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Drawing
+    // ═════════════════════════════════════════════════════════════════════════
     private void drawBeneficiaries() {
         if (!mapping.isInitialized() || beneficiaries.isEmpty()) return;
-
         GraphicsContext gc = mapping.getGc();
         double canvasW = mapping.getCanvas().getWidth();
         double canvasH = mapping.getCanvas().getHeight();
         double pad = 50;
         boolean useImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
         double dotRadius = 4;
-
         for (BeneficiaryMarker b : beneficiaries) {
             if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
             if (!isPointInPolygon(b.lon, b.lat, boundary)) continue;
-
             try {
                 Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
                 if (p.x < -pad || p.x > canvasW + pad) continue;
                 if (p.y < -pad || p.y > canvasH + pad) continue;
-
                 boolean sel = selectedBeneficiary != null && selectedBeneficiary.id == b.id;
-
                 if (useImage && personMarker != null) {
                     if (sel) {
                         gc.setStroke(Color.rgb(249, 115, 22, 0.85));
                         gc.setLineWidth(2.5);
-                        gc.strokeOval(
-                                p.x - MARKER_WIDTH / 2 - 4,
-                                p.y - MARKER_OFFSET_Y - 4,
-                                MARKER_WIDTH + 8, MARKER_HEIGHT + 8
-                        );
+                        gc.strokeOval(p.x - MARKER_WIDTH / 2 - 4, p.y - MARKER_OFFSET_Y - 4,
+                                MARKER_WIDTH + 8, MARKER_HEIGHT + 8);
                     }
-                    gc.drawImage(personMarker,
-                            p.x - MARKER_WIDTH / 2, p.y - MARKER_OFFSET_Y,
+                    gc.drawImage(personMarker, p.x - MARKER_WIDTH / 2, p.y - MARKER_OFFSET_Y,
                             MARKER_WIDTH, MARKER_HEIGHT);
                 } else {
                     if (sel) {
@@ -894,13 +895,10 @@ public class DashboardController {
                         gc.strokeOval(p.x - dotRadius - 5, p.y - dotRadius - 5,
                                 (dotRadius + 5) * 2, (dotRadius + 5) * 2);
                     }
-
-                    Color fill = sel ? Color.rgb(249, 115, 22, 0.95) : Color.rgb(0, 120, 255, 0.85);
+                    Color fill   = sel ? Color.rgb(249, 115, 22, 0.95) : Color.rgb(0, 120, 255, 0.85);
                     Color stroke = sel ? Color.rgb(249, 115, 22, 1.00) : Color.rgb(0, 70, 180, 0.95);
-
                     gc.setFill(fill);
                     gc.fillOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
-
                     gc.setStroke(stroke);
                     gc.setLineWidth(1.2);
                     gc.strokeOval(p.x - dotRadius, p.y - dotRadius, dotRadius * 2, dotRadius * 2);
@@ -909,15 +907,9 @@ public class DashboardController {
         }
     }
 
-    // FIX #5: Added isInitialized() guard to drawBoundary(), matching the same
-    // defensive pattern used in drawBeneficiaries() and drawEvacSites().
-    // Without this guard, latLonToScreen() could be called before the map is
-    // ready, throwing a NullPointerException during the very first redraw pass.
     private void drawBoundary() {
         if (!mapping.isInitialized()) return;
-
         GraphicsContext gc = mapping.getGc();
-
         gc.setStroke(Color.rgb(120, 0, 0, 0.35));
         gc.setLineWidth(6);
         gc.beginPath();
@@ -928,7 +920,6 @@ public class DashboardController {
         }
         gc.closePath();
         gc.stroke();
-
         gc.setStroke(Color.rgb(255, 50, 50, 0.9));
         gc.setLineWidth(2.5);
         gc.beginPath();
@@ -943,7 +934,6 @@ public class DashboardController {
 
     private void drawEvacSites() {
         if (!mapping.isInitialized() || evacSites.isEmpty()) return;
-
         GraphicsContext gc = mapping.getGc();
         double canvasW = mapping.getCanvas().getWidth();
         double canvasH = mapping.getCanvas().getHeight();
@@ -951,19 +941,15 @@ public class DashboardController {
         boolean useImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
         double dotRadius = 4;
         Color dotColor = Color.rgb(234, 179, 8, 0.85);
-
         for (EvacSiteMarker site : evacSites) {
             if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
             if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
-
             try {
                 Mapping.Point p = mapping.latLonToScreen(site.lat, site.lon);
                 if (p.x < -pad || p.x > canvasW + pad) continue;
                 if (p.y < -pad || p.y > canvasH + pad) continue;
-
                 if (useImage && evacSiteMarker != null) {
-                    gc.drawImage(evacSiteMarker,
-                            p.x - EVAC_MARKER_WIDTH / 2, p.y - EVAC_MARKER_OFFSET_Y,
+                    gc.drawImage(evacSiteMarker, p.x - EVAC_MARKER_WIDTH / 2, p.y - EVAC_MARKER_OFFSET_Y,
                             EVAC_MARKER_WIDTH, EVAC_MARKER_HEIGHT);
                 } else {
                     gc.setFill(dotColor);
@@ -976,16 +962,16 @@ public class DashboardController {
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // Helpers
+    // ═════════════════════════════════════════════════════════════════════════
     private double longestNameWidth(String beneName, List<FamilyMemberModel> members, double hPad) {
         Text probe = new Text();
-
-        probe.setStyle("-fx-font-size: 13px; -fx-font-weight: 800;");
+        probe.setStyle("-fx-font-size:13px;-fx-font-weight:800;");
         probe.setText(beneName != null ? beneName : "Unknown");
         double max = probe.getLayoutBounds().getWidth() + hPad + 24;
-
         if (members != null) {
-            probe.setStyle("-fx-font-size: 12px; -fx-font-weight: 600;");
+            probe.setStyle("-fx-font-size:12px;-fx-font-weight:600;");
             for (FamilyMemberModel m : members) {
                 String name = m.getFullName();
                 probe.setText(name != null ? name : "");
@@ -997,10 +983,8 @@ public class DashboardController {
     }
 
     private void showWithFade(javafx.scene.Node node) {
-        // node.setVisible(true) is already called before this in selectBeneficiary
-        // so we just animate opacity 0 → 1.
         node.setOpacity(0);
-        node.setVisible(true); // ensure visible in all call paths
+        node.setVisible(true);
         FadeTransition ft = new FadeTransition(Duration.millis(200), node);
         ft.setFromValue(0);
         ft.setToValue(1);

@@ -10,11 +10,14 @@ public interface DashBoardDAO {
     int getTotalBeneficiaries();
     int getTotalDisasters();
     int getTotalAids();
+    int getDistinctAidCount();
     int getTotalEvacutaionSites();
     int getCount(String sql);
+
     List<DisasterCircleEncrypted> fetchAllEncrypted();
     List<BeneficiariesMappingModel> fetchAllBeneficiaries();
     List<EvacSiteMappingModel> fetchAllEvacSites();
-    int getDistinctAidCount();
     List<FamilyMemberModel> fetchFamilyMembers(int beneficiaryId);
+    String getPasswordHashById(int adminId);
+    boolean updatePassword(int adminId, String newHashedPassword);
 }

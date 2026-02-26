@@ -22,19 +22,11 @@ public class LoginController {
     private AdminModel admin = new AdminModel();
     private AppPreferences prefs = new AppPreferences();
 
-    @FXML
-    private TextField usernameField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private CheckBox rememberMeCheck;
-    @FXML
-    private ComboBox<String> roleComboBox;
-
-    @FXML
-    public void initialize() {
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private CheckBox rememberMeCheck;
+    @FXML private ComboBox<String> roleComboBox;
+    @FXML public void initialize() {
         roleComboBox.setItems(FXCollections.observableArrayList(
                 "Admin", "Brgy_Sec", "MSWDO", "LDRRMO"
         ));
@@ -51,15 +43,12 @@ public class LoginController {
             });
         }
 
-        // Wait for scene to be available before checking auto-login
         usernameField.sceneProperty().addListener(new ChangeListener<Scene>() {
             @Override
             public void changed(ObservableValue<? extends Scene> observable, Scene oldScene, Scene newScene) {
                 if (newScene != null) {
                     System.out.println("Scene is now available, running auto-login check...");
-                    // Remove listener after first call
                     usernameField.sceneProperty().removeListener(this);
-                    // Run auto-login check
                     Platform.runLater(() -> checkRememberedLogin());
                 }
             }

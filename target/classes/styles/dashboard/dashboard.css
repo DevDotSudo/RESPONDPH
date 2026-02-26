@@ -1,377 +1,682 @@
-.dashboard-root {
-    -fx-background-color: #0b1220;
-    -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-}
+    .dashboard-root {
+        -fx-background-color: #0b1220;
+        -fx-font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
 
-.dashboard-wrapper {
-    -fx-padding: 0;
-    -fx-background-color: #0b1220;
-}
+    .dashboard-wrapper {
+        -fx-padding: 0;
+        -fx-background-color: #0b1220;
+    }
 
-.cards-grid {
-    -fx-padding: 0;
-}
+    .cards-grid {
+        -fx-padding: 0;
+    }
 
-.flat-card-blue,
-.flat-card-red,
-.flat-card-green,
-.flat-card-yellow {
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-border-width: 1px;
-    -fx-padding: 0;
-}
+    .flat-card-blue,
+    .flat-card-red,
+    .flat-card-green,
+    .flat-card-yellow {
+        -fx-background-radius: 5px;
+        -fx-border-radius: 5px;
+        -fx-border-width: 1px;
+        -fx-padding: 0;
+    }
 
-.flat-card-content {
-    -fx-padding: 16px;
-}
+    .flat-card-content {
+        -fx-padding: 16px;
+    }
 
-.flat-value {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 28px;
-    -fx-font-weight: 800;
-}
+    .flat-value {
+        -fx-text-fill: #ffffff;
+        -fx-font-size: 28px;
+        -fx-font-weight: 800;
+    }
 
-.flat-label {
-    -fx-text-fill: rgba(226,232,240,0.65);
-    -fx-font-size: 12px;
-    -fx-font-weight: 600;
-}
+    .flat-label {
+        -fx-text-fill: rgba(226,232,240,0.65);
+        -fx-font-size: 12px;
+        -fx-font-weight: 600;
+    }
 
-.flat-icon {
-    -fx-background-radius: 10px;
-    -fx-padding: 12px 16px;
-}
+    .flat-icon {
+        -fx-background-radius: 10px;
+        -fx-padding: 12px 16px;
+    }
 
-.flat-icon-symbol {
-    -fx-fill: white;
-    -glyph-size: 24px;
-}
+    .flat-icon-symbol {
+        -fx-fill: white;
+        -glyph-size: 24px;
+    }
 
-/* ===== COLORS (Soft Opacity) ===== */
+    /* ===== COLORS (Soft Opacity) ===== */
 
-/* Blue */
-.flat-card-blue {
-    -fx-background-color: rgba(59,130,246,0.08);
-    -fx-border-color: rgba(59,130,246,0.22);
-}
-.flat-card-blue .flat-icon {
-    -fx-background-color: rgba(59,130,246,0.55);
-}
+    /* Blue */
+    .flat-card-blue {
+        -fx-background-color: rgba(59,130,246,0.08);
+        -fx-border-color: rgba(59,130,246,0.22);
+    }
+    .flat-card-blue .flat-icon {
+        -fx-background-color: rgba(59,130,246,0.55);
+    }
 
-/* Red */
-.flat-card-red {
-    -fx-background-color: rgba(239,68,68,0.08);
-    -fx-border-color: rgba(239,68,68,0.22);
-}
-.flat-card-red .flat-icon {
-    -fx-background-color: rgba(239,68,68,0.55);
-}
+    /* Red */
+    .flat-card-red {
+        -fx-background-color: rgba(239,68,68,0.08);
+        -fx-border-color: rgba(239,68,68,0.22);
+    }
+    .flat-card-red .flat-icon {
+        -fx-background-color: rgba(239,68,68,0.55);
+    }
 
-/* Green */
-.flat-card-green {
-    -fx-background-color: rgba(16,185,129,0.08);
-    -fx-border-color: rgba(16,185,129,0.22);
-}
-.flat-card-green .flat-icon {
-    -fx-background-color: rgba(16,185,129,0.55);
-}
+    /* Green */
+    .flat-card-green {
+        -fx-background-color: rgba(16,185,129,0.08);
+        -fx-border-color: rgba(16,185,129,0.22);
+    }
+    .flat-card-green .flat-icon {
+        -fx-background-color: rgba(16,185,129,0.55);
+    }
 
-/* Yellow */
-.flat-card-yellow {
-    -fx-background-color: rgba(245,158,11,0.08);
-    -fx-border-color: rgba(245,158,11,0.22);
-}
-.flat-card-yellow .flat-icon {
-    -fx-background-color: rgba(245,158,11,0.55);
-}
+    /* Yellow */
+    .flat-card-yellow {
+        -fx-background-color: rgba(245,158,11,0.08);
+        -fx-border-color: rgba(245,158,11,0.22);
+    }
+    .flat-card-yellow .flat-icon {
+        -fx-background-color: rgba(245,158,11,0.55);
+    }
 
-.flat-card-blue:hover,
-.flat-card-red:hover,
-.flat-card-green:hover,
-.flat-card-yellow:hover {
-    -fx-border-color: rgba(255,255,255,0.20);
-    -fx-background-color: rgba(255,255,255,0.02);
-}
+    .flat-card-blue:hover,
+    .flat-card-red:hover,
+    .flat-card-green:hover,
+    .flat-card-yellow:hover {
+        -fx-border-color: rgba(255,255,255,0.20);
+        -fx-background-color: rgba(255,255,255,0.02);
+    }
 
-.map-container {
-    -fx-background-radius: 16px;
-    -fx-border-radius: 16px;
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(148, 163, 184, 0.14);
-    -fx-border-width: 1px;
-}
+    .map-container {
+        -fx-background-radius: 16px;
+        -fx-border-radius: 16px;
+        -fx-background-color: rgba(255,255,255,0.03);
+        -fx-border-color: rgba(148, 163, 184, 0.14);
+        -fx-border-width: 1px;
+    }
 
-.dashboard-topbar {
-    -fx-background-color: transparent;
-    -fx-padding: 0px 0 8px 0;
-    -fx-border-color: rgba(148, 163, 184, 0.18);
-    -fx-border-width: 0 0 1px 0;
-    -fx-alignment: center-left;
-}
+    .dashboard-topbar {
+        -fx-background-color: transparent;
+        -fx-padding: 0px 0 8px 0;
+        -fx-border-color: rgba(148, 163, 184, 0.18);
+        -fx-border-width: 0 0 1px 0;
+        -fx-alignment: center-left;
+    }
 
-/* Dashboard Mapping - Left */
-.dashboard-topbar-title {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 22px;
-    -fx-font-weight: 800;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
-}
+    /* Dashboard Mapping - Left */
+    .dashboard-topbar-title {
+        -fx-text-fill: #ffffff;
+        -fx-font-size: 22px;
+        -fx-font-weight: 800;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    }
 
-/* Clock - Center */
-.clock-container {
-    -fx-padding: 0;
-    -fx-background-color: transparent;
-}
+    /* Clock - Center */
+    .clock-container {
+        -fx-padding: 0;
+        -fx-background-color: transparent;
+    }
 
-.clock-icon-container {
-    -fx-background-color: rgba(148, 163, 184, 0.15);
-    -fx-background-radius: 5px;
-    -fx-min-width: 36px;
-    -fx-min-height: 36px;
-    -fx-max-width: 36px;
-    -fx-max-height: 36px;
-    -fx-alignment: center;
-    -fx-padding: 0;
-}
+    .clock-icon-container {
+        -fx-background-color: rgba(148, 163, 184, 0.15);
+        -fx-background-radius: 5px;
+        -fx-min-width: 36px;
+        -fx-min-height: 36px;
+        -fx-max-width: 36px;
+        -fx-max-height: 36px;
+        -fx-alignment: center;
+        -fx-padding: 0;
+    }
 
-.clock-icon {
-    -fx-fill: #94a3b8;
-    -glyph-size: 20px;
-}
+    .clock-icon {
+        -fx-fill: #94a3b8;
+        -glyph-size: 20px;
+    }
 
-.clock-time {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
-    -fx-font-family: "Inter", "Segoe UI", monospace;
-    -fx-alignment: center;
-    -fx-padding: 2px 0 0 0;
-}
+    .clock-time {
+        -fx-text-fill: #ffffff;
+        -fx-font-size: 24px;
+        -fx-font-weight: bold;
+        -fx-font-family: "Inter", "Segoe UI", monospace;
+        -fx-alignment: center;
+        -fx-padding: 2px 0 0 0;
+    }
 
-.clock-date {
-    -fx-text-fill: rgba(148, 163, 184, 0.9);
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-alignment: center;
-    -fx-padding: 0;
-}
+    .clock-date {
+        -fx-text-fill: rgba(148, 163, 184, 0.9);
+        -fx-font-size: 14px;
+        -fx-font-weight: 600;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-alignment: center;
+        -fx-padding: 0;
+    }
 
-/* ===== ADMIN PROFILE ===== */
-.admin-name-label {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.22) transparent;
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-style: solid;
-    -fx-spacing: 8px;
-    -fx-alignment: center;
-}
+    /* ===== ADMIN PROFILE ===== */
+    .admin-name-label {
+        -fx-background-color: transparent;
+        -fx-border-color: transparent transparent rgba(59, 130, 246, 0.22) transparent;
+        -fx-border-width: 0 0 1px 0;
+        -fx-border-style: solid;
+        -fx-spacing: 8px;
+        -fx-alignment: center;
+    }
 
-.admin-icon-inside {
-    -fx-fill: rgba(255, 255, 255, 0.9);
-    -glyph-size: 24px;
-}
+    .admin-icon-inside {
+        -fx-fill: rgba(255, 255, 255, 0.9);
+        -glyph-size: 24px;
+    }
 
-.admin-name-label .label {
-    -fx-background-color: transparent;
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 16px;
-    -fx-font-weight: 800;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-padding: 0;
-}
+    .admin-name-label .label {
+        -fx-background-color: transparent;
+        -fx-text-fill: #ffffff;
+        -fx-font-size: 16px;
+        -fx-font-weight: 800;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-padding: 0;
+    }
 
-.admin-name-label:hover {
-    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.5) transparent;
-    -fx-border-width: 0 0 2px 0;
-}
+    .admin-name-label:hover {
+        -fx-border-color: transparent transparent rgba(59, 130, 246, 0.5) transparent;
+        -fx-border-width: 0 0 2px 0;
+    }
 
-.admin-name-label:hover .admin-icon-inside {
-    -fx-fill: rgba(59, 130, 246, 1);
-}
+    .admin-name-label:hover .admin-icon-inside {
+        -fx-fill: rgba(59, 130, 246, 1);
+    }
 
-.admin-name-label:pressed {
-    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.7) transparent;
-    -fx-border-width: 0 0 2px 0;
-    -fx-translate-y: 1px;
-}
+    .admin-name-label:pressed {
+        -fx-border-color: transparent transparent rgba(59, 130, 246, 0.7) transparent;
+        -fx-border-width: 0 0 2px 0;
+        -fx-translate-y: 1px;
+    }
+    /* ─────────────────────────────────────────────────────────────────────────
+       ADMIN AREA — wrapper pane (needed so the dropdown can position itself)
+       ───────────────────────────────────────────────────────────────────────── */
+    .admin-area-pane {
+        -fx-background-color: transparent;
+    }
 
-.admin-name-label:focused {
-    -fx-border-color: transparent transparent rgba(59, 130, 246, 0.6) transparent;
-    -fx-border-width: 0 0 2px 0;
-}
+    /* Chevron icon next to admin name */
+    .admin-chevron {
+        -fx-fill: rgba(255, 255, 255, 0.45);
+        -glyph-size: 11px;
+        -fx-translate-y: 1px;
+    }
 
-.map-wrapper {
-    -fx-background-color: transparent;
-}
+    /* ─────────────────────────────────────────────────────────────────────────
+       ADMIN DROPDOWN MENU
+       ───────────────────────────────────────────────────────────────────────── */
+    .admin-dropdown {
+        -fx-background-color: #1e293b;
+        -fx-border-color: rgba(59, 130, 246, 0.28);
+        -fx-border-width: 1px;
+        -fx-background-radius: 8px;
+        -fx-border-radius: 8px;
+        -fx-padding: 4px 0;
+        -fx-min-width: 180px;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 18, 0.3, 0, 6);
+    }
 
-.map-search-overlay {
-    -fx-padding: 10px 10px 0 0;
-    -fx-background-color: transparent;
-    -fx-alignment: center-right;
-}
+    .admin-dropdown-item {
+        -fx-padding: 10px 16px;
+        -fx-background-color: transparent;
+        -fx-cursor: hand;
+    }
 
-/* ===== MAP SEARCH BUTTON ===== */
-.map-search-btn {
-    -fx-background-color: #1e293b;
-    -fx-border-color: rgba(249, 115, 22, 0.6);
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-border-width: 1.5px;
-    -fx-min-width: 42px;
-    -fx-min-height: 42px;
-    -fx-max-width: 42px;
-    -fx-max-height: 42px;
-    -fx-cursor: hand;
-    -fx-padding: 0;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0.3, 0, 2);
-}
+    .admin-dropdown-item:hover {
+        -fx-background-color: rgba(249, 115, 22, 0.10);
+    }
 
-.map-search-btn:hover {
-    -fx-background-color: #2d3b4f;
-    -fx-border-color: #f97316;
-    -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 12, 0.35, 0, 0);
-}
+    .admin-dropdown-icon {
+        -fx-fill: rgba(249, 115, 22, 0.80);
+        -glyph-size: 13px;
+    }
 
-.map-search-btn:pressed {
-    -fx-background-color: #374151;
-    -fx-translate-y: 1px;
-}
+    .admin-dropdown-label {
+        -fx-text-fill: #e2e8f0;
+        -fx-font-size: 13px;
+        -fx-font-weight: 600;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-background-color: transparent;
+    }
 
-.map-search-icon {
-    -fx-fill: #f97316;
-    -glyph-size: 18px;
-}
+    .admin-dropdown-separator {
+        -fx-background-color: rgba(148, 163, 184, 0.10);
+        -fx-margin: 2px 0;
+    }
 
-.map-search-btn:hover .map-search-icon {
-    -fx-fill: #fb923c;
-}
+    /* Danger / sign-out row */
+    .admin-dropdown-item-danger:hover {
+        -fx-background-color: rgba(239, 68, 68, 0.10);
+    }
 
-/*
- * ═══════════════════════════════════════════════════════════════════════════
- * MAP SEARCH — TextField
- *
- * FIX #14: Removed the dead ".map-search-combobox .text-field" sub-selector.
- *   That rule only applies to the inner skin node of a ComboBox, not a plain
- *   TextField. Since this control is now a TextField, the nested rule was never
- *   applied and only added noise.
- *
- * FIX #16: Changed padding from "-fx-padding: 0 0 0 14px" to
- *   "-fx-padding: 0 14px" (uniform) and left-only padding is now set via
- *   the inner ".text-input" / default skin padding. For a plain TextField in
- *   JavaFX the correct way to indent the typed text is to set padding on the
- *   control itself — but only horizontal padding, or the height will be
- *   miscalculated. We set symmetric vertical padding (0) and lateral (14px
- *   left, 10px right) so the caret aligns with the prompt text properly.
- * ═══════════════════════════════════════════════════════════════════════════
- */
-.map-search-combobox {
-    -fx-background-color: #1e293b;
-    -fx-border-color: rgba(148,163,184,0.25);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
+    .admin-dropdown-icon-danger {
+        -fx-fill: rgba(239, 68, 68, 0.75);
+    }
 
-    -fx-pref-width: 280px;
-    -fx-min-height: 42px;
-    -fx-pref-height: 42px;
-    -fx-max-height: 42px;
+    .admin-dropdown-item-danger:hover .admin-dropdown-label {
+        -fx-text-fill: #fca5a5;
+    }
 
-    -fx-text-fill: #ffffff;
-    -fx-prompt-text-fill: #94a3b8;
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    .admin-dropdown-item-danger:hover .admin-dropdown-icon-danger {
+        -fx-fill: #ef4444;
+    }
 
-    /* FIX #16: Use 4-value shorthand to set left indent without affecting height */
-    -fx-padding: 0 10px 0 14px;
+    /* ─────────────────────────────────────────────────────────────────────────
+       MODAL OVERLAY (full-screen backdrop)
+       ───────────────────────────────────────────────────────────────────────── */
+    .modal-overlay {
+        -fx-background-color: rgba(0, 0, 0, 0.45);
+    }
 
-    /* Remove default white highlight ring */
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
-}
+    /* ─────────────────────────────────────────────────────────────────────────
+       CHANGE PASSWORD DIALOG
+       ───────────────────────────────────────────────────────────────────────── */
+    .change-password-dialog {
+        -fx-background-color: #0f1c2e;
+        -fx-border-color: rgba(249, 115, 22, 0.40);
+        -fx-border-width: 1.5px;
+        -fx-background-radius: 12px;
+        -fx-border-radius: 12px;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.70), 32, 0.4, 0, 8);
+    }
 
-.map-search-combobox:hover {
-    -fx-border-color: rgba(249,115,22,0.50);
-    -fx-background-color: #2d3b4f;
-}
+    /* Header */
+    .cpd-header {
+        -fx-padding: 18px 20px 16px 20px;
+        -fx-spacing: 14px;
+        -fx-background-color: rgba(249, 115, 22, 0.06);
+        -fx-background-radius: 12px 12px 0 0;
+    }
 
-.map-search-combobox:focused {
-    -fx-border-color: #f97316;
-    -fx-border-width: 2px;
-    -fx-background-color: #2d3b4f;
-    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 8, 0.0, 0, 0);
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
-}
+    .cpd-header-icon {
+        -fx-background-color: rgba(249, 115, 22, 0.18);
+        -fx-background-radius: 8px;
+        -fx-padding: 10px 12px;
+        -fx-min-width: 40px;
+        -fx-min-height: 40px;
+        -fx-max-width: 40px;
+        -fx-max-height: 40px;
+        -fx-alignment: center;
+    }
 
-/*
- * FIX #15: The inline dropdown border and radius were visually disconnected
- * from the TextField above it because:
- *   - The TextField has border-radius: 6px on all corners (including bottom)
- *   - The list had border-width: 0 1px 1px 1px (no top border) expecting a
- *     seamless join, but the TextField's rounded bottom corners left a gap.
- *
- * Fix: Give the TextField square bottom corners when the dropdown is open
- * (achieved by adding a "search-open" styleClass in controller when showing,
- * OR — simpler — just add a subtle 1px top border on the list so it visually
- * connects regardless). Also ensure the list width exactly matches 280px.
- */
-/*
- * FIX — ListView width + overflow:
- *   - pref/min/max-width locked to 280px (matches TextField)
- *   - Horizontal scrollbar suppressed
- *   - Cell text clips with ellipsis (set via CellFactory in Java)
- */
-.search-popup-list {
-    -fx-background-color: #1e293b;
-    -fx-border-color: rgba(249,115,22,0.30);
-    -fx-border-width: 1px;
-    -fx-background-radius: 0 0 7px 7px;
-    -fx-border-radius: 0 0 7px 7px;
-    -fx-padding: 0;
-    -fx-pref-width: 280px;
-    -fx-min-width: 280px;
-    -fx-max-width: 280px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.40), 16, 0.0, 0, 4);
-}
+    .cpd-header-icon-glyph {
+        -fx-fill: #f97316;
+        -glyph-size: 17px;
+    }
 
-/* Hide horizontal scrollbar that appears when cell text overflows */
-.search-popup-list .scroll-bar:horizontal {
-    -fx-pref-height: 0;
-    -fx-max-height: 0;
-    -fx-opacity: 0;
-    -fx-padding: 0;
-    -fx-background-color: transparent;
-}
+    .cpd-title {
+        -fx-text-fill: #f1f5f9;
+        -fx-font-size: 16px;
+        -fx-font-weight: 800;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    }
 
-/* Suppress corner fill when both scrollbars meet */
-.search-popup-list .corner {
-    -fx-background-color: transparent;
-}
+    .cpd-subtitle {
+        -fx-text-fill: rgba(148, 163, 184, 0.65);
+        -fx-font-size: 11px;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    }
 
-.search-popup-list .list-cell {
-    -fx-background-color: transparent;
-    -fx-text-fill: #e2e8f0;
-    -fx-font-size: 13px;
-    -fx-font-weight: 600;
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-padding: 0 14px;
-    -fx-border-color: transparent;
-    -fx-pref-width: 280px;
-    -fx-max-width: 280px;
-    -fx-wrap-text: false;
-}
+    .cpd-close-btn {
+        -fx-background-color: transparent;
+        -fx-text-fill: rgba(148, 163, 184, 0.55);
+        -fx-font-size: 20px;
+        -fx-cursor: hand;
+        -fx-padding: 0 4px;
+        -fx-border-color: transparent;
+        -fx-min-width: 28px;
+        -fx-min-height: 28px;
+    }
 
-.search-popup-list .list-cell:hover {
-    -fx-background-color: #f97316;
-    -fx-text-fill: #ffffff;
-}
+    .cpd-close-btn:hover {
+        -fx-text-fill: #ef4444;
+        -fx-background-color: rgba(239, 68, 68, 0.10);
+        -fx-background-radius: 6px;
+    }
 
-.search-popup-list .list-cell:selected,
-.search-popup-list .list-cell:filled:selected {
-    -fx-background-color: #ea580c;
-    -fx-text-fill: #ffffff;
-    -fx-font-weight: 700;
-}
+    /* Divider lines */
+    .cpd-divider {
+        -fx-background-color: rgba(249, 115, 22, 0.18);
+    }
+
+    .cpd-field-divider {
+        -fx-background-color: rgba(148, 163, 184, 0.08);
+    }
+
+    /* Body */
+    .cpd-body {
+        -fx-padding: 22px 24px;
+    }
+
+    .cpd-field-label {
+        -fx-text-fill: rgba(148, 163, 184, 0.85);
+        -fx-font-size: 11px;
+        -fx-font-weight: 700;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    /* Input wrapper */
+    .cpd-input-wrap {
+        -fx-background-color: #1e293b;
+        -fx-border-color: rgba(148, 163, 184, 0.22);
+        -fx-border-width: 1px;
+        -fx-background-radius: 7px;
+        -fx-border-radius: 7px;
+        -fx-padding: 0 6px 0 12px;
+        -fx-min-height: 42px;
+        -fx-pref-height: 42px;
+        -fx-max-height: 42px;
+        -fx-spacing: 8px;
+    }
+
+    .cpd-input-wrap:focused {
+        -fx-border-color: #f97316;
+        -fx-border-width: 1.5px;
+        -fx-background-color: #243447;
+        -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.22), 8, 0.0, 0, 0);
+    }
+
+    .cpd-input-icon {
+        -fx-fill: rgba(148, 163, 184, 0.45);
+        -glyph-size: 13px;
+    }
+
+    /* The PasswordField inside the wrap */
+    .cpd-input {
+        -fx-background-color: transparent;
+        -fx-border-color: transparent;
+        -fx-text-fill: #ffffff;
+        -fx-prompt-text-fill: #64748b;
+        -fx-font-size: 13px;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-padding: 0;
+        -fx-focus-color: transparent;
+        -fx-faint-focus-color: transparent;
+    }
+
+    /* Eye toggle button */
+    .cpd-eye-btn {
+        -fx-background-color: transparent;
+        -fx-border-color: transparent;
+        -fx-cursor: hand;
+        -fx-font-size: 14px;
+        -fx-padding: 2px 4px;
+        -fx-min-width: 28px;
+        -fx-min-height: 28px;
+        -fx-opacity: 0.45;
+    }
+
+    .cpd-eye-btn:hover {
+        -fx-opacity: 1.0;
+        -fx-background-color: rgba(249, 115, 22, 0.12);
+        -fx-background-radius: 5px;
+    }
+
+    /* Error / success message */
+    .cpd-message-label {
+        -fx-font-size: 12px;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-padding: 8px 12px;
+        -fx-background-radius: 6px;
+        -fx-border-radius: 6px;
+        -fx-border-width: 1px;
+    }
+
+    .cpd-message-error {
+        -fx-text-fill: #fca5a5;
+        -fx-background-color: rgba(239, 68, 68, 0.10);
+        -fx-border-color: rgba(239, 68, 68, 0.30);
+    }
+
+    .cpd-message-success {
+        -fx-text-fill: #6ee7b7;
+        -fx-background-color: rgba(16, 185, 129, 0.10);
+        -fx-border-color: rgba(16, 185, 129, 0.30);
+    }
+
+    /* Footer */
+    .cpd-footer {
+        -fx-padding: 14px 20px 18px 20px;
+        -fx-background-color: rgba(0, 0, 0, 0.15);
+        -fx-background-radius: 0 0 12px 12px;
+    }
+
+    .cpd-cancel-btn {
+        -fx-background-color: rgba(148, 163, 184, 0.10);
+        -fx-border-color: rgba(148, 163, 184, 0.22);
+        -fx-border-width: 1px;
+        -fx-background-radius: 7px;
+        -fx-border-radius: 7px;
+        -fx-text-fill: #94a3b8;
+        -fx-font-size: 13px;
+        -fx-font-weight: 600;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-cursor: hand;
+        -fx-padding: 9px 20px;
+    }
+
+    .cpd-cancel-btn:hover {
+        -fx-background-color: rgba(148, 163, 184, 0.18);
+        -fx-border-color: rgba(148, 163, 184, 0.40);
+        -fx-text-fill: #e2e8f0;
+    }
+
+    .cpd-confirm-btn {
+        -fx-background-color: #f97316;
+        -fx-border-color: transparent;
+        -fx-background-radius: 7px;
+        -fx-border-radius: 7px;
+        -fx-cursor: hand;
+        -fx-padding: 9px 20px;
+        -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.35), 10, 0.3, 0, 2);
+    }
+
+    .cpd-confirm-btn:hover {
+        -fx-background-color: #ea6a0a;
+        -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.50), 14, 0.35, 0, 0);
+    }
+
+    .cpd-confirm-btn:pressed {
+        -fx-background-color: #d45f08;
+        -fx-translate-y: 1px;
+    }
+
+    .cpd-confirm-icon {
+        -fx-fill: white;
+        -glyph-size: 13px;
+    }
+
+    .cpd-confirm-label {
+        -fx-text-fill: white;
+        -fx-font-size: 13px;
+        -fx-font-weight: 700;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-background-color: transparent;
+    }
+
+    .admin-name-label:focused {
+        -fx-border-color: transparent transparent rgba(59, 130, 246, 0.6) transparent;
+        -fx-border-width: 0 0 2px 0;
+    }
+
+    .map-wrapper {
+        -fx-background-color: transparent;
+    }
+
+    .map-search-overlay {
+        -fx-padding: 10px 10px 0 0;
+        -fx-background-color: transparent;
+        -fx-alignment: center-right;
+    }
+
+    /* ===== MAP SEARCH BUTTON ===== */
+    .map-search-btn {
+        -fx-background-color: #1e293b;
+        -fx-border-color: rgba(249, 115, 22, 0.6);
+        -fx-background-radius: 6px;
+        -fx-border-radius: 6px;
+        -fx-border-width: 1.5px;
+        -fx-min-width: 42px;
+        -fx-min-height: 42px;
+        -fx-max-width: 42px;
+        -fx-max-height: 42px;
+        -fx-cursor: hand;
+        -fx-padding: 0;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0.3, 0, 2);
+    }
+
+    .map-search-btn:hover {
+        -fx-background-color: #2d3b4f;
+        -fx-border-color: #f97316;
+        -fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.3), 12, 0.35, 0, 0);
+    }
+
+    .map-search-btn:pressed {
+        -fx-background-color: #374151;
+        -fx-translate-y: 1px;
+    }
+
+    .map-search-icon {
+        -fx-fill: #f97316;
+        -glyph-size: 18px;
+    }
+
+    .map-search-btn:hover .map-search-icon {
+        -fx-fill: #fb923c;
+    }
+
+    /*
+     * ═══════════════════════════════════════════════════════════════════════════
+     * MAP SEARCH — TextField
+     *
+     * FIX #14: Removed the dead ".map-search-combobox .text-field" sub-selector.
+     *   That rule only applies to the inner skin node of a ComboBox, not a plain
+     *   TextField. Since this control is now a TextField, the nested rule was never
+     *   applied and only added noise.
+     *
+     * FIX #16: Changed padding from "-fx-padding: 0 0 0 14px" to
+     *   "-fx-padding: 0 14px" (uniform) and left-only padding is now set via
+     *   the inner ".text-input" / default skin padding. For a plain TextField in
+     *   JavaFX the correct way to indent the typed text is to set padding on the
+     *   control itself — but only horizontal padding, or the height will be
+     *   miscalculated. We set symmetric vertical padding (0) and lateral (14px
+     *   left, 10px right) so the caret aligns with the prompt text properly.
+     * ═══════════════════════════════════════════════════════════════════════════
+     */
+    .map-search-combobox {
+        -fx-background-color: #1e293b;
+        -fx-border-color: rgba(148,163,184,0.25);
+        -fx-border-width: 1px;
+        -fx-background-radius: 6px;
+        -fx-border-radius: 6px;
+
+        -fx-pref-width: 280px;
+        -fx-min-height: 42px;
+        -fx-pref-height: 42px;
+        -fx-max-height: 42px;
+
+        -fx-text-fill: #ffffff;
+        -fx-prompt-text-fill: #94a3b8;
+        -fx-font-size: 14px;
+        -fx-font-weight: 600;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+
+        /* FIX #16: Use 4-value shorthand to set left indent without affecting height */
+        -fx-padding: 0 10px 0 14px;
+
+        /* Remove default white highlight ring */
+        -fx-focus-color: transparent;
+        -fx-faint-focus-color: transparent;
+    }
+
+    .map-search-combobox:hover {
+        -fx-border-color: rgba(249,115,22,0.50);
+        -fx-background-color: #2d3b4f;
+    }
+
+    .map-search-combobox:focused {
+        -fx-border-color: #f97316;
+        -fx-border-width: 2px;
+        -fx-background-color: #2d3b4f;
+        -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 8, 0.0, 0, 0);
+        -fx-focus-color: transparent;
+        -fx-faint-focus-color: transparent;
+    }
+
+    /*
+     * FIX #15: The inline dropdown border and radius were visually disconnected
+     * from the TextField above it because:
+     *   - The TextField has border-radius: 6px on all corners (including bottom)
+     *   - The list had border-width: 0 1px 1px 1px (no top border) expecting a
+     *     seamless join, but the TextField's rounded bottom corners left a gap.
+     *
+     * Fix: Give the TextField square bottom corners when the dropdown is open
+     * (achieved by adding a "search-open" styleClass in controller when showing,
+     * OR — simpler — just add a subtle 1px top border on the list so it visually
+     * connects regardless). Also ensure the list width exactly matches 280px.
+     */
+    /*
+     * FIX — ListView width + overflow:
+     *   - pref/min/max-width locked to 280px (matches TextField)
+     *   - Horizontal scrollbar suppressed
+     *   - Cell text clips with ellipsis (set via CellFactory in Java)
+     */
+    .search-popup-list {
+        -fx-background-color: #1e293b;
+        -fx-border-color: rgba(249,115,22,0.30);
+        -fx-border-width: 1px;
+        -fx-background-radius: 0 0 7px 7px;
+        -fx-border-radius: 0 0 7px 7px;
+        -fx-padding: 0;
+        -fx-pref-width: 280px;
+        -fx-min-width: 280px;
+        -fx-max-width: 280px;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.40), 16, 0.0, 0, 4);
+    }
+
+    /* Hide horizontal scrollbar that appears when cell text overflows */
+    .search-popup-list .scroll-bar:horizontal {
+        -fx-pref-height: 0;
+        -fx-max-height: 0;
+        -fx-opacity: 0;
+        -fx-padding: 0;
+        -fx-background-color: transparent;
+    }
+
+    /* Suppress corner fill when both scrollbars meet */
+    .search-popup-list .corner {
+        -fx-background-color: transparent;
+    }
+
+    .search-popup-list .list-cell {
+        -fx-background-color: transparent;
+        -fx-text-fill: #e2e8f0;
+        -fx-font-size: 13px;
+        -fx-font-weight: 600;
+        -fx-font-family: "Inter", "Segoe UI", sans-serif;
+        -fx-padding: 0 14px;
+        -fx-border-color: transparent;
+        -fx-pref-width: 280px;
+        -fx-max-width: 280px;
+        -fx-wrap-text: false;
+    }
+
+    .search-popup-list .list-cell:hover {
+        -fx-background-color: #f97316;
+        -fx-text-fill: #ffffff;
+    }
+
+    .search-popup-list .list-cell:selected,
+    .search-popup-list .list-cell:filled:selected {
+        -fx-background-color: #ea580c;
+        -fx-text-fill: #ffffff;
+        -fx-font-weight: 700;
+    }

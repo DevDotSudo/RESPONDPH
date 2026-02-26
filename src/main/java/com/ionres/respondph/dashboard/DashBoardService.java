@@ -12,8 +12,10 @@ public interface DashBoardService {
     int fetchTotalDisasters();
     int fetchTotalAids();
     int fetchTotalEvacuationSites();
+
     List<DisasterCircleInfo> getCircles();
     List<BeneficiaryMarker> getBeneficiaries();
     List<EvacSiteMarker> getEvacSites();
-    public List<FamilyMemberModel> getFamilyMembers(int beneficiaryId);
+    List<FamilyMemberModel> getFamilyMembers(int beneficiaryId);
+    boolean changePassword(int adminId, String currentPassword, String newPassword);
 }

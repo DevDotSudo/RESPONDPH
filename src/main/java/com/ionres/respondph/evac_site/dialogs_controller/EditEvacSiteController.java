@@ -104,6 +104,10 @@ public class EditEvacSiteController {
                 evacSiteController.loadTable();
                 DashboardRefresher.refreshEvacSiteMap();
                 DashboardRefresher.refresh();
+                // Close dialog after successful update
+                if (dialogStage != null) {
+                    dialogStage.hide();
+                }
             } else {
                 AlertDialogManager.showError("Error", "Failed to update evacuation site. Please try again.");
             }

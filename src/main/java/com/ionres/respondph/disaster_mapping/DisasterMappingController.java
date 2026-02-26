@@ -457,4 +457,11 @@ public class DisasterMappingController {
                     .log(java.util.logging.Level.SEVERE, "Error showing beneficiaries dialog", e);
         }
     }
+
+    public void reloadCircleIfSelected(int updatedDisasterId) {
+        DisasterModel selected = disasterComboBox.getValue();
+        if (selected != null && selected.getDisasterId() == updatedDisasterId) {
+            loadDisasterCirclesFromDb(updatedDisasterId);
+        }
+    }
 }

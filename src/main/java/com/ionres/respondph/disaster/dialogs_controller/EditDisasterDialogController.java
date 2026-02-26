@@ -131,6 +131,7 @@ public class EditDisasterDialogController {
                 DashboardRefresher.refreshDisasterInSend();
                 DashboardRefresher.refreshComboBoxOfDNAndAN();
                 DashboardRefresher.refreshComboAllTypesDisaster();
+                DashboardRefresher.refreshDisasterCircle(currentDisaster.getDisasterId());
                 closeDialog();
             } else {
                 AlertDialogManager.showError("Update Failed",

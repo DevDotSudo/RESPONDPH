@@ -109,10 +109,11 @@ public class HouseholdScoreDAOServiceImpl implements HouseholdScoreDAO {
                 "digital_access_score, dependency_ratio_score, creation_date) " +
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())";
 
+        // REPLACE WITH (new):
         String updateSql = "UPDATE household_score SET " +
                 "age_score=?, gender_score=?, marital_status_score=?, solo_parent_score=?, disability_score=?, " +
                 "health_condition_score=?, access_to_clean_water_score=?, sanitation_facilities_score=?, " +
-                "house_construction_type_score=?, ownership_score=?, " +
+                "house_construction_type_score=?, ownership_score=?, damage_severity_score=?, " +
                 "employment_status_score=?, monthly_income_score=?, education_level_score=?, " +
                 "digital_access_score=?, dependency_ratio_score=?, updating_date=NOW() WHERE beneficiary_id=?";
 
@@ -140,12 +141,13 @@ public class HouseholdScoreDAOServiceImpl implements HouseholdScoreDAO {
                 ps.setDouble(8, score.getSanitationFacilitiesScore());
                 ps.setDouble(9, score.getHouseConstructionTypeScore());
                 ps.setDouble(10, score.getOwnershipScore());
-                ps.setDouble(11, score.getEmploymentStatusScore());
-                ps.setDouble(12, score.getMonthlyIncomeScore());
-                ps.setDouble(13, score.getEducationLevelScore());
-                ps.setDouble(14, score.getDigitalAccessScore());
-                ps.setDouble(15, score.getDependencyRatioScore());
-                ps.setInt(16, score.getBeneficiaryId());
+                ps.setDouble(11, score.getDamageSeverityScore()); // ✅ ADDED
+                ps.setDouble(12, score.getEmploymentStatusScore());
+                ps.setDouble(13, score.getMonthlyIncomeScore());
+                ps.setDouble(14, score.getEducationLevelScore());
+                ps.setDouble(15, score.getDigitalAccessScore());
+                ps.setDouble(16, score.getDependencyRatioScore());
+                ps.setInt(17, score.getBeneficiaryId());
             } else {
                 ps = conn.prepareStatement(insertSql);
                 ps.setInt(1, score.getBeneficiaryId());

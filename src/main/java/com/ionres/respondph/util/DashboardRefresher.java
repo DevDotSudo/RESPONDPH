@@ -122,4 +122,11 @@ public final class DashboardRefresher {
             Platform.runLater(evacuationPlanController::loadTable);
         }
     }
+
+    // This already exists, but add this new method:
+    public static void refreshDisasterCircle(int disasterId) {
+        if (disasterMappingController != null) {
+            Platform.runLater(() -> disasterMappingController.reloadCircleIfSelected(disasterId));
+        }
+    }
 }

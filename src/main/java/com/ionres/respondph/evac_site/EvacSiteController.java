@@ -2,6 +2,7 @@ package com.ionres.respondph.evac_site;
 
 import com.ionres.respondph.evac_site.dialogs_controller.AddEvacSiteController;
 import com.ionres.respondph.evac_site.dialogs_controller.EditEvacSiteController;
+import com.ionres.respondph.evac_site.dialogs_controller.EvacSiteMapViewController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
 import com.ionres.respondph.util.DashboardRefresher;
@@ -20,6 +21,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import java.util.List;
+import com.ionres.respondph.disaster_mapping.dialogs_controller.AllocateBeneficiariesToEvacSiteController;
+import javafx.scene.input.MouseButton;
 
 public class EvacSiteController {
 
@@ -43,6 +46,7 @@ public class EvacSiteController {
         setupTableColumns();
         setupActionButtons();
         setupSearchListener();
+        setupDoubleClickHandler();
         loadTable();
         EventHandler<ActionEvent> handler = this::handleActions;
         searchBtn.setOnAction(handler);
@@ -135,6 +139,31 @@ public class EvacSiteController {
                 AlertDialogManager.showError("Delete Error",
                         "An error occurred while deleting evacuation site: " + e.getMessage());
             }
+        }
+    }
+    private void setupDoubleClickHandler() {
+        evacSitesTbl.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+                EvacSiteModel selected = evacSitesTbl.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    showEvacSiteMapDialog(selected);
+                }
+            }
+        });
+    }
+
+    private void showEvacSiteMapDialog(EvacSiteModel evacSite) {
+        try {
+            EvacSiteMapViewController controller = DialogManager.getController(
+                    "evacSiteMapView", EvacSiteMapViewController.class);
+            if (controller != null) {
+                controller.setEvacSite(evacSite);
+                DialogManager.show("evacSiteMapView");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertDialogManager.showError("Dialog Error",
+                    "Failed to open map view: " + e.getMessage());
         }
     }
 

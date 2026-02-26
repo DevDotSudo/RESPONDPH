@@ -24,9 +24,9 @@ public class AidPrintService {
     private static final String ORG_ADDRESS = "Cagayan de Oro City, Northern Mindanao, Philippines";
     private static final String ORG_CONTACT = "Tel: (088) XXX-XXXX | Email: info@respondph.gov.ph";
 
-    // Paper dimensions
-    private static final double PAGE_WIDTH = 612; // 8.5 inches * 72 points/inch
-    private static final double MARGIN = 36; // 0.5 inch * 72 points/inch
+    // ✅ REPLACE these 3 lines (was 612, 36, 540)
+    private static final double PAGE_WIDTH    = 650;
+    private static final double MARGIN        = 36;
     private static final double CONTENT_WIDTH = PAGE_WIDTH - (2 * MARGIN); // 540 points (7.5 inches)
 
     // Print settings
@@ -144,113 +144,196 @@ public class AidPrintService {
      * Build beneficiary list content with centered layout and quantity column
      */
     private VBox buildBeneficiaryListContent(String disasterName, String aidName, List<AidModel> records) {
-        VBox root = createPrintPage();
-        root.setAlignment(Pos.TOP_CENTER);
+        VBox allPages = new VBox(0);
+        allPages.setStyle("-fx-background-color: #e0e0e0;"); // gray gap between pages
 
-        if (includeHeader)
-            root.getChildren().add(buildHeader("BENEFICIARY LIST", disasterName, aidName));
+        // ── Page dimensions (points) ──────────────────────────────────────────
+        double pageHeight  = resolvePageHeight();   // e.g. 842 for A4, 1008 for Legal
+        double headerH     = 110;  // approximate height of header block
+        double footerH     = 30;
+        double colHeaderH  = 24;
+        double rowH        = 22;
+        double paddingH    = 50;   // top + bottom padding inside page
 
-        root.getChildren().add(createSeparator());
+        int rowsPerPage = (int) Math.floor(
+                (pageHeight - headerH - footerH - colHeaderH - paddingH) / rowH);
+        rowsPerPage = Math.max(1, rowsPerPage);
 
-        // Create a centered table container
-        VBox tableContainer = new VBox();
+        // ── Split records into pages ──────────────────────────────────────────
+        int totalPages = (int) Math.ceil((double) records.size() / rowsPerPage);
+
+        for (int pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+            int from = pageIndex * rowsPerPage;
+            int to   = Math.min(from + rowsPerPage, records.size());
+            List<AidModel> pageRecords = records.subList(from, to);
+
+            VBox page = createSingleBeneficiaryPage(
+                    disasterName, aidName, records,
+                    pageRecords, from,
+                    pageIndex + 1, totalPages);
+
+            allPages.getChildren().add(page);
+
+            // Visual gap between pages in preview
+            if (pageIndex < totalPages - 1) {
+                Region gap = new Region();
+                gap.setMinHeight(20);
+                gap.setStyle("-fx-background-color: #cccccc;");
+                allPages.getChildren().add(gap);
+            }
+        }
+
+        return allPages;
+    }
+
+    private VBox createSingleBeneficiaryPage(String disasterName, String aidName,
+                                             List<AidModel> allRecords,
+                                             List<AidModel> pageRecords,
+                                             int startIndex,
+                                             int pageNum, int totalPages) {
+
+        // ✅ REPLACE this block (was: VBox page = new VBox(6); page.setPrefWidth... etc)
+        VBox page = new VBox(6);
+        page.setPrefWidth(620);
+        page.setMaxWidth(620);
+        page.setMinWidth(620);
+        page.setPrefHeight(resolvePageHeight());
+        page.setMinHeight(resolvePageHeight());
+        page.setPadding(new Insets(36));
+        page.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-border-color: #bbbbbb;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 10, 0, 0, 3);"
+        );
+        page.setAlignment(Pos.TOP_CENTER);
+
+        // ✅ EVERYTHING BELOW IS UNCHANGED — keep as is
+        if (includeHeader) {
+            page.getChildren().add(buildHeader("BENEFICIARY LIST", disasterName, aidName));
+        }
+
+        page.getChildren().add(createSeparator());
+
+        VBox tableContainer = new VBox(0);
         tableContainer.setAlignment(Pos.CENTER);
         tableContainer.setMaxWidth(CONTENT_WIDTH);
 
-        // Column header row - centered
         HBox colHeader = createStyledRow(true);
         colHeader.setAlignment(Pos.CENTER);
         colHeader.getChildren().addAll(
-                createColumnCell("#", 35, true),
-                createColumnCell("Beneficiary Name", 200, true),
-                createColumnCell("Date Received", 90, true),
-                createColumnCell("Qty", 40, true),
-                createColumnCell("Cost (₱)", 70, true)
+                createColumnCell("#",                 45,  true),
+                createColumnCell("Beneficiary Name",  250, true),
+                createColumnCell("Date Received",     110, true),
+                createColumnCell("Qty",               50,  true),
+                createColumnCell("Cost (₱)",          85,  true)
         );
         tableContainer.getChildren().add(colHeader);
 
-        // Data rows
-        for (int i = 0; i < records.size(); i++) {
-            AidModel aid = records.get(i);
+        for (int i = 0; i < pageRecords.size(); i++) {
+            AidModel aid = pageRecords.get(i);
+            int globalIndex = startIndex + i + 1;
+
             HBox row = createStyledRow(i % 2 == 0);
             row.setAlignment(Pos.CENTER);
             row.getChildren().addAll(
-                    createColumnCell(String.valueOf(i + 1), 35, false),
-                    createColumnCell(nullToDash(aid.getBeneficiaryName()), 200, false),
+                    createColumnCell(String.valueOf(globalIndex),              45,  false),
+                    createColumnCell(nullToDash(aid.getBeneficiaryName()),     250, false),
                     createColumnCell(aid.getDate() != null
                             ? aid.getDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
-                            : "—", 90, false),
-                    createColumnCell(String.format("%.0f", aid.getQuantity()), 40, false),
-                    createColumnCell(String.format("%.2f", aid.getCost()), 70, false)
+                            : "—",                                             110, false),
+                    createColumnCell(String.format("%.0f", aid.getQuantity()), 50,  false),
+                    createColumnCell(String.format("%.2f", aid.getCost()),     85,  false)
             );
             tableContainer.getChildren().add(row);
         }
+        page.getChildren().add(tableContainer);
 
-        root.getChildren().add(tableContainer);
-        root.getChildren().add(createSeparator());
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+        page.getChildren().add(spacer);
 
-        // Summary section - centered
-        VBox summaryBox = new VBox(5);
-        summaryBox.setAlignment(Pos.CENTER);
+        page.getChildren().add(createSeparator());
 
-        double totalCost = records.stream().mapToDouble(AidModel::getCost).sum();
-        double totalQuantity = records.stream().mapToDouble(AidModel::getQuantity).sum();
+        if (pageNum == totalPages) {
+            double totalCost     = allRecords.stream().mapToDouble(AidModel::getCost).sum();
+            double totalQuantity = allRecords.stream().mapToDouble(AidModel::getQuantity).sum();
 
-        Label summaryLabel = new Label(String.format(
-                "Total Beneficiaries: %d     Total Quantity: %.0f     Total Cost: ₱ %,.2f",
-                records.size(), totalQuantity, totalCost));
-        summaryLabel.setStyle("-fx-font-size: 10; -fx-font-weight: bold; -fx-alignment: center;");
-        summaryBox.getChildren().add(summaryLabel);
-
-        root.getChildren().add(summaryBox);
+            Label summaryLabel = new Label(String.format(
+                    "Total Beneficiaries: %d     Total Quantity: %.0f     Total Cost: ₱ %,.2f",
+                    allRecords.size(), totalQuantity, totalCost));
+            summaryLabel.setStyle("-fx-font-size: 10; -fx-font-weight: bold; -fx-alignment: center;");
+            page.getChildren().add(summaryLabel);
+        }
 
         if (includeFooter)
-            root.getChildren().add(buildFooter(records.size()));
+            page.getChildren().add(buildFooter(allRecords.size()));
 
-        if (includePageNumbers)
-            root.getChildren().add(createPageNumber(1));
+        if (includePageNumbers) {
+            Label pageLabel = new Label("Page " + pageNum + " of " + totalPages);
+            pageLabel.setStyle("-fx-font-size: 8; -fx-text-fill: #aaa; -fx-alignment: center;");
+            pageLabel.setAlignment(Pos.CENTER);
+            pageLabel.setMaxWidth(Double.MAX_VALUE);
+            page.getChildren().add(pageLabel);
+        }
 
-        return root;
+        return page;
     }
 
-    /**
-     * Build distribution summary content
-     */
+
+    private double resolvePageHeight() {
+        if (paperSize == null) return 842;
+        if (paperSize.startsWith("Letter")) return 792;
+        if (paperSize.startsWith("Legal"))  return 1008;
+        return 842; // A4
+    }
+
     private VBox buildDistributionSummaryContent(String disasterName, String aidName, List<AidModel> records) {
-        VBox root = createPrintPage();
+
+        // ✅ REPLACE the old: VBox root = createPrintPage(); root.setAlignment(...)
+        VBox root = new VBox(6);
+        root.setPrefWidth(620);
+        root.setMaxWidth(620);
+        root.setMinWidth(620);
+        root.setPrefHeight(resolvePageHeight());
+        root.setPadding(new Insets(36));
+        root.setStyle("-fx-background-color: white;" +
+                "-fx-border-color: #bbbbbb;" +
+                "-fx-border-width: 1;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 10, 0, 0, 3);");
         root.setAlignment(Pos.TOP_CENTER);
 
+        // ✅ EVERYTHING BELOW IS UNCHANGED — keep as is
         if (includeHeader)
             root.getChildren().add(buildHeader("DISTRIBUTION SUMMARY", disasterName, aidName));
 
         root.getChildren().add(createSeparator());
 
-        double totalCost = records.stream().mapToDouble(AidModel::getCost).sum();
+        double totalCost     = records.stream().mapToDouble(AidModel::getCost).sum();
         double totalQuantity = records.stream().mapToDouble(AidModel::getQuantity).sum();
-        double avgCost = records.isEmpty() ? 0 : totalCost / records.size();
-        double maxCost = records.stream().mapToDouble(AidModel::getCost).max().orElse(0);
-        double minCost = records.stream().mapToDouble(AidModel::getCost).min().orElse(0);
+        double avgCost       = records.isEmpty() ? 0 : totalCost / records.size();
+        double maxCost       = records.stream().mapToDouble(AidModel::getCost).max().orElse(0);
+        double minCost       = records.stream().mapToDouble(AidModel::getCost).min().orElse(0);
 
         VBox statsContainer = new VBox(5);
         statsContainer.setAlignment(Pos.CENTER);
         statsContainer.getChildren().addAll(
-                createStatRow("Aid Name", aidName),
-                createStatRow("Disaster Event", disasterName),
+                createStatRow("Aid Name",            aidName),
+                createStatRow("Disaster Event",      disasterName),
                 createStatRow("Total Beneficiaries", records.size() + " persons"),
-                createStatRow("Total Quantity", String.format("%.0f units", totalQuantity)),
-                createStatRow("Total Cost", String.format("₱ %,.2f", totalCost)),
-                createStatRow("Average Cost", String.format("₱ %,.2f", avgCost)),
-                createStatRow("Highest Amount", String.format("₱ %,.2f", maxCost)),
-                createStatRow("Lowest Amount", String.format("₱ %,.2f", minCost))
+                createStatRow("Total Quantity",      String.format("%.0f units", totalQuantity)),
+                createStatRow("Total Cost",          String.format("₱ %,.2f", totalCost)),
+                createStatRow("Average Cost",        String.format("₱ %,.2f", avgCost)),
+                createStatRow("Highest Amount",      String.format("₱ %,.2f", maxCost)),
+                createStatRow("Lowest Amount",       String.format("₱ %,.2f", minCost))
         );
         root.getChildren().add(statsContainer);
 
         root.getChildren().add(createSeparator());
 
-        // Visual cost bar
-        double barWidth = 500.0;
-        StackPane bar = createCostBar(barWidth, totalCost);
-        HBox barBox = new HBox(bar);
+        double    barWidth = 500.0;
+        StackPane bar      = createCostBar(barWidth, totalCost);
+        HBox      barBox   = new HBox(bar);
         barBox.setAlignment(Pos.CENTER);
         barBox.setPadding(new Insets(10, 0, 10, 0));
         root.getChildren().add(barBox);
@@ -262,6 +345,11 @@ public class AidPrintService {
         noteLabel.setAlignment(Pos.CENTER);
         root.getChildren().add(noteLabel);
 
+        // ✅ Spacer pushes footer to bottom
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+        root.getChildren().add(spacer);
+
         if (includeFooter)
             root.getChildren().add(buildFooter(records.size()));
 
@@ -270,7 +358,6 @@ public class AidPrintService {
 
         return root;
     }
-
     /**
      * Create complete report with multiple sections
      */

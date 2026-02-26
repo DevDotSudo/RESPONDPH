@@ -988,7 +988,7 @@ public class DisasterDamageController {
 
         VBox headerRight = new VBox(3);
         headerRight.setAlignment(Pos.CENTER_RIGHT);
-        Label systemName = new Label("RespondPH");
+        Label systemName = new Label("RESPOND-PH");
         systemName.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: white;");
         Label tsLabel = new Label(timestamp);
         tsLabel.setStyle("-fx-font-size: 8; -fx-text-fill: #bdd7ee;");

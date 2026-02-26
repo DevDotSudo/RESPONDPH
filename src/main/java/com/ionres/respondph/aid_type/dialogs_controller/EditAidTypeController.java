@@ -5,7 +5,7 @@ import com.ionres.respondph.aid_type.AidTypeController;
 import com.ionres.respondph.aid_type.AidTypeModel;
 import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.SessionManager;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -384,7 +384,7 @@ public class EditAidTypeController {
                             " household score(s) recalculated.");
 
             aidTypeController.loadTable();
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            Refresher.refreshComboBoxOfDNAndAN();
             clearFields();
         });
 
@@ -400,7 +400,7 @@ public class EditAidTypeController {
             if (ex != null) ex.printStackTrace();
 
             aidTypeController.loadTable();
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            Refresher.refreshComboBoxOfDNAndAN();
             clearFields();
         });
 

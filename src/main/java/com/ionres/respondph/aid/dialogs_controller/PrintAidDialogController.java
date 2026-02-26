@@ -9,7 +9,7 @@ import com.ionres.respondph.disaster.DisasterDAOImpl;
 import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Cryptography;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.PdfProgressRunner;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -50,7 +50,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -145,7 +144,7 @@ public class PrintAidDialogController {
         wireButtonHandlers();
         loadData();
 
-        DashboardRefresher.registerDisasterNameAndAidtypeName(this);
+        Refresher.registerDisasterNameAndAidtypeName(this);
     }
 
     private void wireToggleGroups() {

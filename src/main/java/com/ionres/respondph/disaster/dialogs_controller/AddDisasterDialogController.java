@@ -5,7 +5,7 @@ import com.ionres.respondph.disaster.DisasterController;
 import com.ionres.respondph.disaster.DisasterModel;
 import com.ionres.respondph.disaster.DisasterService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -102,10 +102,10 @@ public class AddDisasterDialogController {
                 AlertDialogManager.showSuccess("Success", "Disaster has been successfully added.");
                 disasterController.loadTable();
                 clearFields();
-                DashboardRefresher.refresh();
-                DashboardRefresher.refreshDisasterInSend();
-                DashboardRefresher.refreshComboBoxOfDNAndAN();
-                DashboardRefresher.refreshComboAllTypesDisaster();
+                Refresher.refresh();
+                Refresher.refreshDisasterInSend();
+                Refresher.refreshComboBoxOfDNAndAN();
+                Refresher.refreshComboAllTypesDisaster();
             } else {
                 AlertDialogManager.showError("Error", "Failed to add disaster. Please try again.");
             }

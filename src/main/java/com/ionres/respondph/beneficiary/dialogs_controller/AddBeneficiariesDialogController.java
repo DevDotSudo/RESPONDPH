@@ -282,11 +282,11 @@ public class AddBeneficiariesDialogController {
                     }
                 }
                 clearFields();
-                DashboardRefresher.refresh();
-                DashboardRefresher.refreshBeneInSend();
-                DashboardRefresher.refreshDisasterInSend();
-                DashboardRefresher.refreshMapInDisasterMapping();
-                DashboardRefresher.refreshBeneficiarySelectionTable();
+                Refresher.refresh();
+                Refresher.refreshBeneInSend();
+                Refresher.refreshDisasterInSend();
+                Refresher.refreshMapInDisasterMapping();
+                Refresher.refreshBeneficiarySelectionTable();
                 // Close dialog after successful transaction
                 if (dialogStage != null) {
                     dialogStage.hide();

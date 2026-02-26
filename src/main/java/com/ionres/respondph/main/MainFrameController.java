@@ -998,7 +998,7 @@ public class MainFrameController {
     private void handleEvacPlan()               { loadPage("/view/evacuation_plan/EvacuationPlan.fxml");          activeButton(evacPlanBtn); }
     private void handleSendSms()                { loadPage("/view/send_sms/SendSMS.fxml");                        activeButton(sendSmsBtn); }
     private void handleVulnerabilityIndicator() {
-        DashboardRefresher.refreshFlds();
+        Refresher.refreshFlds();
         loadPage("/view/vulnerability_indicator/VulnerabilityIndicator.fxml");
         activeButton(vulnerabilityBtn);
     }

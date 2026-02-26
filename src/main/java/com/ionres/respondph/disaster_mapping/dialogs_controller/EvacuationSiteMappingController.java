@@ -7,7 +7,7 @@ import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import com.ionres.respondph.util.Mapping;
 import javafx.application.Platform;
@@ -68,7 +68,7 @@ public class EvacuationSiteMappingController {
         loadMarkerImage();
         setupButtons();
 
-        DashboardRefresher.registerEvacSiteInMap(this);
+        Refresher.registerEvacSiteInMap(this);
 
         Platform.runLater(() -> {
             mapping.init(mappingContainer);

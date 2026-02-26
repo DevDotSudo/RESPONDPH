@@ -164,7 +164,7 @@ public class SendSMSController implements Initializable {
         setupNewsSlots();
         checkNetworkStatus();
 
-        DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
+        Refresher.registerDisasterAndBeneficiaryCombo(this);
 
         evacMessageManager = CustomEvacMessageManager.getInstance();
         if (charCount != null) charCount.setText("0/320 characters");

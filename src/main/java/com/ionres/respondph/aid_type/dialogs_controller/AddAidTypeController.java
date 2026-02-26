@@ -5,7 +5,7 @@ import com.ionres.respondph.aid_type.AidTypeController;
 import com.ionres.respondph.aid_type.AidTypeModel;
 import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.SessionManager;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -184,8 +184,8 @@ public class AddAidTypeController {
                 } else {
                     AlertDialogManager.showWarning("Warning",
                             "Aid type created, but could not determine new Aid Type ID for score calculation.");
-                    DashboardRefresher.refreshComboBoxOfDNAndAN();
-                    DashboardRefresher.refresh();
+                    Refresher.refreshComboBoxOfDNAndAN();
+                    Refresher.refresh();
                     clearFields();
                     aidTypeController.loadTable();
                 }
@@ -406,8 +406,8 @@ public class AddAidTypeController {
                 }
             } catch (Exception ignore) {}
 
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
-            DashboardRefresher.refresh();
+            Refresher.refreshComboBoxOfDNAndAN();
+            Refresher.refresh();
             clearFields();
             aidTypeController.loadTable();
         });
@@ -431,8 +431,8 @@ public class AddAidTypeController {
                 }
             } catch (Exception ignore) {}
 
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
-            DashboardRefresher.refresh();
+            Refresher.refreshComboBoxOfDNAndAN();
+            Refresher.refresh();
             clearFields();
             aidTypeController.loadTable();
         });

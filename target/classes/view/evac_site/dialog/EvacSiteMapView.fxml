@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root"
+      prefHeight="800.0" prefWidth="1100.0"
+      styleClass="dialog-root"
+      stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ionres.respondph.evac_site.dialogs_controller.EvacSiteMapViewController">
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
+        <padding><Insets bottom="18" left="24" right="24" top="18"/></padding>
+
+        <FontAwesomeIconView glyphName="MAP_MARKER" size="22" styleClass="header-icon"/>
+        <VBox spacing="2">
+            <Label styleClass="dialog-title" text="Evacuation Site Location"/>
+            <Label styleClass="dialog-subtitle"
+                   text="Map view of the selected evacuation site"/>
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Label styleClass="chip" text="View Only"/>
+
+        <Button fx:id="closeBtn" styleClass="dialog-close">
+            <graphic>
+                <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon"/>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- BODY -->
+    <VBox spacing="16" styleClass="dialog-body" VBox.vgrow="ALWAYS">
+        <padding><Insets bottom="18" left="24" right="24" top="18"/></padding>
+
+        <!-- Info card -->
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-card">
+            <FontAwesomeIconView glyphName="HOME" size="18" styleClass="info-card-icon"/>
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label fx:id="siteNameLabel" styleClass="info-card-title" text="—"/>
+                <HBox spacing="28">
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <FontAwesomeIconView glyphName="USERS" size="12" styleClass="info-card-icon"/>
+                        <Label fx:id="capacityLabel" styleClass="info-card-text" text="Capacity: —"/>
+                    </HBox>
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <FontAwesomeIconView glyphName="MAP_MARKER" size="12" styleClass="info-card-icon"/>
+                        <Label fx:id="coordsLabel" styleClass="info-card-text" text="Coordinates: —"/>
+                    </HBox>
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <FontAwesomeIconView glyphName="STICKY_NOTE" size="12" styleClass="info-card-icon"/>
+                        <Label fx:id="notesLabel" styleClass="info-card-text"
+                               text="Notes: —" wrapText="true"/>
+                    </HBox>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <!-- Map card -->
+        <VBox spacing="12" styleClass="form-section" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                <FontAwesomeIconView glyphName="MAP" size="18" styleClass="section-icon"/>
+                <Label styleClass="section-title" text="Map View"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label styleClass="section-subtitle" text="Zoom • Drag • Pan"/>
+            </HBox>
+
+            <!-- Canvas surface — same Pane id pattern as EvacuationSiteMapping -->
+            <Pane fx:id="mappingContainer" styleClass="map-surface" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </VBox>
+</VBox>

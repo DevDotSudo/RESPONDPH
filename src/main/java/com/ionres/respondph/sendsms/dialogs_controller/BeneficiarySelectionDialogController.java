@@ -13,7 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 
 public class BeneficiarySelectionDialogController {
 
@@ -50,7 +50,7 @@ public class BeneficiarySelectionDialogController {
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colBarangay.setCellValueFactory(new PropertyValueFactory<>("barangay"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("mobileNumber"));
-        DashboardRefresher.registerBeneficiarySelectionDialog(this);
+        Refresher.registerBeneficiarySelectionDialog(this);
         tblBeneficiaries.setEditable(true);
         tblBeneficiaries.setItems(filteredItems);
 

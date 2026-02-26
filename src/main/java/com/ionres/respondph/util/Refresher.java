@@ -10,7 +10,7 @@ import javafx.application.Platform;
 import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.sendsms.dialogs_controller.BeneficiarySelectionDialogController;
 
-public final class DashboardRefresher {
+public final class Refresher {
 
     private static DashboardController controller;
     private static VulnerabilityIndicatorController vulnerabilityIndicatorController;
@@ -21,7 +21,7 @@ public final class DashboardRefresher {
     private static EvacuationPlanController evacuationPlanController;
     private static BeneficiarySelectionDialogController beneficiarySelectionDialogController;
 
-    private DashboardRefresher() {}
+    private Refresher() {}
 
     public static void register(DashboardController ctrl) {
         controller = ctrl;
@@ -120,6 +120,13 @@ public final class DashboardRefresher {
     public static void refreshEvacuationPlanController(){
         if (evacuationPlanController != null){
             Platform.runLater(evacuationPlanController::loadTable);
+        }
+    }
+
+    // This already exists, but add this new method:
+    public static void refreshDisasterCircle(int disasterId) {
+        if (disasterMappingController != null) {
+            Platform.runLater(() -> disasterMappingController.reloadCircleIfSelected(disasterId));
         }
     }
 }

@@ -6,7 +6,7 @@ import com.ionres.respondph.aid_type.AidTypeModelComboBox;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import com.ionres.respondph.util.PdfProgressRunner;
 import com.itextpdf.layout.element.Cell;
@@ -47,7 +47,6 @@ import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.borders.SolidBorder;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -1604,8 +1603,8 @@ public class AddAidController {
                 showNoDistributionWarning();
             }
 
-            DashboardRefresher.refresh();
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            Refresher.refresh();
+            Refresher.refreshComboBoxOfDNAndAN();
 
         } catch (NumberFormatException e) {
             AlertDialogManager.showError("Invalid Input", "Please check quantity and cost are valid numbers.");

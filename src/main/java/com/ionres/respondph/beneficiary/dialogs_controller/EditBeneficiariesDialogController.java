@@ -303,11 +303,11 @@ public class EditBeneficiariesDialogController {
                     AlertDialogManager.showSuccess("Success",
                             "Beneficiary updated successfully!\n" +
                                     "Household scores and aid scores have been recalculated.");
-                    DashboardRefresher.refresh();
-                    DashboardRefresher.refreshBeneInSend();
-                    DashboardRefresher.refreshDisasterInSend();
-                    DashboardRefresher.refreshMapInDisasterMapping();
-                    DashboardRefresher.refreshBeneficiarySelectionTable();
+                    Refresher.refresh();
+                    Refresher.refreshBeneInSend();
+                    Refresher.refreshDisasterInSend();
+                    Refresher.refreshMapInDisasterMapping();
+                    Refresher.refreshBeneficiarySelectionTable();
                 } else {
                     AlertDialogManager.showWarning("Partial Success",
                             "Beneficiary updated, but some scores failed to recalculate.");

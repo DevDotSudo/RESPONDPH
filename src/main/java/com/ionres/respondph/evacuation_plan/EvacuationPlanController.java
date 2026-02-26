@@ -3,7 +3,7 @@ package com.ionres.respondph.evacuation_plan;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.evacuation_plan.dialog_controller.EvacuationPlanPrintingController;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -51,7 +51,7 @@ public class EvacuationPlanController {
         setupHandlers();
         loadTable();
 
-        DashboardRefresher.registerEvacuationPlanController(this);
+        Refresher.registerEvacuationPlanController(this);
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.trim().isEmpty()) {

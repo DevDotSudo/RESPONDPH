@@ -121,5 +121,9 @@ public class AppLoader {
         DialogManager.preload("allocateBeneficiariesToEvacSite", "/view/disaster_mapping/dialog/AllocateBeneficiariesToEvacSite.fxml");
         DialogManager.preload("evacuationAllocation", "/view/disaster_mapping/dialog/EvacuationAllocationDialog.fxml");
         DialogManager.preload("evac_printing", "/view/evacuation_plan/dialog/EvacuationPlanPrinting.fxml");
+
+
+        DialogManager.preload("evacSiteMapView",
+                "/view/evac_site/dialog/EvacSiteMapView.fxml");
     }
 }

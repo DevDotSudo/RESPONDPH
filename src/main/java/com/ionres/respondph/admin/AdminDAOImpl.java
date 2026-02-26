@@ -117,9 +117,11 @@ public class AdminDAOImpl implements AdminDAO {
 
     @Override
     public boolean update(AdminModel am) {
-        String sql = "UPDATE admin " +
-                "SET username = ?, first_name = ?, middle_name = ?, last_name = ?, role = ? " +
-                "WHERE admin_id = ?";
+        boolean hasPassword = am.getPassword() != null && !am.getPassword().isBlank();
+
+        String sql = hasPassword
+                ? "UPDATE admin SET username=?, first_name=?, middle_name=?, last_name=?, role=?, hash=? WHERE admin_id=?"
+                : "UPDATE admin SET username=?, first_name=?, middle_name=?, last_name=?, role=? WHERE admin_id=?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -130,6 +132,13 @@ public class AdminDAOImpl implements AdminDAO {
             ps.setString(4, am.getLastname());
             ps.setString(5, am.getRole());
             ps.setInt(6, am.getId());
+
+            if (hasPassword) {
+                ps.setString(6, am.getPassword());
+                ps.setInt(7, am.getId());
+            } else {
+                ps.setInt(6, am.getId());
+            }
 
             return ps.executeUpdate() > 0;
 

@@ -84,18 +84,24 @@ public class AddAdminDialogController {
 
             admin.setRole(roleComboBox.getValue());
 
-            adminService.createAdmin(admin);
+            boolean created = adminService.createAdmin(admin);
 
-            AlertDialogManager.showSuccess("Admin Created",
-                    "New administrator has been successfully added to the system.");
+
+            if (!created) {
+                AlertDialogManager.showError("Create Failed", "An unexpected error occurred.");
+                return;
+            }
+
+            AlertDialogManager.showSuccess("User Created",
+                    "New user has been successfully added to the system.");
 
             adminAdded = true;
             adminController.refreshAdminTable();
             close();
 
         } catch (Exception e) {
-            AlertDialogManager.showError("Create Admin Failed",
-                    "Failed to create admin: " + e.getMessage());
+            AlertDialogManager.showError("Create User Failed",
+                    "Failed to create user: " + e.getMessage());
         }
     }
 

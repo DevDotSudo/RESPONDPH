@@ -21,8 +21,6 @@
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Label fx:id="statusChip" styleClass="chip" text="No disaster selected" />
-
         <Button fx:id="closeButton" styleClass="dialog-close">
             <graphic>
                 <FontAwesomeIconView glyphName="TIMES" size="14" styleClass="close-icon" />

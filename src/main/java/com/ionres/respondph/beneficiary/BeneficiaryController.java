@@ -4,7 +4,7 @@ import com.ionres.respondph.beneficiary.dialogs_controller.AddBeneficiariesDialo
 import com.ionres.respondph.beneficiary.dialogs_controller.EditBeneficiariesDialogController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -21,7 +21,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import java.util.List;
-import com.ionres.respondph.beneficiary.ViewInfoAndScoreController;
 
 public class BeneficiaryController {
 
@@ -241,11 +240,11 @@ public class BeneficiaryController {
                     beneficiaryList.remove(bm);
                     AlertDialogManager.showSuccess("Delete Successful",
                             "Beneficiary has been successfully deleted.");
-                    DashboardRefresher.refresh();
-                    DashboardRefresher.refreshBeneInSend();
-                    DashboardRefresher.refreshDisasterInSend();
-                    DashboardRefresher.refreshMapInDisasterMapping();
-                    DashboardRefresher.refreshBeneficiarySelectionTable();
+                    Refresher.refresh();
+                    Refresher.refreshBeneInSend();
+                    Refresher.refreshDisasterInSend();
+                    Refresher.refreshMapInDisasterMapping();
+                    Refresher.refreshBeneficiarySelectionTable();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete beneficiary. Please try again.");

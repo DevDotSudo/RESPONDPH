@@ -56,7 +56,7 @@ public class DisasterMappingController {
         setupDisasterComboBox();
         setupComboBoxListeners();
 
-        DashboardRefresher.registerBeneficiaryMapInDisasterMapping(this);
+        Refresher.registerBeneficiaryMapInDisasterMapping(this);
 
         Platform.runLater(() -> {
             mapping.init(mapContainer);
@@ -455,6 +455,13 @@ public class DisasterMappingController {
         } catch (Exception e) {
             java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
                     .log(java.util.logging.Level.SEVERE, "Error showing beneficiaries dialog", e);
+        }
+    }
+
+    public void reloadCircleIfSelected(int updatedDisasterId) {
+        DisasterModel selected = disasterComboBox.getValue();
+        if (selected != null && selected.getDisasterId() == updatedDisasterId) {
+            loadDisasterCirclesFromDb(updatedDisasterId);
         }
     }
 }

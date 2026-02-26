@@ -5,7 +5,7 @@ import com.ionres.respondph.aid_type.AidTypeController;
 import com.ionres.respondph.aid_type.AidTypeModel;
 import com.ionres.respondph.aid_type.AidTypeService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.SessionManager;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -129,9 +129,30 @@ public class EditAidTypeController {
         textField.setTextFormatter(new TextFormatter<>(filter));
     }
 
+    private double parseWeight(TextField field) {
+        String text = field.getText().trim();
+        return text.isEmpty() ? 0.0 : Double.parseDouble(text);
+    }
+
     private void editAidType() {
-        if (!validateInput()) return;
         if (!validateWeightSum()) return;
+
+        double ageWeight = parseWeight(ageWeightFld);
+        double genderWeight = parseWeight(genderWeightFld);
+        double maritalStatusWeight = parseWeight(maritalStatusWeightFld);
+        double soloParentWeight = parseWeight(soloParentWeightFld);
+        double disabilityWeight = parseWeight(disabilityWeightFld);
+        double healthConditionWeight = parseWeight(healthConditionWeightFld);
+        double accessToCleanWaterWeight = parseWeight(waterAccessWeightFld);
+        double sanitationFacilityWeight = parseWeight(sanitationWeightFld);
+        double houseConstructionTypeWeight = parseWeight(houseTypeWeightFld);
+        double ownershipWeight = parseWeight(ownershipWeightFld);
+        double damageSeverityWeight = parseWeight(damageSeverityWeightFld);
+        double employmentStatusWeight = parseWeight(employmentWeightFld);
+        double monthlyIncomeWeight = parseWeight(monthlyIncomeWeightFld);
+        double educationalLevelWeight = parseWeight(educationWeightFld);
+        double digitalAccessWeight = parseWeight(digitalAccessWeightFld);
+        double dependencyRatioWeight = parseWeight(dependencyRatioWeightFld);
 
         try {
             int adminId = SessionManager.getInstance().getCurrentAdminId();
@@ -145,22 +166,24 @@ public class EditAidTypeController {
             atm.setAidTypeId(currentAidType.getAidTypeId());
             atm.setAidTypeName(aidNameFld.getText().trim());
             atm.setNotes(notesFld.getText().trim());
-            atm.setAgeWeight(Double.parseDouble(ageWeightFld.getText().trim()));
-            atm.setGenderWeight(Double.parseDouble(genderWeightFld.getText().trim()));
-            atm.setMaritalStatusWeight(Double.parseDouble(maritalStatusWeightFld.getText().trim()));
-            atm.setSoloParentWeight(Double.parseDouble(soloParentWeightFld.getText().trim()));
-            atm.setDisabilityWeight(Double.parseDouble(disabilityWeightFld.getText().trim()));
-            atm.setHealthConditionWeight(Double.parseDouble(healthConditionWeightFld.getText().trim()));
-            atm.setAccessToCleanWaterWeight(Double.parseDouble(waterAccessWeightFld.getText().trim()));
-            atm.setSanitationFacilityWeight(Double.parseDouble(sanitationWeightFld.getText().trim()));
-            atm.setHouseConstructionTypeWeight(Double.parseDouble(houseTypeWeightFld.getText().trim()));
-            atm.setOwnershipWeight(Double.parseDouble(ownershipWeightFld.getText().trim()));
-            atm.setDamageSeverityWeight(Double.parseDouble(damageSeverityWeightFld.getText().trim()));
-            atm.setEmploymentStatusWeight(Double.parseDouble(employmentWeightFld.getText().trim()));
-            atm.setMonthlyIncomeWeight(Double.parseDouble(monthlyIncomeWeightFld.getText().trim()));
-            atm.setEducationalLevelWeight(Double.parseDouble(educationWeightFld.getText().trim()));
-            atm.setDigitalAccessWeight(Double.parseDouble(digitalAccessWeightFld.getText().trim()));
-            atm.setDependencyRatioWeight(Double.parseDouble(dependencyRatioWeightFld.getText().trim()));
+
+            atm.setAgeWeight(ageWeight);
+            atm.setGenderWeight(genderWeight);
+            atm.setMaritalStatusWeight(maritalStatusWeight);
+            atm.setSoloParentWeight(soloParentWeight);
+            atm.setDisabilityWeight(disabilityWeight);
+            atm.setHealthConditionWeight(healthConditionWeight);
+            atm.setAccessToCleanWaterWeight(accessToCleanWaterWeight);
+            atm.setSanitationFacilityWeight(sanitationFacilityWeight);
+            atm.setHouseConstructionTypeWeight(houseConstructionTypeWeight);
+            atm.setOwnershipWeight(ownershipWeight);
+            atm.setDamageSeverityWeight(damageSeverityWeight);
+            atm.setEmploymentStatusWeight(employmentStatusWeight);
+            atm.setMonthlyIncomeWeight(monthlyIncomeWeight);
+            atm.setEducationalLevelWeight(educationalLevelWeight);
+            atm.setDigitalAccessWeight(digitalAccessWeight);
+            atm.setDependencyRatioWeight(dependencyRatioWeight);
+
             atm.setAdminId(adminId);
             atm.setRegDate(java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a")));
@@ -169,6 +192,7 @@ public class EditAidTypeController {
 
             if (success) {
                 showProgressAndRecalculate(atm.getAidTypeId(), adminId);
+                closeDialog();
             } else {
                 AlertDialogManager.showError("Update Failed", "Failed to update Aid Type.");
             }
@@ -384,7 +408,7 @@ public class EditAidTypeController {
                             " household score(s) recalculated.");
 
             aidTypeController.loadTable();
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            Refresher.refreshComboBoxOfDNAndAN();
             clearFields();
         });
 
@@ -400,74 +424,13 @@ public class EditAidTypeController {
             if (ex != null) ex.printStackTrace();
 
             aidTypeController.loadTable();
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            Refresher.refreshComboBoxOfDNAndAN();
             clearFields();
         });
 
         Thread thread = new Thread(task, "EditAidTypeRecalculate-Thread");
         thread.setDaemon(true);
         thread.start();
-    }
-
-    private void recalculateAllBeneficiaryScores(int aidTypeId, int adminId) {
-        try {
-            System.out.println("========== RECALCULATING AID-HOUSEHOLD SCORES ==========");
-            System.out.println("Aid Type ID: " + aidTypeId);
-            System.out.println("Admin ID: " + adminId);
-
-            List<BeneficiaryDisasterPair> beneficiaryDisasterPairs =
-                    getAllBeneficiaryDisasterPairsWithHouseholdScores();
-
-            System.out.println("Found " + beneficiaryDisasterPairs.size() +
-                    " beneficiary-disaster pairs with household scores");
-
-            AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
-            int successCount = 0;
-            int failCount = 0;
-
-            for (BeneficiaryDisasterPair pair : beneficiaryDisasterPairs) {
-                try {
-                    boolean success;
-
-                    if (pair.disasterId != null) {
-                        System.out.println("→ With disaster (ID: " + pair.disasterId +
-                                ") for beneficiary ID: " + pair.beneficiaryId);
-                        success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
-                                pair.beneficiaryId, aidTypeId, adminId, pair.disasterId);
-                    } else {
-                        System.out.println("→ No disaster (NULL) for beneficiary ID: " + pair.beneficiaryId);
-                        success = calculator.calculateAndSaveAidHouseholdScore(
-                                pair.beneficiaryId, aidTypeId, adminId);
-                    }
-
-                    if (success) {
-                        successCount++;
-                        System.out.println("✓ Calculated aid-household score for beneficiary ID: " +
-                                pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
-                    } else {
-                        failCount++;
-                        System.err.println("✗ Failed for beneficiary ID: " +
-                                pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
-                    }
-                } catch (Exception e) {
-                    failCount++;
-                    System.err.println("✗ Error for beneficiary ID " + pair.beneficiaryId +
-                            ", disaster ID " + pair.disasterId + ": " + e.getMessage());
-                }
-            }
-
-            System.out.println("========== RECALCULATION COMPLETE ==========");
-            System.out.println("Successfully calculated: " + successCount + " out of " +
-                    beneficiaryDisasterPairs.size());
-            System.out.println("Failed: " + failCount);
-
-        } catch (Exception e) {
-            System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());
-            e.printStackTrace();
-            AlertDialogManager.showWarning("Warning",
-                    "Aid type updated successfully, but there was an error recalculating household scores.\n" +
-                            "You may need to recalculate manually.");
-        }
     }
 
     private static class BeneficiaryDisasterPair {
@@ -537,114 +500,18 @@ public class EditAidTypeController {
         dependencyRatioWeightFld.setText(String.valueOf(aidType.getDependencyRatioWeight()));
     }
 
-    private boolean validateInput() {
-        if (aidNameFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Aid type name is required.");
-            aidNameFld.requestFocus();
-            return false;
-        }
-        if (ageWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Age weight is required.");
-            ageWeightFld.requestFocus();
-            return false;
-        }
-        if (genderWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Gender weight is required.");
-            genderWeightFld.requestFocus();
-            return false;
-        }
-        if (maritalStatusWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Marital status weight is required.");
-            maritalStatusWeightFld.requestFocus();
-            return false;
-        }
-        if (soloParentWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Solo parent weight is required.");
-            soloParentWeightFld.requestFocus();
-            return false;
-        }
-        if (disabilityWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Disability weight is required.");
-            disabilityWeightFld.requestFocus();
-            return false;
-        }
-        if (healthConditionWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Health condition weight is required.");
-            healthConditionWeightFld.requestFocus();
-            return false;
-        }
-        if (waterAccessWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Access to clean water weight is required.");
-            waterAccessWeightFld.requestFocus();
-            return false;
-        }
-        if (sanitationWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Sanitation facility weight is required.");
-            sanitationWeightFld.requestFocus();
-            return false;
-        }
-        if (houseTypeWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "House construction type weight is required.");
-            houseTypeWeightFld.requestFocus();
-            return false;
-        }
-        if (ownershipWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Ownership weight is required.");
-            ownershipWeightFld.requestFocus();
-            return false;
-        }
-        if (damageSeverityWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Damage severity weight is required.");
-            damageSeverityWeightFld.requestFocus();
-            return false;
-        }
-        if (employmentWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Employment status weight is required.");
-            employmentWeightFld.requestFocus();
-            return false;
-        }
-        if (monthlyIncomeWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Monthly income weight is required.");
-            monthlyIncomeWeightFld.requestFocus();
-            return false;
-        }
-        if (educationWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Educational level weight is required.");
-            educationWeightFld.requestFocus();
-            return false;
-        }
-        if (digitalAccessWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Digital access weight is required.");
-            digitalAccessWeightFld.requestFocus();
-            return false;
-        }
-        if (dependencyRatioWeightFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Dependency ratio weight is required.");
-            dependencyRatioWeightFld.requestFocus();
-            return false;
-        }
-        return true;
-    }
 
     private boolean validateWeightSum() {
         try {
             double totalWeight =
-                    Double.parseDouble(ageWeightFld.getText().trim()) +
-                            Double.parseDouble(genderWeightFld.getText().trim()) +
-                            Double.parseDouble(maritalStatusWeightFld.getText().trim()) +
-                            Double.parseDouble(soloParentWeightFld.getText().trim()) +
-                            Double.parseDouble(disabilityWeightFld.getText().trim()) +
-                            Double.parseDouble(healthConditionWeightFld.getText().trim()) +
-                            Double.parseDouble(waterAccessWeightFld.getText().trim()) +
-                            Double.parseDouble(sanitationWeightFld.getText().trim()) +
-                            Double.parseDouble(houseTypeWeightFld.getText().trim()) +
-                            Double.parseDouble(ownershipWeightFld.getText().trim()) +
-                            Double.parseDouble(damageSeverityWeightFld.getText().trim()) +
-                            Double.parseDouble(employmentWeightFld.getText().trim()) +
-                            Double.parseDouble(monthlyIncomeWeightFld.getText().trim()) +
-                            Double.parseDouble(educationWeightFld.getText().trim()) +
-                            Double.parseDouble(digitalAccessWeightFld.getText().trim()) +
-                            Double.parseDouble(dependencyRatioWeightFld.getText().trim());
+                    parseWeight(ageWeightFld) + parseWeight(genderWeightFld) +
+                            parseWeight(maritalStatusWeightFld) + parseWeight(soloParentWeightFld) +
+                            parseWeight(disabilityWeightFld) + parseWeight(healthConditionWeightFld) +
+                            parseWeight(waterAccessWeightFld) + parseWeight(sanitationWeightFld) +
+                            parseWeight(houseTypeWeightFld) + parseWeight(ownershipWeightFld) +
+                            parseWeight(damageSeverityWeightFld) + parseWeight(employmentWeightFld) +
+                            parseWeight(monthlyIncomeWeightFld) + parseWeight(educationWeightFld) +
+                            parseWeight(digitalAccessWeightFld) + parseWeight(dependencyRatioWeightFld);
 
             totalWeight = Math.round(totalWeight * 100.0) / 100.0;
 

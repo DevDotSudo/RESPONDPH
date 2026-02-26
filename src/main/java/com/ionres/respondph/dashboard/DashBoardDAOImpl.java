@@ -6,6 +6,7 @@ import com.ionres.respondph.common.model.FamilyMemberModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.util.Cryptography;
 import com.ionres.respondph.util.ResourceUtils;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,6 +26,8 @@ public class DashBoardDAOImpl implements DashBoardDAO {
         this.connection = connection;
     }
 
+    // ── Counts ────────────────────────────────────────────────────────────────
+
     @Override
     public int getTotalBeneficiaries() {
         return getCount("SELECT COUNT(*) FROM beneficiary");
@@ -42,17 +45,13 @@ public class DashBoardDAOImpl implements DashBoardDAO {
 
     @Override
     public int getDistinctAidCount() {
-        Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         Set<String> uniqueAidNames = new HashSet<>();
-
         try {
-            conn = connection.getConnection();
-            String sql = "SELECT DISTINCT name FROM aid WHERE name IS NOT NULL";
-            ps = conn.prepareStatement(sql);
+            Connection conn = connection.getConnection();
+            ps = conn.prepareStatement("SELECT DISTINCT name FROM aid WHERE name IS NOT NULL");
             rs = ps.executeQuery();
-
             while (rs.next()) {
                 String encryptedName = rs.getString("name");
                 try {
@@ -61,38 +60,31 @@ public class DashBoardDAOImpl implements DashBoardDAO {
                         uniqueAidNames.add(decryptedName.trim().toLowerCase());
                     }
                 } catch (Exception e) {
-                    System.out.println("Error decrypting aid name" + e);
+                    LOGGER.log(Level.WARNING, "Error decrypting aid name", e);
                 }
             }
-
-
         } catch (Exception e) {
-            System.out.println("Error decrypting aid name" + e);
+            LOGGER.log(Level.SEVERE, "Error fetching distinct aid count", e);
         } finally {
             ResourceUtils.closeResources(rs, ps);
         }
-
         return uniqueAidNames.size();
     }
 
-
     @Override
     public int getTotalEvacutaionSites() {
-        return getCount("SELECT COUNT(*) FROM evac_site");}
+        return getCount("SELECT COUNT(*) FROM evac_site");
+    }
 
     @Override
     public int getCount(String sql) {
-        Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            conn = connection.getConnection();
+            Connection conn = connection.getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+            if (rs.next()) return rs.getInt(1);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Database error getting count", e);
         } finally {
@@ -101,35 +93,74 @@ public class DashBoardDAOImpl implements DashBoardDAO {
         return 0;
     }
 
+    // ── Change password ───────────────────────────────────────────────────────
+
+    /**
+     * Fetches the raw BCrypt hash stored in the `hash` column for the given admin.
+     * Returns null if the admin does not exist or a DB error occurs.
+     */
     @Override
-    public List<DisasterCircleEncrypted> fetchAllEncrypted() {
-        List<DisasterCircleEncrypted> list = new ArrayList<>();
-        Connection conn = null;
+    public String getPasswordHashById(int adminId) {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            conn = connection.getConnection();
-            // Fetch all fields to use DisasterCircleEncrypted (dashboard doesn't need name/type, but we'll pass empty strings)
+            Connection conn = connection.getConnection();
+            ps = conn.prepareStatement("SELECT hash FROM admin WHERE admin_id = ?");
+            ps.setInt(1, adminId);
+            rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("hash");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching password hash for admin ID " + adminId, e);
+        } finally {
+            ResourceUtils.closeResources(rs, ps);
+        }
+        return null;
+    }
+
+    /**
+     * Updates the `hash` column for the given admin with the pre-hashed password.
+     */
+    @Override
+    public boolean updatePassword(int adminId, String newHashedPassword) {
+        PreparedStatement ps = null;
+        try {
+            Connection conn = connection.getConnection();
+            ps = conn.prepareStatement("UPDATE admin SET hash = ? WHERE admin_id = ?");
+            ps.setString(1, newHashedPassword);
+            ps.setInt(2, adminId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating password for admin ID " + adminId, e);
+            return false;
+        } finally {
+            ResourceUtils.closeResources(null, ps);
+        }
+    }
+
+    // ── Map data ──────────────────────────────────────────────────────────────
+
+    @Override
+    public List<DisasterCircleEncrypted> fetchAllEncrypted() {
+        List<DisasterCircleEncrypted> list = new ArrayList<>();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            Connection conn = connection.getConnection();
             String sql = "SELECT disaster_id, lat, `long`, radius, type, name FROM disaster " +
                     "WHERE lat IS NOT NULL AND `long` IS NOT NULL AND radius IS NOT NULL";
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
-
             while (rs.next()) {
                 int disasterId = rs.getInt("disaster_id");
-                String lat = rs.getString("lat");
-                String lon = rs.getString("long");
+                String lat    = rs.getString("lat");
+                String lon    = rs.getString("long");
                 String radius = rs.getString("radius");
-                String type = rs.getString("type");
-                String name = rs.getString("name");
-
-                // Use DisasterCircleEncrypted instead of EncryptedCircle for consistency
+                String type   = rs.getString("type");
+                String name   = rs.getString("name");
                 list.add(new DisasterCircleEncrypted(lat, lon, radius, disasterId,
                         name != null ? name : "", type != null ? type : ""));
             }
-
             LOGGER.info("Fetched " + list.size() + " disaster circles from database");
-
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching encrypted circles", e);
         } finally {
@@ -145,35 +176,29 @@ public class DashBoardDAOImpl implements DashBoardDAO {
                 "FROM beneficiary " +
                 "WHERE latitude IS NOT NULL AND longitude IS NOT NULL " +
                 "AND latitude != '' AND longitude != ''";
-        Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            conn = connection.getConnection();
+            Connection conn = connection.getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
-
             while (rs.next()) {
                 try {
-                    int id = rs.getInt("beneficiary_id");
-                    String encryptedFirstName = rs.getString("first_name");
-                    String encryptedMiddleName = rs.getString("middle_name");
-                    String encryptedLastName = rs.getString("last_name");
-                    String lat = rs.getString("latitude");
-                    String lng = rs.getString("longitude");
-
-                    String encryptedFullName = encryptedFirstName + "|" +
-                            (encryptedMiddleName != null ? encryptedMiddleName : "") + "|" +
-                            encryptedLastName;
-
-                    list.add(new BeneficiariesMappingModel(id, encryptedFullName, lat, lng));
+                    int id                  = rs.getInt("beneficiary_id");
+                    String encryptedFirst   = rs.getString("first_name");
+                    String encryptedMiddle  = rs.getString("middle_name");
+                    String encryptedLast    = rs.getString("last_name");
+                    String lat              = rs.getString("latitude");
+                    String lng              = rs.getString("longitude");
+                    String encryptedFull    = encryptedFirst + "|" +
+                            (encryptedMiddle != null ? encryptedMiddle : "") + "|" +
+                            encryptedLast;
+                    list.add(new BeneficiariesMappingModel(id, encryptedFull, lat, lng));
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error processing beneficiary row", e);
                 }
             }
-
             LOGGER.info("Fetched " + list.size() + " beneficiaries from database");
-
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching beneficiaries", e);
         } finally {
@@ -185,33 +210,27 @@ public class DashBoardDAOImpl implements DashBoardDAO {
     @Override
     public List<EvacSiteMappingModel> fetchAllEvacSites() {
         List<EvacSiteMappingModel> list = new ArrayList<>();
-        String sql = "SELECT evac_id, name, lat, `long`, capacity " +
-                "FROM evac_site " +
+        String sql = "SELECT evac_id, name, lat, `long`, capacity FROM evac_site " +
                 "WHERE lat IS NOT NULL AND `long` IS NOT NULL";
-        Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            conn = connection.getConnection();
+            Connection conn = connection.getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
-
             while (rs.next()) {
                 try {
-                    int evacId = rs.getInt("evac_id");
-                    String name = rs.getString("name");
-                    String lat = String.valueOf(rs.getDouble("lat"));
-                    String lng = String.valueOf(rs.getDouble("long"));
-                    String capacity = String.valueOf(rs.getInt("capacity"));
-
-                    list.add(new EvacSiteMappingModel(evacId, name, lat, lng, capacity));
+                    int evacId    = rs.getInt("evac_id");
+                    String name   = rs.getString("name");
+                    String lat    = String.valueOf(rs.getDouble("lat"));
+                    String lng    = String.valueOf(rs.getDouble("long"));
+                    String cap    = String.valueOf(rs.getInt("capacity"));
+                    list.add(new EvacSiteMappingModel(evacId, name, lat, lng, cap));
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error processing evac site row", e);
                 }
             }
-
             LOGGER.info("Fetched " + list.size() + " evacuation sites from database");
-
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching evacuation sites", e);
         } finally {
@@ -223,42 +242,32 @@ public class DashBoardDAOImpl implements DashBoardDAO {
     @Override
     public List<FamilyMemberModel> fetchFamilyMembers(int beneficiaryId) {
         List<FamilyMemberModel> list = new ArrayList<>();
-
         String sql = "SELECT familymember_id, first_name, middle_name, last_name " +
-                "FROM family_member " +
-                "WHERE beneficiary_id = ?";
-
+                "FROM family_member WHERE beneficiary_id = ?";
         PreparedStatement ps = null;
         ResultSet rs = null;
-
         try {
             Connection conn = connection.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setInt(1, beneficiaryId);
             rs = ps.executeQuery();
-
             while (rs.next()) {
                 try {
                     int    id         = rs.getInt("familymember_id");
                     String firstName  = rs.getString("first_name");
-                    String middleName = rs.getString("middle_name");  // raw encrypted
-                    String lastName   = rs.getString("last_name");    // raw encrypted
-
+                    String middleName = rs.getString("middle_name");
+                    String lastName   = rs.getString("last_name");
                     list.add(new FamilyMemberModel(id, firstName, middleName, lastName));
-
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error reading family member row", e);
                 }
             }
-
             LOGGER.info("Fetched " + list.size() + " family members for beneficiary ID " + beneficiaryId);
-
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching family members for beneficiary ID " + beneficiaryId, e);
+            LOGGER.log(Level.SEVERE, "Error fetching family members for ID " + beneficiaryId, e);
         } finally {
             ResourceUtils.closeResources(rs, ps);
         }
-
         return list;
     }
 }

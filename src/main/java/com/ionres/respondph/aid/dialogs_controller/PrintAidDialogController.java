@@ -9,7 +9,7 @@ import com.ionres.respondph.disaster.DisasterDAOImpl;
 import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Cryptography;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.PdfProgressRunner;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -50,7 +50,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -145,7 +144,7 @@ public class PrintAidDialogController {
         wireButtonHandlers();
         loadData();
 
-        DashboardRefresher.registerDisasterNameAndAidtypeName(this);
+        Refresher.registerDisasterNameAndAidtypeName(this);
     }
 
     private void wireToggleGroups() {
@@ -590,25 +589,31 @@ public class PrintAidDialogController {
 
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20;");
+        scrollPane.setStyle("-fx-background-color: #5a5a5a; -fx-padding: 20;"); // ✅ darker gray bg
+
+        content.setAlignment(Pos.TOP_CENTER);
+        content.setStyle("-fx-background-color: #5a5a5a; -fx-padding: 20 40 20 40;");
 
         Stage previewStage = new Stage();
         previewStage.initModality(Modality.APPLICATION_MODAL);
         previewStage.setTitle("Preview – " + getSelectedReportType());
-        previewStage.setScene(new Scene(scrollPane, 800, 900));
+
+        double previewWidth  = resolvePreviewWidth();
+        double previewHeight = 900;
+        previewStage.setScene(new Scene(scrollPane, previewWidth, previewHeight));
         previewStage.show();
     }
 
-    // =========================================================================
-    //  PRINT / EXPORT  —  output-format dialog (PDF or Printer)
-    // =========================================================================
+    private double resolvePreviewWidth() {
+        String paper = bondPaperSizeComboBox.getValue();
+        if (paper == null) return 700;
+        if (paper.startsWith("Legal"))  return 700;  // Legal is portrait 8.5"
+        if (paper.startsWith("Letter")) return 700;  // Letter is portrait 8.5"
+        return 700; // A4
+    }
 
-    /**
-     * Opens the output-format dialog.  The user chooses:
-     *   • Save as PDF  → FileChooser → iText 7 PDF
-     *   • Send to Printer → ComboBox of ACTIVE (connected) printers only.
-     *     If no active printers are found → AlertDialog "Not Connected in printer".
-     */
+
+
     private void handlePrintOrExport() {
         if (!validate()) return;
 
@@ -1211,7 +1216,7 @@ public class PrintAidDialogController {
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
 
         Cell metaCell = new Cell()
-                .add(new Paragraph("RespondPH")
+                .add(new Paragraph("RESPOND-PH")
                         .setFont(fontBold).setFontSize(13).setFontColor(PDF_WHITE)
                         .setTextAlignment(TextAlignment.RIGHT))
                 .add(new Paragraph(timestamp)

@@ -6,7 +6,6 @@ import com.ionres.respondph.evacuation_plan.*;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;

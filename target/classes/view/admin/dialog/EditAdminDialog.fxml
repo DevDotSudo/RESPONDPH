@@ -73,6 +73,48 @@
 
             <Separator />
 
+            <!-- ==================== PASSWORD SECTION ==================== -->
+            <VBox spacing="18" styleClass="form-section">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
+                    <FontAwesomeIconView glyphName="LOCK" size="18" styleClass="section-icon" />
+                    <Label styleClass="section-title" text="Change Password" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="section-subtitle" text="Optional" />
+                </HBox>
+
+                <!-- New Password -->
+                <VBox spacing="8">
+                    <Label styleClass="field-label" text="New Password" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
+                        <FontAwesomeIconView glyphName="LOCK" size="14" styleClass="field-icon" />
+                        <PasswordField fx:id="newPasswordField" promptText="Leave blank to keep current password"
+                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+
+                <!-- Confirm Password -->
+                <VBox spacing="8">
+                    <Label styleClass="field-label" text="Confirm New Password" />
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="flat-input">
+                        <FontAwesomeIconView glyphName="LOCK" size="14" styleClass="field-icon" />
+                        <PasswordField fx:id="confirmPasswordField" promptText="Confirm new password"
+                                       styleClass="field-input" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+
+                <!-- Info Box -->
+                <VBox spacing="6" styleClass="info-box">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" styleClass="info-icon" />
+                        <Label styleClass="info-title" text="Password Information" />
+                    </HBox>
+                    <Label styleClass="info-text" text="• Leave both fields blank to keep the current password" />
+                    <Label styleClass="info-text" text="• Minimum 6 characters if changing password" />
+                </VBox>
+            </VBox>
+
+            <Separator />
+
             <!-- ==================== SECTION 2: PERSONAL INFORMATION ==================== -->
             <VBox spacing="18" styleClass="form-section">
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">

@@ -60,9 +60,9 @@ import java.util.stream.Collectors;
 public class EvacuationPlanPrintingController {
 
     // ── Page Layout Constants ───────────────────────────────────────────────
-    private static final double PAGE_WIDTH    = 612;
+    private static final double PAGE_WIDTH    = 650;
     private static final double MARGIN        = 36;
-    private static final double CONTENT_WIDTH = PAGE_WIDTH - (2 * MARGIN);
+    private static final double CONTENT_WIDTH = PAGE_WIDTH - (2 * MARGIN); // 578
 
     // ── PDF color palette ─────────────────────────────────────────────────────
     private static final DeviceRgb PDF_HEADER_BG = new DeviceRgb(44,  62,  80);
@@ -1033,7 +1033,7 @@ public class EvacuationPlanPrintingController {
                 .setBackgroundColor(PDF_HEADER_BG).setPadding(14)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER));
         headerTable.addCell(new Cell()
-                .add(new Paragraph("RespondPH")
+                .add(new Paragraph("RESPOND-PH")
                         .setFont(fontBold).setFontSize(13).setFontColor(PDF_WHITE)
                         .setTextAlignment(TextAlignment.RIGHT))
                 .add(new Paragraph(timestamp)
@@ -1448,14 +1448,26 @@ public class EvacuationPlanPrintingController {
         VBox content = buildReportContent(getSelectedReportType());
         if (content == null) return;
 
-        ScrollPane scrollPane = new ScrollPane(content);
+        // ✅ Wrap pages in a centering container
+        VBox wrapper = new VBox(20);
+        wrapper.setAlignment(Pos.TOP_CENTER);
+        wrapper.setPadding(new Insets(20));
+        wrapper.setStyle("-fx-background-color: #5a5a5a;");
+        wrapper.getChildren().add(content);
+
+        ScrollPane scrollPane = new ScrollPane(wrapper);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20;");
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // ✅ no horizontal scroll
+        scrollPane.setStyle("-fx-background-color: #5a5a5a;");
 
         Stage previewStage = new Stage();
         previewStage.initModality(Modality.APPLICATION_MODAL);
         previewStage.setTitle("Preview – " + getSelectedReportType());
-        previewStage.setScene(new Scene(scrollPane, 650, 900));
+
+        // ✅ Wide enough to show full page card + padding
+        previewStage.setScene(new Scene(scrollPane, 720, 920));
+        previewStage.setMinWidth(720);
+        previewStage.setMinHeight(600);
         previewStage.show();
     }
 
@@ -1705,13 +1717,29 @@ public class EvacuationPlanPrintingController {
 
     private VBox printPage() {
         VBox page = new VBox(6);
-        page.setPrefWidth(CONTENT_WIDTH); page.setMaxWidth(CONTENT_WIDTH);
+        page.setPrefWidth(620);   // ✅ full bond paper card width
+        page.setMaxWidth(620);
+        page.setMinWidth(620);
+        page.setPrefHeight(resolvePageHeight());
+        page.setMinHeight(resolvePageHeight());
+        page.setPadding(new Insets(36));
+        page.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-border-color: #bbbbbb;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 10, 0, 0, 3);"
+        );
         page.setAlignment(Pos.TOP_CENTER);
-        page.setPadding(new Insets(20, 0, 20, 0));
-        page.setStyle("-fx-background-color: white;");
         return page;
     }
 
+    private double resolvePageHeight() {
+        String paper = bondPaperSizeComboBox.getValue();
+        if (paper == null) return 842;
+        if (paper.startsWith("Letter")) return 792;
+        if (paper.startsWith("Legal"))  return 1008;
+        return 842; // A4
+    }
     private VBox buildHeader(String reportTitle, String disasterName, String siteName) {
         VBox h = new VBox(4);
         h.setAlignment(Pos.CENTER);

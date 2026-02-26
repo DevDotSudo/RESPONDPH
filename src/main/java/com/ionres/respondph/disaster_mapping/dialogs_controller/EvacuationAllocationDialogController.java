@@ -730,9 +730,9 @@ public class EvacuationAllocationDialogController implements Initializable {
                                 smsSentCount++;
                             } else {
                                 LOGGER.warning("Failed to send SMS to " + fullName + " (" + phoneNumber + ")");
-                                DashboardRefresher.refreshSMSLogs();
+                                Refresher.refreshSMSLogs();
                             }
-                            DashboardRefresher.refreshSMSLogs();
+                            Refresher.refreshSMSLogs();
                         } else {
                             LOGGER.warning("No phone number for beneficiary: " + fullName);
                         }
@@ -742,7 +742,7 @@ public class EvacuationAllocationDialogController implements Initializable {
                             Thread.currentThread().interrupt();
                         }
                     }
-                    DashboardRefresher.refreshSMSLogs();
+                    Refresher.refreshSMSLogs();
                 }
 
                 return new AllocationResult(successCount, totalPersonsAssigned, smsSentCount,
@@ -792,7 +792,7 @@ public class EvacuationAllocationDialogController implements Initializable {
                 }
 
                 closeDialog();
-                DashboardRefresher.refreshEvacuationPlanController();
+                Refresher.refreshEvacuationPlanController();
             } else {
                 AlertDialogManager.showError("Error", "Failed to allocate any beneficiaries:\n" +
                         String.join("\n", result.errors));

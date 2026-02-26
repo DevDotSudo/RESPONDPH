@@ -4,7 +4,7 @@ import com.ionres.respondph.aid_type.dialogs_controller.AddAidTypeController;
 import com.ionres.respondph.aid_type.dialogs_controller.EditAidTypeController;
 import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.AppContext;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -138,8 +138,8 @@ public class AidTypeController {
                     AlertDialogManager.showSuccess("Successful",
                             "Aid Type has been successfully deleted.");
                     loadTable();
-                    DashboardRefresher.refreshComboBoxOfDNAndAN();
-                    DashboardRefresher.refresh();
+                    Refresher.refreshComboBoxOfDNAndAN();
+                    Refresher.refresh();
                 } else {
                     AlertDialogManager.showError("Delete Failed",
                             "Failed to delete Aid Type. Please try again.");

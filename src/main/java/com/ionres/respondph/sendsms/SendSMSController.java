@@ -24,14 +24,14 @@ import com.ionres.respondph.disaster_mapping.DisasterMappingService;
 import com.ionres.respondph.disaster_mapping.DisasterMappingServiceImpl;
 import com.ionres.respondph.common.model.DisasterCircleInfo;
 import com.ionres.respondph.database.DBConnection;
-
 import java.awt.Desktop;
 import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,11 +43,11 @@ public class SendSMSController implements Initializable {
     private static final Set<String> NATIONAL_CATEGORIES = Set.of(
             "national news", "politics news", "health news", "crime / law / public safety news"
     );
+
     private static final Set<String> WEATHER_CATEGORIES = Set.of(
             "weather news", "weather", "weather update"
     );
 
-    // ── FXML fields ───────────────────────────────────────────────────────────
     @FXML private ComboBox<String> cbSelectBeneficiary;
     @FXML private ComboBox<String> cbSelectPorts;
     @FXML private ComboBox<String> cbSelectBarangay;
@@ -55,7 +55,6 @@ public class SendSMSController implements Initializable {
     @FXML private TextArea         txtMessage;
     @FXML private Label            charCount;
     @FXML private Button           btnSendSMS;
-
     @FXML private TableView<SmsModel>            adminTable;
     @FXML private TableColumn<SmsModel, String>  dateSentColumn;
     @FXML private TableColumn<SmsModel, String>  fullNameColumn;
@@ -63,25 +62,20 @@ public class SendSMSController implements Initializable {
     @FXML private TableColumn<SmsModel, String>  statusColumn;
     @FXML private TableColumn<SmsModel, String>  phoneColumn;
     @FXML private TableColumn<SmsModel, Void>    actionsColumn;
-
     @FXML private RadioButton rbGsm;
     @FXML private RadioButton rbApi;
     @FXML private Label       connectionStatusLabel;
     @FXML private Button      btnRefreshPorts;
-
     @FXML private HBox                    disasterSelectionBox;
     @FXML private ComboBox<DisasterModel> cbSelectDisaster;
-
     @FXML private ComboBox<String> cbNewsTopic;
     @FXML private Button           btnGenerateNews;
     @FXML private VBox             aiResponseContainer;
     @FXML private HBox             aiResponseActions;
     @FXML private Button           btnUseSelectedNews;
     @FXML private ToggleGroup      newsAiResponse;
-
     @FXML private Label  lblNetworkStatus;
     @FXML private Button btnRefreshNetwork;
-
     @FXML private HBox              smsLoadingBox;
     @FXML private ProgressIndicator piSms;
     @FXML private RadioButton rbNewsSlot1;
@@ -93,27 +87,25 @@ public class SendSMSController implements Initializable {
     @FXML private TextArea    txtCustomEvacMessage;
     @FXML private Button      btnSaveEvacMessage;
     @FXML private Label       lblMessageStatus;
-
-    // ── Services / state ──────────────────────────────────────────────────────
     private DisasterMappingService disasterMappingService;
     private List<BeneficiaryModel> selectedBeneficiariesList = new ArrayList<>();
     private final List<NewsItem>   storedNewsItems           = new ArrayList<>();
     private RadioButton[]          newsSlots;
-
     private final AtomicBoolean generationInProgress = new AtomicBoolean(false);
     private final ObservableList<SmsModel> logRows   = FXCollections.observableArrayList();
-
     private CustomEvacMessageManager evacMessageManager;
     private SmsService               smsService;
     private SMSSender                smsSender;
     private NewsGeneratorService     newsGeneratorService;
     private BeneficiaryDAO           beneficiaryDAO;
     private DisasterDAO              disasterDAO;
-
     private boolean isOpeningDialog    = false;
     private boolean isUpdatingComboBox = false;
+    private ScheduledExecutorService networkPoller;
+    private ScheduledFuture<?>       networkPollFuture;
+    private volatile boolean lastKnownOnline = true;
+    private static final int NETWORK_POLL_INTERVAL_SEC = 15;
 
-    // Listener kept as a field so we can remove and re-add it safely
     private final javafx.beans.value.ChangeListener<String> portChangeListener =
             (obs, oldPort, newPort) -> {
                 if (newPort == null || newPort.equals(oldPort)) return;
@@ -126,9 +118,6 @@ public class SendSMSController implements Initializable {
                 autoConnectToPort(newPort);
             };
 
-    // =========================================================================
-    //  initialize
-    // =========================================================================
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         smsService = new SmsServiceImpl();
@@ -162,9 +151,13 @@ public class SendSMSController implements Initializable {
         populateAvailablePorts();
         setupNewsControls();
         setupNewsSlots();
-        checkNetworkStatus();
 
-        DashboardRefresher.registerDisasterAndBeneficiaryCombo(this);
+        // Start the background network poller — fires immediately, then every
+        // NETWORK_POLL_INTERVAL_SEC seconds.  Replaces the old one-shot
+        // checkNetworkStatus() call so the label stays current automatically.
+        startNetworkPoller();
+
+        Refresher.registerDisasterAndBeneficiaryCombo(this);
 
         evacMessageManager = CustomEvacMessageManager.getInstance();
         if (charCount != null) charCount.setText("0/320 characters");
@@ -208,8 +201,9 @@ public class SendSMSController implements Initializable {
             return;
         }
 
-        // Guard: internet
-        if (!InternetConnectionChecker.isOnline()) {
+        // Guard: internet — check the cached flag first (instant, no blocking call on FX thread),
+        // then fall back to a live probe so we never start with a stale "online" state.
+        if (!lastKnownOnline || !InternetConnectionChecker.isOnline()) {
             generationInProgress.set(false);
             AlertDialogManager.showError("No Internet",
                     "An internet connection is required for:\n"
@@ -243,24 +237,17 @@ public class SendSMSController implements Initializable {
         if (main != null) {
             main.setNewsCancelAction(() -> {
                 LOG.info("[SendSMS] User cancelled news generation.");
-                newsGeneratorService.cancel();   // ← uses the renamed cancel() method
+                newsGeneratorService.cancel();
             });
             main.showNewsProgress(category);
         }
 
         // ── Launch pipeline ───────────────────────────────────────────────────
-        // topic  = category (drives keyword search inside the RSS fetch)
-        // category = category (drives geo scope: local / weather / national)
         newsGeneratorService
                 .generateNewsHeadlines(
                         category,   // topic
                         category,   // category (scope)
                         (progress, status) -> Platform.runLater(() -> {
-                            // Forward step labels to the main frame progress bar
-                            // Status messages follow the pipeline:
-                            //   "Step 1/3 — Fetching RSS articles..."
-                            //   "Step 2/3 — Claude writing English summaries..."
-                            //   "Step 3/3 — Google Translate: English → Hiligaynon..."
                             if (main != null) main.setNewsProgress(progress, status);
                         }))
                 .whenComplete((result, ex) -> Platform.runLater(() -> {
@@ -278,6 +265,15 @@ public class SendSMSController implements Initializable {
                         String msg = cause.getMessage();
                         if (msg == null) msg = cause.getClass().getSimpleName();
                         LOG.log(Level.SEVERE, "[SendSMS] News generation failed: " + msg, ex);
+
+                        // Suppress the generic error when the pipeline was
+                        // already cancelled due to an internet drop — the
+                        // "Internet Connection Lost" alert was already shown.
+                        if (!lastKnownOnline) {
+                            LOG.info("[SendSMS] Suppressing post-cancel error because connection is offline.");
+                            return;
+                        }
+
                         AlertDialogManager.showError("Generation Failed",
                                 "News generation encountered an error:\n\n" + msg
                                         + "\n\nCheck that ANTHROPIC_API_KEY and GOOGLE_TRANSLATE_API_KEY are set.");
@@ -344,6 +340,138 @@ public class SendSMSController implements Initializable {
         if (NATIONAL_CATEGORIES.contains(lc)) return "the Philippines (national)";
         if (WEATHER_CATEGORIES.contains(lc))  return "Iloilo Province / Philippines weather";
         return "Iloilo City and Iloilo Province";
+    }
+
+    // =========================================================================
+    //  Network status — auto-refresh + offline-during-generation cancel
+    // =========================================================================
+
+    /**
+     * Fires one async HTTP-HEAD to google.com and routes the result through
+     * {@link #handleNetworkStatusChange(boolean)}.
+     * <p>
+     * Called by the background poller ({@link #startNetworkPoller()}) and
+     * also directly when {@link #btnRefreshNetwork} is clicked.
+     */
+    private void checkNetworkStatus() {
+        if (lblNetworkStatus == null) return;
+        Task<Boolean> task = new Task<>() {
+            @Override
+            protected Boolean call() {
+                return InternetConnectionChecker.isOnline();
+            }
+        };
+        task.setOnSucceeded(e ->
+                Platform.runLater(() ->
+                        handleNetworkStatusChange(Boolean.TRUE.equals(task.getValue()))));
+        task.setOnFailed(e ->
+                Platform.runLater(() -> handleNetworkStatusChange(false)));
+        new Thread(task, "Network-Check-Thread").start();
+    }
+
+    /**
+     * Central handler for every network-status change (both periodic and
+     * manual refresh).
+     * <ul>
+     *   <li>Updates {@link #lblNetworkStatus} via {@link #updateNetworkLabel}.</li>
+     *   <li>When the connection <b>drops</b> while {@link #generationInProgress}
+     *       is {@code true}, cancels the news-generation pipeline immediately,
+     *       resets UI state, and shows a clear error alert.</li>
+     * </ul>
+     */
+    private void handleNetworkStatusChange(boolean online) {
+        boolean wasOnline = lastKnownOnline;
+        lastKnownOnline   = online;
+
+        updateNetworkLabel(online);
+
+        // ── Connection lost mid-generation → cancel pipeline immediately ──────
+        if (!online && wasOnline && generationInProgress.get()) {
+            LOG.warning("[SendSMS] Internet lost during generation — cancelling pipeline.");
+
+            if (newsGeneratorService != null) {
+                newsGeneratorService.cancel();          // signal the async pipeline to stop
+            }
+
+            // Reset the guard now so the UI is unblocked immediately without
+            // waiting for the CompletableFuture's whenComplete() to settle.
+            generationInProgress.set(false);
+            if (btnGenerateNews != null) {
+                btnGenerateNews.setDisable(false);
+            }
+
+            MainFrameController main = MainFrameController.getInstance();
+            if (main != null) {
+                main.setNewsCancelAction(null);
+                main.hideNewsProgress();
+            }
+
+            AlertDialogManager.showError(
+                    "Internet Connection Lost",
+                    "The internet connection was lost during news generation.\n"
+                            + "The pipeline has been cancelled.\n\n"
+                            + "Please restore your connection and try again.");
+        }
+    }
+
+    /**
+     * Starts (or restarts) the background network-status poller.
+     * <ul>
+     *   <li>Fires an immediate check on start (initial delay = 0).</li>
+     *   <li>Repeats every {@value #NETWORK_POLL_INTERVAL_SEC} seconds.</li>
+     *   <li>Uses a single daemon thread so it never blocks JVM shutdown.</li>
+     * </ul>
+     * Safe to call multiple times — stops any existing poller first.
+     */
+    private void startNetworkPoller() {
+        stopNetworkPoller();    // cancel any running poller first
+
+        networkPoller = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "Network-Poller-Thread");
+            t.setDaemon(true);  // does not prevent JVM shutdown
+            return t;
+        });
+        networkPollFuture = networkPoller.scheduleAtFixedRate(
+                this::checkNetworkStatus,
+                0,                              // fire immediately on start
+                NETWORK_POLL_INTERVAL_SEC,
+                TimeUnit.SECONDS);
+
+        LOG.info("[SendSMS] Network poller started (interval="
+                + NETWORK_POLL_INTERVAL_SEC + "s).");
+    }
+
+    /** Stops and discards the background network-status poller gracefully. */
+    private void stopNetworkPoller() {
+        if (networkPollFuture != null) {
+            networkPollFuture.cancel(false);
+            networkPollFuture = null;
+        }
+        if (networkPoller != null) {
+            networkPoller.shutdownNow();
+            networkPoller = null;
+        }
+    }
+
+    /**
+     * Releases background resources (network poller thread) when the view is
+     * navigated away from or the application closes.
+     * <p>
+     * Wire this to whatever lifecycle hook your app provides — e.g. call it
+     * from {@code MainFrameController.loadPage()} just before swapping the
+     * content area, or register it as an {@code onHidden} listener.
+     */
+    public void dispose() {
+        stopNetworkPoller();
+    }
+
+    private void updateNetworkLabel(boolean online) {
+        if (lblNetworkStatus == null) return;
+        lblNetworkStatus.setText(online
+                ? "Online"
+                : "Offline — Internet required for AI news");
+        lblNetworkStatus.setStyle(
+                "-fx-text-fill: " + (online ? "#22c55e" : "#ef4444") + ";");
     }
 
     // =========================================================================
@@ -486,35 +614,8 @@ public class SendSMSController implements Initializable {
     }
 
     // =========================================================================
-    //  Network status
+    //  Misc helpers
     // =========================================================================
-
-    private void checkNetworkStatus() {
-        if (lblNetworkStatus == null) return;
-        Task<Boolean> task = new Task<>() {
-            @Override protected Boolean call() throws Exception {
-                HttpClient client = HttpClient.newBuilder()
-                        .connectTimeout(java.time.Duration.ofSeconds(5)).build();
-                HttpRequest req = HttpRequest.newBuilder()
-                        .uri(URI.create("https://www.google.com"))
-                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                        .timeout(java.time.Duration.ofSeconds(5))
-                        .build();
-                HttpResponse<Void> resp = client.send(req, HttpResponse.BodyHandlers.discarding());
-                return resp.statusCode() >= 200 && resp.statusCode() < 400;
-            }
-        };
-        task.setOnSucceeded(e -> Platform.runLater(() ->
-                updateNetworkLabel(Boolean.TRUE.equals(task.getValue()))));
-        task.setOnFailed(e -> Platform.runLater(() -> updateNetworkLabel(false)));
-        new Thread(task, "Network-Check-Thread").start();
-    }
-
-    private void updateNetworkLabel(boolean online) {
-        if (lblNetworkStatus == null) return;
-        lblNetworkStatus.setText(online ? "Online" : "Offline — Internet required for AI news");
-        lblNetworkStatus.setStyle("-fx-text-fill: " + (online ? "#22c55e" : "#ef4444") + ";");
-    }
 
     private void openInBrowser(String url) {
         if (url == null || url.isBlank()) return;
@@ -889,7 +990,10 @@ public class SendSMSController implements Initializable {
             if (charCount != null) charCount.setText(len + "/320 characters");
         });
         if (btnRefreshPorts   != null) btnRefreshPorts.setOnAction(e -> populateAvailablePorts());
-        if (btnRefreshNetwork != null) btnRefreshNetwork.setOnAction(e -> checkNetworkStatus());
+
+        // Restart the whole poller — fires an immediate check and resets the
+        // 15-second cadence from now.
+        if (btnRefreshNetwork != null) btnRefreshNetwork.setOnAction(e -> startNetworkPoller());
     }
 
     private void populateComboBoxes() {

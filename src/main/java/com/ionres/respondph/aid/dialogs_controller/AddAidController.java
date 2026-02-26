@@ -6,7 +6,7 @@ import com.ionres.respondph.aid_type.AidTypeModelComboBox;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.disaster.DisasterModelComboBox;
 import com.ionres.respondph.util.AlertDialogManager;
-import com.ionres.respondph.util.DashboardRefresher;
+import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import com.ionres.respondph.util.PdfProgressRunner;
 import com.itextpdf.layout.element.Cell;
@@ -47,7 +47,6 @@ import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.borders.SolidBorder;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -1604,8 +1603,8 @@ public class AddAidController {
                 showNoDistributionWarning();
             }
 
-            DashboardRefresher.refresh();
-            DashboardRefresher.refreshComboBoxOfDNAndAN();
+            Refresher.refresh();
+            Refresher.refreshComboBoxOfDNAndAN();
 
         } catch (NumberFormatException e) {
             AlertDialogManager.showError("Invalid Input", "Please check quantity and cost are valid numbers.");
@@ -1698,7 +1697,7 @@ public class AddAidController {
                 .setBackgroundColor(COLOR_HEADER_BG).setPadding(14)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
         Cell metaCell = new Cell()
-                .add(new Paragraph("RespondPH")
+                .add(new Paragraph("RESPOND-PH")
                         .setFont(fontBold).setFontSize(13).setFontColor(COLOR_WHITE)
                         .setTextAlignment(TextAlignment.RIGHT))
                 .add(new Paragraph(timestamp)

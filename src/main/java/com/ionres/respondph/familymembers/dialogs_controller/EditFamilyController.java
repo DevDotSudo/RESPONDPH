@@ -208,13 +208,6 @@ public class EditFamilyController {
             firstNameFld.requestFocus();
             return false;
         }
-
-        if (middleNameFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Middle name is required.");
-            middleNameFld.requestFocus();
-            return false;
-        }
-
         if (lastNameFld.getText().trim().isEmpty()) {
             AlertDialogManager.showWarning("Validation Error", "Last name is required.");
             lastNameFld.requestFocus();

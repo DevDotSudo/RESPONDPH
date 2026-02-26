@@ -181,6 +181,7 @@ public class AddAidTypeController {
 
                 if (newAidTypeId > 0) {
                     showProgressAndRecalculate(newAidTypeId, adminId);
+                    closeDialog();
                 } else {
                     AlertDialogManager.showWarning("Warning",
                             "Aid type created, but could not determine new Aid Type ID for score calculation.");
@@ -440,67 +441,6 @@ public class AddAidTypeController {
         Thread thread = new Thread(task, "AidTypeRecalculate-Thread");
         thread.setDaemon(true);
         thread.start();
-    }
-
-    private void recalculateAllBeneficiaryScores(int aidTypeId, int adminId) {
-        try {
-            System.out.println("========== RECALCULATING AID-HOUSEHOLD SCORES ==========");
-            System.out.println("Aid Type ID: " + aidTypeId);
-            System.out.println("Admin ID: " + adminId);
-
-            List<BeneficiaryDisasterPair> beneficiaryDisasterPairs =
-                    getAllBeneficiaryDisasterPairsWithHouseholdScores();
-
-            System.out.println("Found " + beneficiaryDisasterPairs.size() +
-                    " beneficiary-disaster pairs with household scores");
-
-            AidHouseholdScoreCalculate calculator = new AidHouseholdScoreCalculate();
-            int successCount = 0;
-            int failCount = 0;
-
-            for (BeneficiaryDisasterPair pair : beneficiaryDisasterPairs) {
-                try {
-                    boolean success;
-
-                    if (pair.disasterId != null) {
-                        System.out.println("→ With disaster (ID: " + pair.disasterId +
-                                ") for beneficiary ID: " + pair.beneficiaryId);
-                        success = calculator.calculateAndSaveAidHouseholdScoreWithDisaster(
-                                pair.beneficiaryId, aidTypeId, adminId, pair.disasterId);
-                    } else {
-                        System.out.println("→ No disaster (NULL) for beneficiary ID: " + pair.beneficiaryId);
-                        success = calculator.calculateAndSaveAidHouseholdScore(
-                                pair.beneficiaryId, aidTypeId, adminId);
-                    }
-
-                    if (success) {
-                        successCount++;
-                        System.out.println("✓ Calculated aid-household score for beneficiary ID: " +
-                                pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
-                    } else {
-                        failCount++;
-                        System.err.println("✗ Failed for beneficiary ID: " +
-                                pair.beneficiaryId + ", disaster ID: " + pair.disasterId);
-                    }
-                } catch (Exception e) {
-                    failCount++;
-                    System.err.println("✗ Error for beneficiary ID " + pair.beneficiaryId +
-                            ", disaster ID " + pair.disasterId + ": " + e.getMessage());
-                }
-            }
-
-            System.out.println("========== RECALCULATION COMPLETE ==========");
-            System.out.println("Successfully calculated: " + successCount + " out of " +
-                    beneficiaryDisasterPairs.size());
-            System.out.println("Failed: " + failCount);
-
-        } catch (Exception e) {
-            System.err.println("Error recalculating all beneficiary scores: " + e.getMessage());
-            e.printStackTrace();
-            AlertDialogManager.showWarning("Warning",
-                    "Aid type created successfully, but there was an error calculating household scores.\n" +
-                            "You may need to recalculate manually.");
-        }
     }
 
     private double parseWeight(TextField field) {

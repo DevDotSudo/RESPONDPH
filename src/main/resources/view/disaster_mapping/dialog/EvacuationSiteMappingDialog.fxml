@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="evacMappingRoot" prefHeight="900.0" prefWidth="1400.0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController">
+<VBox fx:id="evacMappingRoot" prefHeight="900.0" prefWidth="1200.0" styleClass="dialog-root" stylesheets="@/styles/disaster_mapping/dialog/evacuation_site_mapping.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.disaster_mapping.dialogs_controller.EvacuationSiteMappingController">
 
     <!-- ==================== HEADER ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
@@ -14,6 +14,7 @@
         </padding>
 
         <FontAwesomeIconView glyphName="HOME" size="22" styleClass="header-icon" />
+
         <VBox spacing="2">
             <Label styleClass="dialog-title" text="Evacuation Site Mapping" />
             <Label styleClass="dialog-subtitle" text="Review disaster area and nearby evacuation sites on the map." />
@@ -28,42 +29,34 @@
         </Button>
     </HBox>
 
-    <!-- ==================== BODY ==================== -->
-    <VBox spacing="16" styleClass="dialog-body" VBox.vgrow="ALWAYS">
+    <!-- ==================== INFO CARD ==================== -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-card">
         <padding>
-            <Insets bottom="18" left="24" right="24" top="18" />
+            <Insets bottom="12" left="24" right="24" top="12" />
         </padding>
-
-        <!-- Info Card (replaces old bar) -->
-        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="info-card">
-            <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="18" styleClass="info-card-icon" />
-            <VBox spacing="2" HBox.hgrow="ALWAYS">
-                <Label styleClass="info-card-title" text="Selected Disaster" />
-                <Label fx:id="disasterInfoLabel" styleClass="info-card-text" text="No disaster selected" wrapText="true" />
-            </VBox>
-
-            <Label styleClass="pill" text="Mapping Mode" />
-        </HBox>
-
-        <!-- Map Card -->
-        <VBox spacing="12" styleClass="form-section" VBox.vgrow="ALWAYS">
-            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
-                <FontAwesomeIconView glyphName="MAP" size="18" styleClass="section-icon" />
-                <Label styleClass="section-title" text="Map View" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Label styleClass="section-subtitle" text="Zoom • Drag • Click markers" />
-            </HBox>
-
-            <!-- BIG map surface -->
-            <Pane fx:id="mappingContainer" styleClass="map-surface" VBox.vgrow="ALWAYS" />
+        <FontAwesomeIconView glyphName="EXCLAMATION_TRIANGLE" size="18" styleClass="info-card-icon" />
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label styleClass="info-card-title" text="Selected Disaster" />
+            <Label fx:id="disasterInfoLabel" styleClass="info-card-text" text="No disaster selected" wrapText="true" />
         </VBox>
+        <Label styleClass="pill" text="Mapping Mode" />
+    </HBox>
 
-        <!-- Error card (optional) -->
-        <HBox fx:id="errorBox" alignment="CENTER_LEFT" managed="false" spacing="10" styleClass="error-box" visible="false">
-            <FontAwesomeIconView glyphName="EXCLAMATION_CIRCLE" size="16" styleClass="error-icon" />
-            <Label fx:id="errorLabel" styleClass="error-text" text="Error" wrapText="true" />
-        </HBox>
+    <!-- ==================== ERROR (optional) ==================== -->
+    <HBox fx:id="errorBox" alignment="CENTER_LEFT" managed="false" spacing="10" styleClass="error-box" visible="false">
+        <padding>
+            <Insets bottom="10" left="24" right="24" top="10" />
+        </padding>
+        <FontAwesomeIconView glyphName="EXCLAMATION_CIRCLE" size="16" styleClass="error-icon" />
+        <Label fx:id="errorLabel" styleClass="error-text" text="Error" wrapText="true" />
+    </HBox>
 
+    <!-- ==================== MAP (small left/right padding, no wrapper card) ==================== -->
+    <VBox VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="12" left="12" right="12" top="12" />
+        </padding>
+        <Pane fx:id="mappingContainer" styleClass="map-surface" VBox.vgrow="ALWAYS" />
     </VBox>
 
 </VBox>

@@ -109,6 +109,8 @@ public class DashboardController {
     // ── Selection ─────────────────────────────────────────────────────────────
     private BeneficiaryMarker selectedBeneficiary = null;
     private VBox infoPanel;
+    private EvacSiteMarker selectedEvacSite = null;
+    private VBox evacInfoPanel;
 
     // ── Search ────────────────────────────────────────────────────────────────
     private final ObservableList<String> searchItems = FXCollections.observableArrayList();
@@ -163,6 +165,7 @@ public class DashboardController {
                 drawEvacSites();
                 drawBeneficiaries();
                 repositionPanel();
+                repositionEvacPanel();   // ← add this
             });
 
             buildInfoPanel();
@@ -173,8 +176,10 @@ public class DashboardController {
             mapContainer.setOnMousePressed(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
                     isDragging = false;
-                    BeneficiaryMarker hit = findMarkerAtScreen(e.getX(), e.getY());
-                    if (hit == null && selectedBeneficiary != null) dismissPanel();
+                    BeneficiaryMarker hitB = findMarkerAtScreen(e.getX(), e.getY());
+                    EvacSiteMarker hitE = findEvacSiteAtScreen(e.getX(), e.getY());
+                    if (hitB == null && selectedBeneficiary != null) dismissPanel();
+                    if (hitE == null && selectedEvacSite != null) dismissEvacPanel();
                     dragStartX = e.getX();
                     dragStartY = e.getY();
                 }
@@ -204,8 +209,10 @@ public class DashboardController {
             mapContainer.setOnMouseClicked(e -> {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                     if (isDragging) return;
-                    BeneficiaryMarker hit = findMarkerAtScreen(e.getX(), e.getY());
-                    if (hit != null) selectBeneficiary(hit, false);
+                    BeneficiaryMarker hitB = findMarkerAtScreen(e.getX(), e.getY());
+                    if (hitB != null) { selectBeneficiary(hitB, false); return; }
+                    EvacSiteMarker hitE = findEvacSiteAtScreen(e.getX(), e.getY());
+                    if (hitE != null) selectEvacSite(hitE);
                 }
             });
 
@@ -628,6 +635,7 @@ public class DashboardController {
     // Info panel
     // ═════════════════════════════════════════════════════════════════════════
     private void buildInfoPanel() {
+        // existing beneficiary panel
         infoPanel = new VBox(0);
         infoPanel.setStyle(
                 "-fx-background-color:#2d3b4f;" +
@@ -641,6 +649,21 @@ public class DashboardController {
         infoPanel.setMouseTransparent(false);
         infoPanel.setViewOrder(-1.0);
         mapContainer.getChildren().add(infoPanel);
+
+        // evac site panel
+        evacInfoPanel = new VBox(0);
+        evacInfoPanel.setStyle(
+                "-fx-background-color:#2d3b4f;" +
+                        "-fx-border-color:rgba(234,179,8,0.55);" +
+                        "-fx-border-width:1.5px;" +
+                        "-fx-border-radius:8px;" +
+                        "-fx-background-radius:8px;" +
+                        "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
+        );
+        evacInfoPanel.setVisible(false);
+        evacInfoPanel.setMouseTransparent(false);
+        evacInfoPanel.setViewOrder(-1.0);
+        mapContainer.getChildren().add(evacInfoPanel);
     }
 
     private void populateInfoPanel(BeneficiaryMarker b) {
@@ -809,6 +832,143 @@ public class DashboardController {
             } catch (Exception ignored) {}
         }
         return null;
+    }
+
+    private EvacSiteMarker findEvacSiteAtScreen(double sx, double sy) {
+        if (!mapping.isInitialized()) return null;
+        boolean useImage = mapping.getZoom() >= MIN_ZOOM_FOR_MARKERS;
+        for (EvacSiteMarker site : evacSites) {
+            if (!Mapping.isValidCoordinate(site.lat, site.lon)) continue;
+            if (!isPointInPolygon(site.lon, site.lat, boundary)) continue;
+            try {
+                Mapping.Point p = mapping.latLonToScreen(site.lat, site.lon);
+                double hx, hy, hw, hh;
+                if (useImage && evacSiteMarker != null) {
+                    hx = p.x - EVAC_MARKER_WIDTH / 2; hy = p.y - EVAC_MARKER_OFFSET_Y;
+                    hw = EVAC_MARKER_WIDTH; hh = EVAC_MARKER_HEIGHT;
+                } else {
+                    double r = 8; hx = p.x - r; hy = p.y - r; hw = r * 2; hh = r * 2;
+                }
+                if (sx >= hx && sx <= hx + hw && sy >= hy && sy <= hy + hh) return site;
+            } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    private void populateEvacInfoPanel(EvacSiteMarker site) {
+        evacInfoPanel.getChildren().clear();
+
+        double panelWidth = 220;
+        evacInfoPanel.setPrefWidth(panelWidth);
+        evacInfoPanel.setMaxWidth(panelWidth);
+        evacInfoPanel.setMaxHeight(Region.USE_PREF_SIZE);
+
+        // Header row
+        Label headerLbl = new Label("EVACUATION SITE");
+        headerLbl.setStyle("-fx-text-fill:rgba(234,179,8,0.90);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        Region hSpacer = new Region();
+        HBox.setHgrow(hSpacer, Priority.ALWAYS);
+        Button closeBtn = new Button("×");
+        applyEvacCloseBtnStyle(closeBtn);
+        closeBtn.setOnAction(e -> dismissEvacPanel());
+        HBox headerRow = new HBox(6, headerLbl, hSpacer, closeBtn);
+        headerRow.setAlignment(Pos.CENTER_LEFT);
+        headerRow.setPadding(new Insets(8, 10, 6, 12));
+
+        Region topDiv = new Region();
+        topDiv.setPrefHeight(1);
+        topDiv.setStyle("-fx-background-color:rgba(234,179,8,0.28);");
+
+        // Site Name
+        Label nameTitleLbl = new Label("NAME");
+        nameTitleLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        Label nameLbl = new Label(site.getName() != null ? site.getName() : "Unknown");
+        nameLbl.setStyle("-fx-text-fill:#f1f5f9;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        nameLbl.setWrapText(true);
+
+        Region midDiv = new Region();
+        midDiv.setPrefHeight(1);
+        midDiv.setStyle("-fx-background-color:rgba(255,255,255,0.06);");
+
+        // Capacity
+        Label capTitleLbl = new Label("CAPACITY");
+        capTitleLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        String capText = (site.getCapacity() > 0) ? String.valueOf(site.getCapacity()) + " persons" : "N/A";
+        Label capLbl = new Label(capText);
+        capLbl.setStyle("-fx-text-fill:rgba(234,179,8,0.95);-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+
+        VBox contentBox = new VBox(0);
+        contentBox.setPadding(new Insets(7, 12, 10, 12));
+        contentBox.setSpacing(0);
+        contentBox.setStyle("-fx-background-color:rgba(234,179,8,0.06);");
+
+        VBox nameSection = new VBox(2, nameTitleLbl, nameLbl);
+        nameSection.setPadding(new Insets(0, 0, 8, 0));
+        VBox capSection = new VBox(2, capTitleLbl, capLbl);
+
+        contentBox.getChildren().addAll(nameSection, midDiv, capSection);
+
+        evacInfoPanel.getChildren().addAll(headerRow, topDiv, contentBox);
+    }
+
+    private void selectEvacSite(EvacSiteMarker site) {
+        selectedBeneficiary = null;
+        if (infoPanel != null) infoPanel.setVisible(false);
+
+        selectedEvacSite = site;
+        populateEvacInfoPanel(site);
+        evacInfoPanel.setVisible(true);
+        evacInfoPanel.setOpacity(0);
+
+        Platform.runLater(() -> Platform.runLater(() -> {
+            clampAndPositionEvacPanel();
+            showWithFade(evacInfoPanel);
+            mapping.redraw();
+        }));
+    }
+
+    private void dismissEvacPanel() {
+        selectedEvacSite = null;
+        if (evacInfoPanel != null) evacInfoPanel.setVisible(false);
+        mapping.redraw();
+    }
+
+    private void clampAndPositionEvacPanel() {
+        if (selectedEvacSite == null || evacInfoPanel == null || !mapping.isInitialized()) return;
+        try {
+            Mapping.Point p = mapping.latLonToScreen(selectedEvacSite.lat, selectedEvacSite.lon);
+            double mapW = mapContainer.getWidth();
+            double mapH = mapContainer.getHeight();
+            if (mapW <= 0 || mapH <= 0) return;
+            double pw = evacInfoPanel.prefWidth(-1);
+            if (pw <= 0) pw = 220;
+            double maxAllowedH = mapH - 16;
+            evacInfoPanel.setMaxHeight(maxAllowedH);
+            double ph = evacInfoPanel.prefHeight(pw);
+            if (ph <= 0) ph = 80;
+            if (ph > maxAllowedH) ph = maxAllowedH;
+            double tx = p.x - (pw / 2.0);
+            tx = Math.max(4, Math.min(tx, mapW - pw - 4));
+            double ty = p.y - EVAC_MARKER_OFFSET_Y - ph;
+            if (ty < 4) ty = p.y;
+            if (ty + ph > mapH - 4) ty = mapH - ph - 4;
+            ty = Math.max(4, ty);
+            evacInfoPanel.setLayoutX(tx);
+            evacInfoPanel.setLayoutY(ty);
+        } catch (Exception ignored) {}
+    }
+
+    private void repositionEvacPanel() {
+        if (selectedEvacSite == null || evacInfoPanel == null || !evacInfoPanel.isVisible()) return;
+        Platform.runLater(this::clampAndPositionEvacPanel);
+    }
+
+    private void applyEvacCloseBtnStyle(Button btn) {
+        String n = "-fx-background-color:transparent;-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
+        String h = "-fx-background-color:transparent;-fx-text-fill:#ef4444;-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
+        btn.setStyle(n);
+        btn.setOnMouseEntered(e -> btn.setStyle(h));
+        btn.setOnMouseExited(e -> btn.setStyle(n));
     }
 
     // ═════════════════════════════════════════════════════════════════════════

@@ -17,15 +17,19 @@
           AnchorPane.rightAnchor="0.0"
           AnchorPane.topAnchor="0.0">
 
-        <!-- HEADER (same structure as Manage Admins) -->
+        <!-- HEADER -->
         <VBox styleClass="header-section" VBox.vgrow="NEVER">
 
             <HBox alignment="CENTER_LEFT" spacing="16">
                 <FontAwesomeIconView glyphName="MAP" size="24" styleClass="page-icon" />
-                <Label styleClass="page-title" text="Disaster Mapping" />
+                <VBox spacing="2">
+                    <Label styleClass="page-title" text="Disaster Mapping" />
+                    <Label styleClass="page-hint"
+                           text="Select a disaster type first, then choose a disaster name — or select All Types to show all disasters." />
+                </VBox>
             </HBox>
 
-            <!-- TOOLBAR (filters in same row style) -->
+            <!-- TOOLBAR -->
             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
 
                 <!-- Disaster Type -->

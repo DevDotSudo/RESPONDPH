@@ -151,3 +151,10 @@
     -fx-pref-width: 0;
     -fx-max-width: infinity;
 }
+
+.page-hint {
+    -fx-text-fill: rgba(148,163,184,0.65);
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+}

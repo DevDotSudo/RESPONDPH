@@ -161,12 +161,17 @@ public class Mapping {
         if (!isInitialized()) return;
 
         try {
-            // Set background to the blue color from your screenshot
             gc.setFill(Color.rgb(63, 91, 156));
             gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
             drawTiles();
 
+            // ── Run afterRedraw FIRST so markerPosition is up to date ──
+            if (afterRedraw != null) {
+                afterRedraw.run();
+            }
+
+            // ── Draw marker AFTER afterRedraw has recomputed its position ──
             if (markerPosition != null && !dragging && markerImage != null && !markerImage.isError()) {
                 double w = markerImage.getWidth();
                 double h = markerImage.getHeight();
@@ -175,9 +180,6 @@ public class Mapping {
                 }
             }
 
-            if (afterRedraw != null) {
-                afterRedraw.run();
-            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error during redraw", e);
         }

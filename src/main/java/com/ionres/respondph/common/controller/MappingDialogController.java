@@ -25,6 +25,10 @@ public class MappingDialogController {
     private Mapping.LatLng   selectedLatLng;
     private ControllerListener listener;
 
+    // ── Pending marker coordinates (source of truth for marker position) ──
+    private double pendingLat = Double.NaN;
+    private double pendingLon = Double.NaN;
+
     // ── Banate, Iloilo boundary — same coordinates as DashboardController ──
     private static final double[][] BOUNDARY = {
             {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
@@ -59,21 +63,26 @@ public class MappingDialogController {
             try {
                 mapping.init(mapContainer);
 
-                // ── Draw boundary on every redraw (same pattern as Dashboard) ──
-                mapping.setAfterRedraw(this::drawBoundary);
+                // ── afterRedraw: draw boundary + recompute marker every frame ──
+                mapping.setAfterRedraw(() -> {
+                    drawBoundary();
+                    if (!Double.isNaN(pendingLat) && !Double.isNaN(pendingLon)) {
+                        mapping.markerPosition = mapping.latLonToScreen(pendingLat, pendingLon);
+                    }
+                });
 
                 // ── Center map on Banate boundary ──────────────────────────────
                 mapping.setCenter(BOUNDARY_CENTER_LAT, BOUNDARY_CENTER_LON, BOUNDARY_ZOOM);
 
-                // ── Handle map click — place marker ────────────────────────────
                 mapping.getCanvas().setOnMouseClicked(e -> {
                     if (!mapping.isDragging() && mapping.isInitialized()) {
                         try {
                             Mapping.LatLng latLng = mapping.screenToLatLon(e.getX(), e.getY());
-
                             if (Mapping.isValidCoordinate(latLng.lat, latLng.lon)) {
                                 selectedLatLng = latLng;
-                                mapping.markerPosition = mapping.latLonToScreen(latLng.lat, latLng.lon);
+                                pendingLat = latLng.lat;
+                                pendingLon = latLng.lon;
+                                // Do NOT set markerPosition here — afterRedraw handles it
                                 mapping.redraw();
                             }
                         } catch (Exception ex) {
@@ -92,6 +101,40 @@ public class MappingDialogController {
         EventHandler<ActionEvent> handler = this::actionButtons;
         if (mapCloseButton != null) mapCloseButton.setOnAction(handler);
         if (mapOkButton    != null) mapOkButton.setOnAction(handler);
+    }
+
+    public void resetForNewSession() {
+        pendingLat = Double.NaN;
+        pendingLon = Double.NaN;
+        selectedLatLng = null;
+        mapping.markerPosition = null;
+        mapping.setCenter(BOUNDARY_CENTER_LAT, BOUNDARY_CENTER_LON, BOUNDARY_ZOOM);
+    }
+
+    public void preSelectLocation(double lat, double lon) {
+        if (!Mapping.isValidCoordinate(lat, lon)) return;
+
+        selectedLatLng = new Mapping.LatLng(lat, lon);
+        pendingLat = lat;
+        pendingLon = lon;
+
+        if (mapping.isInitialized()) {
+            mapping.setCenter(lat, lon, Mapping.MAX_ZOOM);
+        } else {
+            // Not ready yet — keep polling on the FX thread until initialized
+            waitThenCenter(lat, lon);
+        }
+    }
+
+    private void waitThenCenter(double lat, double lon) {
+        Platform.runLater(() -> {
+            if (mapping.isInitialized()) {
+                mapping.setCenter(lat, lon, Mapping.MAX_ZOOM);
+                // afterRedraw will compute markerPosition correctly post-setCenter
+            } else {
+                waitThenCenter(lat, lon);
+            }
+        });
     }
 
     // =========================================================================

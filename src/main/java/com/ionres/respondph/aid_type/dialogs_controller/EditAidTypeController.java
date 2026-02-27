@@ -23,6 +23,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 public class EditAidTypeController {
@@ -192,7 +195,6 @@ public class EditAidTypeController {
 
             if (success) {
                 showProgressAndRecalculate(atm.getAidTypeId(), adminId);
-                closeDialog();
             } else {
                 AlertDialogManager.showError("Update Failed", "Failed to update Aid Type.");
             }
@@ -392,11 +394,14 @@ public class EditAidTypeController {
         };
 
         statusLabel.textProperty().bind(task.messageProperty());
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
         task.setOnSucceeded(e -> {
             statusLabel.textProperty().unbind();
             progressStage.close();
             updateBtn.setDisable(false);
+
+
 
             int[] result = task.getValue();
             int successCount = result[0];
@@ -406,6 +411,8 @@ public class EditAidTypeController {
                     "Aid Type updated successfully.\n" +
                             successCount + " of " + total +
                             " household score(s) recalculated.");
+            closeDialog();
+            shutDownExecutor(executor);
 
             aidTypeController.loadTable();
             Refresher.refreshComboBoxOfDNAndAN();
@@ -417,10 +424,13 @@ public class EditAidTypeController {
             progressStage.close();
             updateBtn.setDisable(false);
 
+
             Throwable ex = task.getException();
             AlertDialogManager.showWarning("Warning",
                     "Aid type updated, but there was an error recalculating household scores.\n" +
                             (ex != null ? ex.getMessage() : "Unknown error"));
+            closeDialog();
+            shutDownExecutor(executor);
             if (ex != null) ex.printStackTrace();
 
             aidTypeController.loadTable();
@@ -428,9 +438,24 @@ public class EditAidTypeController {
             clearFields();
         });
 
-        Thread thread = new Thread(task, "EditAidTypeRecalculate-Thread");
-        thread.setDaemon(true);
-        thread.start();
+        executor.submit(task);
+
+
+    }
+    private void shutDownExecutor(ExecutorService executor){
+        try {
+            System.out.println("attempt to shutdown executor");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
+            System.err.println("tasks interrupted");
+        }finally {
+            if (!executor.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.println("shutdown finished");
+        }
     }
 
     private static class BeneficiaryDisasterPair {

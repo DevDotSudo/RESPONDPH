@@ -23,6 +23,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 public class AddAidTypeController {
@@ -181,7 +184,6 @@ public class AddAidTypeController {
 
                 if (newAidTypeId > 0) {
                     showProgressAndRecalculate(newAidTypeId, adminId);
-                    closeDialog();
                 } else {
                     AlertDialogManager.showWarning("Warning",
                             "Aid type created, but could not determine new Aid Type ID for score calculation.");
@@ -383,6 +385,8 @@ public class AddAidTypeController {
         };
 
         statusLabel.textProperty().bind(task.messageProperty());
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
         task.setOnSucceeded(e -> {
             statusLabel.textProperty().unbind();
@@ -397,6 +401,8 @@ public class AddAidTypeController {
                     "Aid Type added successfully!\n" +
                             successCount + " of " + total +
                             " household score(s) calculated for all beneficiaries.");
+            shutDownExecutor(executor);
+
 
             // Close the add-aid-type dialog (owner of the progress dialog)
             try {
@@ -422,6 +428,7 @@ public class AddAidTypeController {
             AlertDialogManager.showWarning("Warning",
                     "Aid type created, but there was an error calculating household scores.\n" +
                             (ex != null ? ex.getMessage() : "Unknown error"));
+            shutDownExecutor(executor);
             if (ex != null) ex.printStackTrace();
 
             // Close the add-aid-type dialog (owner of the progress dialog)
@@ -438,9 +445,25 @@ public class AddAidTypeController {
             aidTypeController.loadTable();
         });
 
-        Thread thread = new Thread(task, "AidTypeRecalculate-Thread");
-        thread.setDaemon(true);
-        thread.start();
+        executor.submit(task);
+
+
+    }
+
+    private void shutDownExecutor(ExecutorService executor){
+        try {
+            System.out.println("attempt to shutdown executor");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
+            System.err.println("tasks interrupted");
+        }finally {
+            if (!executor.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.println("shutdown finished");
+        }
     }
 
     private double parseWeight(TextField field) {

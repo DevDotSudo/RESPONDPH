@@ -1,6 +1,9 @@
 package com.ionres.respondph.util;
 
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+
+import java.util.function.UnaryOperator;
 
 
 public class PhoneNumberValidator {
@@ -101,32 +104,31 @@ public class PhoneNumberValidator {
     }
 
     public static void setupInputFilter(TextField textField) {
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == null || newValue.isEmpty()) {
-                return;
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String newText = change.getControlNewText();
+
+            if (newText.isEmpty()) return change;
+
+            // Allow only digits and + at the start
+            if (!newText.matches("[+]?\\d*")) return null;
+
+            // Determine max length based on prefix
+            int maxLength;
+            if (newText.startsWith("+63")) {
+                maxLength = 13; // +63XXXXXXXXXX
+            } else if (newText.startsWith("63")) {
+                maxLength = 12; // 63XXXXXXXXXX
+            } else if (newText.startsWith("0")) {
+                maxLength = 11; // 0XXXXXXXXXX  (local format)
+            } else {
+                maxLength = 11; // default
             }
 
-            StringBuilder validText = new StringBuilder();
-            for (int i = 0; i < newValue.length(); i++) {
-                char c = newValue.charAt(i);
+            if (newText.length() > maxLength) return null;
 
-                if (Character.isDigit(c)) {
-                    validText.append(c);
-                }
-                else if (c == '+' && i == 0) {
-                    validText.append(c);
-                }
-                else if (c == ' ' || c == '-') {
-                    validText.append(c);
-                }
-            }
+            return change;
+        };
 
-            String filtered = validText.toString();
-
-            if (!filtered.equals(newValue)) {
-                textField.setText(filtered);
-                textField.positionCaret(filtered.length());
-            }
-        });
+        textField.setTextFormatter(new TextFormatter<>(filter));
     }
 }

@@ -160,10 +160,6 @@ public class AddBeneficiariesDialogController {
                 AlertDialogManager.showWarning("Warning", "First name is required");
                 return;
             }
-            if (middlename.isEmpty()) {
-                AlertDialogManager.showWarning("Warning", "Middle name is required");
-                return;
-            }
             if (lastname.isEmpty()) {
                 AlertDialogManager.showWarning("Warning", "Last name is required");
                 return;

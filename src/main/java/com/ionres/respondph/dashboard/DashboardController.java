@@ -134,6 +134,7 @@ public class DashboardController {
     // initialize
     // ═════════════════════════════════════════════════════════════════════════
     public void initialize() {
+        Refresher.register(this);
         AdminModel admin1 = SessionManager.getInstance().getCurrentAdmin();
         System.out.println("=== DashboardController.initialize() ===");
         if (admin1 != null) System.out.println("Username: " + admin1.getUsername());

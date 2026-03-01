@@ -22,6 +22,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Callback;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -313,10 +314,17 @@ public class EvacuationPlanController {
 //            }
 //        });
 
-        EvacuationPlanPrintingController controller = DialogManager.getController("evac_printing", EvacuationPlanPrintingController.class);
+        EvacuationPlanPrintingController controller = DialogManager.getController(
+                "evac_printing", EvacuationPlanPrintingController.class
+        );
+
+        // ✅ Pass data FIRST, then show ONCE
+        if (controller != null) {
+            controller.setEvacuationPlans(data);
+        }
+
         DialogManager.show("evac_printing");
     }
-
 
     private void printSelectedDisaster(String disasterName) {
         // Filter data for selected disaster

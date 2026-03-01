@@ -542,10 +542,9 @@ public class EditAidTypeController {
 
             if (totalWeight != 1.0) {
                 AlertDialogManager.showWarning("Validation Error",
-                        "The sum of all weights must equal exactly 1.0" +
-                                " Current total: " + String.format("%.2f", totalWeight) +
-                                " Required total: 1.0" +
-                                " Please adjust the weight values.");
+                        " Current total: " + String.format("%.2f", totalWeight) +
+                                " Required total: 1.0"
+                );
                 return false;
             }
 

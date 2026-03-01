@@ -26,23 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Dropdown strategy — StackPane overlay pattern.
- *
- *   StackPane (height locked to 44px)
- *     ├── HBox beneficiaryInputRow  — always visible, sizes the StackPane
- *     └── ListView beneficiarySearchList — translateY=44, viewOrder=-1,
- *                                          floats over content below
- *
- * The ListView is always managed=true. Show/hide via setVisible() only.
- * The parent form-section has viewOrder=-1 so it paints above sections below.
- *
- * Chevron (fx:id="beneficiaryCaretIcon") is a clickable toggle:
- *   - Empty field  → show ALL beneficiaries
- *   - Typed field  → show current filtered results
- *   - Open list    → close list
- * Chevron rotates 180° when open, resets to 0° when closed.
- */
+
 public class AddFamilyController {
 
     // ── FXML ─────────────────────────────────────────────────────────────────
@@ -439,10 +423,6 @@ public class AddFamilyController {
         if (firstNameFld.getText().trim().isEmpty()) {
             AlertDialogManager.showWarning("Validation Error", "First name is required.");
             firstNameFld.requestFocus(); return false;
-        }
-        if (middleNameFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Middle name is required.");
-            middleNameFld.requestFocus(); return false;
         }
         if (lastNameFld.getText().trim().isEmpty()) {
             AlertDialogManager.showWarning("Validation Error", "Last name is required.");

@@ -63,7 +63,7 @@
                         <Label styleClass="info-box-title" text="Weight Configuration Guide:" />
                         <Label styleClass="info-box-text" text="• Values should be between 0.0 and 1.0" wrapText="true" />
                         <Label styleClass="info-box-text" text="• Higher weights = Higher priority for that factor" wrapText="true" />
-                        <Label styleClass="info-box-text" text="• Total doesn't need to sum to 1.0 - each factor is normalized separately" wrapText="true" />
+                        <Label styleClass="info-box-text" text="• Total need to sum to 1.0 ." wrapText="true" />
                     </VBox>
                 </HBox>
             </VBox>

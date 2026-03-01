@@ -315,6 +315,13 @@ public class EvacuationPlanPrintingController {
         }
     }
 
+    public void setEvacuationPlans(ObservableList<EvacuationPlanModel> plans) {
+        this.allPlans = new ArrayList<>(plans);
+
+        // ✅ Also rebuild the lookup maps, not just the combo items
+        Platform.runLater(() -> populateDisasterCombo());
+    }
+
     private void createProgressDialog(String initialMessage) {
         progressStage = new Stage();
         progressStage.initModality(Modality.APPLICATION_MODAL);

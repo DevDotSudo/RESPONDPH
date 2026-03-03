@@ -158,3 +158,52 @@
     -fx-font-weight: 500;
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
+
+/* ==================================================================
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ================================================================== */
+
+.root-light .root-pane { -fx-background-color: #F5EDE0; }
+.root-light .header-section { -fx-border-color: rgba(106,156,137,0.30); }
+.root-light .page-title { -fx-text-fill: #1A1A1A; }
+.root-light .page-icon { -fx-fill: #B85507; }
+.root-light .page-hint { -fx-text-fill: #4A7566; }
+
+.root-light .search-box {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+}
+.root-light .search-box:hover { -fx-border-color: #B85507; -fx-background-color: #E8E2D8; }
+.root-light .search-icon { -fx-fill: #4A7566; }
+
+.root-light .search-field { -fx-background-color: transparent; -fx-border-color: transparent; }
+.root-light .search-field > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .search-field .arrow { -fx-background-color: #4A7566; }
+.root-light .search-field:hover .arrow { -fx-background-color: #B85507; }
+
+.root-light .combo-box-popup .list-view {
+    -fx-background-color: #F0EAE0;
+    -fx-border-color: #B0C8B2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4);
+}
+.root-light .combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(193,216,195,0.35);
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #B85507;
+    -fx-text-fill: #FFFFFF;
+}
+
+.root-light .table-container { -fx-background-color: transparent; }
+.root-light .map-container {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+}

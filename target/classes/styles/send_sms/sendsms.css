@@ -627,3 +627,97 @@
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
 }
+
+/* ==================================================================
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ================================================================== */
+
+.root-light .send-sms-root { -fx-background-color: #F5EDE0; }
+.root-light .header-section { -fx-border-color: rgba(106,156,137,0.30); }
+.root-light .page-title { -fx-text-fill: #1A1A1A; }
+.root-light .page-subtitle { -fx-text-fill: #4A7566; }
+
+.root-light .network-status-label {
+    -fx-text-fill: #1A1A1A;
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+}
+
+.root-light .content-scroll { -fx-background-color: transparent; -fx-background: transparent; }
+.root-light .content-scroll .viewport { -fx-background-color: transparent; }
+.root-light .content-scroll .scroll-bar .track { -fx-background-color: rgba(193,216,195,0.30); }
+.root-light .content-scroll .scroll-bar .thumb { -fx-background-color: #A8C5AB; }
+.root-light .content-scroll .scroll-bar .thumb:hover { -fx-background-color: #6A9C89; }
+.root-light .content-scroll .scroll-bar .thumb:pressed { -fx-background-color: #B85507; }
+.root-light .content-container { -fx-background-color: transparent; }
+
+.root-light .news-section, .root-light .message-section {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);
+}
+.root-light .section-title { -fx-text-fill: #1A1A1A; }
+.root-light .input-label { -fx-text-fill: #1A1A1A; }
+
+.root-light .primary-button { -fx-background-color: #B85507; -fx-border-color: rgba(184,85,7,0.40); -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.25), 8, 0, 0, 2); }
+.root-light .primary-button:hover { -fx-background-color: #A34A06; }
+.root-light .primary-button:pressed { -fx-background-color: #8E4005; }
+.root-light .secondary-button { -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; -fx-text-fill: #1A1A1A; }
+.root-light .secondary-button:hover { -fx-border-color: #B85507; -fx-background-color: #E8E2D8; }
+
+.root-light .generate-button { -fx-background-color: #B85507; -fx-border-color: rgba(184,85,7,0.40); }
+.root-light .generate-button:hover { -fx-background-color: #A34A06; }
+.root-light .generate-button:pressed { -fx-background-color: #8E4005; }
+
+.root-light .recipient-combo.combo-box-base { -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; }
+.root-light .recipient-combo.combo-box-base:hover { -fx-border-color: #B85507; -fx-background-color: #E8E2D8; }
+.root-light .recipient-combo > .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
+.root-light .recipient-combo .arrow { -fx-background-color: #4A7566; }
+.root-light .recipient-combo:hover .arrow { -fx-background-color: #B85507; }
+
+.root-light .combo-box-popup .list-view { -fx-background-color: #F0EAE0; -fx-border-color: rgba(176,200,178,0.80); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
+.root-light .combo-box-popup .list-view .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
+.root-light .combo-box-popup .list-view .list-cell:hover { -fx-background-color: rgba(193,216,195,0.40); }
+.root-light .combo-box-popup .list-view .list-cell:selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
+
+.root-light .message-textarea { -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(74,117,102,0.65); }
+.root-light .message-textarea:hover { -fx-border-color: #B85507; -fx-background-color: #E8E2D8; }
+.root-light .message-textarea .content { -fx-background-color: transparent; }
+
+.root-light .radio-button { -fx-text-fill: #1A1A1A; }
+.root-light .radio-button .radio { -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; }
+.root-light .radio-button:selected .dot { -fx-background-color: #B85507; }
+
+.root-light .char-count { -fx-text-fill: #4A7566; }
+.root-light .ai-response-label { -fx-text-fill: #1A1A1A; }
+.root-light .ai-option { -fx-text-fill: #1A1A1A; }
+
+.root-light .ai-response-pane { -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; }
+.root-light .ai-news-slot { -fx-text-fill: #1A1A1A; }
+.root-light .ai-news-slot .text { -fx-fill: #2A2A2A; }
+.root-light .ai-news-slot:hover { -fx-background-color: rgba(193,216,195,0.30); }
+.root-light .ai-news-slot:selected { -fx-background-color: rgba(184,85,7,0.12); }
+.root-light .ai-news-slot .radio { -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; }
+.root-light .ai-news-slot:selected .radio { -fx-border-color: #B85507; }
+.root-light .ai-news-slot:selected .dot { -fx-background-color: #B85507; }
+
+.root-light .custom-message-section { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176,200,178,0.70); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2); }
+
+.root-light .evacuation-subsection { -fx-background-color: rgba(232,224,212,0.80); -fx-border-color: #B0C8B2; }
+.root-light .subsection-title { -fx-text-fill: #B85507; }
+.root-light .field-helper-text { -fx-text-fill: #4A7566; }
+
+.root-light .btn-success { -fx-background-color: #B85507; -fx-border-color: rgba(184,85,7,0.55); }
+.root-light .btn-success:hover { -fx-background-color: #A34A06; }
+.root-light .status-label { -fx-text-fill: #4A7566; -fx-background-color: #EDE8DF; -fx-border-color: #B0C8B2; }
+
+.root-light .logs-table { -fx-background-color: #EDE8DF; -fx-border-color: #C1D8C3; }
+.root-light .logs-table .column-header-background { -fx-background-color: #6A9C89; }
+.root-light .logs-table .column-header, .root-light .logs-table .filler { -fx-background-color: transparent; -fx-border-color: rgba(255,255,255,0.20); }
+.root-light .logs-table .column-header .label { -fx-text-fill: #FFFFFF; }
+.root-light .logs-table .table-row-cell { -fx-background-color: transparent; -fx-border-color: rgba(193,216,195,0.20); }
+.root-light .logs-table .table-row-cell:filled:hover { -fx-background-color: rgba(193,216,195,0.25); }
+.root-light .logs-table .table-row-cell:filled:selected { -fx-background-color: rgba(205,92,8,0.12); }
+.root-light .logs-table .table-cell { -fx-text-fill: #1A1A1A; }
+.root-light .logs-count { -fx-text-fill: #4A7566; }
+

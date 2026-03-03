@@ -79,6 +79,12 @@ public final class DialogManager {
             stage.setOnHidden(e -> unloadStage(key));
         }
 
+        // Propagate current theme to dialog root
+        Parent dialogRoot = roots.get(key);
+        if (dialogRoot != null) {
+            ThemeManager.getInstance().applyTo(dialogRoot, stage.getScene());
+        }
+
         stage.showAndWait();
     }
 
@@ -108,6 +114,9 @@ public final class DialogManager {
 
             stage.setScene(new Scene(root));
             injectStage(controller, stage);
+
+            // Propagate current theme to dialog root
+            ThemeManager.getInstance().applyTo(root, stage.getScene());
 
             if (stageConfig != null) stageConfig.accept(stage);
 

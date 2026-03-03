@@ -6,6 +6,7 @@ import com.ionres.respondph.evacuation_plan.*;
 import com.ionres.respondph.evac_site.EvacSiteModel;
 import com.ionres.respondph.evac_site.EvacSiteService;
 import com.ionres.respondph.util.AlertDialogManager;
+import com.ionres.respondph.util.ThemeManager;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -76,6 +77,14 @@ public class AllocateBeneficiariesToEvacSiteController implements Initializable 
         geoDAO = new GeoBasedEvacPlanDAOImpl(dbConnection);
         evacPlanDAO = new EvacuationPlanDAOImpl(dbConnection);
         evacSiteService = new com.ionres.respondph.evac_site.EvacSiteServiceImpl(dbConnection);
+
+        // Apply light mode to root if active
+        if (ThemeManager.getInstance().isLightMode()) {
+            if (root != null && !root.getStyleClass().contains("root-light")) {
+                root.getStyleClass().add("root-light");
+            }
+        }
+
         setupTable();
         setupButtons();
         makeDraggable();

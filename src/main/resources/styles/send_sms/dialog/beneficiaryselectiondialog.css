@@ -284,14 +284,181 @@
     -fx-focus-color: transparent;
 }
 
-/* ===== RESPONSIVE ADJUSTMENTS ===== */
-@media (max-width: 600px) {
-    .dialog-container {
-        -fx-pref-width: 95%;
-    }
+/* ==================================================================
+   LIGHT MODE  -  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   The root VBox has styleClass="dialog-container", ThemeManager adds
+   "root-light" to it, so the combined selector is:
+   .dialog-container.root-light  for the root node itself, and
+   .root-light .xyz  for descendant nodes.
+   ================================================================== */
 
-    .beneficiary-table .column-header .label,
-    .beneficiary-table .table-cell {
-        -fx-font-size: 12px;
-    }
+/* ── Root container ──────────────────────────────────────────────────── */
+.dialog-container.root-light {
+    -fx-background-color: #F5EDE0;
+    -fx-border-color: #C1D8C3;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 4);
+}
+
+/* ── Title + labels ──────────────────────────────────────────────────── */
+.root-light .dialog-title {
+    -fx-text-fill: #1A1A1A;
+    -fx-effect: none;
+}
+
+.root-light .selection-count-label {
+    -fx-text-fill: #B85507;
+    -fx-background-color: rgba(184,85,7,0.08);
+    -fx-border-color: rgba(184,85,7,0.28);
+}
+
+.root-light .total-count-label {
+    -fx-text-fill: #4A7566;
+    -fx-background-color: rgba(193,216,195,0.25);
+    -fx-border-color: rgba(106,156,137,0.35);
+}
+
+.root-light .input-label {
+    -fx-text-fill: #1A1A1A;
+}
+
+/* ── Separator ───────────────────────────────────────────────────────── */
+.root-light .separator .line {
+    -fx-background-color: rgba(193,216,195,0.60);
+}
+
+/* ── Search field ────────────────────────────────────────────────────── */
+.root-light .search-field {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.75);
+    -fx-text-fill: #1A1A1A;
+    -fx-prompt-text-fill: rgba(106,156,137,0.65);
+}
+.root-light .search-field:hover {
+    -fx-border-color: rgba(184,85,7,0.45);
+    -fx-background-color: #E8E2D8;
+}
+.root-light .search-field:focused {
+    -fx-border-color: rgba(184,85,7,0.70);
+    -fx-background-color: #E8E2D8;
+    -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.18), 6, 0, 0, 0);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.root-light .primary-button {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(205,92,8,0.40);
+    -fx-text-fill: #FFFFFF;
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.25), 8, 0, 0, 2);
+}
+.root-light .primary-button:hover {
+    -fx-background-color: #A34A06;
+    -fx-border-color: rgba(205,92,8,0.55);
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.40), 12, 0, 0, 3);
+}
+.root-light .primary-button:pressed {
+    -fx-background-color: #8E4005;
+}
+
+.root-light .secondary-button {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.70);
+    -fx-text-fill: #2E2E2E;
+}
+.root-light .secondary-button:hover {
+    -fx-background-color: rgba(193,216,195,0.40);
+    -fx-border-color: #6A9C89;
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .secondary-button:pressed {
+    -fx-background-color: rgba(193,216,195,0.60);
+}
+
+/* ── Table ───────────────────────────────────────────────────────────── */
+.root-light .beneficiary-table {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+    -fx-control-inner-background: #F7F2EC;
+}
+
+/* Force inner backgrounds light */
+.root-light .beneficiary-table .virtual-flow,
+.root-light .beneficiary-table .virtual-flow .clipped-container,
+.root-light .beneficiary-table .virtual-flow .sheet {
+    -fx-background-color: transparent;
+}
+
+.root-light .beneficiary-table .column-header-background {
+    -fx-background-color: #5C8A79;
+    -fx-border-color: rgba(90,130,115,0.30);
+}
+
+.root-light .beneficiary-table .column-header,
+.root-light .beneficiary-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255,255,255,0.18);
+}
+
+.root-light .beneficiary-table .column-header .label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.root-light .beneficiary-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.root-light .beneficiary-table .table-row-cell:odd {
+    -fx-background-color: rgba(193,216,195,0.12);
+}
+.root-light .beneficiary-table .table-row-cell:even {
+    -fx-background-color: #F7F2EC;
+}
+.root-light .beneficiary-table .table-row-cell:hover {
+    -fx-background-color: rgba(193,216,195,0.38);
+}
+.root-light .beneficiary-table .table-row-cell:selected {
+    -fx-background-color: rgba(184,85,7,0.13);
+    -fx-border-color: #B85507;
+    -fx-border-width: 0 0 0 3px;
+}
+.root-light .beneficiary-table .table-cell {
+    -fx-text-fill: #1A1A1A;
+    -fx-border-color: rgba(176,200,178,0.25);
+    -fx-background-color: transparent;
+}
+.root-light .beneficiary-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: #1A1A1A;
+}
+
+.root-light .beneficiary-table .corner {
+    -fx-background-color: #5C8A79;
+}
+
+/* ── Table scrollbars (light mode) ──────────────────────────────────── */
+.root-light .beneficiary-table .scroll-bar .track {
+    -fx-background-color: rgba(193,216,195,0.28);
+}
+.root-light .beneficiary-table .scroll-bar .thumb {
+    -fx-background-color: #A8C5AB;
+    -fx-background-radius: 8px;
+}
+.root-light .beneficiary-table .scroll-bar .thumb:hover {
+    -fx-background-color: #6A9C89;
+}
+
+/* ── Placeholder ─────────────────────────────────────────────────────── */
+.root-light .beneficiary-table .placeholder .label {
+    -fx-text-fill: #4A7566;
+}
+
+/* ── Checkbox in table ───────────────────────────────────────────────── */
+.root-light .beneficiary-table .check-box .box {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.70);
+}
+.root-light .beneficiary-table .check-box:selected .box {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(184,85,7,0.90);
+}
+.root-light .beneficiary-table .check-box:selected .box .mark {
+    -fx-background-color: white;
 }

@@ -233,3 +233,191 @@
 .delete-icon {
     -fx-fill: #ffffff;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ══════════════════════════════════════════════════════════════════════ */
+
+.root-light .root-pane {
+    -fx-background-color: #F5EDE0;
+}
+
+.root-light .header-section {
+    -fx-border-color: rgba(106, 156, 137, 0.30);
+}
+
+.root-light .page-title {
+    -fx-text-fill: #1A1A1A;
+}
+
+.root-light .page-icon {
+    -fx-fill: #B85507;
+}
+
+.root-light .search-box {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+}
+
+.root-light .search-icon {
+    -fx-fill: #4A7566;
+}
+
+.root-light .search-field {
+    -fx-text-fill: #1A1A1A;
+    -fx-prompt-text-fill: rgba(74, 117, 102, 0.70);
+}
+
+.root-light .primary-button {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(184, 85, 7, 0.55);
+}
+
+.root-light .primary-button:hover {
+    -fx-background-color: #A34A06;
+}
+
+.root-light .secondary-button {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+}
+
+.root-light .secondary-button:hover {
+    -fx-border-color: #B85507;
+    -fx-background-color: #E8E2D8;
+}
+
+.root-light .button-icon,
+.root-light .refresh-icon {
+    -fx-fill: #FFFFFF;
+}
+
+.root-light .secondary-button .button-icon,
+.root-light .secondary-button .refresh-icon {
+    -fx-fill: #4A7566;
+}
+
+.root-light .button-label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.root-light .secondary-button .button-label {
+    -fx-text-fill: #1A1A1A;
+}
+
+/* ── Table ───────────────────────────────────────────────────────────── */
+.root-light .table-container {
+    -fx-background-color: transparent;
+}
+
+.root-light .admin-table {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+    -fx-control-inner-background: #F7F2EC;
+    -fx-control-inner-background-alt: #EFF8F0;
+}
+
+.root-light .admin-table .virtual-flow {
+    -fx-background-color: transparent;
+}
+
+.root-light .admin-table .virtual-flow .clipped-container {
+    -fx-background-color: transparent;
+}
+
+.root-light .admin-table .virtual-flow .sheet {
+    -fx-background-color: transparent;
+}
+
+.root-light .admin-table .column-header-background {
+    -fx-background-color: #5C8A79;
+    -fx-border-color: rgba(90, 130, 115, 0.30);
+}
+
+.root-light .admin-table .column-header .label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.root-light .admin-table .column-header,
+.root-light .admin-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.20);
+}
+
+.root-light .admin-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.root-light .admin-table .table-row-cell:odd {
+    -fx-background-color: rgba(193, 216, 195, 0.12);
+}
+
+.root-light .admin-table .table-row-cell:even {
+    -fx-background-color: #F7F2EC;
+}
+
+.root-light .admin-table .table-row-cell:hover {
+    -fx-background-color: rgba(193, 216, 195, 0.35);
+}
+
+.root-light .admin-table .table-row-cell:selected {
+    -fx-background-color: rgba(184, 85, 7, 0.13);
+    -fx-border-color: #B85507;
+    -fx-border-width: 0 0 0 3px;
+}
+
+.root-light .admin-table .table-cell {
+    -fx-text-fill: #1A1A1A;
+    -fx-border-color: rgba(176, 200, 178, 0.28);
+    -fx-background-color: transparent;
+}
+
+.root-light .admin-table .corner {
+    -fx-background-color: #5C8A79;
+}
+
+.root-light .admin-table .scroll-bar:vertical,
+.root-light .admin-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.root-light .admin-table .scroll-bar .track {
+    -fx-background-color: rgba(193, 216, 195, 0.30);
+}
+
+.root-light .admin-table .scroll-bar .thumb {
+    -fx-background-color: #A8C5AB;
+    -fx-background-radius: 8px;
+}
+
+.root-light .admin-table .scroll-bar .thumb:hover {
+    -fx-background-color: #6A9C89;
+}
+
+/* ── Action buttons ──────────────────────────────────────────────────── */
+.root-light .edit-button {
+    -fx-background-color: rgba(74, 117, 102, 0.18);
+    -fx-border-color: #5C8A79;
+}
+
+.root-light .edit-button:hover {
+    -fx-background-color: rgba(74, 117, 102, 0.32);
+}
+
+.root-light .delete-button {
+    -fx-background-color: rgba(185, 28, 28, 0.10);
+    -fx-border-color: rgba(185, 28, 28, 0.50);
+}
+
+.root-light .delete-button:hover {
+    -fx-background-color: rgba(185, 28, 28, 0.20);
+}
+
+.root-light .edit-icon {
+    -fx-fill: #4A7566;
+}
+
+.root-light .delete-icon {
+    -fx-fill: #b91c1c;
+}

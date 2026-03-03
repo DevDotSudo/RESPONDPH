@@ -221,6 +221,13 @@ public class AlertDialogManager {
         dialogPane.getStyleClass().clear();
         dialogPane.getStyleClass().addAll("dialog-pane", "custom-alert", type.getStyleClass());
 
+        // Apply current theme (light/dark) to the alert dialog
+        if (ThemeManager.getInstance().isLightMode()) {
+            if (!dialogPane.getStyleClass().contains("root-light")) {
+                dialogPane.getStyleClass().add("root-light");
+            }
+        }
+
         dialogPane.getStylesheets().clear();
         String cssPath = AlertDialogManager.class.getResource(CSS_FILE).toExternalForm();
         dialogPane.getStylesheets().add(cssPath);

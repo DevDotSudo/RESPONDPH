@@ -158,6 +158,36 @@
         -fx-padding: 0;
     }
 
+    /* ===== THEME TOGGLE ===== */
+    .theme-toggle-container {
+        -fx-padding: 4px 8px;
+    }
+
+    .theme-icon {
+        -fx-fill: rgba(148, 163, 184, 0.70);
+        -glyph-size: 14px;
+    }
+
+    .theme-toggle {
+        -fx-background-color: rgba(148, 163, 184, 0.30);
+        -fx-background-radius: 20px;
+        -fx-pref-width: 44px;
+        -fx-pref-height: 22px;
+        -fx-min-width: 44px;
+        -fx-min-height: 22px;
+        -fx-max-width: 44px;
+        -fx-max-height: 22px;
+        -fx-padding: 2px;
+        -fx-cursor: hand;
+        -fx-border-color: transparent;
+        -fx-mark-color: transparent;
+        -fx-text-fill: transparent;
+    }
+
+    .theme-toggle:selected {
+        -fx-background-color: #f97316;
+    }
+
     /* ===== ADMIN PROFILE ===== */
     .admin-name-label {
         -fx-background-color: transparent;
@@ -680,3 +710,101 @@
         -fx-text-fill: #ffffff;
         -fx-font-weight: 700;
     }
+
+/* ==================================================================
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ================================================================== */
+
+.root-light .dashboard-root { -fx-background-color: #F5EDE0; }
+.root-light .dashboard-wrapper { -fx-background-color: #F5EDE0; }
+
+/* ── Stats cards ─────────────────────────────────────────────────────── */
+.root-light .flat-value { -fx-text-fill: #1A1A1A; }
+.root-light .flat-label { -fx-text-fill: #4A7566; }
+
+.root-light .flat-card-blue { -fx-background-color: rgba(245,242,236,0.95); -fx-border-color: #5C8A79; -fx-border-width: 1 1 1 4; }
+.root-light .flat-card-red { -fx-background-color: rgba(245,242,236,0.95); -fx-border-color: #B85507; -fx-border-width: 1 1 1 4; }
+.root-light .flat-card-green { -fx-background-color: rgba(245,242,236,0.95); -fx-border-color: #5C8A79; -fx-border-width: 1 1 1 4; }
+.root-light .flat-card-yellow { -fx-background-color: rgba(245,242,236,0.95); -fx-border-color: #B85507; -fx-border-width: 1 1 1 4; }
+
+.root-light .flat-card-blue:hover,
+.root-light .flat-card-red:hover,
+.root-light .flat-card-green:hover,
+.root-light .flat-card-yellow:hover { -fx-border-color: #B85507; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.14), 9, 0, 0, 2); }
+
+/* ── Map container ───────────────────────────────────────────────────── */
+.root-light .map-container { -fx-background-color: #EDE8DF; -fx-border-color: rgba(193,216,195,0.65); }
+
+/* ── Topbar ──────────────────────────────────────────────────────────── */
+.root-light .dashboard-topbar { -fx-border-color: rgba(106,156,137,0.30); }
+.root-light .dashboard-topbar-title { -fx-text-fill: #1A1A1A; }
+
+/* ── Clock ───────────────────────────────────────────────────────────── */
+.root-light .clock-icon-container { -fx-background-color: rgba(193,216,195,0.35); }
+.root-light .clock-icon { -fx-fill: #4A7566; }
+.root-light .clock-time { -fx-text-fill: #B85507; }
+.root-light .clock-date { -fx-text-fill: #4A7566; }
+
+/* ── Theme toggle ────────────────────────────────────────────────────── */
+.root-light .theme-icon { -fx-fill: #4A7566; }
+
+/* ── Admin profile ───────────────────────────────────────────────────── */
+.root-light .admin-name-label { -fx-border-color: transparent transparent rgba(193,216,195,0.70) transparent; }
+.root-light .admin-icon-inside { -fx-fill: #4A7566; }
+.root-light .admin-name-label .label { -fx-text-fill: #1A1A1A; }
+.root-light .admin-name-label:hover { -fx-border-color: transparent transparent #B85507 transparent; }
+.root-light .admin-name-label:hover .admin-icon-inside { -fx-fill: #B85507; }
+.root-light .admin-chevron { -fx-fill: #4A7566; }
+
+/* ── Admin dropdown ──────────────────────────────────────────────────── */
+.root-light .admin-dropdown { -fx-background-color: #F7EFE3; -fx-border-color: rgba(193,216,195,0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 14, 0.15, 0, 4); }
+.root-light .admin-dropdown-item:hover { -fx-background-color: rgba(184,85,7,0.09); }
+.root-light .admin-dropdown-icon { -fx-fill: #B85507; }
+.root-light .admin-dropdown-label { -fx-text-fill: #1A1A1A; }
+.root-light .admin-dropdown-separator { -fx-background-color: rgba(193,216,195,0.60); }
+.root-light .admin-dropdown-item-danger:hover { -fx-background-color: rgba(220,38,38,0.09); }
+.root-light .admin-dropdown-icon-danger { -fx-fill: #dc2626; }
+.root-light .admin-dropdown-item-danger:hover .admin-dropdown-label { -fx-text-fill: #dc2626; }
+
+/* ── Modal overlay ───────────────────────────────────────────────────── */
+.root-light .modal-overlay { -fx-background-color: rgba(40,40,40,0.30); }
+
+/* ── Change password dialog ──────────────────────────────────────────── */
+.root-light .change-password-dialog { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193,216,195,0.70); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 24, 0.2, 0, 6); }
+.root-light .cpd-header { -fx-background-color: #5C8A79; -fx-background-radius: 12px 12px 0 0; }
+.root-light .cpd-header-icon { -fx-background-color: rgba(255,255,255,0.18); }
+.root-light .cpd-header-icon-glyph { -fx-fill: rgba(255,255,255,0.92); }
+.root-light .cpd-title { -fx-text-fill: rgba(255,255,255,0.95); }
+.root-light .cpd-subtitle { -fx-text-fill: rgba(255,255,255,0.68); }
+.root-light .cpd-close-btn { -fx-text-fill: rgba(255,255,255,0.70); }
+.root-light .cpd-close-btn:hover { -fx-text-fill: #e05252; -fx-background-color: rgba(220,60,60,0.14); }
+.root-light .cpd-divider { -fx-background-color: rgba(193,216,195,0.60); }
+.root-light .cpd-field-divider { -fx-background-color: rgba(193,216,195,0.40); }
+.root-light .cpd-field-label { -fx-text-fill: #1A1A1A; -fx-font-weight: 700; }
+.root-light .cpd-input-wrap { -fx-background-color: rgba(255,252,248,0.90); -fx-border-color: rgba(193,216,195,0.70); }
+.root-light .cpd-input-wrap:focused { -fx-border-color: rgba(184,85,7,0.60); -fx-background-color: #FFFDF8; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.14), 5, 0, 0, 0); }
+.root-light .cpd-input-icon { -fx-fill: rgba(92,138,121,0.75); }
+.root-light .cpd-input { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(100,130,120,0.65); }
+.root-light .cpd-eye-btn:hover { -fx-background-color: rgba(184,85,7,0.10); }
+.root-light .cpd-message-error { -fx-text-fill: #b91c1c; -fx-background-color: rgba(185,28,28,0.07); -fx-border-color: rgba(185,28,28,0.22); }
+.root-light .cpd-message-success { -fx-text-fill: #047857; -fx-background-color: rgba(4,120,87,0.07); -fx-border-color: rgba(4,120,87,0.22); }
+.root-light .cpd-footer { -fx-background-color: rgba(232,224,212,0.70); -fx-background-radius: 0 0 12px 12px; }
+.root-light .cpd-cancel-btn { -fx-background-color: rgba(255,252,248,0.90); -fx-border-color: rgba(193,216,195,0.70); -fx-text-fill: #1A1A1A; }
+.root-light .cpd-cancel-btn:hover { -fx-background-color: rgba(193,216,195,0.40); -fx-border-color: #5C8A79; -fx-text-fill: #1A1A1A; }
+.root-light .cpd-confirm-btn { -fx-background-color: #B85507; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.25), 8, 0.2, 0, 2); }
+.root-light .cpd-confirm-btn:hover { -fx-background-color: #A34A06; }
+.root-light .cpd-confirm-btn:pressed { -fx-background-color: #8E4005; }
+
+/* ── Map search ──────────────────────────────────────────────────────── */
+.root-light .map-search-btn { -fx-background-color: #5C8A79; -fx-border-color: rgba(84,126,110,0.75); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 6, 0.15, 0, 2); }
+.root-light .map-search-btn:hover { -fx-background-color: #B85507; -fx-border-color: #B85507; }
+.root-light .map-search-icon { -fx-fill: rgba(255,255,255,0.95); }
+.root-light .map-search-combobox { -fx-background-color: rgba(245,242,236,0.95); -fx-border-color: rgba(193,216,195,0.70); -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: #6A9C89; }
+.root-light .map-search-combobox:hover { -fx-border-color: rgba(184,85,7,0.45); -fx-background-color: #F0EAE0; }
+.root-light .map-search-combobox:focused { -fx-border-color: rgba(184,85,7,0.60); -fx-background-color: #F0EAE0; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.16), 5, 0, 0, 0); }
+.root-light .search-popup-list { -fx-background-color: #F7EFE3; -fx-border-color: rgba(193,216,195,0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
+.root-light .search-popup-list .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
+.root-light .search-popup-list .list-cell:hover { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
+.root-light .search-popup-list .list-cell:selected,
+.root-light .search-popup-list .list-cell:filled:selected { -fx-background-color: #B85507; -fx-text-fill: #FFFFFF; }
+

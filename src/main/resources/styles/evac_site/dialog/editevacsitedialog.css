@@ -374,3 +374,157 @@
     -fx-scale-x: 0.98;
     -fx-scale-y: 0.98;
 }
+/* ==================================================================
+   LIGHT MODE  -  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   Selectors use the actual evacuation-* class names from the FXML.
+   ================================================================== */
+
+/* ── Root container ──────────────────────────────────────────────────── */
+.evacuation-dialog-container.root-light {
+    -fx-background-color: #F5EDE0;
+    -fx-border-color: #C1D8C3;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 4);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.root-light .evacuation-dialog-header {
+    -fx-background-color: #5C8A79;
+    -fx-border-color: rgba(106,156,137,0.30);
+}
+.root-light .evacuation-header-icon {
+    -fx-fill: rgba(255,255,255,0.92);
+    -fx-effect: none;
+}
+.root-light .evacuation-dialog-title {
+    -fx-text-fill: rgba(255,255,255,0.95);
+    -fx-effect: none;
+}
+.root-light .evacuation-dialog-subtitle {
+    -fx-text-fill: rgba(255,255,255,0.68);
+}
+
+/* ── Close button ────────────────────────────────────────────────────── */
+.root-light .evacuation-close-button {
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-border-color: rgba(255,255,255,0.25);
+}
+.root-light .evacuation-close-button:hover {
+    -fx-background-color: rgba(220,60,60,0.18);
+    -fx-border-color: rgba(220,60,60,0.45);
+}
+.root-light .evacuation-close-icon {
+    -fx-fill: rgba(255,255,255,0.90);
+}
+
+/* ── Error ────────────────────────────────────────────────────────────── */
+.root-light .evacuation-error-label {
+    -fx-background-color: rgba(220,38,38,0.08);
+    -fx-border-color: rgba(220,38,38,0.20);
+    -fx-text-fill: #b91c1c;
+}
+
+/* ── Scroll pane ─────────────────────────────────────────────────────── */
+.root-light .evacuation-form-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.root-light .evacuation-form-scroll-pane .viewport { -fx-background-color: transparent; }
+.root-light .evacuation-form-scroll-pane .scroll-bar .track { -fx-background-color: rgba(193, 216, 195, 0.25); }
+.root-light .evacuation-form-scroll-pane .scroll-bar .thumb { -fx-background-color: rgba(106, 156, 137, 0.45); }
+.root-light .evacuation-form-scroll-pane .scroll-bar .thumb:hover { -fx-background-color: rgba(92, 138, 121, 0.65); }
+.root-light .evacuation-form-scroll-pane .scroll-bar .thumb:pressed { -fx-background-color: rgba(205, 92, 8, 0.55); }
+
+/* ── Body ────────────────────────────────────────────────────────────── */
+.root-light .evacuation-forms-container { -fx-background-color: transparent; }
+
+/* ── Separator ───────────────────────────────────────────────────────── */
+.root-light .separator .line { -fx-background-color: rgba(193, 216, 195, 0.60); }
+
+/* ── Form section card ───────────────────────────────────────────────── */
+.root-light .evacuation-form-section {
+    -fx-background-color: rgba(232, 224, 212, 0.65);
+    -fx-border-color: rgba(176, 200, 178, 0.65);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);
+}
+.root-light .evacuation-section-header { -fx-border-color: rgba(193,216,195,0.40); }
+.root-light .evacuation-section-icon { -fx-fill: #B85507; }
+.root-light .evacuation-section-title { -fx-text-fill: #1A1A1A; }
+
+/* ── Field label ─────────────────────────────────────────────────────── */
+.root-light .evacuation-field-label { -fx-text-fill: #1A1A1A; }
+
+/* ── Input container ─────────────────────────────────────────────────── */
+.root-light .evacuation-input-container {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176, 200, 178, 0.75);
+}
+.root-light .evacuation-input-container:hover {
+    -fx-border-color: rgba(184, 85, 7, 0.50);
+    -fx-background-color: #E8E2D8;
+}
+.root-light .evacuation-field-icon { -fx-fill: rgba(92,138,121,0.75); }
+
+/* ── Input field ─────────────────────────────────────────────────────── */
+.root-light .evacuation-input-field {
+    -fx-text-fill: #1A1A1A;
+    -fx-prompt-text-fill: rgba(106,156,137,0.60);
+}
+.root-light .text-field.evacuation-input-field {
+    -fx-highlight-fill: rgba(205,92,8,0.25);
+    -fx-highlight-text-fill: #1A1A1A;
+    -fx-caret-color: #B85507;
+}
+
+/* ── Location button ─────────────────────────────────────────────────── */
+.root-light .evacuation-location-button {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176, 200, 178, 0.70);
+}
+.root-light .evacuation-location-button:hover {
+    -fx-background-color: rgba(193,216,195,0.40);
+    -fx-border-color: #6A9C89;
+}
+.root-light .evacuation-button-icon { -fx-fill: #2E2E2E; }
+.root-light .evacuation-button-label { -fx-text-fill: #2E2E2E; }
+
+/* ── Textarea ────────────────────────────────────────────────────────── */
+.root-light .evacuation-textarea-container {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.75);
+}
+.root-light .evacuation-textarea-container:hover {
+    -fx-border-color: rgba(184, 85, 7, 0.50);
+    -fx-background-color: #E8E2D8;
+}
+.root-light .evacuation-text-area {
+    -fx-text-fill: #1A1A1A;
+    -fx-prompt-text-fill: rgba(106,156,137,0.60);
+}
+.root-light .text-area.evacuation-text-area {
+    -fx-highlight-fill: rgba(205,92,8,0.25);
+    -fx-highlight-text-fill: #1A1A1A;
+    -fx-caret-color: #B85507;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+.root-light .evacuation-button-container {
+    -fx-background-color: rgba(240, 232, 220, 0.70);
+    -fx-border-color: rgba(193, 216, 195, 0.55);
+}
+
+/* ── Save button ─────────────────────────────────────────────────────── */
+.root-light .evacuation-save-button {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(205,92,8,0.40);
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.25), 8, 0, 0, 2);
+}
+.root-light .evacuation-save-button:hover {
+    -fx-background-color: #A34A06;
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.40), 12, 0, 0, 3);
+}
+.root-light .evacuation-save-button:pressed {
+    -fx-background-color: #8E4005;
+}
+/* Save button icon + label stay white on the orange button */
+.root-light .evacuation-save-button .evacuation-button-icon { -fx-fill: #FFFFFF; }
+.root-light .evacuation-save-button .evacuation-button-label { -fx-text-fill: #FFFFFF; }

@@ -274,15 +274,17 @@ public class DisasterDamageController {
         progressStage.initStyle(StageStyle.UNDECORATED);
         progressStage.setAlwaysOnTop(true);
 
+        boolean light = ThemeManager.getInstance().isLightMode();
+
         VBox card = new VBox(0);
         card.setPrefWidth(420);
         card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                "-fx-background-color: " + (light ? "#EDE8DF" : "#0b1220") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.80)" : "rgba(148,163,184,0.22)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 10;" +
                         "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0," + (light ? "0.18" : "0.45") + "), 28, 0.0, 0, 6);"
         );
 
         // Header
@@ -290,8 +292,8 @@ public class DisasterDamageController {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(18, 22, 18, 22));
         header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                "-fx-background-color: " + (light ? "#5C8A79" : "rgba(255,255,255,0.025)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(90,130,115,0.45)" : "rgba(148,163,184,0.12)") + ";" +
                         "-fx-border-width: 0 0 1 0;" +
                         "-fx-background-radius: 10 10 0 0;"
         );
@@ -300,19 +302,19 @@ public class DisasterDamageController {
         spinner.setPrefSize(22, 22);
         spinner.setMaxSize(22, 22);
         spinner.setMinSize(22, 22);
-        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
+        spinner.setStyle("-fx-progress-color: " + (light ? "#B85507" : "rgba(249,115,22,0.95)") + ";");
 
         VBox titleBlock = new VBox(3);
         Label titleLabel = new Label("Please Wait");
         titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
         titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                "-fx-text-fill: " + (light ? "#FFFFFF" : "rgba(248,250,252,0.98)") + ";" +
                         "-fx-font-size: 16px;" +
                         "-fx-font-weight: 900;"
         );
         Label subtitleLabel = new Label("Processing your request…");
         subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                "-fx-text-fill: " + (light ? "rgba(255,255,255,0.75)" : "rgba(148,163,184,0.80)") + ";" +
                         "-fx-font-size: 12px;" +
                         "-fx-font-weight: 600;"
         );
@@ -329,16 +331,16 @@ public class DisasterDamageController {
         progressLabel.setWrapText(true);
         progressLabel.setMaxWidth(Double.MAX_VALUE);
         progressLabel.setStyle(
-                "-fx-text-fill: rgba(226,232,240,0.85);" +
+                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(226,232,240,0.85)") + ";" +
                         "-fx-font-size: 13px;" +
                         "-fx-font-weight: 600;"
         );
 
         VBox barWrapper = new VBox(0);
         barWrapper.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.06);" +
+                "-fx-background-color: " + (light ? "rgba(176,200,178,0.35)" : "rgba(255,255,255,0.06)") + ";" +
                         "-fx-background-radius: 6;" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.70)" : "rgba(148,163,184,0.14)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-border-radius: 6;" +
                         "-fx-padding: 0;"
@@ -349,7 +351,7 @@ public class DisasterDamageController {
         progressBar.setPrefHeight(10);
         progressBar.setMaxWidth(Double.MAX_VALUE);
         progressBar.setStyle(
-                "-fx-accent: rgba(249,115,22,0.95);" +
+                "-fx-accent: " + (light ? "#B85507" : "rgba(249,115,22,0.95)") + ";" +
                         "-fx-background-color: transparent;" +
                         "-fx-background-radius: 6;" +
                         "-fx-border-radius: 6;"
@@ -358,7 +360,7 @@ public class DisasterDamageController {
 
         Label pctLabel = new Label("0%");
         pctLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                "-fx-text-fill: " + (light ? "#4A7566" : "rgba(148,163,184,0.70)") + ";" +
                         "-fx-font-size: 11px;" +
                         "-fx-font-weight: 700;"
         );
@@ -413,15 +415,16 @@ public class DisasterDamageController {
                 ? "Print Disaster Damage Report" : "Save Disaster Damage Report as PDF");
 
         // ── Root card ────────────────────────────────────────────────────────
+        boolean light = ThemeManager.getInstance().isLightMode();
         VBox card = new VBox(0);
         card.setPrefWidth(500);
         card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                "-fx-background-color: " + (light ? "#EDE8DF" : "#0b1220") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.80)" : "rgba(148,163,184,0.22)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 10;" +
                         "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0," + (light ? "0.18" : "0.45") + "), 28, 0.0, 0, 6);"
         );
 
         // ── HEADER ───────────────────────────────────────────────────────────
@@ -429,8 +432,8 @@ public class DisasterDamageController {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(18, 22, 18, 22));
         header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                "-fx-background-color: " + (light ? "#5C8A79" : "rgba(255,255,255,0.025)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(90,130,115,0.45)" : "rgba(148,163,184,0.12)") + ";" +
                         "-fx-border-width: 0 0 1 0;" +
                         "-fx-background-radius: 10 10 0 0;"
         );
@@ -438,18 +441,18 @@ public class DisasterDamageController {
         FontAwesomeIconView headerIcon = new FontAwesomeIconView(
                 outputType.equals("PRINT") ? FontAwesomeIcon.PRINT : FontAwesomeIcon.FILE_PDF_ALT);
         headerIcon.setSize("20");
-        headerIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.95);");
+        headerIcon.setGlyphStyle("-fx-fill: " + (light ? "rgba(255,255,255,0.92)" : "rgba(249,115,22,0.95)") + ";");
 
         VBox titleBlock = new VBox(3);
         Label titleLabel = new Label(outputType.equals("PRINT") ? "Print Report" : "Export as PDF");
         titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                "-fx-text-fill: " + (light ? "#FFFFFF" : "rgba(248,250,252,0.98)") + ";" +
                         "-fx-font-size: 18px;" +
                         "-fx-font-weight: 900;"
         );
         Label subtitleLabel = new Label("Disaster Damage Assessment Report");
         subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                "-fx-text-fill: " + (light ? "rgba(255,255,255,0.75)" : "rgba(148,163,184,0.80)") + ";" +
                         "-fx-font-size: 12px;" +
                         "-fx-font-weight: 600;"
         );
@@ -461,11 +464,11 @@ public class DisasterDamageController {
         Button headerCloseBtn = new Button();
         FontAwesomeIconView timesIcon = new FontAwesomeIconView(FontAwesomeIcon.TIMES);
         timesIcon.setSize("13");
-        timesIcon.setGlyphStyle("-fx-fill: rgba(248,250,252,0.95);");
+        timesIcon.setGlyphStyle("-fx-fill: " + (light ? "rgba(255,255,255,0.90)" : "rgba(248,250,252,0.95)") + ";");
         headerCloseBtn.setGraphic(timesIcon);
         headerCloseBtn.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.03);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                "-fx-background-color: " + (light ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.03)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(255,255,255,0.25)" : "rgba(148,163,184,0.20)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 6;" +
                         "-fx-border-radius: 6;" +
@@ -483,7 +486,8 @@ public class DisasterDamageController {
         // ── SECTION: Disaster selection ───────────────────────────────────────
         VBox disasterSection = buildSection(
                 FontAwesomeIcon.BOLT, "Select Disaster",
-                "Choose which disaster records to include"
+                "Choose which disaster records to include",
+                light
         );
 
         ComboBox<DisasterItem> disasterCombo =
@@ -492,8 +496,8 @@ public class DisasterDamageController {
         disasterCombo.setPromptText("Select disaster...");
         disasterCombo.getSelectionModel().selectFirst();
         disasterCombo.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.04);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                "-fx-background-color: " + (light ? "#E8E2D8" : "rgba(255,255,255,0.04)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.75)" : "rgba(148,163,184,0.20)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 6;" +
                         "-fx-border-radius: 6;" +
@@ -502,12 +506,18 @@ public class DisasterDamageController {
                         "-fx-font-weight: 700;"
         );
 
+        String cellBg    = light ? "#F0EAE0" : "#0b1220";
+        String cellBorder= light ? "rgba(176,200,178,0.65)" : "rgba(148,163,184,0.22)";
+        String cellText  = light ? "#1A1A1A" : "rgba(226,232,240,0.95)";
+        String cellHover = light ? "rgba(193,216,195,0.35)" : "rgba(249,115,22,0.10)";
+        String cellHoverText = light ? "#B85507" : "rgba(249,115,22,0.95)";
+
         Callback<ListView<DisasterItem>, ListCell<DisasterItem>> disasterCellFactory =
                 lv -> {
                     if (lv != null) {
                         lv.setStyle(
-                                "-fx-background-color: #0b1220;" +
-                                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                                "-fx-background-color: " + cellBg + ";" +
+                                        "-fx-border-color: " + cellBorder + ";" +
                                         "-fx-border-width: 1;" +
                                         "-fx-border-radius: 6;" +
                                         "-fx-background-radius: 6;"
@@ -526,21 +536,21 @@ public class DisasterDamageController {
                                 setStyle(
                                         "-fx-font-size: 13px;" +
                                                 "-fx-font-weight: 700;" +
-                                                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                                "-fx-text-fill: " + cellText + ";" +
                                                 "-fx-background-color: transparent;" +
                                                 "-fx-padding: 10 12 10 12;"
                                 );
                                 setOnMouseEntered(e -> setStyle(
                                         "-fx-font-size: 13px;" +
                                                 "-fx-font-weight: 700;" +
-                                                "-fx-text-fill: rgba(249,115,22,0.95);" +
-                                                "-fx-background-color: rgba(249,115,22,0.10);" +
+                                                "-fx-text-fill: " + cellHoverText + ";" +
+                                                "-fx-background-color: " + cellHover + ";" +
                                                 "-fx-padding: 10 12 10 12;"
                                 ));
                                 setOnMouseExited(e -> setStyle(
                                         "-fx-font-size: 13px;" +
                                                 "-fx-font-weight: 700;" +
-                                                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                                "-fx-text-fill: " + cellText + ";" +
                                                 "-fx-background-color: transparent;" +
                                                 "-fx-padding: 10 12 10 12;"
                                 ));
@@ -562,14 +572,15 @@ public class DisasterDamageController {
 
             VBox printerCard = buildSection(
                     FontAwesomeIcon.DESKTOP, "Select Printer",
-                    "Only connected printers are shown"
+                    "Only connected printers are shown",
+                    light
             );
 
             printerCombo.setMaxWidth(Double.MAX_VALUE);
             printerCombo.setPromptText("Choose printer...");
             printerCombo.setStyle(
-                    "-fx-background-color: rgba(255,255,255,0.04);" +
-                            "-fx-border-color: rgba(148,163,184,0.20);" +
+                    "-fx-background-color: " + (light ? "#E8E2D8" : "rgba(255,255,255,0.04)") + ";" +
+                            "-fx-border-color: " + (light ? "rgba(176,200,178,0.75)" : "rgba(148,163,184,0.20)") + ";" +
                             "-fx-border-width: 1;" +
                             "-fx-background-radius: 6;" +
                             "-fx-border-radius: 6;" +
@@ -582,8 +593,8 @@ public class DisasterDamageController {
                     lv -> {
                         if (lv != null) {
                             lv.setStyle(
-                                    "-fx-background-color: #0b1220;" +
-                                            "-fx-border-color: rgba(148,163,184,0.22);" +
+                                    "-fx-background-color: " + cellBg + ";" +
+                                            "-fx-border-color: " + cellBorder + ";" +
                                             "-fx-border-width: 1;" +
                                             "-fx-border-radius: 6;" +
                                             "-fx-background-radius: 6;"
@@ -602,21 +613,21 @@ public class DisasterDamageController {
                                     setStyle(
                                             "-fx-font-size: 13px;" +
                                                     "-fx-font-weight: 700;" +
-                                                    "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                                    "-fx-text-fill: " + cellText + ";" +
                                                     "-fx-background-color: transparent;" +
                                                     "-fx-padding: 10 12 10 12;"
                                     );
                                     setOnMouseEntered(e -> setStyle(
                                             "-fx-font-size: 13px;" +
                                                     "-fx-font-weight: 700;" +
-                                                    "-fx-text-fill: rgba(249,115,22,0.95);" +
-                                                    "-fx-background-color: rgba(249,115,22,0.10);" +
+                                                    "-fx-text-fill: " + cellHoverText + ";" +
+                                                    "-fx-background-color: " + cellHover + ";" +
                                                     "-fx-padding: 10 12 10 12;"
                                     ));
                                     setOnMouseExited(e -> setStyle(
                                             "-fx-font-size: 13px;" +
                                                     "-fx-font-weight: 700;" +
-                                                    "-fx-text-fill: rgba(226,232,240,0.95);" +
+                                                    "-fx-text-fill: " + cellText + ";" +
                                                     "-fx-background-color: transparent;" +
                                                     "-fx-padding: 10 12 10 12;"
                                     ));
@@ -639,7 +650,7 @@ public class DisasterDamageController {
                 Label warning = new Label("⚠  No connected printers found. Please connect a printer and try again.");
                 warning.setWrapText(true);
                 warning.setStyle(
-                        "-fx-text-fill: rgba(249,115,22,0.90);" +
+                        "-fx-text-fill: " + (light ? "#B85507" : "rgba(249,115,22,0.90)") + ";" +
                                 "-fx-font-size: 12px;" +
                                 "-fx-font-weight: 700;"
                 );
@@ -658,14 +669,14 @@ public class DisasterDamageController {
         footer.setAlignment(Pos.CENTER_RIGHT);
         footer.setPadding(new Insets(16, 22, 18, 22));
         footer.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.02);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                "-fx-background-color: " + (light ? "rgba(240,232,220,0.70)" : "rgba(255,255,255,0.02)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(193,216,195,0.55)" : "rgba(148,163,184,0.12)") + ";" +
                         "-fx-border-width: 1 0 0 0;" +
                         "-fx-background-radius: 0 0 10 10;"
         );
 
-        Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false);
-        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true);
+        Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false, light);
+        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true,  light);
         footer.getChildren().addAll(cancelBtn, generateBtn);
 
         card.getChildren().addAll(header, body, footer);
@@ -722,11 +733,11 @@ public class DisasterDamageController {
     // SHARED DARK-CARD HELPERS
     // =========================================================================
 
-    private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle) {
+    private VBox buildSection(FontAwesomeIcon icon, String title, String subtitle, boolean light) {
         VBox section = new VBox(10);
         section.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.03);" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                "-fx-background-color: " + (light ? "rgba(232,224,212,0.65)" : "rgba(255,255,255,0.03)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.65)" : "rgba(148,163,184,0.14)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 8;" +
                         "-fx-border-radius: 8;" +
@@ -738,18 +749,18 @@ public class DisasterDamageController {
 
         FontAwesomeIconView sectionIcon = new FontAwesomeIconView(icon);
         sectionIcon.setSize("14");
-        sectionIcon.setGlyphStyle("-fx-fill: rgba(249,115,22,0.90);");
+        sectionIcon.setGlyphStyle("-fx-fill: " + (light ? "#B85507" : "rgba(249,115,22,0.90)") + ";");
 
         VBox sectionTitleBlock = new VBox(2);
         Label sectionTitle = new Label(title);
         sectionTitle.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.95);" +
+                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(248,250,252,0.95)") + ";" +
                         "-fx-font-size: 13px;" +
                         "-fx-font-weight: 800;"
         );
         Label sectionSubtitle = new Label(subtitle);
         sectionSubtitle.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                "-fx-text-fill: " + (light ? "#4A7566" : "rgba(148,163,184,0.70)") + ";" +
                         "-fx-font-size: 11px;" +
                         "-fx-font-weight: 600;"
         );
@@ -761,34 +772,35 @@ public class DisasterDamageController {
     }
 
     private RadioButton buildRadioCard(String label, FontAwesomeIcon icon, ToggleGroup group) {
+        boolean light = ThemeManager.getInstance().isLightMode();
         RadioButton radio = new RadioButton(label);
         radio.setToggleGroup(group);
 
         FontAwesomeIconView radioIcon = new FontAwesomeIconView(icon);
         radioIcon.setSize("13");
-        radioIcon.setGlyphStyle("-fx-fill: rgba(226,232,240,0.80);");
+        radioIcon.setGlyphStyle("-fx-fill: " + (light ? "#4A7566" : "rgba(226,232,240,0.80)") + ";");
         radio.setGraphic(radioIcon);
 
         String baseStyle =
-                "-fx-background-color: rgba(255,255,255,0.04);" +
-                        "-fx-border-color: rgba(148,163,184,0.20);" +
+                "-fx-background-color: " + (light ? "#E8E2D8" : "rgba(255,255,255,0.04)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.75)" : "rgba(148,163,184,0.20)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 7;" +
                         "-fx-border-radius: 7;" +
                         "-fx-padding: 10 16 10 16;" +
-                        "-fx-text-fill: rgba(226,232,240,0.90);" +
+                        "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(226,232,240,0.90)") + ";" +
                         "-fx-font-size: 12px;" +
                         "-fx-font-weight: 700;" +
                         "-fx-cursor: hand;";
 
         String selectedStyle =
-                "-fx-background-color: rgba(249,115,22,0.12);" +
-                        "-fx-border-color: rgba(249,115,22,0.60);" +
+                "-fx-background-color: " + (light ? "rgba(184,85,7,0.10)" : "rgba(249,115,22,0.12)") + ";" +
+                        "-fx-border-color: " + (light ? "#B85507" : "rgba(249,115,22,0.60)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 7;" +
                         "-fx-border-radius: 7;" +
                         "-fx-padding: 10 16 10 16;" +
-                        "-fx-text-fill: rgba(249,115,22,0.95);" +
+                        "-fx-text-fill: " + (light ? "#B85507" : "rgba(249,115,22,0.95)") + ";" +
                         "-fx-font-size: 12px;" +
                         "-fx-font-weight: 700;" +
                         "-fx-cursor: hand;";
@@ -798,27 +810,27 @@ public class DisasterDamageController {
         radio.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
             radio.setStyle(isSelected ? selectedStyle : baseStyle);
             radioIcon.setStyle(isSelected
-                    ? "-fx-fill: rgba(249,115,22,0.95);"
-                    : "-fx-fill: rgba(226,232,240,0.80);");
+                    ? "-fx-fill: " + (light ? "#B85507" : "rgba(249,115,22,0.95)") + ";"
+                    : "-fx-fill: " + (light ? "#4A7566" : "rgba(226,232,240,0.80)") + ";");
         });
 
         return radio;
     }
 
-    private Button buildFooterButton(String label, FontAwesomeIcon icon, boolean isPrimary) {
+    private Button buildFooterButton(String label, FontAwesomeIcon icon, boolean isPrimary, boolean light) {
         FontAwesomeIconView btnIcon = new FontAwesomeIconView(icon);
         btnIcon.setSize("13");
         btnIcon.setGlyphStyle(isPrimary
                 ? "-fx-fill: rgba(255,255,255,0.95);"
-                : "-fx-fill: rgba(226,232,240,0.96);");
+                : "-fx-fill: " + (light ? "#1A1A1A" : "rgba(226,232,240,0.96)") + ";");
 
         Button btn = new Button(label, btnIcon);
         btn.setMinWidth(126);
         btn.setMinHeight(40);
 
         String normalStyle = isPrimary
-                ? "-fx-background-color: rgba(249,115,22,0.92);" +
-                "-fx-border-color: rgba(249,115,22,0.70);" +
+                ? "-fx-background-color: " + (light ? "#B85507" : "rgba(249,115,22,0.92)") + ";" +
+                "-fx-border-color: " + (light ? "rgba(205,92,8,0.40)" : "rgba(249,115,22,0.70)") + ";" +
                 "-fx-border-width: 1;" +
                 "-fx-background-radius: 7;" +
                 "-fx-border-radius: 7;" +
@@ -827,20 +839,20 @@ public class DisasterDamageController {
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: 800;" +
                 "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.10);" +
-                "-fx-border-color: rgba(148,163,184,0.38);" +
+                : "-fx-background-color: " + (light ? "#EDE8DF" : "rgba(255,255,255,0.10)") + ";" +
+                "-fx-border-color: " + (light ? "rgba(176,200,178,0.75)" : "rgba(148,163,184,0.38)") + ";" +
                 "-fx-border-width: 1;" +
                 "-fx-background-radius: 7;" +
                 "-fx-border-radius: 7;" +
                 "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.96);" +
+                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(226,232,240,0.96)") + ";" +
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: 700;" +
                 "-fx-cursor: hand;";
 
         String hoverStyle = isPrimary
-                ? "-fx-background-color: rgba(249,115,22,1.0);" +
-                "-fx-border-color: rgba(249,115,22,0.90);" +
+                ? "-fx-background-color: " + (light ? "#A34A06" : "rgba(249,115,22,1.0)") + ";" +
+                "-fx-border-color: " + (light ? "rgba(205,92,8,0.60)" : "rgba(249,115,22,0.90)") + ";" +
                 "-fx-border-width: 1;" +
                 "-fx-background-radius: 7;" +
                 "-fx-border-radius: 7;" +
@@ -849,13 +861,13 @@ public class DisasterDamageController {
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: 800;" +
                 "-fx-cursor: hand;"
-                : "-fx-background-color: rgba(255,255,255,0.15);" +
-                "-fx-border-color: rgba(148,163,184,0.50);" +
+                : "-fx-background-color: " + (light ? "#E8E2D8" : "rgba(255,255,255,0.15)") + ";" +
+                "-fx-border-color: " + (light ? "rgba(184,85,7,0.45)" : "rgba(148,163,184,0.50)") + ";" +
                 "-fx-border-width: 1;" +
                 "-fx-background-radius: 7;" +
                 "-fx-border-radius: 7;" +
                 "-fx-padding: 9 20 9 20;" +
-                "-fx-text-fill: rgba(226,232,240,0.95);" +
+                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(226,232,240,0.95)") + ";" +
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: 700;" +
                 "-fx-cursor: hand;";

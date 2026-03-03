@@ -344,7 +344,7 @@
 .score-bar-medium > .bar { -fx-background-color: linear-gradient(to right, #f59e0b, #fbbf24); }
 .score-bar-high > .bar   { -fx-background-color: linear-gradient(to right, #ef4444, #f97316); }
 
-/* ═══════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════��═══════════════════════════
    TOTAL SCORE
    ═══════════════════════════════════════════════════════════════════════════ */
 .total-score-box {
@@ -394,3 +394,80 @@
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
 }
+
+/* ==================================================================
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ================================================================== */
+
+.dialog-root.root-light { -fx-background-color: #F7EFE3; -fx-border-color: #C1D8C3; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 4); }
+.root-light .dialog-header { -fx-background-color: #5C8A79; -fx-border-color: rgba(106,156,137,0.30); }
+
+.root-light .avatar-circle {
+    -fx-background-color: rgba(205,92,8,0.12);
+    -fx-border-color: rgba(205,92,8,0.40);
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.15), 8, 0, 0, 0);
+}
+.root-light .header-icon { -fx-fill: rgba(255,255,255,0.92); -fx-effect: none; }
+.root-light .dialog-title { -fx-text-fill: rgba(255,255,255,0.95); -fx-effect: none; }
+.root-light .dialog-subtitle { -fx-text-fill: rgba(255,255,255,0.68); }
+
+.root-light .reg-meta-label { -fx-text-fill: rgba(106,156,137,0.70); }
+.root-light .reg-meta-value { -fx-text-fill: #FFFFFF; }
+.root-light .reg-meta-by { -fx-text-fill: rgba(255,255,255,0.60); }
+
+.root-light .dialog-close { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176,200,178,0.70); }
+.root-light .dialog-close:hover { -fx-background-color: rgba(220,60,60,0.12); -fx-border-color: rgba(220,60,60,0.45); }
+.root-light .close-icon { -fx-fill: #2E2E2E; }
+.root-light .close-btn-text { -fx-text-fill: #2E2E2E; }
+
+.root-light .dialog-scroll { -fx-background-color: transparent; -fx-background: transparent; }
+.root-light .dialog-scroll .viewport { -fx-background-color: transparent; }
+.root-light .dialog-scroll .scroll-bar .track { -fx-background-color: rgba(193, 216, 195, 0.25); }
+.root-light .dialog-scroll .scroll-bar .thumb { -fx-background-color: rgba(106, 156, 137, 0.45); }
+.root-light .dialog-scroll .scroll-bar .thumb:hover { -fx-background-color: rgba(92, 138, 121, 0.65); }
+.root-light .dialog-scroll .scroll-bar .thumb:pressed { -fx-background-color: rgba(205, 92, 8, 0.55); }
+
+.root-light .dialog-body { -fx-background-color: transparent; }
+.root-light .separator .line { -fx-background-color: rgba(193, 216, 195, 0.60); }
+
+.root-light .form-section { -fx-background-color: rgba(232, 224, 212, 0.65); -fx-border-color: rgba(176, 200, 178, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2); }
+.root-light .section-header { -fx-border-color: rgba(193,216,195,0.40); }
+.root-light .section-icon { -fx-fill: #B85507; }
+.root-light .section-title { -fx-text-fill: #1A1A1A; }
+.root-light .section-subtitle { -fx-text-fill: #5C8A79; -fx-background-color: rgba(193,216,195,0.30); }
+
+.root-light .field-label { -fx-text-fill: #6A9C89; }
+.root-light .field-value { -fx-text-fill: #1A1A1A; }
+
+.root-light .divider-line { -fx-background-color: #C1D8C3; }
+.root-light .score-divider-badge { -fx-background-color: rgba(205,92,8,0.08); -fx-border-color: rgba(205,92,8,0.25); }
+.root-light .score-badge-icon { -fx-fill: #CD5C08; }
+.root-light .score-divider-text { -fx-text-fill: #CD5C08; }
+
+.root-light .aid-type-combo { -fx-background-color: #FFF5E4; -fx-border-color: #C1D8C3; }
+.root-light .aid-type-combo > .list-cell { -fx-text-fill: #1A1A1A; }
+.root-light .aid-type-combo .arrow { -fx-background-color: #6A9C89; }
+.root-light .aid-type-combo:hover { -fx-border-color: #CD5C08; -fx-background-color: #FFFFFF; }
+.root-light .aid-type-combo:showing { -fx-border-color: #CD5C08; }
+
+.root-light .combo-box-popup .list-view { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193, 216, 195, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
+.root-light .combo-box-popup .list-view .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
+.root-light .combo-box-popup .list-view .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35); }
+.root-light .combo-box-popup .list-view .list-cell:selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
+
+.root-light .no-score-pane { -fx-background-color: rgba(193,216,195,0.10); -fx-border-color: #C1D8C3; }
+.root-light .no-score-icon { -fx-fill: #C1D8C3; }
+.root-light .no-score-text { -fx-text-fill: #6A9C89; }
+.root-light .no-score-sub { -fx-text-fill: rgba(106,156,137,0.65); }
+
+.root-light .score-card { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193,216,195,0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2); }
+.root-light .score-card:hover { -fx-border-color: #CD5C08; -fx-background-color: rgba(205,92,8,0.03); }
+.root-light .score-card-label { -fx-text-fill: #6A9C89; }
+.root-light .score-card-value { -fx-text-fill: #1A1A1A; }
+
+.root-light .total-score-box { -fx-background-color: rgba(205,92,8,0.06); -fx-border-color: rgba(205,92,8,0.25); -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.08), 12, 0, 0, 0); }
+.root-light .total-score-label { -fx-text-fill: rgba(205,92,8,0.60); }
+.root-light .total-score-value { -fx-text-fill: #CD5C08; -fx-effect: none; }
+.root-light .total-score-category { -fx-text-fill: #CD5C08; }
+
+.root-light .dialog-footer { -fx-background-color: rgba(240, 232, 220, 0.70); -fx-border-color: rgba(193, 216, 195, 0.55); }

@@ -9,6 +9,7 @@ import com.ionres.respondph.util.AlertDialogManager;
 import com.ionres.respondph.util.Refresher;
 import com.ionres.respondph.util.DialogManager;
 import com.ionres.respondph.util.PdfProgressRunner;
+import com.ionres.respondph.util.ThemeManager;
 import com.itextpdf.layout.element.Cell;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -2156,15 +2157,16 @@ public class AddAidController {
         progressStage.setAlwaysOnTop(true);
 
         // ── Outer wrapper (dark card) ────────────────────────────────
+        boolean light = ThemeManager.getInstance().isLightMode();
         VBox card = new VBox(0);
         card.setPrefWidth(420);
         card.setStyle(
-                "-fx-background-color: #0b1220;" +
-                        "-fx-border-color: rgba(148,163,184,0.22);" +
+                "-fx-background-color: " + (light ? "#EDE8DF" : "#0b1220") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.80)" : "rgba(148,163,184,0.22)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-background-radius: 10;" +
                         "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.0, 0, 6);"
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0," + (light ? "0.18" : "0.45") + "), 28, 0.0, 0, 6);"
         );
 
         // ── Header ───────────────────────────────────────────────────
@@ -2172,8 +2174,8 @@ public class AddAidController {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(18, 22, 18, 22));
         header.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.025);" +
-                        "-fx-border-color: rgba(148,163,184,0.12);" +
+                "-fx-background-color: " + (light ? "#5C8A79" : "rgba(255,255,255,0.025)") + ";" +
+                        "-fx-border-color: " + (light ? "rgba(90,130,115,0.45)" : "rgba(148,163,184,0.12)") + ";" +
                         "-fx-border-width: 0 0 1 0;" +
                         "-fx-background-radius: 10 10 0 0;"
         );
@@ -2183,19 +2185,19 @@ public class AddAidController {
         spinner.setPrefSize(22, 22);
         spinner.setMaxSize(22, 22);
         spinner.setMinSize(22, 22);
-        spinner.setStyle("-fx-progress-color: rgba(249,115,22,0.95);");
+        spinner.setStyle("-fx-progress-color: " + (light ? "rgba(255,255,255,0.92)" : "rgba(249,115,22,0.95)") + ";");
 
         VBox titleBlock = new VBox(3);
         Label titleLabel = new Label("Please Wait");
         titleLabel.setFont(Font.font("Inter", FontWeight.BLACK, 16));
         titleLabel.setStyle(
-                "-fx-text-fill: rgba(248,250,252,0.98);" +
+                "-fx-text-fill: " + (light ? "#FFFFFF" : "rgba(248,250,252,0.98)") + ";" +
                         "-fx-font-size: 16px;" +
                         "-fx-font-weight: 900;"
         );
         Label subtitleLabel = new Label("Processing your request…");
         subtitleLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.80);" +
+                "-fx-text-fill: " + (light ? "rgba(255,255,255,0.75)" : "rgba(148,163,184,0.80)") + ";" +
                         "-fx-font-size: 12px;" +
                         "-fx-font-weight: 600;"
         );
@@ -2213,7 +2215,7 @@ public class AddAidController {
         progressLabel.setWrapText(true);
         progressLabel.setMaxWidth(Double.MAX_VALUE);
         progressLabel.setStyle(
-                "-fx-text-fill: rgba(226,232,240,0.85);" +
+                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(226,232,240,0.85)") + ";" +
                         "-fx-font-size: 13px;" +
                         "-fx-font-weight: 600;"
         );
@@ -2221,9 +2223,9 @@ public class AddAidController {
         // Progress bar track wrapper
         VBox barWrapper = new VBox(0);
         barWrapper.setStyle(
-                "-fx-background-color: rgba(255,255,255,0.06);" +
+                "-fx-background-color: " + (light ? "rgba(176,200,178,0.35)" : "rgba(255,255,255,0.06)") + ";" +
                         "-fx-background-radius: 6;" +
-                        "-fx-border-color: rgba(148,163,184,0.14);" +
+                        "-fx-border-color: " + (light ? "rgba(176,200,178,0.55)" : "rgba(148,163,184,0.14)") + ";" +
                         "-fx-border-width: 1;" +
                         "-fx-border-radius: 6;" +
                         "-fx-padding: 0;"
@@ -2234,7 +2236,7 @@ public class AddAidController {
         progressBar.setPrefHeight(10);
         progressBar.setMaxWidth(Double.MAX_VALUE);
         progressBar.setStyle(
-                "-fx-accent: rgba(249,115,22,0.95);" +
+                "-fx-accent: " + (light ? "#B85507" : "rgba(249,115,22,0.95)") + ";" +
                         "-fx-background-color: transparent;" +
                         "-fx-background-radius: 6;" +
                         "-fx-border-radius: 6;"
@@ -2244,7 +2246,7 @@ public class AddAidController {
         // Percentage label (right-aligned)
         Label pctLabel = new Label("0%");
         pctLabel.setStyle(
-                "-fx-text-fill: rgba(148,163,184,0.70);" +
+                "-fx-text-fill: " + (light ? "#4A7566" : "rgba(148,163,184,0.70)") + ";" +
                         "-fx-font-size: 11px;" +
                         "-fx-font-weight: 700;"
         );

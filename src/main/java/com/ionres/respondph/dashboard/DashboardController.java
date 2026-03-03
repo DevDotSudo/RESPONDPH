@@ -63,6 +63,7 @@ public class DashboardController {
     @FXML private StackPane cardEvacuationSite;
     @FXML private VBox searchBoxWrap;
     @FXML private ListView<String> beneficiarySearchList;
+    @FXML private ToggleButton themeToggleBtn;
 
     // ── Change password FXML ──────────────────────────────────────────────────
     @FXML private StackPane changePasswordOverlay;
@@ -173,6 +174,7 @@ public class DashboardController {
             wireSearchComboBoxInline();
             wireAdminDropdown();
             wireChangePasswordDialog();
+            wireThemeToggle();
 
             mapContainer.setOnMousePressed(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
@@ -447,6 +449,35 @@ public class DashboardController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
+    // Theme toggle
+    // ═════════════════════════════════════════════════════════════════════════
+    private void wireThemeToggle() {
+        // Restore persisted theme: set toggle state without firing the listener yet
+        boolean savedLight = ThemeManager.getInstance().isLightMode();
+        if (savedLight) {
+            themeToggleBtn.setSelected(true);
+            // Apply the saved light theme to the current scene
+            var scene = themeToggleBtn.getScene();
+            if (scene != null) {
+                ThemeManager.getInstance().applyTo(scene.getRoot(), scene);
+            }
+        }
+
+        themeToggleBtn.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            var scene = themeToggleBtn.getScene();
+            if (scene == null) return;
+            ThemeManager.getInstance().setLightMode(isSelected, scene);
+            // Re-render visible info panels with the new theme colours
+            if (selectedBeneficiary != null && infoPanel != null && infoPanel.isVisible()) {
+                populateInfoPanel(selectedBeneficiary);
+            }
+            if (selectedEvacSite != null && evacInfoPanel != null && evacInfoPanel.isVisible()) {
+                populateEvacInfoPanel(selectedEvacSite);
+            }
+        });
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
     // Search
     // ═════════════════════════════════════════════════════════════════════════
     private boolean isSelectingFromList = false;
@@ -635,17 +666,56 @@ public class DashboardController {
     // ═════════════════════════════════════════════════════════════════════════
     // Info panel
     // ═════════════════════════════════════════════════════════════════════════
-    private void buildInfoPanel() {
-        // existing beneficiary panel
-        infoPanel = new VBox(0);
-        infoPanel.setStyle(
-                "-fx-background-color:#2d3b4f;" +
+    // ── Helper: apply panel background/border based on current theme ─────────
+    private void applyInfoPanelTheme(VBox panel, boolean isEvac) {
+        boolean light = ThemeManager.getInstance().isLightMode();
+        if (light) {
+            if (isEvac) {
+                panel.setStyle(
+                        "-fx-background-color:#FFFFFF;" +
+                        "-fx-border-color:rgba(106,156,137,0.65);" +
+                        "-fx-border-width:1.5px;" +
+                        "-fx-border-radius:8px;" +
+                        "-fx-background-radius:8px;" +
+                        "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.20),14,0.25,0,4);"
+                );
+            } else {
+                panel.setStyle(
+                        "-fx-background-color:#FFFFFF;" +
+                        "-fx-border-color:rgba(205,92,8,0.50);" +
+                        "-fx-border-width:1.5px;" +
+                        "-fx-border-radius:8px;" +
+                        "-fx-background-radius:8px;" +
+                        "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.20),14,0.25,0,4);"
+                );
+            }
+        } else {
+            if (isEvac) {
+                panel.setStyle(
+                        "-fx-background-color:#2d3b4f;" +
+                        "-fx-border-color:rgba(234,179,8,0.55);" +
+                        "-fx-border-width:1.5px;" +
+                        "-fx-border-radius:8px;" +
+                        "-fx-background-radius:8px;" +
+                        "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
+                );
+            } else {
+                panel.setStyle(
+                        "-fx-background-color:#2d3b4f;" +
                         "-fx-border-color:rgba(249,115,22,0.50);" +
                         "-fx-border-width:1.5px;" +
                         "-fx-border-radius:8px;" +
                         "-fx-background-radius:8px;" +
                         "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
-        );
+                );
+            }
+        }
+    }
+
+    private void buildInfoPanel() {
+        // existing beneficiary panel
+        infoPanel = new VBox(0);
+        applyInfoPanelTheme(infoPanel, false);
         infoPanel.setVisible(false);
         infoPanel.setMouseTransparent(false);
         infoPanel.setViewOrder(-1.0);
@@ -653,14 +723,7 @@ public class DashboardController {
 
         // evac site panel
         evacInfoPanel = new VBox(0);
-        evacInfoPanel.setStyle(
-                "-fx-background-color:#2d3b4f;" +
-                        "-fx-border-color:rgba(234,179,8,0.55);" +
-                        "-fx-border-width:1.5px;" +
-                        "-fx-border-radius:8px;" +
-                        "-fx-background-radius:8px;" +
-                        "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.65),14,0.35,0,4);"
-        );
+        applyInfoPanelTheme(evacInfoPanel, true);
         evacInfoPanel.setVisible(false);
         evacInfoPanel.setMouseTransparent(false);
         evacInfoPanel.setViewOrder(-1.0);
@@ -669,6 +732,8 @@ public class DashboardController {
 
     private void populateInfoPanel(BeneficiaryMarker b) {
         infoPanel.getChildren().clear();
+        applyInfoPanelTheme(infoPanel, false);
+        boolean light = ThemeManager.getInstance().isLightMode();
         List<FamilyMemberModel> members = dashBoardService.getFamilyMembers(b.id);
         int memberCount = members != null ? members.size() : 0;
 
@@ -677,36 +742,57 @@ public class DashboardController {
         infoPanel.setMaxWidth(panelWidth);
         infoPanel.setMaxHeight(Region.USE_PREF_SIZE);
 
+        // --- Header ---
         Label headerLbl = new Label("BENEFICIARY");
-        headerLbl.setStyle("-fx-text-fill:rgba(249,115,22,0.90);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        headerLbl.setStyle(light
+                ? "-fx-text-fill:#CD5C08;-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:rgba(249,115,22,0.90);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         Region hSpacer = new Region();
         HBox.setHgrow(hSpacer, Priority.ALWAYS);
         Button closeBtn = new Button("×");
-        applyCloseBtnStyle(closeBtn);
+        applyCloseBtnStyle(closeBtn, light);
         closeBtn.setOnAction(e -> dismissPanel());
         HBox headerRow = new HBox(6, headerLbl, hSpacer, closeBtn);
         headerRow.setAlignment(Pos.CENTER_LEFT);
         headerRow.setPadding(new Insets(8, 10, 6, 12));
+
+        // --- Top divider ---
         Region topDiv = new Region();
         topDiv.setPrefHeight(1);
-        topDiv.setStyle("-fx-background-color:rgba(249,115,22,0.28);");
+        topDiv.setStyle(light
+                ? "-fx-background-color:rgba(205,92,8,0.28);"
+                : "-fx-background-color:rgba(249,115,22,0.28);");
+
+        // --- Bene info box ---
         Label beneIdLbl = new Label("ID #" + b.id);
-        beneIdLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        beneIdLbl.setStyle(light
+                ? "-fx-text-fill:rgba(60,60,60,0.55);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         Label beneNameLbl = new Label(b.name != null ? b.name : "Unknown");
-        beneNameLbl.setStyle("-fx-text-fill:#f1f5f9;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        beneNameLbl.setStyle(light
+                ? "-fx-text-fill:#1a1a1a;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:#f1f5f9;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         VBox beneBox = new VBox(2, beneIdLbl, beneNameLbl);
         beneBox.setPadding(new Insets(7, 12, 8, 12));
-        beneBox.setStyle("-fx-background-color:rgba(249,115,22,0.07);");
+        beneBox.setStyle(light
+                ? "-fx-background-color:rgba(205,92,8,0.06);"
+                : "-fx-background-color:rgba(249,115,22,0.07);");
         infoPanel.getChildren().addAll(headerRow, topDiv, beneBox);
 
         if (memberCount > 0) {
             Region midDiv = new Region();
             midDiv.setPrefHeight(1);
-            midDiv.setStyle("-fx-background-color:rgba(255,255,255,0.06);");
+            midDiv.setStyle(light
+                    ? "-fx-background-color:rgba(0,0,0,0.08);"
+                    : "-fx-background-color:rgba(255,255,255,0.06);");
             Label familyLbl = new Label("Family Members");
-            familyLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+            familyLbl.setStyle(light
+                    ? "-fx-text-fill:rgba(60,60,60,0.70);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                    : "-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
             Label countLbl = new Label(memberCount + (memberCount != 1 ? " members" : " member"));
-            countLbl.setStyle("-fx-text-fill:rgba(249,115,22,0.75);-fx-font-size:9px;-fx-background-color:rgba(249,115,22,0.10);-fx-background-radius:3px;-fx-border-color:rgba(249,115,22,0.25);-fx-border-radius:3px;-fx-border-width:1px;-fx-padding:1px 6px;");
+            countLbl.setStyle(light
+                    ? "-fx-text-fill:#CD5C08;-fx-font-size:9px;-fx-background-color:rgba(205,92,8,0.10);-fx-background-radius:3px;-fx-border-color:rgba(205,92,8,0.30);-fx-border-radius:3px;-fx-border-width:1px;-fx-padding:1px 6px;"
+                    : "-fx-text-fill:rgba(249,115,22,0.75);-fx-font-size:9px;-fx-background-color:rgba(249,115,22,0.10);-fx-background-radius:3px;-fx-border-color:rgba(249,115,22,0.25);-fx-border-radius:3px;-fx-border-width:1px;-fx-padding:1px 6px;");
             Region fs = new Region();
             HBox.setHgrow(fs, Priority.ALWAYS);
             HBox familyRow = new HBox(6, familyLbl, fs, countLbl);
@@ -716,17 +802,25 @@ public class DashboardController {
             for (int i = 0; i < members.size(); i++) {
                 FamilyMemberModel m = members.get(i);
                 Label mName = new Label(m.getFullName());
-                mName.setStyle("-fx-text-fill:#cbd5e1;-fx-font-size:12px;-fx-font-weight:600;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+                mName.setStyle(light
+                        ? "-fx-text-fill:#2c2c2c;-fx-font-size:12px;-fx-font-weight:600;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                        : "-fx-text-fill:#cbd5e1;-fx-font-size:12px;-fx-font-weight:600;-fx-font-family:'Inter','Segoe UI',sans-serif;");
                 Label mId = new Label("ID #" + m.getFamilyMemberId());
-                mId.setStyle("-fx-text-fill:rgba(148,163,184,0.40);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+                mId.setStyle(light
+                        ? "-fx-text-fill:rgba(60,60,60,0.45);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                        : "-fx-text-fill:rgba(148,163,184,0.40);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
                 VBox mRow = new VBox(1, mName, mId);
                 mRow.setPadding(new Insets(6, 12, 6, 12));
-                if (i % 2 == 0) mRow.setStyle("-fx-background-color:rgba(255,255,255,0.02);");
+                if (i % 2 == 0) mRow.setStyle(light
+                        ? "-fx-background-color:rgba(0,0,0,0.03);"
+                        : "-fx-background-color:rgba(255,255,255,0.02);");
                 membersBox.getChildren().add(mRow);
                 if (i < members.size() - 1) {
                     Region sep = new Region();
                     sep.setPrefHeight(1);
-                    sep.setStyle("-fx-background-color:rgba(255,255,255,0.04);");
+                    sep.setStyle(light
+                            ? "-fx-background-color:rgba(0,0,0,0.05);"
+                            : "-fx-background-color:rgba(255,255,255,0.04);");
                     membersBox.getChildren().add(sep);
                 }
             }
@@ -734,7 +828,9 @@ public class DashboardController {
             scroll.setFitToWidth(true);
             scroll.setFitToHeight(false);
             scroll.setMaxHeight(200);
-            scroll.setStyle("-fx-background-color:transparent;-fx-background:transparent;-fx-border-color:transparent;-fx-padding:0;");
+            scroll.setStyle(light
+                    ? "-fx-background-color:#FFFFFF;-fx-background:#FFFFFF;-fx-border-color:transparent;-fx-padding:0;"
+                    : "-fx-background-color:transparent;-fx-background:transparent;-fx-border-color:transparent;-fx-padding:0;");
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scroll.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, javafx.event.Event::consume);
@@ -858,6 +954,8 @@ public class DashboardController {
 
     private void populateEvacInfoPanel(EvacSiteMarker site) {
         evacInfoPanel.getChildren().clear();
+        applyInfoPanelTheme(evacInfoPanel, true);
+        boolean light = ThemeManager.getInstance().isLightMode();
 
         double panelWidth = 220;
         evacInfoPanel.setPrefWidth(panelWidth);
@@ -866,11 +964,13 @@ public class DashboardController {
 
         // Header row
         Label headerLbl = new Label("EVACUATION SITE");
-        headerLbl.setStyle("-fx-text-fill:rgba(234,179,8,0.90);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        headerLbl.setStyle(light
+                ? "-fx-text-fill:#6A9C89;-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:rgba(234,179,8,0.90);-fx-font-size:9px;-fx-font-weight:700;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         Region hSpacer = new Region();
         HBox.setHgrow(hSpacer, Priority.ALWAYS);
         Button closeBtn = new Button("×");
-        applyEvacCloseBtnStyle(closeBtn);
+        applyEvacCloseBtnStyle(closeBtn, light);
         closeBtn.setOnAction(e -> dismissEvacPanel());
         HBox headerRow = new HBox(6, headerLbl, hSpacer, closeBtn);
         headerRow.setAlignment(Pos.CENTER_LEFT);
@@ -878,30 +978,44 @@ public class DashboardController {
 
         Region topDiv = new Region();
         topDiv.setPrefHeight(1);
-        topDiv.setStyle("-fx-background-color:rgba(234,179,8,0.28);");
+        topDiv.setStyle(light
+                ? "-fx-background-color:rgba(106,156,137,0.35);"
+                : "-fx-background-color:rgba(234,179,8,0.28);");
 
         // Site Name
         Label nameTitleLbl = new Label("NAME");
-        nameTitleLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        nameTitleLbl.setStyle(light
+                ? "-fx-text-fill:rgba(60,60,60,0.55);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         Label nameLbl = new Label(site.getName() != null ? site.getName() : "Unknown");
-        nameLbl.setStyle("-fx-text-fill:#f1f5f9;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        nameLbl.setStyle(light
+                ? "-fx-text-fill:#1a1a1a;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:#f1f5f9;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         nameLbl.setWrapText(true);
 
         Region midDiv = new Region();
         midDiv.setPrefHeight(1);
-        midDiv.setStyle("-fx-background-color:rgba(255,255,255,0.06);");
+        midDiv.setStyle(light
+                ? "-fx-background-color:rgba(0,0,0,0.08);"
+                : "-fx-background-color:rgba(255,255,255,0.06);");
 
         // Capacity
         Label capTitleLbl = new Label("CAPACITY");
-        capTitleLbl.setStyle("-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        capTitleLbl.setStyle(light
+                ? "-fx-text-fill:rgba(60,60,60,0.55);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:rgba(148,163,184,0.50);-fx-font-size:9px;-fx-font-family:'Inter','Segoe UI',sans-serif;");
         String capText = (site.getCapacity() > 0) ? String.valueOf(site.getCapacity()) + " persons" : "N/A";
         Label capLbl = new Label(capText);
-        capLbl.setStyle("-fx-text-fill:rgba(234,179,8,0.95);-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
+        capLbl.setStyle(light
+                ? "-fx-text-fill:#6A9C89;-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;"
+                : "-fx-text-fill:rgba(234,179,8,0.95);-fx-font-size:13px;-fx-font-weight:800;-fx-font-family:'Inter','Segoe UI',sans-serif;");
 
         VBox contentBox = new VBox(0);
         contentBox.setPadding(new Insets(7, 12, 10, 12));
         contentBox.setSpacing(0);
-        contentBox.setStyle("-fx-background-color:rgba(234,179,8,0.06);");
+        contentBox.setStyle(light
+                ? "-fx-background-color:rgba(106,156,137,0.06);"
+                : "-fx-background-color:rgba(234,179,8,0.06);");
 
         VBox nameSection = new VBox(2, nameTitleLbl, nameLbl);
         nameSection.setPadding(new Insets(0, 0, 8, 0));
@@ -964,12 +1078,18 @@ public class DashboardController {
         Platform.runLater(this::clampAndPositionEvacPanel);
     }
 
-    private void applyEvacCloseBtnStyle(Button btn) {
-        String n = "-fx-background-color:transparent;-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
+    private void applyEvacCloseBtnStyle(Button btn, boolean light) {
+        String n = light
+                ? "-fx-background-color:transparent;-fx-text-fill:rgba(60,60,60,0.55);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;"
+                : "-fx-background-color:transparent;-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
         String h = "-fx-background-color:transparent;-fx-text-fill:#ef4444;-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
         btn.setStyle(n);
         btn.setOnMouseEntered(e -> btn.setStyle(h));
         btn.setOnMouseExited(e -> btn.setStyle(n));
+    }
+
+    private void applyEvacCloseBtnStyle(Button btn) {
+        applyEvacCloseBtnStyle(btn, ThemeManager.getInstance().isLightMode());
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -1152,12 +1272,18 @@ public class DashboardController {
         ft.play();
     }
 
-    private void applyCloseBtnStyle(Button btn) {
-        String n = "-fx-background-color:transparent;-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
+    private void applyCloseBtnStyle(Button btn, boolean light) {
+        String n = light
+                ? "-fx-background-color:transparent;-fx-text-fill:rgba(60,60,60,0.55);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;"
+                : "-fx-background-color:transparent;-fx-text-fill:rgba(148,163,184,0.65);-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
         String h = "-fx-background-color:transparent;-fx-text-fill:#ef4444;-fx-font-size:14px;-fx-cursor:hand;-fx-padding:0;";
         btn.setStyle(n);
         btn.setOnMouseEntered(e -> btn.setStyle(h));
         btn.setOnMouseExited(e -> btn.setStyle(n));
+    }
+
+    private void applyCloseBtnStyle(Button btn) {
+        applyCloseBtnStyle(btn, ThemeManager.getInstance().isLightMode());
     }
 
     private boolean isPointInPolygon(double x, double y, double[][] polygon) {

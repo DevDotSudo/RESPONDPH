@@ -364,3 +364,180 @@
     -fx-border-radius: 4px;
     -fx-background-radius: 4px;
 }
+
+/* ==================================================================
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   NOTE: root-light is added directly to the dialogPane itself,
+         so we use .dialog-pane.root-light.custom-alert (same-element)
+         NOT .root-light .dialog-pane.custom-alert (ancestor selector).
+   ================================================================== */
+
+.dialog-pane.root-light.custom-alert {
+    -fx-background-color: #F4ECE0;
+    -fx-border-color: #C1D8C3;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 16, 0.1, 0, 4);
+}
+
+.dialog-pane.root-light.custom-alert .header-panel {
+    -fx-border-color: rgba(193,216,195,0.50);
+}
+
+.dialog-pane.root-light.custom-alert .header-panel .label {
+    -fx-text-fill: #1A1A1A;
+    -fx-font-weight: 800;
+}
+
+.dialog-pane.root-light.success-alert .custom-alert-icon  { -fx-fill: #0d9e6e; }
+.dialog-pane.root-light.error-alert .custom-alert-icon    { -fx-fill: #dc2626; }
+.dialog-pane.root-light.warning-alert .custom-alert-icon  { -fx-fill: #d97706; }
+.dialog-pane.root-light.info-alert .custom-alert-icon,
+.dialog-pane.root-light.confirmation-alert .custom-alert-icon { -fx-fill: #B85507; }
+
+.dialog-pane.root-light.custom-alert .content.label {
+    -fx-text-fill: #2D2D2D;
+    -fx-font-weight: 600;
+}
+
+.dialog-pane.root-light.custom-alert .button-bar {
+    -fx-border-color: rgba(193,216,195,0.50);
+}
+
+/* ── Secondary button ── */
+.dialog-pane.root-light.custom-alert .alert-button.secondary-button {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+    -fx-text-fill: #1A1A1A;
+    -fx-font-weight: 700;
+}
+.dialog-pane.root-light.custom-alert .alert-button.secondary-button:hover {
+    -fx-background-color: rgba(193,216,195,0.35);
+    -fx-border-color: #6A9C89;
+    -fx-text-fill: #1A1A1A;
+}
+.dialog-pane.root-light.custom-alert .alert-button.secondary-button .glyph-icon {
+    -fx-fill: #5C8A79;
+}
+
+/* ── Primary button ── */
+.dialog-pane.root-light.custom-alert .alert-button.primary-button {
+    -fx-background-color: #B85507;
+    -fx-border-color: #9A4706;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: 800;
+}
+.dialog-pane.root-light.custom-alert .alert-button.primary-button:hover {
+    -fx-background-color: #A34A06;
+    -fx-border-color: #8A3F05;
+}
+.dialog-pane.root-light.custom-alert .alert-button.primary-button:pressed {
+    -fx-background-color: #8E4005;
+}
+.dialog-pane.root-light.custom-alert .alert-button.primary-button .glyph-icon {
+    -fx-fill: #FFFFFF;
+}
+
+/* ── Cancel button ── */
+.dialog-pane.root-light.custom-alert .alert-button.cancel-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(185,28,28,0.50);
+    -fx-text-fill: #b91c1c;
+    -fx-font-weight: 700;
+}
+.dialog-pane.root-light.custom-alert .alert-button.cancel-button:hover {
+    -fx-background-color: rgba(185,28,28,0.09);
+    -fx-border-color: rgba(185,28,28,0.70);
+    -fx-text-fill: #991b1b;
+}
+.dialog-pane.root-light.custom-alert .alert-button.cancel-button .glyph-icon {
+    -fx-fill: #b91c1c;
+}
+
+/* ── Focus ── */
+.dialog-pane.root-light.custom-alert .alert-button:focused {
+    -fx-border-color: #B85507;
+}
+.dialog-pane.root-light.custom-alert .alert-button.primary-button:focused {
+    -fx-border-color: #8E4005;
+}
+
+/* ── Details button ── */
+.dialog-pane.root-light.custom-alert .details-button {
+    -fx-border-color: #B0C8B2;
+    -fx-text-fill: #1A1A1A;
+    -fx-background-color: #EDE8DF;
+}
+.dialog-pane.root-light.custom-alert .details-button:hover {
+    -fx-background-color: rgba(193,216,195,0.30);
+    -fx-border-color: #6A9C89;
+    -fx-text-fill: #1A1A1A;
+}
+
+/* ── Text areas ── */
+.dialog-pane.root-light.custom-alert .alert-text-area,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose {
+    -fx-control-inner-background: #EDE8DF;
+    -fx-background-color: #EDE8DF;
+    -fx-text-fill: #1A1A1A;
+    -fx-border-color: #B0C8B2;
+    -fx-highlight-fill: rgba(184,85,7,0.25);
+    -fx-highlight-text-fill: #1A1A1A;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-pane .content,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-pane .content {
+    -fx-background-color: #EDE8DF;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar:vertical,
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar:horizontal,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar:vertical,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar:horizontal {
+    -fx-background-color: #EDE8DF;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-pane > .corner,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-pane > .corner {
+    -fx-background-color: #EDE8DF;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .track,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .track {
+    -fx-background-color: rgba(193,216,195,0.35);
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .thumb,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .thumb {
+    -fx-background-color: #A8C5AB;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .thumb:hover,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .thumb:hover {
+    -fx-background-color: #6A9C89;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .increment-button,
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .decrement-button,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .increment-button,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .decrement-button {
+    -fx-background-color: #EDE8DF;
+}
+
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .increment-arrow,
+.dialog-pane.root-light.custom-alert .alert-text-area .scroll-bar .decrement-arrow,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .increment-arrow,
+.dialog-pane.root-light.custom-alert .alert-text-area-prose .scroll-bar .decrement-arrow {
+    -fx-background-color: #7A9E8C;
+    -fx-effect: null;
+}
+
+/* ── Mono label ── */
+.dialog-pane.root-light.custom-alert .alert-mono-label {
+    -fx-text-fill: #1A1A1A;
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: #B0C8B2;
+}
+
+/* ── Expandable content ── */
+.dialog-pane.root-light.custom-alert .expandable-content {
+    -fx-background-color: transparent;
+}

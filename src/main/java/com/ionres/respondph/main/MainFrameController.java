@@ -569,6 +569,7 @@ public class MainFrameController {
     // ═════════════════════════════════════════════════════════════════════════
 
     private VBox buildNewsActivityPane(String topic) {
+        boolean light = ThemeManager.getInstance().isLightMode();
         VBox pane = new VBox(8);
         pane.setFillWidth(true);
         pane.setMaxWidth(Double.MAX_VALUE);
@@ -577,7 +578,7 @@ public class MainFrameController {
         // Topic label (dim, italic)
         Label topicLabel = new Label("Topic: " + (topic != null ? topic : "…"));
         topicLabel.setStyle(
-                "-fx-text-fill: rgba(255,255,255,0.50); " +
+                "-fx-text-fill: " + (light ? "rgba(26,26,26,0.55)" : "rgba(255,255,255,0.50)") + "; " +
                         "-fx-font-size: 11px; -fx-font-style: italic;");
 
         // ── NEW: Step label — shows current pipeline step prominently ──────────
@@ -585,7 +586,7 @@ public class MainFrameController {
         newsStepLabel.setWrapText(true);
         newsStepLabel.setMaxWidth(Double.MAX_VALUE);
         newsStepLabel.setStyle(
-                "-fx-text-fill: rgba(255,255,255,0.88); " +
+                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(255,255,255,0.88)") + "; " +
                         "-fx-font-size: 11.5px; -fx-font-weight: bold;");
 
         // Dot bar
@@ -594,14 +595,14 @@ public class MainFrameController {
         for (int i = 0; i < 5; i++) {
             Circle dot = new Circle(5);
             dot.setId("news-dot-" + i);
-            dot.setFill(Color.web("#ffffff18"));
-            dot.setStroke(Color.web("#F97316"));
+            dot.setFill(Color.web(light ? "#D0C8BD" : "#ffffff18"));
+            dot.setStroke(Color.web(light ? "#B85507" : "#F97316"));
             dot.setStrokeWidth(1.5);
             newsDotBar.getChildren().add(dot);
         }
 
         newsCountLabel = new Label("0 of 5 items found");
-        newsCountLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.60); -fx-font-size: 11px;");
+        newsCountLabel.setStyle("-fx-text-fill: " + (light ? "rgba(26,26,26,0.65)" : "rgba(255,255,255,0.60)") + "; -fx-font-size: 11px;");
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
         dotRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -610,7 +611,7 @@ public class MainFrameController {
         newsLogBox.setFillWidth(true);
         newsLogBox.setPadding(new Insets(6, 8, 6, 8));
         newsLogBox.setStyle(
-                "-fx-background-color: rgba(0,0,0,0.30); -fx-background-radius: 6px;");
+                "-fx-background-color: " + (light ? "rgba(0,0,0,0.07)" : "rgba(0,0,0,0.30)") + "; -fx-background-radius: 6px;");
 
         newsLogScroll = new ScrollPane(newsLogBox);
         newsLogScroll.setFitToWidth(true);
@@ -741,14 +742,15 @@ public class MainFrameController {
     }
 
     private Label makeRowLabel(String text, RowKind kind) {
+        boolean light = ThemeManager.getInstance().isLightMode();
         Label row = new Label(text);
         row.setWrapText(true);
         row.setMaxWidth(Double.MAX_VALUE);
         switch (kind) {
-            case SEARCH -> row.setStyle("-fx-text-fill: #93C5FD; -fx-font-size: 11px;");
-            case PAGE   -> row.setStyle("-fx-text-fill: #86EFAC; -fx-font-size: 11px;");
-            case ITEM   -> row.setStyle("-fx-text-fill: #FCD34D; -fx-font-size: 11px; -fx-font-weight: bold;");
-            case INFO   -> row.setStyle("-fx-text-fill: rgba(255,255,255,0.42); -fx-font-size: 11px;");
+            case SEARCH -> row.setStyle("-fx-text-fill: " + (light ? "#2563EB" : "#93C5FD") + "; -fx-font-size: 11px;");
+            case PAGE   -> row.setStyle("-fx-text-fill: " + (light ? "#16A34A" : "#86EFAC") + "; -fx-font-size: 11px;");
+            case ITEM   -> row.setStyle("-fx-text-fill: " + (light ? "#B45309" : "#FCD34D") + "; -fx-font-size: 11px; -fx-font-weight: bold;");
+            case INFO   -> row.setStyle("-fx-text-fill: " + (light ? "rgba(26,26,26,0.55)" : "rgba(255,255,255,0.42)") + "; -fx-font-size: 11px;");
         }
         return row;
     }
@@ -775,8 +777,9 @@ public class MainFrameController {
             streamingLabel = new Label();
             streamingLabel.setWrapText(true);
             streamingLabel.setMaxWidth(Double.MAX_VALUE);
+            boolean light = ThemeManager.getInstance().isLightMode();
             streamingLabel.setStyle(
-                    "-fx-text-fill: rgba(255,255,255,0.30); " +
+                    "-fx-text-fill: " + (light ? "rgba(26,26,26,0.45)" : "rgba(255,255,255,0.30)") + "; " +
                             "-fx-font-size: 10.5px; -fx-font-style: italic;");
             newsLogBox.getChildren().add(streamingLabel);
         } else {
@@ -804,7 +807,8 @@ public class MainFrameController {
             tickLabel = new Label();
             tickLabel.setWrapText(false);
             tickLabel.setMaxWidth(Double.MAX_VALUE);
-            tickLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 11px;");
+            boolean light = ThemeManager.getInstance().isLightMode();
+            tickLabel.setStyle("-fx-text-fill: " + (light ? "rgba(26,26,26,0.50)" : "rgba(255,255,255,0.45)") + "; -fx-font-size: 11px;");
             newsLogBox.getChildren().add(tickLabel);
         } else {
             reorderSpecialLabels();
@@ -848,9 +852,10 @@ public class MainFrameController {
 
     private void fillDot(int i) {
         if (newsDotBar == null || i < 0 || i >= newsDotBar.getChildren().size()) return;
+        boolean light = ThemeManager.getInstance().isLightMode();
         Circle dot = (Circle) newsDotBar.getChildren().get(i);
-        dot.setFill(Color.web("#F97316"));
-        dot.setStroke(Color.web("#FDBA74"));
+        dot.setFill(Color.web(light ? "#B85507" : "#F97316"));
+        dot.setStroke(Color.web(light ? "#D97C30" : "#FDBA74"));
         ScaleTransition pop = new ScaleTransition(Duration.millis(220), dot);
         pop.setFromX(1.0); pop.setFromY(1.0);
         pop.setToX(1.5);   pop.setToY(1.5);

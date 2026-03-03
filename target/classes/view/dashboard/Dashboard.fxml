@@ -29,6 +29,15 @@
 
             <Region HBox.hgrow="ALWAYS" />
 
+            <!-- Theme toggle switch -->
+            <HBox alignment="CENTER" spacing="8" styleClass="theme-toggle-container">
+                <FontAwesomeIconView glyphName="MOON_ALT" styleClass="theme-icon" />
+                <ToggleButton fx:id="themeToggleBtn" styleClass="theme-toggle" />
+                <FontAwesomeIconView glyphName="SUN_ALT" styleClass="theme-icon" />
+            </HBox>
+
+            <Region prefWidth="16" />
+
             <!-- Admin area -->
             <StackPane fx:id="adminAreaPane" alignment="TOP_RIGHT" styleClass="admin-area-pane">
 

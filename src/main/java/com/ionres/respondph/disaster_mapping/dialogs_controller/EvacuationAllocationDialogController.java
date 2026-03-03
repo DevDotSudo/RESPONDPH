@@ -70,6 +70,13 @@ public class EvacuationAllocationDialogController implements Initializable {
         smsService = new SmsServiceImpl();
         smsSender = SMSSender.getInstance();
 
+        // Apply light mode to root if active
+        if (ThemeManager.getInstance().isLightMode()) {
+            if (root != null && !root.getStyleClass().contains("root-light")) {
+                root.getStyleClass().add("root-light");
+            }
+        }
+
         setupButtons();
         setupRadioButtons();
         setupGsmPorts();
@@ -153,7 +160,7 @@ public class EvacuationAllocationDialogController implements Initializable {
         Platform.runLater(() -> {
             try {
                 LOGGER.info("Scanning for GSM ports...");
-                List<String> availablePorts = smsSender.getAvailablePorts();
+                List<String> availablePorts = smsSender.getGsmPortsOnly();
 
                 if (availablePorts.isEmpty()) {
                     cbGsmPort.setItems(FXCollections.observableArrayList("No ports available"));
@@ -470,6 +477,18 @@ public class EvacuationAllocationDialogController implements Initializable {
         // Wrap table in VBox with padding
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
+        // Apply root-light to the content VBox so .root-light .custom-table CSS selectors work
+        if (ThemeManager.getInstance().isLightMode()) {
+            content.getStyleClass().add("root-light");
+            // Load the dialog stylesheet on the content VBox so the
+            // .root-light .custom-table rules are in scope for the table inside it
+            String dialogCss = getClass().getResource(
+                    "/styles/disaster_mapping/dialog/evacuationallocationdialog.css"
+            ).toExternalForm();
+            if (!content.getStylesheets().contains(dialogCss)) {
+                content.getStylesheets().add(dialogCss);
+            }
+        }
         content.getChildren().add(table);
         VBox.setVgrow(table, javafx.scene.layout.Priority.ALWAYS);
 
@@ -481,6 +500,8 @@ public class EvacuationAllocationDialogController implements Initializable {
     private TableView<BeneficiaryRow> createBeneficiaryTable() {
         TableView<BeneficiaryRow> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.getStyleClass().add("custom-table");
+
 
         TableColumn<BeneficiaryRow, Integer> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());

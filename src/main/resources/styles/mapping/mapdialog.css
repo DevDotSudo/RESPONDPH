@@ -97,3 +97,28 @@
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
 }
+
+/* ==================================================================
+   LIGHT MODE  —  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ================================================================== */
+
+.dialog-root.root-light { -fx-background-color: #F5EDE0; -fx-border-color: #C1D8C3; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 4); }
+.root-light .dialog-header { -fx-background-color: #5C8A79; -fx-border-color: rgba(106,156,137,0.30); }
+.root-light .header-icon { -fx-fill: rgba(255,255,255,0.92); -fx-effect: none; }
+.root-light .dialog-title { -fx-text-fill: #FFFFFF; -fx-effect: none; }
+.root-light .dialog-subtitle { -fx-text-fill: rgba(255,255,255,0.68); }
+.root-light .dialog-close { -fx-background-color: rgba(255,255,255,0.15); -fx-border-color: rgba(255,255,255,0.25); }
+.root-light .dialog-close:hover { -fx-background-color: rgba(220,60,60,0.18); -fx-border-color: rgba(220,60,60,0.45); }
+.root-light .close-icon { -fx-fill: rgba(255,255,255,0.90); }
+.root-light .error-box { -fx-background-color: rgba(220,38,38,0.08); -fx-border-color: rgba(220,38,38,0.25); }
+.root-light .error-icon { -fx-fill: #b91c1c; }
+.root-light .error-text { -fx-text-fill: #b91c1c; }
+.root-light .map-surface { -fx-background-color: rgba(245,237,224,0.80); -fx-border-color: rgba(176,200,178,0.65); }
+.root-light .map-surface:hover { -fx-border-color: rgba(184,85,7,0.40); }
+.root-light .dialog-footer { -fx-background-color: rgba(240,232,220,0.70); -fx-border-color: rgba(193,216,195,0.55); }
+.root-light .dialog-body { -fx-background-color: transparent; }
+.root-light .btn-primary { -fx-background-color: #B85507; -fx-border-color: rgba(205,92,8,0.40); -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.25), 8, 0, 0, 2); }
+.root-light .btn-primary:hover { -fx-background-color: #A34A06; -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.40), 12, 0, 0, 3); }
+.root-light .btn-primary:pressed { -fx-background-color: #8E4005; }
+.root-light .btn-icon { -fx-fill: #FFFFFF; }
+.root-light .btn-text { -fx-text-fill: #FFFFFF; }

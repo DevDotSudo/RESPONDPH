@@ -807,7 +807,7 @@ public class SendSMSController implements Initializable {
 
         new Thread(() -> {
             List<String> ports;
-            try { ports = smsSender.getAvailablePorts(); }
+            try { ports = smsSender.getGsmPortsOnly(); }
             catch (Exception e) {
                 Platform.runLater(() -> {
                     cbSelectPorts.setItems(FXCollections.observableArrayList("Error detecting ports"));

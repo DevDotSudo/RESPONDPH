@@ -122,16 +122,28 @@ public class SMSSender {
         public void connect() throws Exception {
             serialPort.setComPortParameters(9600, 8,
                     SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+
+            // Important: shorter reads for probing; your readResponse handles timeout anyway
             serialPort.setComPortTimeouts(
-                    SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 5000, 5000);
+                    SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 700, 700);
 
             if (!serialPort.openPort())
                 throw new IllegalStateException(
                         "Failed to open port: " + serialPort.getSystemPortName());
 
-            sendAT("ATE0",              500);   // Echo off
-            sendAT("AT+CMGF=1",         500);   // Text mode
-            sendAT("AT+CNMI=2,2,0,0,0", 500);   // New message indication
+            try {
+                verifyGsmModem();
+
+                // After verified, apply your normal init
+                sendAT("ATE0",              500);   // Echo off
+                sendAT("AT+CMGF=1",         800);   // Text mode
+                sendAT("AT+CNMI=2,2,0,0,0", 800);   // New message indication
+
+            } catch (Exception e) {
+                // ❗ If probe fails, close port so app doesn't think it's connected
+                try { serialPort.closePort(); } catch (Exception ignored) {}
+                throw e;
+            }
         }
 
         public void disconnect() {
@@ -188,18 +200,85 @@ public class SMSSender {
             }
             return response.toString();
         }
+
+        private static String norm(String s) {
+            if (s == null) return "";
+            // normalize CR/LF, remove echoed command noise
+            return s.replace("\r", "\n");
+        }
+
+        private boolean hasOK(String resp) {
+            String r = norm(resp).toUpperCase();
+            return r.contains("\nOK") || r.trim().endsWith("OK") || r.contains("OK\n");
+        }
+
+        private boolean hasError(String resp) {
+            String r = norm(resp).toUpperCase();
+            return r.contains("ERROR") || r.contains("+CME ERROR") || r.contains("+CMS ERROR");
+        }
+
+        /** strict probe: must behave like a modem */
+        private void verifyGsmModem() throws Exception {
+            // flush possible garbage
+            try { while (in.available() > 0) in.read(); } catch (Exception ignored) {}
+
+            String r1 = sendAT("AT", 800);
+            if (!hasOK(r1) || hasError(r1)) {
+                throw new IllegalStateException("Port is not responding to AT (not GSM modem). Resp=" + r1);
+            }
+
+            // Identify
+            String r2 = sendAT("ATI", 1200);
+            if (!hasOK(r2) || r2.trim().length() < 3) {
+                throw new IllegalStateException("Device didn't return valid ATI response (not GSM modem). Resp=" + r2);
+            }
+
+            // Manufacturer / Model check
+            String r3 = sendAT("AT+CGMI", 1200);
+            String r4 = sendAT("AT+CGMM", 1200);
+
+            // If both fail to contain OK, reject.
+            if (!(hasOK(r3) || hasOK(r4))) {
+                throw new IllegalStateException("Device is not a GSM modem (CGMI/CGMM failed).");
+            }
+
+            // Optional SIM readiness check (don’t fail hard for modems without SIM inserted)
+            String sim = sendAT("AT+CPIN?", 1200);
+            if (hasError(sim)) {
+                // Some modules need SIM ready later; not fatal
+                System.out.println("[GSMDongle] CPIN check error (ignored): " + sim);
+            }
+        }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Port management
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public synchronized List<String> getAvailablePorts() {
+    public synchronized List<String> getGsmPortsOnly() {
         SerialPort[] ports = SerialPort.getCommPorts();
-        List<String> names = new ArrayList<>();
-        for (SerialPort p : ports) names.add(p.getSystemPortName());
-        return names;
+        List<String> gsm = new ArrayList<>();
+
+        for (SerialPort p : ports) {
+            try {
+                SerialPort sp = SerialPort.getCommPort(p.getSystemPortName());
+                GSMDongle test = new GSMDongle(sp);
+                test.connect();          // will probe
+                test.disconnect();
+                gsm.add(p.getSystemPortName());
+            } catch (Exception ignored) {
+                // not GSM
+            }
+        }
+        return gsm;
     }
+
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Port management
+//    // ─────────────────────────────────────────────────────────────────────────
+//
+//    public synchronized List<String> getAvailablePorts() {
+//        SerialPort[] ports = SerialPort.getCommPorts();
+//        List<String> names = new ArrayList<>();
+//        for (SerialPort p : ports) names.add(p.getSystemPortName());
+//        return names;
+//    }
 
     public synchronized boolean connectToPort(String portName, int timeoutMs) {
         if (portName == null || portName.trim().isEmpty()) {

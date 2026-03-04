@@ -1,19 +1,14 @@
 /* ══════════════════════════════════════════════════════════════════════
    MAINFRAME — LIGHT MODE
-   Palette:  #CD5C08 (orange accent)
-             #FFF5E4 (warm cream background)
-             #C1D8C3 (soft green accent)
-             #6A9C89 (teal/sidebar)
+   Palette:  #CD5C08 (orange accent)  |  #F5EDE0 (warm cream background)
+             #C1D8C3 (soft green)     |  #547E6E (teal sidebar)
    ══════════════════════════════════════════════════════════════════════ */
 
 /* ── Root / Base ─────────────────────────────────────────────────────── */
-.root-light .dashboard-root {
-    -fx-background-color: #F5EDE0;
-}
-
-.root-light .content-shell {
-    -fx-background-color: #F5EDE0;
-}
+.root-light .dashboard-root  { -fx-background-color: #F5EDE0; }
+.root-light .content-shell   { -fx-background-color: #F5EDE0; }
+.root-light .content-area    { -fx-background-color: #F5EDE0; }
+.root-light .dashboard-wrapper { -fx-background-color: #F5EDE0; }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 .root-light .sidebar {
@@ -31,54 +26,30 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0.12, 0, 3);
 }
 
-.root-light .brand-title {
-    -fx-text-fill: rgba(255, 255, 255, 0.95);
-}
-
-.root-light .brand-subtitle {
-    -fx-text-fill: rgba(255, 255, 255, 0.72);
-}
+/* Sidebar text — white on teal */
+.root-light .brand-title      { -fx-text-fill: rgba(255, 255, 255, 0.95); }
+.root-light .brand-subtitle   { -fx-text-fill: rgba(255, 255, 255, 0.72); }
+.root-light .nav-text         { -fx-text-fill: rgba(255, 255, 255, 0.90); }
+.root-light .tree-section-title { -fx-text-fill: rgba(255, 255, 255, 0.62); }
+.root-light .logout-text      { -fx-text-fill: #FFCBB0; }
 
 /* ── Scrollpane ──────────────────────────────────────────────────────── */
-.root-light .nav-scroll-pane {
-    -fx-background-color: transparent;
-    -fx-background: transparent;
-}
-
-.root-light .nav-scroll-pane > .viewport {
-    -fx-background-color: transparent;
-}
-
-.root-light .nav-scroll-pane .scroll-bar:vertical {
-    -fx-background-color: transparent;
-}
-
+.root-light .nav-scroll-pane              { -fx-background-color: transparent; -fx-background: transparent; }
+.root-light .nav-scroll-pane > .viewport { -fx-background-color: transparent; }
+.root-light .nav-scroll-pane .scroll-bar:vertical { -fx-background-color: transparent; }
 .root-light .nav-scroll-pane .scroll-bar:vertical .thumb {
     -fx-background-color: rgba(255, 255, 255, 0.25);
     -fx-background-radius: 5px;
 }
-
 .root-light .nav-scroll-pane .scroll-bar:vertical .thumb:hover {
     -fx-background-color: rgba(255, 255, 255, 0.42);
 }
-
-.root-light .nav-menu {
-    -fx-background-color: transparent;
-}
+.root-light .nav-menu { -fx-background-color: transparent; }
 
 /* ── Nav buttons ─────────────────────────────────────────────────────── */
-.root-light .nav-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: rgba(255, 255, 255, 0.92);
-}
-
-.root-light .nav-button:hover {
-    -fx-background-color: rgba(255, 245, 228, 0.15);
-}
-
-.root-light .nav-button:pressed {
-    -fx-background-color: rgba(255, 245, 228, 0.22);
-}
+.root-light .nav-button { -fx-background-color: transparent; }
+.root-light .nav-button:hover   { -fx-background-color: rgba(255, 245, 228, 0.15); }
+.root-light .nav-button:pressed { -fx-background-color: rgba(255, 245, 228, 0.22); }
 
 .root-light .nav-button-active {
     -fx-background-color: #B85507;
@@ -87,96 +58,42 @@
     -fx-border-width: 1px;
     -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.22), 6, 0, 0, 2);
 }
+.root-light .nav-button-active .nav-text { -fx-text-fill: #FFFFFF; }
+.root-light .nav-button-active .nav-icon { -fx-fill: #FFFFFF; }
 
-.root-light .nav-button-active .nav-text {
-    -fx-text-fill: #FFFFFF;
-}
-
-.root-light .nav-button-active .nav-icon {
-    -fx-fill: #FFFFFF;
-}
-
-.root-light .nav-text {
-    -fx-text-fill: rgba(255, 255, 255, 0.88);
-}
-
-.root-light .nav-icon {
-    -fx-fill: rgba(255, 255, 255, 0.75);
-}
-
-.root-light .nav-icon-sm {
-    -fx-fill: rgba(255, 255, 255, 0.75);
-}
+.root-light .nav-icon    { -fx-fill: rgba(255, 255, 255, 0.75); }
+.root-light .nav-icon-sm { -fx-fill: rgba(255, 255, 255, 0.75); }
+.root-light .tree-chevron { -fx-fill: rgba(255, 255, 255, 0.55); }
 
 .root-light .nav-button:hover .nav-icon,
 .root-light .nav-button-child:hover .nav-icon-sm,
-.root-light .tree-section-header:hover .tree-chevron {
-    -fx-fill: #FFFFFF;
-}
+.root-light .tree-section-header:hover .tree-chevron { -fx-fill: #FFFFFF; }
 
 /* ── Tree sections ───────────────────────────────────────────────────── */
-.root-light .tree-section-header {
-    -fx-background-color: transparent;
-}
-
-.root-light .tree-section-header:hover {
-    -fx-background-color: rgba(255, 245, 228, 0.10);
-}
-
-.root-light .tree-section-title {
-    -fx-text-fill: rgba(255, 255, 255, 0.58);
-}
-
-.root-light .tree-chevron {
-    -fx-fill: rgba(255, 255, 255, 0.55);
-}
+.root-light .tree-section-header        { -fx-background-color: transparent; }
+.root-light .tree-section-header:hover  { -fx-background-color: rgba(255, 245, 228, 0.10); }
 
 /* ── Child nav buttons ───────────────────────────────────────────────── */
-.root-light .nav-button-child {
-    -fx-background-color: transparent;
-}
-
-.root-light .nav-button-child:hover {
-    -fx-background-color: rgba(255, 245, 228, 0.12);
-}
-
+.root-light .nav-button-child        { -fx-background-color: transparent; }
+.root-light .nav-button-child:hover  { -fx-background-color: rgba(255, 245, 228, 0.12); }
 .root-light .nav-button-child-active {
     -fx-background-color: #B85507;
     -fx-border-color: rgba(184, 85, 7, 0.65);
     -fx-border-radius: 5px;
     -fx-border-width: 1px;
 }
+.root-light .nav-button-child-active .nav-text { -fx-text-fill: #FFFFFF; }
 
 /* ── Logout ──────────────────────────────────────────────────────────── */
-.root-light .logout-section {
-    -fx-border-color: rgba(255, 255, 255, 0.15);
-}
-
+.root-light .logout-section  { -fx-border-color: rgba(255, 255, 255, 0.15); }
+.root-light .logout-icon     { -fx-fill: #FFCBB0; }
 .root-light .logout-button {
     -fx-background-color: transparent;
-    -fx-border-color: rgba(220, 38, 38, 0.55);
+    -fx-border-color: rgba(255, 203, 176, 0.60);
 }
-
 .root-light .logout-button:hover {
-    -fx-background-color: rgba(220, 38, 38, 0.12);
-}
-
-.root-light .logout-icon {
-    -fx-fill: #e05252;
-}
-
-.root-light .logout-text {
-    -fx-text-fill: #e05252;
-}
-
-/* ── Content area ────────────────────────────────────────────────────── */
-.root-light .content-area {
-    -fx-background-color: #F5EDE0;
-}
-
-/* ── Dashboard wrapper ───────────────────────────────────────────────── */
-.root-light .dashboard-wrapper {
-    -fx-background-color: #F5EDE0;
+    -fx-background-color: rgba(184, 85, 7, 0.18);
+    -fx-border-color: rgba(255, 203, 176, 0.90);
 }
 
 /* ── Top bar ─────────────────────────────────────────────────────────── */
@@ -184,29 +101,15 @@
     -fx-background-color: transparent;
     -fx-border-color: rgba(106, 156, 137, 0.25);
 }
-
-.root-light .dashboard-topbar-title {
-    -fx-text-fill: #2E2E2E;
-}
+.root-light .dashboard-topbar-title { -fx-text-fill: #2E2E2E; }
 
 /* ── Clock ───────────────────────────────────────────────────────────── */
-.root-light .clock-time {
-    -fx-text-fill: #B85507;
-}
+.root-light .clock-time { -fx-text-fill: #B85507; }
+.root-light .clock-date { -fx-text-fill: #5C8A79; }
 
-.root-light .clock-date {
-    -fx-text-fill: #5C8A79;
-}
-
-/* ── Theme toggle ────────────────────────────────────────────────────── */
-.root-light .theme-toggle-container {
-    -fx-padding: 4 8;
-}
-
-.root-light .theme-icon {
-    -fx-fill: #5C8A79;
-}
-
+/* ── Theme toggle (content area) ────────────────────────────────────── */
+.root-light .theme-toggle-container { -fx-padding: 4 8; }
+.root-light .theme-icon { -fx-fill: #5C8A79; }
 .root-light .theme-toggle {
     -fx-background-color: rgba(193, 216, 195, 0.80);
     -fx-background-radius: 20;
@@ -216,41 +119,35 @@
     -fx-mark-color: transparent;
     -fx-text-fill: transparent;
 }
+.root-light .theme-toggle:selected { -fx-background-color: #B85507; }
 
-.root-light .theme-toggle:selected {
+/* ── Theme toggle (sidebar) ─────────────────────────────────────────── */
+.root-light .theme-toggle-sidebar {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+    -fx-border-color: rgba(255, 255, 255, 0.30);
+}
+.root-light .theme-toggle-sidebar:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+}
+.root-light .theme-toggle-sidebar:selected {
     -fx-background-color: #B85507;
+    -fx-border-color: rgba(184, 85, 7, 0.65);
 }
 
 /* ── Admin area ──────────────────────────────────────────────────────── */
-.root-light .admin-area-pane {
-    -fx-background-color: transparent;
-}
-
+.root-light .admin-area-pane  { -fx-background-color: transparent; }
 .root-light .admin-name-label {
     -fx-background-color: transparent;
     -fx-border-color: transparent transparent rgba(193, 216, 195, 0.70) transparent;
 }
-
 .root-light .admin-name-label .label {
     -fx-text-fill: #2E2E2E;
     -fx-background-color: transparent;
 }
-
-.root-light .admin-icon-inside {
-    -fx-fill: #5C8A79;
-}
-
-.root-light .admin-name-label:hover {
-    -fx-border-color: transparent transparent #B85507 transparent;
-}
-
-.root-light .admin-name-label:hover .admin-icon-inside {
-    -fx-fill: #B85507;
-}
-
-.root-light .admin-chevron {
-    -fx-fill: #5C8A79;
-}
+.root-light .admin-icon-inside { -fx-fill: #5C8A79; }
+.root-light .admin-name-label:hover { -fx-border-color: transparent transparent #B85507 transparent; }
+.root-light .admin-name-label:hover .admin-icon-inside { -fx-fill: #B85507; }
+.root-light .admin-chevron { -fx-fill: #5C8A79; }
 
 /* ── Admin dropdown ──────────────────────────────────────────────────── */
 .root-light .admin-dropdown {
@@ -258,19 +155,9 @@
     -fx-border-color: rgba(193, 216, 195, 0.65);
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 12, 0.12, 0, 3);
 }
-
-.root-light .admin-dropdown-item {
-    -fx-background-color: transparent;
-}
-
-.root-light .admin-dropdown-item:hover {
-    -fx-background-color: rgba(184, 85, 7, 0.09);
-}
-
-.root-light .admin-dropdown-icon {
-    -fx-fill: #B85507;
-}
-
+.root-light .admin-dropdown-item         { -fx-background-color: transparent; }
+.root-light .admin-dropdown-item:hover   { -fx-background-color: rgba(184, 85, 7, 0.09); }
+.root-light .admin-dropdown-icon         { -fx-fill: #B85507; }
 .root-light .admin-dropdown-label {
     -fx-text-fill: #1A1A1A;
     -fx-background-color: transparent;
@@ -286,27 +173,10 @@
     -fx-border-radius: 5px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 1);
 }
-
-/* Left accent stripe per card */
-.root-light .flat-card-blue {
-    -fx-border-color: #5C8A79 rgba(193, 216, 195, 0.60) rgba(193, 216, 195, 0.60) #5C8A79;
-    -fx-border-width: 1 1 1 4;
-}
-
-.root-light .flat-card-red {
-    -fx-border-color: #B85507 rgba(193, 216, 195, 0.60) rgba(193, 216, 195, 0.60) #B85507;
-    -fx-border-width: 1 1 1 4;
-}
-
-.root-light .flat-card-green {
-    -fx-border-color: #5C8A79 rgba(193, 216, 195, 0.60) rgba(193, 216, 195, 0.60) #5C8A79;
-    -fx-border-width: 1 1 1 4;
-}
-
-.root-light .flat-card-yellow {
-    -fx-border-color: #B85507 rgba(193, 216, 195, 0.60) rgba(193, 216, 195, 0.60) #B85507;
-    -fx-border-width: 1 1 1 4;
-}
+.root-light .flat-card-blue   { -fx-border-color: #5C8A79 rgba(193,216,195,0.60) rgba(193,216,195,0.60) #5C8A79; -fx-border-width: 1 1 1 4; }
+.root-light .flat-card-red    { -fx-border-color: #B85507 rgba(193,216,195,0.60) rgba(193,216,195,0.60) #B85507; -fx-border-width: 1 1 1 4; }
+.root-light .flat-card-green  { -fx-border-color: #5C8A79 rgba(193,216,195,0.60) rgba(193,216,195,0.60) #5C8A79; -fx-border-width: 1 1 1 4; }
+.root-light .flat-card-yellow { -fx-border-color: #B85507 rgba(193,216,195,0.60) rgba(193,216,195,0.60) #B85507; -fx-border-width: 1 1 1 4; }
 
 .root-light .flat-card-blue:hover,
 .root-light .flat-card-red:hover,
@@ -316,116 +186,58 @@
     -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.14), 9, 0, 0, 2);
 }
 
-.root-light .flat-value {
-    -fx-text-fill: #2E2E2E;
-}
-
-.root-light .flat-label {
-    -fx-text-fill: #5C8A79;
-}
-
-.root-light .flat-icon {
-    -fx-background-radius: 10px;
-}
-
-.root-light .flat-card-blue .flat-icon {
-    -fx-background-color: rgba(92, 138, 121, 0.18);
-}
-
-.root-light .flat-card-red .flat-icon {
-    -fx-background-color: rgba(184, 85, 7, 0.13);
-}
-
-.root-light .flat-card-green .flat-icon {
-    -fx-background-color: rgba(193, 216, 195, 0.45);
-}
-
-.root-light .flat-card-yellow .flat-icon {
-    -fx-background-color: rgba(184, 85, 7, 0.13);
-}
-
-.root-light .flat-icon-symbol {
-    -fx-fill: #5C8A79;
-}
-
-.root-light .flat-card-red .flat-icon-symbol {
-    -fx-fill: #B85507;
-}
-
-.root-light .flat-card-yellow .flat-icon-symbol {
-    -fx-fill: #B85507;
-}
+.root-light .flat-value { -fx-text-fill: #2E2E2E; }
+.root-light .flat-label { -fx-text-fill: #5C8A79; }
+.root-light .flat-icon  { -fx-background-radius: 10px; }
+.root-light .flat-card-blue .flat-icon   { -fx-background-color: rgba(92, 138, 121, 0.18); }
+.root-light .flat-card-red .flat-icon    { -fx-background-color: rgba(184, 85, 7, 0.13); }
+.root-light .flat-card-green .flat-icon  { -fx-background-color: rgba(193, 216, 195, 0.45); }
+.root-light .flat-card-yellow .flat-icon { -fx-background-color: rgba(184, 85, 7, 0.13); }
+.root-light .flat-icon-symbol            { -fx-fill: #5C8A79; }
+.root-light .flat-card-red .flat-icon-symbol    { -fx-fill: #B85507; }
+.root-light .flat-card-yellow .flat-icon-symbol { -fx-fill: #B85507; }
 
 /* ── Map wrapper ─────────────────────────────────────────────────────── */
-.root-light .map-wrapper {
-    -fx-background-color: transparent;
-}
-
+.root-light .map-wrapper   { -fx-background-color: transparent; }
 .root-light .map-container {
     -fx-background-color: rgba(255, 252, 248, 0.95);
     -fx-border-color: rgba(193, 216, 195, 0.65);
 }
-
 .root-light .map-search-btn {
     -fx-background-color: #5C8A79;
     -fx-border-color: rgba(84, 126, 110, 0.75);
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 5, 0.12, 0, 2);
 }
-
 .root-light .map-search-btn:hover {
     -fx-background-color: #B85507;
     -fx-border-color: #B85507;
     -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.22), 9, 0.18, 0, 0);
 }
-
-.root-light .map-search-icon {
-    -fx-fill: rgba(255, 255, 255, 0.95);
-}
-
+.root-light .map-search-icon { -fx-fill: rgba(255, 255, 255, 0.95); }
 .root-light .map-search-combobox {
     -fx-background-color: rgba(255, 252, 248, 0.95);
     -fx-border-color: rgba(193, 216, 195, 0.70);
     -fx-text-fill: #2E2E2E;
     -fx-prompt-text-fill: #8A8A8A;
 }
-
-.root-light .map-search-combobox:hover {
-    -fx-border-color: rgba(184, 85, 7, 0.45);
-    -fx-background-color: #FFFDF8;
-}
-
+.root-light .map-search-combobox:hover  { -fx-border-color: rgba(184,85,7,0.45); -fx-background-color: #FFFDF8; }
 .root-light .map-search-combobox:focused {
     -fx-border-color: rgba(184, 85, 7, 0.60);
     -fx-background-color: #FFFDF8;
     -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.16), 5, 0, 0, 0);
 }
-
 .root-light .search-popup-list {
     -fx-background-color: #FFFDF8;
     -fx-border-color: rgba(193, 216, 195, 0.65);
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.09), 10, 0, 0, 3);
 }
-
-.root-light .search-popup-list .list-cell {
-    -fx-background-color: transparent;
-    -fx-text-fill: #2E2E2E;
-}
-
-.root-light .search-popup-list .list-cell:hover {
-    -fx-background-color: rgba(184, 85, 7, 0.85);
-    -fx-text-fill: #FFFFFF;
-}
-
+.root-light .search-popup-list .list-cell          { -fx-background-color: transparent; -fx-text-fill: #2E2E2E; }
+.root-light .search-popup-list .list-cell:hover    { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
 .root-light .search-popup-list .list-cell:selected,
-.root-light .search-popup-list .list-cell:filled:selected {
-    -fx-background-color: rgba(184, 85, 7, 0.85);
-    -fx-text-fill: #FFFFFF;
-}
+.root-light .search-popup-list .list-cell:filled:selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
 
 /* ── Modal overlay ───────────────────────────────────────────────────── */
-.root-light .modal-overlay {
-    -fx-background-color: rgba(50, 50, 50, 0.35);
-}
+.root-light .modal-overlay { -fx-background-color: rgba(50, 50, 50, 0.35); }
 
 /* ── Change password dialog ──────────────────────────────────────────── */
 .root-light .change-password-dialog {
@@ -436,163 +248,81 @@
     -fx-border-radius: 12px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.13), 20, 0.12, 0, 5);
 }
-
-.root-light .cpd-header {
-    -fx-background-color: #5C8A79;
-    -fx-background-radius: 12px 12px 0 0;
-}
-
-.root-light .cpd-header-icon {
-    -fx-background-color: rgba(255, 255, 255, 0.18);
-}
-
-.root-light .cpd-header-icon-glyph {
-    -fx-fill: rgba(255, 255, 255, 0.92);
-}
-
-.root-light .cpd-title {
-    -fx-text-fill: rgba(255, 255, 255, 0.95);
-}
-
-.root-light .cpd-subtitle {
-    -fx-text-fill: rgba(255, 255, 255, 0.68);
-}
-
-.root-light .cpd-close-btn {
-    -fx-text-fill: rgba(255, 255, 255, 0.65);
-}
-
-.root-light .cpd-close-btn:hover {
-    -fx-text-fill: #e05252;
-    -fx-background-color: rgba(220, 60, 60, 0.14);
-}
-
-.root-light .cpd-divider {
-    -fx-background-color: rgba(193, 216, 195, 0.65);
-}
-
-.root-light .cpd-field-divider {
-    -fx-background-color: rgba(193, 216, 195, 0.40);
-}
-
-.root-light .cpd-body {
-    -fx-background-color: rgba(255, 252, 248, 0.80);
-}
-
-.root-light .cpd-field-label {
-    -fx-text-fill: #2E2E2E;
-}
-
-.root-light .cpd-input-wrap {
-    -fx-background-color: rgba(255, 252, 248, 0.90);
-    -fx-border-color: rgba(193, 216, 195, 0.70);
-}
-
-.root-light .cpd-input-wrap:focused {
+.root-light .cpd-header              { -fx-background-color: #5C8A79; -fx-background-radius: 12px 12px 0 0; }
+.root-light .cpd-header-icon         { -fx-background-color: rgba(255, 255, 255, 0.18); }
+.root-light .cpd-header-icon-glyph   { -fx-fill: rgba(255, 255, 255, 0.92); }
+.root-light .cpd-title               { -fx-text-fill: rgba(255, 255, 255, 0.95); }
+.root-light .cpd-subtitle            { -fx-text-fill: rgba(255, 255, 255, 0.68); }
+.root-light .cpd-close-btn           { -fx-text-fill: rgba(255, 255, 255, 0.65); }
+.root-light .cpd-close-btn:hover     { -fx-text-fill: #e05252; -fx-background-color: rgba(220,60,60,0.14); }
+.root-light .cpd-divider             { -fx-background-color: rgba(193, 216, 195, 0.65); }
+.root-light .cpd-field-divider       { -fx-background-color: rgba(193, 216, 195, 0.40); }
+.root-light .cpd-body                { -fx-background-color: rgba(255, 252, 248, 0.80); }
+.root-light .cpd-field-label         { -fx-text-fill: #2E2E2E; }
+.root-light .cpd-input-wrap          { -fx-background-color: rgba(255, 252, 248, 0.90); -fx-border-color: rgba(193,216,195,0.70); }
+.root-light .cpd-input-wrap:focused  {
     -fx-border-color: rgba(184, 85, 7, 0.60);
     -fx-background-color: #FFFDF8;
     -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.14), 5, 0, 0, 0);
 }
+.root-light .cpd-input-icon          { -fx-fill: rgba(92, 138, 121, 0.75); }
+.root-light .cpd-input               { -fx-background-color: transparent; -fx-text-fill: #2E2E2E; -fx-prompt-text-fill: #8A8A8A; -fx-border-color: transparent; }
+.root-light .cpd-eye-btn             { -fx-background-color: transparent; }
+.root-light .cpd-eye-btn:hover       { -fx-background-color: rgba(184, 85, 7, 0.10); }
+.root-light .cpd-message-error       { -fx-text-fill: #b91c1c; -fx-background-color: rgba(200,30,30,0.07); -fx-border-color: rgba(200,30,30,0.20); }
+.root-light .cpd-message-success     { -fx-text-fill: #047857; -fx-background-color: rgba(4,120,87,0.07); -fx-border-color: rgba(4,120,87,0.22); }
+.root-light .cpd-footer              { -fx-background-color: rgba(240, 232, 220, 0.70); -fx-background-radius: 0 0 12px 12px; }
+.root-light .cpd-cancel-btn          { -fx-background-color: rgba(255, 252, 248, 0.90); -fx-text-fill: #2E2E2E; -fx-border-color: rgba(193,216,195,0.70); }
+.root-light .cpd-cancel-btn:hover    { -fx-background-color: rgba(193,216,195,0.45); -fx-border-color: #5C8A79; -fx-text-fill: #2E2E2E; }
+.root-light .cpd-confirm-btn         { -fx-background-color: #B85507; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.25), 7, 0.18, 0, 2); }
+.root-light .cpd-confirm-btn:hover   { -fx-background-color: #A34A06; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.40), 11, 0.22, 0, 0); }
+.root-light .cpd-confirm-btn:pressed { -fx-background-color: #8E4005; }
+.root-light .cpd-confirm-icon        { -fx-fill: rgba(255, 255, 255, 0.95); }
+.root-light .cpd-confirm-label       { -fx-text-fill: rgba(255, 255, 255, 0.95); -fx-background-color: transparent; }
 
-.root-light .cpd-input-icon {
-    -fx-fill: rgba(92, 138, 121, 0.75);
-}
-
-.root-light .cpd-input {
-    -fx-background-color: transparent;
-    -fx-text-fill: #2E2E2E;
-    -fx-prompt-text-fill: #8A8A8A;
-    -fx-border-color: transparent;
-}
-
-.root-light .cpd-eye-btn {
-    -fx-background-color: transparent;
-}
-
-.root-light .cpd-eye-btn:hover {
-    -fx-background-color: rgba(184, 85, 7, 0.10);
-}
-
-.root-light .cpd-message-error {
-    -fx-text-fill: #b91c1c;
-    -fx-background-color: rgba(200, 30, 30, 0.07);
-    -fx-border-color: rgba(200, 30, 30, 0.20);
-}
-
-.root-light .cpd-message-success {
-    -fx-text-fill: #047857;
-    -fx-background-color: rgba(4, 120, 87, 0.07);
-    -fx-border-color: rgba(4, 120, 87, 0.22);
-}
-
-.root-light .cpd-footer {
-    -fx-background-color: rgba(240, 232, 220, 0.70);
-    -fx-background-radius: 0 0 12px 12px;
-}
-
-.root-light .cpd-cancel-btn {
-    -fx-background-color: rgba(255, 252, 248, 0.90);
-    -fx-text-fill: #2E2E2E;
-    -fx-border-color: rgba(193, 216, 195, 0.70);
-}
-
-.root-light .cpd-cancel-btn:hover {
-    -fx-background-color: rgba(193, 216, 195, 0.45);
-    -fx-border-color: #5C8A79;
-    -fx-text-fill: #2E2E2E;
-}
-
-.root-light .cpd-confirm-btn {
-    -fx-background-color: #B85507;
-    -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.25), 7, 0.18, 0, 2);
-}
-
-.root-light .cpd-confirm-btn:hover {
-    -fx-background-color: #A34A06;
-    -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.40), 11, 0.22, 0, 0);
-}
-
-.root-light .cpd-confirm-btn:pressed {
-    -fx-background-color: #8E4005;
-}
-
-.root-light .cpd-confirm-icon {
-    -fx-fill: rgba(255, 255, 255, 0.95);
-}
-
-.root-light .cpd-confirm-label {
-    -fx-text-fill: rgba(255, 255, 255, 0.95);
-    -fx-background-color: transparent;
-}
-
-/* ── SMS toast ───────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   SMS / NEWS TOAST — light mode
+   The toast header stays green-teal; the body stays a warm light cream.
+   All label colors are set explicitly so nothing is inherited from dark.
+   ═══════════════════════════════════════════════════════════════════════ */
 .root-light .sms-toast {
     -fx-background-color: #EDE8DF;
     -fx-border-color: #B0C8B2;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 18, 0.14, 0, 5);
 }
 
-.root-light .sms-toast-header {
+/* Header — teal background, white text */
+.root-light .sms-toast .sms-toast-header {
     -fx-background-color: #5C8A79;
     -fx-border-color: transparent transparent rgba(90, 130, 115, 0.45) transparent;
     -fx-background-radius: 14px 14px 0 0;
 }
-
-.root-light .sms-toast-title {
+.root-light .sms-toast .sms-toast-title {
     -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
 }
+.root-light .sms-toast .sms-icon-btn {
+    -fx-text-fill: rgba(255, 255, 255, 0.80);
+    -fx-background-color: transparent;
+}
+.root-light .sms-toast .sms-icon-btn:hover {
+    -fx-text-fill: #FFFFFF;
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+}
 
-.root-light .sms-toast-body {
+/* Body — cream background, dark text */
+.root-light .sms-toast .sms-toast-body {
     -fx-background-color: #EDE8DF;
 }
-
-.root-light .sms-toast-subtitle {
+.root-light .sms-toast .sms-toast-subtitle {
     -fx-text-fill: #2D4A40;
-    -fx-font-weight: 700;
+}
+/* Catch any dynamically-added labels inside the toast body */
+.root-light .sms-toast .sms-toast-body .label {
+    -fx-text-fill: #2D4A40;
 }
 
-/* Progress bar — SMS bulk send (teal in light mode) */
+/* Progress bar — SMS bulk send (teal) */
 .root-light .sms-toast-progress {
     -fx-accent: #5C8A79;
     -fx-control-inner-background: rgba(193, 216, 195, 0.45);
@@ -612,7 +342,7 @@
     -fx-background-insets: 0;
 }
 
-/* Progress bar — News/AI (orange in light mode) */
+/* Progress bar — News/AI (orange) */
 .root-light .sms-toast-progress-news {
     -fx-accent: #B85507;
     -fx-control-inner-background: rgba(184, 85, 7, 0.16);
@@ -632,32 +362,14 @@
     -fx-background-insets: 0;
 }
 
-.root-light .sms-icon-btn {
-    -fx-text-fill: rgba(255, 255, 255, 0.85);
-}
-
-.root-light .sms-icon-btn:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.16);
-    -fx-text-fill: #FFFFFF;
-}
-
 /* ── Footer bar ──────────────────────────────────────────────────────── */
 .root-light .main-footer {
     -fx-background-color: rgba(240, 232, 220, 0.70);
     -fx-border-color: rgba(193, 216, 195, 0.55) transparent transparent transparent;
 }
-
-.root-light .footer-text {
-    -fx-text-fill: #5C8A79;
-}
-
-.root-light .footer-link-button {
-    -fx-text-fill: #B85507;
-}
-
-.root-light .footer-link-button:hover {
-    -fx-text-fill: #A34A06;
-}
+.root-light .footer-text         { -fx-text-fill: #5C8A79; }
+.root-light .footer-link-button  { -fx-text-fill: #B85507; }
+.root-light .footer-link-button:hover { -fx-text-fill: #A34A06; }
 
 /* ── Scrollbars (global) ─────────────────────────────────────────────── */
 .root-light .scroll-bar:vertical .thumb,
@@ -665,28 +377,16 @@
     -fx-background-color: rgba(193, 216, 195, 0.65);
     -fx-background-radius: 10;
 }
-
 .root-light .scroll-bar:vertical .thumb:hover,
 .root-light .scroll-bar:horizontal .thumb:hover {
     -fx-background-color: rgba(92, 138, 121, 0.75);
 }
-
 .root-light .scroll-bar:vertical .track,
-.root-light .scroll-bar:horizontal .track {
-    -fx-background-color: rgba(193, 216, 195, 0.20);
-}
-
+.root-light .scroll-bar:horizontal .track { -fx-background-color: rgba(193, 216, 195, 0.20); }
 .root-light .scroll-bar .increment-button,
-.root-light .scroll-bar .decrement-button {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
+.root-light .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
 .root-light .scroll-bar .increment-arrow,
-.root-light .scroll-bar .decrement-arrow {
-    -fx-shape: "";
-    -fx-padding: 0;
-}
+.root-light .scroll-bar .decrement-arrow  { -fx-shape: ""; -fx-padding: 0; }
 
 /* ── Tooltips ────────────────────────────────────────────────────────── */
 .root-light .tooltip {

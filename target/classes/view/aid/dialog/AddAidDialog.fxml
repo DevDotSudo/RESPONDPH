@@ -7,7 +7,6 @@
 
 <VBox fx:id="root" prefHeight="750.0" prefWidth="1100.0" spacing="0" styleClass="dialog-root" stylesheets="@/styles/aid/dialog/addaiddialog.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ionres.respondph.aid.dialogs_controller.AddAidController">
 
-    <!-- ==================== HEADER SECTION ==================== -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dialog-header">
         <padding>
             <Insets bottom="18" left="24" right="24" top="18" />
@@ -204,8 +203,8 @@
                             <Label styleClass="recommendation-subtitle" text="Research References:" />
                         </HBox>
                         <VBox spacing="4">
-                            <Hyperlink styleClass="research-link" text="1. Hub Location Optimization for Disaster Aid Distribution" onAction="#openKMeansResearchLink" />
-                            <Hyperlink styleClass="research-link" text="2. Comparison of K-Means and Fuzzy C-Means Algorithms" onAction="#openFCMResearchLink" />
+                            <Hyperlink onAction="#openKMeansResearchLink" styleClass="research-link" text="1. Hub Location Optimization for Disaster Aid Distribution" />
+                            <Hyperlink onAction="#openFCMResearchLink" styleClass="research-link" text="2. Comparison of K-Means and Fuzzy C-Means Algorithms" />
                         </VBox>
                         <Label styleClass="recommendation-subtext" text="Studies show K-Means is particularly effective for disaster management contexts where clear priority separation exists, offering superior computational efficiency without sacrificing clustering quality." wrapText="true" />
                     </VBox>

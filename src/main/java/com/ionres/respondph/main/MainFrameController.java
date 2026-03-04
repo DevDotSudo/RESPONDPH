@@ -14,7 +14,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -40,6 +39,7 @@ public class MainFrameController {
     @FXML private ProgressBar newsProgressBar;
     @FXML private Button      newsMinimizeBtn;
     @FXML private Button      newsCloseBtn;
+    @FXML private ToggleButton themeToggleBtn;
 
     @FXML private HBox   footerBar;
 
@@ -104,7 +104,7 @@ public class MainFrameController {
     private ScrollPane newsLogScroll;
     private HBox       newsDotBar;
     private Label      newsCountLabel;
-    private Label      newsStepLabel;      // ← NEW: shows current step (Step 1/3, Parsing, etc.)
+    private Label      newsStepLabel;
     private Label      streamingLabel;
     private Label      tickLabel;
     private int        confirmedNewsCount = 0;
@@ -180,6 +180,35 @@ public class MainFrameController {
         hideFooter();
         hideSmsProgress();
         hideNewsProgress();
+        Platform.runLater(this::wireThemeToggle);
+    }
+
+    private void wireThemeToggle() {
+        if (themeToggleBtn == null) return;
+
+        boolean savedLight = ThemeManager.getInstance().isLightMode();
+        themeToggleBtn.setSelected(savedLight);
+        setThemeToggleIcon(savedLight);
+
+        if (savedLight) {
+            var scene = themeToggleBtn.getScene();
+            if (scene != null) ThemeManager.getInstance().applyTo(scene.getRoot(), scene);
+        }
+
+        themeToggleBtn.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            var scene = themeToggleBtn.getScene();
+            if (scene == null) return;
+            ThemeManager.getInstance().setLightMode(isSelected, scene);
+            setThemeToggleIcon(isSelected);
+        });
+    }
+
+    private void setThemeToggleIcon(boolean isLight) {
+        FontAwesomeIconView icon = new FontAwesomeIconView();
+        icon.setGlyphName(isLight ? "SUN_ALT" : "MOON_ALT");
+        icon.setSize("14");
+        icon.setFill(javafx.scene.paint.Color.WHITE);
+        themeToggleBtn.setGraphic(icon);
     }
 
     private void refreshFooter() {
@@ -341,8 +370,6 @@ public class MainFrameController {
 
     public void showNewsProgress(String topic) {
         Platform.runLater(() -> {
-            // Always fully reset before showing — fixes stale confirmedNewsCount
-            // from a previous generation causing dots not to update.
             resetNewsLogState();
             newsMinimized  = false;
             newsVisible    = true;
@@ -372,7 +399,6 @@ public class MainFrameController {
 
         animateNewsBarTo(Math.max(0.0, Math.min(1.0, progress)));
 
-        // Split header from optional streaming tail (separated by \n▶ )
         String header;
         String streamTail;
         int nlIdx = status.indexOf('\n');
@@ -388,27 +414,21 @@ public class MainFrameController {
         newsFooterText = header;
         if (newsMinimized) refreshFooter();
 
-        // Always update the step label so something is always visible
         updateStepLabel(header);
 
         if (newsLogBox == null) return;
 
-        // ── Route to the appropriate handler ─────────────────────────────────
-
-        // "N of 5 items found (Xs)"  — dot fill + item confirmed row
         if (header.matches("\\d+ of \\d+ items? found.*")) {
             handleItemConfirmed(header, streamTail);
             return;
         }
 
-        // Grounding events: "🔍 Searching: …" or "📄 Reading: …"
         if (header.startsWith(GROUNDING_SEARCH_EMOJI) || header.startsWith(GROUNDING_PAGE_EMOJI)) {
             handleGroundingEvent(header);
             if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
             return;
         }
 
-        // Inline live writing / searching label (no dedicated row, just tick)
         if (header.startsWith("Writing news…")
                 || header.startsWith("Searching…")
                 || header.startsWith("Using gemini")
@@ -420,7 +440,6 @@ public class MainFrameController {
             return;
         }
 
-        // N found, searching for M more — treat like tick label
         if (header.matches("Found \\d+.*") || header.matches("Only \\d+.*")) {
             updateTickLabel(header);
             return;
@@ -443,8 +462,6 @@ public class MainFrameController {
             return;
         }
 
-        // ── Catch-all: Step X/3, Fetching, Parsing, Translating, Error, etc. ──
-        // These were previously silently swallowed. Now they appear in the log.
         if (header.startsWith("Step ")
                 || header.startsWith("Fetching")
                 || header.startsWith("Parsing")
@@ -463,7 +480,6 @@ public class MainFrameController {
             return;
         }
 
-        // Final fallback — append as an info row so nothing is ever lost
         appendRow("ℹ️ " + header, RowKind.INFO);
     }
 
@@ -565,53 +581,50 @@ public class MainFrameController {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // NEWS ACTIVITY PANE (log / dots / streaming)
+    // NEWS ACTIVITY PANE
     // ═════════════════════════════════════════════════════════════════════════
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // FIX: ALL inline setStyle() color calls removed from this method.
+    // Style classes are used instead so that .root-light CSS overrides work
+    // correctly at any time, including after a theme switch.
+    // ─────────────────────────────────────────────────────────────────────────
     private VBox buildNewsActivityPane(String topic) {
-        boolean light = ThemeManager.getInstance().isLightMode();
         VBox pane = new VBox(8);
         pane.setFillWidth(true);
         pane.setMaxWidth(Double.MAX_VALUE);
         pane.setPadding(new Insets(4, 0, 0, 0));
 
-        // Topic label (dim, italic)
+        // Topic label — CSS class controls color per theme
         Label topicLabel = new Label("Topic: " + (topic != null ? topic : "…"));
-        topicLabel.setStyle(
-                "-fx-text-fill: " + (light ? "rgba(26,26,26,0.55)" : "rgba(255,255,255,0.50)") + "; " +
-                        "-fx-font-size: 11px; -fx-font-style: italic;");
+        topicLabel.getStyleClass().add("news-topic-label");
 
-        // ── NEW: Step label — shows current pipeline step prominently ──────────
+        // Step label — CSS class controls color per theme
         newsStepLabel = new Label("Initializing…");
         newsStepLabel.setWrapText(true);
         newsStepLabel.setMaxWidth(Double.MAX_VALUE);
-        newsStepLabel.setStyle(
-                "-fx-text-fill: " + (light ? "#1A1A1A" : "rgba(255,255,255,0.88)") + "; " +
-                        "-fx-font-size: 11.5px; -fx-font-weight: bold;");
+        newsStepLabel.getStyleClass().add("news-step-label");
 
-        // Dot bar
+        // Dot bar — dots use style classes, not inline fill/stroke
         newsDotBar = new HBox(6);
         newsDotBar.setAlignment(Pos.CENTER_LEFT);
         for (int i = 0; i < 5; i++) {
             Circle dot = new Circle(5);
             dot.setId("news-dot-" + i);
-            dot.setFill(Color.web(light ? "#D0C8BD" : "#ffffff18"));
-            dot.setStroke(Color.web(light ? "#B85507" : "#F97316"));
-            dot.setStrokeWidth(1.5);
+            dot.getStyleClass().add("news-dot-empty");
             newsDotBar.getChildren().add(dot);
         }
 
         newsCountLabel = new Label("0 of 5 items found");
-        newsCountLabel.setStyle("-fx-text-fill: " + (light ? "rgba(26,26,26,0.65)" : "rgba(255,255,255,0.60)") + "; -fx-font-size: 11px;");
+        newsCountLabel.getStyleClass().add("news-count-label");
         HBox dotRow = new HBox(10, newsDotBar, newsCountLabel);
         dotRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Log box
+        // Log box — CSS class controls background per theme
         newsLogBox = new VBox(3);
         newsLogBox.setFillWidth(true);
         newsLogBox.setPadding(new Insets(6, 8, 6, 8));
-        newsLogBox.setStyle(
-                "-fx-background-color: " + (light ? "rgba(0,0,0,0.07)" : "rgba(0,0,0,0.30)") + "; -fx-background-radius: 6px;");
+        newsLogBox.getStyleClass().add("news-log-box");
 
         newsLogScroll = new ScrollPane(newsLogBox);
         newsLogScroll.setFitToWidth(true);
@@ -619,11 +632,8 @@ public class MainFrameController {
         newsLogScroll.setMaxHeight(120);
         newsLogScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         newsLogScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        newsLogScroll.setStyle(
-                "-fx-background: transparent; -fx-background-color: transparent; " +
-                        "-fx-border-color: transparent; -fx-padding: 0;");
+        newsLogScroll.getStyleClass().add("news-log-scroll");
 
-        // Stack: topic → step label → dots → log
         pane.getChildren().addAll(topicLabel, newsStepLabel, dotRow, newsLogScroll);
         return pane;
     }
@@ -640,41 +650,26 @@ public class MainFrameController {
         }
     }
 
-    /**
-     * Called when NewsGeneratorService emits "N of 5 items found (Xs)".
-     *
-     * The regex in setNewsProgress matches "\\d+ of \\d+ items? found.*"
-     * which handles both singular ("item") and plural ("items").
-     * header.split(" ")[0] extracts the N value.
-     */
     private void handleItemConfirmed(String header, String streamTail) {
         int n = 0;
         try {
             n = Integer.parseInt(header.split(" ")[0]);
         } catch (NumberFormatException ignored) {}
 
-        // Fill dots from the last confirmed count up to n
         if (n > confirmedNewsCount) {
-            for (int i = confirmedNewsCount; i < n && i < 5; i++) {
-                fillDot(i);
-            }
+            for (int i = confirmedNewsCount; i < n && i < 5; i++) fillDot(i);
             confirmedNewsCount = n;
 
-            if (newsCountLabel != null)
-                newsCountLabel.setText(n + " of 5 items found");
+            if (newsCountLabel != null) newsCountLabel.setText(n + " of 5 items found");
             newsFooterText = n + " of 5 items found";
             if (newsMinimized) refreshFooter();
 
-            // Update step label to reflect confirmed count
             updateStepLabel("Item " + n + " of 5 confirmed");
-
             clearTickLabel();
             appendRow("✅ Item " + n + " confirmed", RowKind.ITEM);
         }
 
-        if (streamTail != null && !streamTail.isBlank()) {
-            updateStreamingLabel(streamTail);
-        }
+        if (streamTail != null && !streamTail.isBlank()) updateStreamingLabel(streamTail);
     }
 
     private void handleDone(String header) {
@@ -682,7 +677,6 @@ public class MainFrameController {
         clearTickLabel();
         stopPulse();
         appendRow("🎉 " + header, RowKind.ITEM);
-        // Fill any remaining dots in case some confirmations were missed
         for (int i = confirmedNewsCount; i < 5; i++) fillDot(i);
         confirmedNewsCount = 5;
         if (newsCountLabel != null) newsCountLabel.setText("5 of 5 items found ✓");
@@ -741,28 +735,25 @@ public class MainFrameController {
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // FIX: Replaced setStyle() color logic with getStyleClass().add().
+    // CSS now controls colors — theme switches work without rebuilding nodes.
+    // ─────────────────────────────────────────────────────────────────────────
     private Label makeRowLabel(String text, RowKind kind) {
-        boolean light = ThemeManager.getInstance().isLightMode();
         Label row = new Label(text);
         row.setWrapText(true);
         row.setMaxWidth(Double.MAX_VALUE);
         switch (kind) {
-            case SEARCH -> row.setStyle("-fx-text-fill: " + (light ? "#2563EB" : "#93C5FD") + "; -fx-font-size: 11px;");
-            case PAGE   -> row.setStyle("-fx-text-fill: " + (light ? "#16A34A" : "#86EFAC") + "; -fx-font-size: 11px;");
-            case ITEM   -> row.setStyle("-fx-text-fill: " + (light ? "#B45309" : "#FCD34D") + "; -fx-font-size: 11px; -fx-font-weight: bold;");
-            case INFO   -> row.setStyle("-fx-text-fill: " + (light ? "rgba(26,26,26,0.55)" : "rgba(255,255,255,0.42)") + "; -fx-font-size: 11px;");
+            case SEARCH -> row.getStyleClass().add("news-row-search");
+            case PAGE   -> row.getStyleClass().add("news-row-page");
+            case ITEM   -> row.getStyleClass().add("news-row-item");
+            case INFO   -> row.getStyleClass().add("news-row-info");
         }
         return row;
     }
 
     // ── Step label ────────────────────────────────────────────────────────────
 
-    /**
-     * Updates the prominent step label shown above the dot bar.
-     * This is the primary fix: previously all "Step X/3 — …", "Parsing…",
-     * "Fetching RSS…", "Translating…" messages were silently dropped.
-     * Now they are always displayed here.
-     */
     private void updateStepLabel(String text) {
         if (newsStepLabel == null || text == null || text.isBlank()) return;
         newsStepLabel.setText(text);
@@ -770,6 +761,9 @@ public class MainFrameController {
 
     // ── Streaming label ───────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // FIX: Replaced setStyle() with getStyleClass().add("news-row-streaming").
+    // ─────────────────────────────────────────────────────────────────────────
     private void updateStreamingLabel(String tail) {
         if (newsLogBox == null || tail == null || tail.isBlank()) return;
         if (streamingLabel == null) {
@@ -777,10 +771,7 @@ public class MainFrameController {
             streamingLabel = new Label();
             streamingLabel.setWrapText(true);
             streamingLabel.setMaxWidth(Double.MAX_VALUE);
-            boolean light = ThemeManager.getInstance().isLightMode();
-            streamingLabel.setStyle(
-                    "-fx-text-fill: " + (light ? "rgba(26,26,26,0.45)" : "rgba(255,255,255,0.30)") + "; " +
-                            "-fx-font-size: 10.5px; -fx-font-style: italic;");
+            streamingLabel.getStyleClass().add("news-row-streaming");
             newsLogBox.getChildren().add(streamingLabel);
         } else {
             reorderSpecialLabels();
@@ -800,6 +791,9 @@ public class MainFrameController {
 
     // ── Tick label ────────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // FIX: Replaced setStyle() with getStyleClass().add("news-row-tick").
+    // ─────────────────────────────────────────────────────────────────────────
     private void updateTickLabel(String text) {
         if (newsLogBox == null) return;
         if (tickLabel == null) {
@@ -807,8 +801,7 @@ public class MainFrameController {
             tickLabel = new Label();
             tickLabel.setWrapText(false);
             tickLabel.setMaxWidth(Double.MAX_VALUE);
-            boolean light = ThemeManager.getInstance().isLightMode();
-            tickLabel.setStyle("-fx-text-fill: " + (light ? "rgba(26,26,26,0.50)" : "rgba(255,255,255,0.45)") + "; -fx-font-size: 11px;");
+            tickLabel.getStyleClass().add("news-row-tick");
             newsLogBox.getChildren().add(tickLabel);
         } else {
             reorderSpecialLabels();
@@ -830,13 +823,17 @@ public class MainFrameController {
         if (streamingLabel != null) { newsLogBox.getChildren().remove(streamingLabel); newsLogBox.getChildren().add(streamingLabel); }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // FIX: lastGroundingRowText() now checks style CLASS instead of inline
+    // style string, since rows no longer have inline styles.
+    // ─────────────────────────────────────────────────────────────────────────
     private String lastGroundingRowText() {
         if (newsLogBox == null) return null;
         for (int i = newsLogBox.getChildren().size() - 1; i >= 0; i--) {
             var node = newsLogBox.getChildren().get(i);
             if (node instanceof Label lbl && lbl != streamingLabel && lbl != tickLabel) {
-                String style = lbl.getStyle();
-                if (style.contains("#93C5FD") || style.contains("#86EFAC"))
+                var styles = lbl.getStyleClass();
+                if (styles.contains("news-row-search") || styles.contains("news-row-page"))
                     return lbl.getText().replace("▌", "");
                 break;
             }
@@ -850,12 +847,16 @@ public class MainFrameController {
 
     // ── Dots + pulse ──────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // FIX: Replaced dot.setFill() / dot.setStroke() inline color calls with
+    // style class swaps. CSS handles fill/stroke per theme.
+    // NOTE: Circle fill/stroke IS styleable via -fx-fill / -fx-stroke in CSS.
+    // ─────────────────────────────────────────────────────────────────────────
     private void fillDot(int i) {
         if (newsDotBar == null || i < 0 || i >= newsDotBar.getChildren().size()) return;
-        boolean light = ThemeManager.getInstance().isLightMode();
         Circle dot = (Circle) newsDotBar.getChildren().get(i);
-        dot.setFill(Color.web(light ? "#B85507" : "#F97316"));
-        dot.setStroke(Color.web(light ? "#D97C30" : "#FDBA74"));
+        dot.getStyleClass().remove("news-dot-empty");
+        dot.getStyleClass().add("news-dot-filled");
         ScaleTransition pop = new ScaleTransition(Duration.millis(220), dot);
         pop.setFromX(1.0); pop.setFromY(1.0);
         pop.setToX(1.5);   pop.setToY(1.5);
@@ -881,17 +882,13 @@ public class MainFrameController {
         if (pulseTimeline != null) { pulseTimeline.stop(); pulseTimeline = null; }
     }
 
-    /**
-     * Resets all news log state. Called at the start of every new generation
-     * to ensure dots start from 0, step label resets, and no stale refs remain.
-     */
     private void resetNewsLogState() {
-        confirmedNewsCount = 0;      // ← critical: dots start from 0 each run
+        confirmedNewsCount = 0;
         newsLogBox         = null;
         newsLogScroll      = null;
         newsDotBar         = null;
         newsCountLabel     = null;
-        newsStepLabel      = null;   // ← reset step label ref
+        newsStepLabel      = null;
         streamingLabel     = null;
         tickLabel          = null;
     }
@@ -1040,9 +1037,7 @@ public class MainFrameController {
         }
 
         switch (role) {
-            case "Admin" -> {
-                // All visible — do nothing
-            }
+            case "Admin" -> { /* All visible */ }
             case "Brgy_Sec" -> {
                 setVisible(disasterSectionBtn, disasterSectionContent, false);
                 setVisible(aidsSectionBtn,     aidsSectionContent,     false);
@@ -1065,14 +1060,8 @@ public class MainFrameController {
     }
 
     private void setVisible(Button sectionBtn, VBox sectionContent, boolean visible) {
-        if (sectionBtn != null) {
-            sectionBtn.setVisible(visible);
-            sectionBtn.setManaged(visible);
-        }
-        if (sectionContent != null) {
-            sectionContent.setVisible(visible);
-            sectionContent.setManaged(visible);
-        }
+        if (sectionBtn != null) { sectionBtn.setVisible(visible); sectionBtn.setManaged(visible); }
+        if (sectionContent != null) { sectionContent.setVisible(visible); sectionContent.setManaged(visible); }
     }
 
     private void setButtonVisible(Button btn, boolean visible) {

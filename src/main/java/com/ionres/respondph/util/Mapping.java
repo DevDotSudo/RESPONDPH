@@ -33,7 +33,7 @@ public class Mapping {
     private Image markerImage;
     private double zoom;
     public static final double MIN_ZOOM = 13;
-    public static final double MAX_ZOOM = 20.0;
+    public static final double MAX_ZOOM = 19.0;
     private static final int TILE_SIZE = 256;
     private static final double BOUND_NORTH = 11.116584029742963;
     private static final double BOUND_SOUTH = 10.984159872049194;

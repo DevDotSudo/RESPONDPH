@@ -194,16 +194,21 @@
                 </VBox>
             </ScrollPane>
 
-            <!-- Logout -->
             <VBox styleClass="logout-section">
-                <Button fx:id="logoutBtn" maxWidth="1.7976931348623157E308" styleClass="logout-button">
-                    <graphic>
-                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
-                            <FontAwesomeIconView glyphName="SIGN_OUT" styleClass="logout-icon" />
-                            <Label styleClass="logout-text" text="Logout" />
-                        </HBox>
-                    </graphic>
-                </Button>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Button fx:id="logoutBtn" styleClass="logout-button" HBox.hgrow="ALWAYS"
+                            maxWidth="1.7976931348623157E308">
+                        <graphic>
+                            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-row">
+                                <FontAwesomeIconView glyphName="SIGN_OUT" styleClass="logout-icon" />
+                                <Label styleClass="logout-text" text="Logout" />
+                            </HBox>
+                        </graphic>
+                    </Button>
+
+                    <ToggleButton fx:id="themeToggleBtn" styleClass="theme-toggle-sidebar" />
+
+                </HBox>
             </VBox>
 
         </VBox>

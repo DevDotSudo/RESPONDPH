@@ -431,3 +431,65 @@
 .root-light .field-checkbox:selected .box { -fx-background-color: #B85507; -fx-border-color: rgba(184,85,7,0.90); }
 .root-light .field-checkbox:selected .box .mark { -fx-background-color: white; }
 .root-light .field-helper-text { -fx-text-fill: #4A7566; }
+
+/* ── Radio buttons (light mode) ─────────────────────────────────────────── */
+.root-light .radio-label {
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .radio-label .radio {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.70);
+}
+.root-light .radio-label:selected .radio {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(184,85,7,0.90);
+}
+.root-light .radio-label:selected .radio .dot {
+    -fx-background-color: white;
+}
+
+/* ── Checkboxes (light mode) ─────────────────────────────────────────────── */
+.root-light .field-checkbox {
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .field-checkbox .box {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.70);
+}
+.root-light .field-checkbox:selected .box {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(184,85,7,0.90);
+}
+.root-light .field-checkbox:selected .box .mark {
+    -fx-background-color: white;
+}
+
+/* ── Field labels (light mode) ───────────────────────────────────────────── */
+.root-light .field-label {
+    -fx-text-fill: #1A1A1A;
+}
+
+/* ── Spinner (light mode) ────────────────────────────────────────────────── */
+.root-light .field-spinner {
+    -fx-background-color: #EDE8DF;
+    -fx-border-color: rgba(176,200,178,0.70);
+}
+.root-light .field-spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1A1A1A;
+    -fx-prompt-text-fill: rgba(106,156,137,0.60);
+}
+.root-light .field-spinner .increment-arrow-button,
+.root-light .field-spinner .decrement-arrow-button {
+    -fx-background-color: rgba(176,200,178,0.30);
+    -fx-border-color: rgba(176,200,178,0.50);
+}
+.root-light .field-spinner .increment-arrow-button:hover,
+.root-light .field-spinner .decrement-arrow-button:hover {
+    -fx-background-color: rgba(184,85,7,0.12);
+    -fx-border-color: rgba(184,85,7,0.35);
+}
+.root-light .field-spinner .increment-arrow,
+.root-light .field-spinner .decrement-arrow {
+    -fx-background-color: #4A7566;
+}

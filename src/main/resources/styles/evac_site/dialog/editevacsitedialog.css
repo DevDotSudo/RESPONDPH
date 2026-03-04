@@ -477,15 +477,21 @@
 
 /* ── Location button ─────────────────────────────────────────────────── */
 .root-light .evacuation-location-button {
-    -fx-background-color: #EDE8DF;
-    -fx-border-color: rgba(176, 200, 178, 0.70);
+    -fx-background-color: rgba(184,85,7,0.12);
+    -fx-border-color: rgba(184,85,7,0.55);
+    -fx-border-width: 1.5px;
+    -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.15), 8, 0.0, 0, 2);
 }
 .root-light .evacuation-location-button:hover {
-    -fx-background-color: rgba(193,216,195,0.40);
-    -fx-border-color: #6A9C89;
+    -fx-background-color: rgba(184,85,7,0.22);
+    -fx-border-color: rgba(184,85,7,0.85);
+    -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.28), 12, 0.0, 0, 3);
 }
-.root-light .evacuation-button-icon { -fx-fill: #2E2E2E; }
-.root-light .evacuation-button-label { -fx-text-fill: #2E2E2E; }
+.root-light .evacuation-location-button:pressed {
+    -fx-background-color: rgba(184,85,7,0.30);
+}
+.root-light .evacuation-button-icon { -fx-fill: #B85507; }
+.root-light .evacuation-button-label { -fx-text-fill: #B85507; }
 
 /* ── Textarea ────────────────────────────────────────────────────────── */
 .root-light .evacuation-textarea-container {

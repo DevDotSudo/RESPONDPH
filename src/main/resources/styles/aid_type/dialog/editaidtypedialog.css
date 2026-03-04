@@ -473,9 +473,12 @@
 .root-light .section-title { -fx-text-fill: #1A1A1A; }
 .root-light .section-subtitle { -fx-text-fill: #5C8A79; -fx-background-color: rgba(193,216,195,0.30); }
 .root-light .info-box { -fx-background-color: rgba(193,216,195,0.18); -fx-border-color: rgba(193,216,195,0.55); }
-.root-light .info-icon { -fx-fill: #5C8A79; }
-.root-light .info-title { -fx-text-fill: #4A7566; }
-.root-light .info-text { -fx-text-fill: #4A4A4A; }
+.root-light .info-icon { -fx-fill: #B85507; }
+.root-light .info-box-icon { -fx-fill: #B85507; }
+.root-light .info-title { -fx-text-fill: #1A1A1A; }
+.root-light .info-box-title { -fx-text-fill: #1A1A1A; }
+.root-light .info-text { -fx-text-fill: #1A1A1A; }
+.root-light .info-box-text { -fx-text-fill: #1A1A1A; }
 .root-light .field-label { -fx-text-fill: #1A1A1A; }
 .root-light .flat-input { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176, 200, 178, 0.75); }
 .root-light .flat-input:hover { -fx-border-color: rgba(184, 85, 7, 0.50); -fx-background-color: #E8E2D8; }
@@ -508,3 +511,8 @@
 .root-light .date-picker-popup .selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
 .root-light .text-area.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
 .root-light .field-helper-text { -fx-text-fill: #4A7566; }
+.root-light .field-textarea { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
+.root-light .flat-input-textarea { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176,200,178,0.75); }
+.root-light .text-area.field-textarea { -fx-text-fill: #1A1A1A; -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
+.root-light .weight-field { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
+.root-light .text-field.weight-field { -fx-text-fill: #1A1A1A; -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }

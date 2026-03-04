@@ -40,6 +40,8 @@ public class MainFrameController {
     @FXML private ProgressBar newsProgressBar;
     @FXML private Button      newsMinimizeBtn;
     @FXML private Button      newsCloseBtn;
+    @FXML private ToggleButton themeToggleBtn;
+
 
     @FXML private HBox   footerBar;
 
@@ -180,6 +182,36 @@ public class MainFrameController {
         hideFooter();
         hideSmsProgress();
         hideNewsProgress();
+        Platform.runLater(this::wireThemeToggle);
+
+    }
+
+    private void wireThemeToggle() {
+        if (themeToggleBtn == null) return;
+
+        boolean savedLight = ThemeManager.getInstance().isLightMode();
+        themeToggleBtn.setSelected(savedLight);
+        setThemeToggleIcon(savedLight);
+
+        if (savedLight) {
+            var scene = themeToggleBtn.getScene();
+            if (scene != null) ThemeManager.getInstance().applyTo(scene.getRoot(), scene);
+        }
+
+        themeToggleBtn.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            var scene = themeToggleBtn.getScene();
+            if (scene == null) return;
+            ThemeManager.getInstance().setLightMode(isSelected, scene);
+            setThemeToggleIcon(isSelected);
+        });
+    }
+
+    private void setThemeToggleIcon(boolean isLight) {
+        FontAwesomeIconView icon = new FontAwesomeIconView();
+        icon.setGlyphName(isLight ? "SUN_ALT" : "MOON_ALT");
+        icon.setSize("14");
+        icon.setFill(javafx.scene.paint.Color.WHITE);
+        themeToggleBtn.setGraphic(icon);
     }
 
     private void refreshFooter() {

@@ -550,7 +550,10 @@
 .root-light .combo-box .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .combo-box-popup .list-view { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193, 216, 195, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
 .root-light .combo-box-popup .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
-.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35); }
+.root-light .combo-box-popup .list-cell:hover {
+    -fx-background-color: rgba(193,216,195,0.35);
+    -fx-text-fill: #000000;
+}
 .root-light .combo-box-popup .list-cell:selected { -fx-background-color: rgba(184, 85, 7, 0.85); -fx-text-fill: #FFFFFF; }
 .root-light .date-picker { -fx-background-color: transparent; -fx-border-color: transparent; }
 .root-light .date-picker .text-field { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }

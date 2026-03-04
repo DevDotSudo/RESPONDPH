@@ -676,7 +676,7 @@ public class DisasterDamageController {
         );
 
         Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false, light);
-        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true,  light);
+        Button generateBtn = buildFooterButton("Print", FontAwesomeIcon.DOWNLOAD, true,  light);
         footer.getChildren().addAll(cancelBtn, generateBtn);
 
         card.getChildren().addAll(header, body, footer);

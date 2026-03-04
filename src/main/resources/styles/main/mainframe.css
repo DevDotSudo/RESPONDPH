@@ -77,7 +77,6 @@
     -fx-padding: 6px;
 }
 
-/* helps all rows align perfectly */
 .nav-row {
     -fx-alignment: CENTER_LEFT;
 }
@@ -112,7 +111,6 @@
     -fx-background-color: rgba(148, 163, 184, 0.16);
 }
 
-/* Active state (apply this class in controller) */
 .nav-button-active {
     -fx-background-color: rgba(249, 115, 22, 0.18);
     -fx-border-color: rgba(249, 115, 22, 0.55);
@@ -157,7 +155,6 @@
     -fx-padding: 2px 0 6px 18px;
 }
 
-/* child button */
 .nav-button-child {
     -fx-background-color: transparent;
     -fx-background-radius: 5px;
@@ -239,10 +236,11 @@
     -fx-background-color: #0b1220;
     -fx-padding: 16px;
 }
-/* ========== SMALL BOTTOM-RIGHT SMS TOAST ========== */
+
+/* ========== SMS TOAST — DARK MODE (base, always dark internally) ========== */
 
 .sms-toast-progress-news {
-    -fx-accent:                    #F97316;   /* Vivid orange */
+    -fx-accent:                    #F97316;
     -fx-control-inner-background:  rgba(249, 115, 22, 0.12);
     -fx-background-color:          rgba(249, 115, 22, 0.12);
     -fx-background-radius:         6px;
@@ -252,20 +250,13 @@
     -fx-max-height:                8px;
 }
 
-/* The filled track sub-region */
 .sms-toast-progress-news .bar {
-    -fx-background-color: linear-gradient(
-            to right,
-            #F97316 0%,
-            #FB923C 50%,
-            #FDBA74 100%
-    );
+    -fx-background-color: linear-gradient(to right, #F97316 0%, #FB923C 50%, #FDBA74 100%);
     -fx-background-radius: 6px;
     -fx-background-insets: 0;
     -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.55), 6, 0.4, 0, 0);
 }
 
-/* The track (unfilled background) */
 .sms-toast-progress-news .track {
     -fx-background-color: rgba(249, 115, 22, 0.12);
     -fx-background-radius: 6px;
@@ -330,7 +321,6 @@
     -fx-text-fill:          #F4F4F5;
 }
 
-/* Default SMS progress bar (bulk send — keep blue/neutral) */
 .sms-toast-progress {
     -fx-pref-width:         100%;
     -fx-max-width:          1.7976931348623157E308;
@@ -379,6 +369,7 @@
 .footer-link-button:hover {
     -fx-text-fill:          #FB923C;
 }
+
 .theme-toggle-sidebar {
     -fx-background-color: rgba(148, 163, 184, 0.18);
     -fx-background-radius: 8px;

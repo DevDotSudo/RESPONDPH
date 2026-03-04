@@ -532,3 +532,19 @@
 .root-light .field-checkbox:selected .box { -fx-background-color: #B85507; -fx-border-color: rgba(184,85,7,0.90); }
 .root-light .field-checkbox:selected .box .mark { -fx-background-color: white; }
 .root-light .field-helper-text { -fx-text-fill: #4A7566; }
+/* ── Radio button text black ── */
+.root-light .radio-label { -fx-text-fill: #1A1A1A; }
+.root-light .radio-label .radio { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176,200,178,0.80); }
+.root-light .radio-label:selected .radio { -fx-border-color: #B85507; -fx-background-color: #EDE8DF; }
+.root-light .radio-label:selected .radio .dot { -fx-background-color: #B85507; }
+
+/* ── Field helper text black ── */
+.root-light .field-helper-text { -fx-text-fill: #1A1A1A; }
+
+/* ── Combo box selected value + hover text black ── */
+.root-light .field-combo > .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
+.root-light .field-combo.combo-box-base > .text-field { -fx-text-fill: #1A1A1A; }
+.root-light .field-combo.combo-box-base:editable > .text-field { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
+.root-light .combo-box-popup .list-view .list-cell { -fx-text-fill: #1A1A1A; }
+.root-light .combo-box-popup .list-view .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35); -fx-text-fill: #1A1A1A; }
+.root-light .combo-box-popup .list-view .list-cell:selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }

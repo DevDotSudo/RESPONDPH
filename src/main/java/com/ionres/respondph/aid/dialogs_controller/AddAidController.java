@@ -672,7 +672,6 @@ public class AddAidController {
         String secBtnBorder   = light ? "rgba(176,200,178,0.70)"      : "rgba(148,163,184,0.38)";
         String secBtnText     = light ? "#2E2E2E"                     : "rgba(226,232,240,0.96)";
 
-        // Priority checkbox colors
         String highText   = light ? "rgba(30,100,180,0.95)"  : "rgba(41,128,185,0.90)";
         String highBg     = light ? "rgba(30,100,180,0.10)"  : "rgba(41,128,185,0.25)";
         String highBorder = light ? "rgba(30,100,180,0.45)"  : "rgba(41,128,185,0.50)";
@@ -853,24 +852,6 @@ public class AddAidController {
         printerCard.getChildren().add(printerComboBox);
         printerSection.getChildren().add(printerCard);
 
-        outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == printerRadio) {
-                if (activeEntries.isEmpty()) {
-                    pdfRadio.setSelected(true);
-                    AlertDialogManager.showError("No Printer Connected",
-                            "No connected printer was detected on this system.\n\nPlease connect a printer and try again.");
-                } else {
-                    printerSection.setVisible(true);
-                    printerSection.setManaged(true);
-                    printStage.sizeToScene();
-                }
-            } else {
-                printerSection.setVisible(false);
-                printerSection.setManaged(false);
-                printStage.sizeToScene();
-            }
-        });
-
         body.getChildren().addAll(prioritySection, outputSection, printerSection);
 
         // ── FOOTER ───────────────────────────────────────────────────
@@ -884,8 +865,38 @@ public class AddAidController {
                         "-fx-background-radius: 0 0 10 10;"
         );
 
-        Button cancelBtn2   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false, secBtnBg, secBtnBorder, secBtnText, primBtnBg, primBtnBorder, primBtnShadow);
-        Button generateBtn  = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true,  secBtnBg, secBtnBorder, secBtnText, primBtnBg, primBtnBorder, primBtnShadow);
+        Button cancelBtn2  = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false, secBtnBg, secBtnBorder, secBtnText, primBtnBg, primBtnBorder, primBtnShadow);
+        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true,  secBtnBg, secBtnBorder, secBtnText, primBtnBg, primBtnBorder, primBtnShadow);
+
+        outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == printerRadio) {
+                if (activeEntries.isEmpty()) {
+                    pdfRadio.setSelected(true);
+                    AlertDialogManager.showError("No Printer Connected",
+                            "No connected printer was detected on this system.\n\nPlease connect a printer and try again.");
+                } else {
+                    printerSection.setVisible(true);
+                    printerSection.setManaged(true);
+                    printStage.sizeToScene();
+
+                    FontAwesomeIconView printIco = new FontAwesomeIconView(FontAwesomeIcon.PRINT);
+                    printIco.setSize("14");
+                    printIco.setGlyphStyle("-fx-fill: rgba(255,255,255,0.98);");
+                    generateBtn.setText("Print");
+                    generateBtn.setGraphic(printIco);
+                }
+            } else {
+                printerSection.setVisible(false);
+                printerSection.setManaged(false);
+                printStage.sizeToScene();
+
+                FontAwesomeIconView dlIco = new FontAwesomeIconView(FontAwesomeIcon.DOWNLOAD);
+                dlIco.setSize("14");
+                dlIco.setGlyphStyle("-fx-fill: rgba(255,255,255,0.98);");
+                generateBtn.setText("Generate");
+                generateBtn.setGraphic(dlIco);
+            }
+        });
 
         footer.getChildren().addAll(cancelBtn2, generateBtn);
         card.getChildren().addAll(header, body, footer);

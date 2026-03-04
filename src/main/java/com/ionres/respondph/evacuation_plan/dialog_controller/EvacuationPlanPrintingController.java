@@ -646,6 +646,10 @@ public class EvacuationPlanPrintingController {
         printerCard.getChildren().add(printerComboBox);
         printerSection.getChildren().add(printerCard);
 
+        // ── Declare generateBtn BEFORE the toggle listener ────────────────────
+        Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false, light);
+        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true,  light);
+
         // ── Toggle: show/hide printer section ────────────────────────────────
         outputGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == printerRadio) {
@@ -659,11 +663,23 @@ public class EvacuationPlanPrintingController {
                     printerSection.setVisible(true);
                     printerSection.setManaged(true);
                     outputStage.sizeToScene();
+
+                    FontAwesomeIconView printIcon = new FontAwesomeIconView(FontAwesomeIcon.PRINT);
+                    printIcon.setSize("13");
+                    printIcon.setGlyphStyle("-fx-fill: rgba(255,255,255,0.95);");
+                    generateBtn.setText("Print");
+                    generateBtn.setGraphic(printIcon);
                 }
             } else {
                 printerSection.setVisible(false);
                 printerSection.setManaged(false);
                 outputStage.sizeToScene();
+
+                FontAwesomeIconView downloadIcon = new FontAwesomeIconView(FontAwesomeIcon.DOWNLOAD);
+                downloadIcon.setSize("13");
+                downloadIcon.setGlyphStyle("-fx-fill: rgba(255,255,255,0.95);");
+                generateBtn.setText("Generate");
+                generateBtn.setGraphic(downloadIcon);
             }
         });
 
@@ -679,9 +695,6 @@ public class EvacuationPlanPrintingController {
                         "-fx-border-width: 1 0 0 0;" +
                         "-fx-background-radius: 0 0 10 10;"
         );
-
-        Button cancelBtn   = buildFooterButton("Cancel",   FontAwesomeIcon.TIMES,    false, light);
-        Button generateBtn = buildFooterButton("Generate", FontAwesomeIcon.DOWNLOAD, true,  light);
         footer.getChildren().addAll(cancelBtn, generateBtn);
 
         card.getChildren().addAll(header, body, footer);

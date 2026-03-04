@@ -379,3 +379,34 @@
 .footer-link-button:hover {
     -fx-text-fill:          #FB923C;
 }
+.theme-toggle-sidebar {
+    -fx-background-color: rgba(148, 163, 184, 0.18);
+    -fx-background-radius: 8px;
+    -fx-border-color: rgba(148, 163, 184, 0.20);
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-pref-width: 36px;
+    -fx-pref-height: 36px;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-width: 36px;
+    -fx-max-height: 36px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-text-fill: transparent;
+    -fx-mark-color: transparent;
+}
+
+.theme-toggle-sidebar:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.28);
+    -fx-border-color: rgba(148, 163, 184, 0.40);
+}
+
+.theme-toggle-sidebar:selected {
+    -fx-background-color: #f97316;
+    -fx-border-color: rgba(249, 115, 22, 0.55);
+}
+
+.theme-toggle-sidebar:selected:hover {
+    -fx-background-color: #ea6a0a;
+}

@@ -154,19 +154,20 @@
 
 .root-light .logout-button {
     -fx-background-color: transparent;
-    -fx-border-color: rgba(220, 38, 38, 0.55);
+    -fx-border-color: #B85507;
 }
 
 .root-light .logout-button:hover {
-    -fx-background-color: rgba(220, 38, 38, 0.12);
+    -fx-background-color: rgba(184, 85, 7, 0.12);
+    -fx-border-color: rgba(184, 85, 7, 0.75);
 }
 
 .root-light .logout-icon {
-    -fx-fill: #e05252;
+    -fx-fill: #F5EDE0;
 }
 
 .root-light .logout-text {
-    -fx-text-fill: #e05252;
+    -fx-text-fill: #F5EDE0;
 }
 
 /* ── Content area ────────────────────────────────────────────────────── */
@@ -694,4 +695,18 @@
     -fx-text-fill: rgba(255, 255, 255, 0.95);
     -fx-background-radius: 6;
     -fx-padding: 6 10;
+}
+
+.root-light .theme-toggle-sidebar {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+    -fx-border-color: rgba(255, 255, 255, 0.30);
+}
+
+.root-light .theme-toggle-sidebar:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+}
+
+.root-light .theme-toggle-sidebar:selected {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(184, 85, 7, 0.65);
 }

@@ -887,6 +887,7 @@
 .root-light .flat-input.flat-focused { -fx-border-color: rgba(184, 85, 7, 0.70); -fx-background-color: #E8E2D8; -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.18), 6, 0, 0, 0); }
 .root-light .field-icon { -fx-fill: rgba(92,138,121,0.75); }
 .root-light .field-input { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
+.root-light .field-textarea { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
 .root-light .text-field.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
 .root-light .password-field.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
 .root-light .dialog-footer { -fx-background-color: rgba(240, 232, 220, 0.70); -fx-border-color: rgba(193, 216, 195, 0.55); }
@@ -899,7 +900,8 @@
 .root-light .combo-box .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .combo-box-popup .list-view { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193, 216, 195, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
 .root-light .combo-box-popup .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
-.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35); }
+.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35);
+    -fx-text-fill: #000000 }
 .root-light .combo-box-popup .list-cell:selected { -fx-background-color: rgba(184, 85, 7, 0.85); -fx-text-fill: #FFFFFF; }
 .root-light .date-picker { -fx-background-color: transparent; -fx-border-color: transparent; }
 .root-light .date-picker .text-field { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
@@ -911,7 +913,7 @@
 .root-light .date-picker-popup .day-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .date-picker-popup .day-cell:hover { -fx-background-color: rgba(193,216,195,0.35); }
 .root-light .date-picker-popup .selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
-.root-light .text-area.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
+.root-light .text-area.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; -fx-text-fill: #1A1A1A; }
 .root-light .flat-input-textarea { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176,200,178,0.75); -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
 .root-light .btn-secondary { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176,200,178,0.70); -fx-text-fill: #2E2E2E; }
 .root-light .btn-secondary:hover { -fx-background-color: rgba(193,216,195,0.40); -fx-border-color: #6A9C89; -fx-text-fill: #1A1A1A; }
@@ -927,12 +929,18 @@
 .root-light .search-popup-list .scroll-bar .thumb { -fx-background-color: rgba(106,156,137,0.45); }
 .root-light .search-popup-list .scroll-bar .thumb:hover { -fx-background-color: rgba(92,138,121,0.65); }
 /* ── Upload panel (light mode) ───────────────────────────────────────── */
-.root-light .upload-instruction-panel { -fx-background-color: rgba(193,216,195,0.15); -fx-border-color: rgba(106,156,137,0.40); }
+.root-light .upload-instruction-panel { -fx-background-color: rgba(184,85,7,0.05); -fx-border-color: rgba(184,85,7,0.30); }
 .root-light .upload-panel-title { -fx-text-fill: #1A1A1A; }
-.root-light .upload-panel-desc { -fx-text-fill: #4A7566; }
-.root-light .upload-tag { -fx-background-color: rgba(193,216,195,0.30); -fx-border-color: rgba(106,156,137,0.40); -fx-text-fill: #4A7566; }
-.root-light .upload-icon-badge { -fx-background-color: rgba(193,216,195,0.25); -fx-border-color: rgba(106,156,137,0.35); }
-.root-light .upload-badge-icon { -fx-fill: #5C8A79; }
+.root-light .upload-panel-desc { -fx-text-fill: #4A4A4A; }
+.root-light .upload-tag { -fx-background-color: rgba(184,85,7,0.10); -fx-border-color: rgba(184,85,7,0.30); -fx-text-fill: #B85507; }
+.root-light .upload-icon-badge { -fx-background-color: rgba(184,85,7,0.10); -fx-border-color: rgba(184,85,7,0.30); -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.18), 10, 0.0, 0, 0); }
+.root-light .upload-badge-icon { -fx-fill: #B85507; -fx-effect: none; }
+/* ── Choose File button (light mode) — orange ───────────────────────── */
+.root-light .btn-upload { -fx-background-color: rgba(184,85,7,0.12); -fx-border-color: rgba(184,85,7,0.55); -fx-border-width: 1.5px; -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.15), 8, 0.0, 0, 2); }
+.root-light .btn-upload:hover { -fx-background-color: rgba(184,85,7,0.22); -fx-border-color: rgba(184,85,7,0.85); -fx-effect: dropshadow(gaussian, rgba(184,85,7,0.28), 12, 0.0, 0, 3); }
+.root-light .btn-upload:pressed { -fx-background-color: rgba(184,85,7,0.30); }
+.root-light .btn-upload .btn-icon { -fx-fill: #B85507; }
+.root-light .btn-upload .btn-text { -fx-text-fill: #B85507; }
 /* ── Preview / image (light mode) ───────────────────────────────────── */
 .root-light .image-placeholder { -fx-background-color: rgba(232,224,212,0.60); -fx-border-color: rgba(176,200,178,0.55); }
 .root-light .placeholder-icon { -fx-fill: rgba(106,156,137,0.45); }
@@ -946,8 +954,6 @@
 .root-light .preview-badge-text { -fx-text-fill: #4A7566; }
 .root-light .upload-btn-icon { -fx-fill: #5C8A79; }
 .root-light .upload-btn-text { -fx-text-fill: #2E2E2E; }
-.root-light .btn-upload { -fx-background-color: rgba(106,156,137,0.14); -fx-border-color: rgba(106,156,137,0.55); }
-.root-light .btn-upload:hover { -fx-background-color: rgba(106,156,137,0.24); -fx-border-color: rgba(106,156,137,0.85); }
 .root-light .btn-remove-photo { -fx-text-fill: rgba(220,38,38,0.80); }
 .root-light .btn-remove-photo:hover { -fx-text-fill: rgba(220,38,38,1.00); }
 .root-light .field-combo { -fx-background-color: transparent; -fx-border-color: transparent; }

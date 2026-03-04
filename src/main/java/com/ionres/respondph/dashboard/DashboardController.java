@@ -63,7 +63,7 @@ public class DashboardController {
     @FXML private StackPane cardEvacuationSite;
     @FXML private VBox searchBoxWrap;
     @FXML private ListView<String> beneficiarySearchList;
-    @FXML private ToggleButton themeToggleBtn;
+
 
     // ── Change password FXML ──────────────────────────────────────────────────
     @FXML private StackPane changePasswordOverlay;
@@ -174,7 +174,7 @@ public class DashboardController {
             wireSearchComboBoxInline();
             wireAdminDropdown();
             wireChangePasswordDialog();
-            wireThemeToggle();
+
 
             mapContainer.setOnMousePressed(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
@@ -451,31 +451,7 @@ public class DashboardController {
     // ═════════════════════════════════════════════════════════════════════════
     // Theme toggle
     // ═════════════════════════════════════════════════════════════════════════
-    private void wireThemeToggle() {
-        // Restore persisted theme: set toggle state without firing the listener yet
-        boolean savedLight = ThemeManager.getInstance().isLightMode();
-        if (savedLight) {
-            themeToggleBtn.setSelected(true);
-            // Apply the saved light theme to the current scene
-            var scene = themeToggleBtn.getScene();
-            if (scene != null) {
-                ThemeManager.getInstance().applyTo(scene.getRoot(), scene);
-            }
-        }
 
-        themeToggleBtn.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            var scene = themeToggleBtn.getScene();
-            if (scene == null) return;
-            ThemeManager.getInstance().setLightMode(isSelected, scene);
-            // Re-render visible info panels with the new theme colours
-            if (selectedBeneficiary != null && infoPanel != null && infoPanel.isVisible()) {
-                populateInfoPanel(selectedBeneficiary);
-            }
-            if (selectedEvacSite != null && evacInfoPanel != null && evacInfoPanel.isVisible()) {
-                populateEvacInfoPanel(selectedEvacSite);
-            }
-        });
-    }
 
     // ═════════════════════════════════════════════════════════════════════════
     // Search

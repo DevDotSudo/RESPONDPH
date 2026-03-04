@@ -411,7 +411,7 @@
 .root-light .dialog-title { -fx-text-fill: rgba(255,255,255,0.95); -fx-effect: none; }
 .root-light .dialog-subtitle { -fx-text-fill: rgba(255,255,255,0.68); }
 
-.root-light .reg-meta-label { -fx-text-fill: rgba(106,156,137,0.70); }
+.root-light .reg-meta-label { -fx-text-fill: rgba(255,255,255,0.60); }
 .root-light .reg-meta-value { -fx-text-fill: #FFFFFF; }
 .root-light .reg-meta-by { -fx-text-fill: rgba(255,255,255,0.60); }
 

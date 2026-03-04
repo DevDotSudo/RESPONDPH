@@ -667,6 +667,7 @@
 .root-light .flat-input.flat-focused { -fx-border-color: rgba(184, 85, 7, 0.70); -fx-background-color: #E8E2D8; -fx-effect: dropshadow(gaussian, rgba(184, 85, 7, 0.18), 6, 0, 0, 0); }
 .root-light .field-icon { -fx-fill: rgba(92,138,121,0.75); }
 .root-light .field-input { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
+.root-light .field-textarea { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
 .root-light .text-field.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
 .root-light .password-field.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
 .root-light .dialog-footer { -fx-background-color: rgba(240, 232, 220, 0.70); -fx-border-color: rgba(193, 216, 195, 0.55); }
@@ -679,7 +680,8 @@
 .root-light .combo-box .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .combo-box-popup .list-view { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193, 216, 195, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
 .root-light .combo-box-popup .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
-.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35); }
+.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35);
+    -fx-text-fill: #000000 }
 .root-light .combo-box-popup .list-cell:selected { -fx-background-color: rgba(184, 85, 7, 0.85); -fx-text-fill: #FFFFFF; }
 .root-light .date-picker { -fx-background-color: transparent; -fx-border-color: transparent; }
 .root-light .date-picker .text-field { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
@@ -691,7 +693,7 @@
 .root-light .date-picker-popup .day-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .date-picker-popup .day-cell:hover { -fx-background-color: rgba(193,216,195,0.35); }
 .root-light .date-picker-popup .selected { -fx-background-color: rgba(184,85,7,0.85); -fx-text-fill: #FFFFFF; }
-.root-light .text-area.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; }
+.root-light .text-area.field-input { -fx-highlight-fill: rgba(205,92,8,0.25); -fx-highlight-text-fill: #1A1A1A; -fx-caret-color: #B85507; -fx-text-fill: #1A1A1A; }
 .root-light .field-combo { -fx-background-color: transparent; -fx-border-color: transparent; }
 .root-light .field-combo > .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .field-combo .arrow { -fx-background-color: #4A7566; }

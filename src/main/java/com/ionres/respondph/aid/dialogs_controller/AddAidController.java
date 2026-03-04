@@ -383,10 +383,8 @@ public class AddAidController {
     private void updatePreviewButtonState() {
         if (previewBtn == null) return;
         if (previewLoading) {
-            previewBtn.setText("Loading…");
             previewBtn.setDisable(true);
         } else {
-            previewBtn.setText("Preview");
             previewBtn.setDisable(false);
         }
     }

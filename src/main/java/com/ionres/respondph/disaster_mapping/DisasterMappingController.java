@@ -18,7 +18,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.StringConverter;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,7 +60,6 @@ public class DisasterMappingController {
         Platform.runLater(() -> {
             mapping.init(mapContainer);
 
-            // Load person marker once
             try {
                 personMarker = new Image(
                         Objects.requireNonNull(getClass().getResourceAsStream("/images/person_marker.png"))
@@ -88,34 +86,26 @@ public class DisasterMappingController {
 
     private void setupDisasterComboBox() {
         disasterComboBox.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(DisasterModel disaster) {
-                if (disaster == null) return "";
-                String name = disaster.getDisasterName();
-                return name != null ? name : "";
+            @Override public String toString(DisasterModel d) {
+                if (d == null) return "";
+                return d.getDisasterName() != null ? d.getDisasterName() : "";
             }
-
-            @Override
-            public DisasterModel fromString(String string) {
-                return null;
-            }
+            @Override public DisasterModel fromString(String s) { return null; }
         });
 
         disasterComboBox.setCellFactory(cb -> new ListCell<>() {
-            @Override
-            protected void updateItem(DisasterModel item, boolean empty) {
+            @Override protected void updateItem(DisasterModel item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) setText("");
-                else setText(item.getDisasterName() != null ? item.getDisasterName() : "");
+                setText(empty || item == null ? "" :
+                        item.getDisasterName() != null ? item.getDisasterName() : "");
             }
         });
 
         disasterComboBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(DisasterModel item, boolean empty) {
+            @Override protected void updateItem(DisasterModel item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) setText("");
-                else setText(item.getDisasterName() != null ? item.getDisasterName() : "");
+                setText(empty || item == null ? "" :
+                        item.getDisasterName() != null ? item.getDisasterName() : "");
             }
         });
     }
@@ -150,14 +140,9 @@ public class DisasterMappingController {
         disasterComboBox.setValue(null);
         disasterCircles.clear();
 
-        List<DisasterModel> disastersToShow;
-        if ("All Types".equals(type)) {
-            disastersToShow = disasterMappingService.getDisasters();
-        }
-
-        else {
-            disastersToShow = disasterMappingService.getDisastersByType(type);
-        }
+        List<DisasterModel> disastersToShow = "All Types".equals(type)
+                ? disasterMappingService.getDisasters()
+                : disasterMappingService.getDisastersByType(type);
 
         disasterComboBox.getItems().clear();
         if (disastersToShow != null && !disastersToShow.isEmpty()) {
@@ -181,16 +166,10 @@ public class DisasterMappingController {
     private void loadDisasterCirclesFromDb(int disasterId) {
         disasterCircles.clear();
 
-        if (disasterId <= 0) {
-            mapping.redraw();
-            return;
-        }
+        if (disasterId <= 0) { mapping.redraw(); return; }
 
         DisasterModel disaster = disasterMappingService.getDisasterById(disasterId);
-        if (disaster == null) {
-            mapping.redraw();
-            return;
-        }
+        if (disaster == null) { mapping.redraw(); return; }
 
         List<DisasterCircleInfo> circles = disasterMappingService.getDisasterCirclesByDisasterId(disasterId);
         if (circles != null) {
@@ -198,9 +177,7 @@ public class DisasterMappingController {
                 if (!Double.isNaN(c.lat) && !Double.isNaN(c.lon) &&
                         !Double.isNaN(c.radius) && c.radius > 0) {
                     disasterCircles.add(new DisasterCircleInfo(
-                            c.lat,
-                            c.lon,
-                            c.radius,
+                            c.lat, c.lon, c.radius,
                             c.disasterName != null ? c.disasterName : "",
                             c.disasterType != null ? c.disasterType : ""
                     ));
@@ -213,52 +190,114 @@ public class DisasterMappingController {
 
     public void loadBeneficiariesFromDb() {
         beneficiaries.clear();
-        List<BeneficiaryMarker> loadedBeneficiaries = disasterMappingService.getBeneficiaries();
-        if (loadedBeneficiaries != null && !loadedBeneficiaries.isEmpty()) {
-            beneficiaries.addAll(loadedBeneficiaries);
+        List<BeneficiaryMarker> loaded = disasterMappingService.getBeneficiaries();
+        if (loaded != null && !loaded.isEmpty()) {
+            beneficiaries.addAll(loaded);
         }
         mapping.redraw();
     }
 
-    // ===================== ZOOM helper (works even if Mapping method differs) =====================
-    private double getZoomSafe() {
-        // Try common method names from your Mapping class
-        String[] candidates = {"getZoom", "getZoomLevel", "getCurrentZoom", "zoom"};
-        for (String name : candidates) {
+    // ═══════════════════════════════════════════════════════════════════
+    // DRAW DISASTER CIRCLES
+    // ─────────────────────────────────────────────────────────────────
+    // FIX: Removed the broken `center.x < 0 || center.y < 0` guard that
+    // caused circles to disappear whenever the user panned so that the
+    // circle center moved off the top-left of the canvas.
+    //
+    // The correct culling test is AABB (Axis-Aligned Bounding Box):
+    //   skip only when the circle's bounding square does not intersect
+    //   the canvas rectangle at all.  Because offsetX/Y can be negative
+    //   (pan right/down), center.x or center.y can legitimately be very
+    //   negative (center off left/top) while the circle still overlaps
+    //   the visible area on the right/bottom.
+    // ═══════════════════════════════════════════════════════════════════
+    private void drawDisasterCircles() {
+        if (!mapping.isInitialized() || disasterCircles.isEmpty()) return;
+
+        GraphicsContext gc   = mapping.getGc();
+        double canvasW       = mapping.getCanvas().getWidth();
+        double canvasH       = mapping.getCanvas().getHeight();
+
+        for (DisasterCircleInfo c : disasterCircles) {
             try {
-                Method m = mapping.getClass().getMethod(name);
-                Object val = m.invoke(mapping);
-                if (val instanceof Number) return ((Number) val).doubleValue();
-            } catch (Exception ignored) {}
+                if (!Mapping.isValidCoordinate(c.lat, c.lon) ||
+                        Double.isNaN(c.radius) || c.radius <= 0) continue;
+
+                Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
+                double px = c.radius / mapping.metersPerPixel(c.lat);
+
+                // ── AABB visibility cull ──────────────────────────────────────
+                // Skip only when the circle's bounding box is entirely outside
+                // the canvas. center.x/y may be negative (left/top of canvas)
+                // while the circle still overlaps the visible area.
+                if (center.x + px < 0 || center.x - px > canvasW ||
+                        center.y + px < 0 || center.y - px > canvasH) {
+                    continue;
+                }
+
+                // ── Draw filled circle ────────────────────────────────────────
+                gc.setFill(Color.rgb(255, 0, 0, 0.25));
+                gc.fillOval(center.x - px, center.y - px, px * 2, px * 2);
+
+                // ── Draw border ───────────────────────────────────────────────
+                gc.setStroke(Color.RED);
+                gc.setLineWidth(2);
+                gc.strokeOval(center.x - px, center.y - px, px * 2, px * 2);
+
+                // ── Label (only when circle is large enough to read) ──────────
+                if (px > 20) {
+                    String type  = c.disasterType  != null ? c.disasterType  : "";
+                    String name  = c.disasterName  != null ? c.disasterName  : "";
+                    String label = (type + " " + name).trim();
+
+                    if (!label.isEmpty()) {
+                        gc.setFont(Font.font("Segoe UI", 10));
+                        double labelW = textWidth(label, gc);
+
+                        gc.setFill(Color.rgb(255, 255, 255, 0.95));
+                        gc.fillRect(center.x - labelW / 2 - 4, center.y - 10, labelW + 8, 16);
+
+                        gc.setFill(Color.DARKRED);
+                        gc.fillText(label, center.x - labelW / 2, center.y + 2);
+                    }
+                }
+
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
+                        .log(java.util.logging.Level.FINE, "Error drawing disaster circle", e);
+            }
         }
-        // If Mapping has no zoom getter, default to a value that shows dots
-        return 0.0;
     }
 
+    // ═══════════════════════════════════════════════════════════════════
+    // DRAW BENEFICIARIES
+    // ─────────────────────────────────────────────────────────────────
+    // FIX: Same AABB fix applied here — the old check used a fixed 50px
+    // padding which was too small for person markers near the edge and
+    // would skip markers whose position calculation returned a slightly
+    // negative screen coordinate even though they were still visible.
+    // ═══════════════════════════════════════════════════════════════════
     private void drawBeneficiaries() {
-        if (!mapping.isInitialized() || disasterCircles.isEmpty() || beneficiaries.isEmpty()) {
-            return;
-        }
+        if (!mapping.isInitialized() || disasterCircles.isEmpty() || beneficiaries.isEmpty()) return;
 
-        GraphicsContext gc = mapping.getGc();
-        double canvasWidth = mapping.getCanvas().getWidth();
-        double canvasHeight = mapping.getCanvas().getHeight();
+        GraphicsContext gc  = mapping.getGc();
+        double canvasW      = mapping.getCanvas().getWidth();
+        double canvasH      = mapping.getCanvas().getHeight();
 
-        double padding = 50;
-        double minX = -padding;
-        double maxX = canvasWidth + padding;
-        double minY = -padding;
-        double maxY = canvasHeight + padding;
+        // Expand clip by half marker size so we never clip a visible marker
+        double halfW = PERSON_MARKER_W / 2.0;
+        double halfH = PERSON_MARKER_H / 2.0;
 
-        double zoom = getZoomSafe();
+        double zoom = mapping.getZoom();
         boolean usePersonMarker = zoom >= MIN_ZOOM_FOR_PERSON_MARKER && personMarker != null;
 
         Color dotFill   = Color.rgb(0, 120, 255, 0.85);
-        Color dotStroke = Color.rgb(0, 70, 180, 0.95);
+        Color dotStroke = Color.rgb(0,  70, 180, 0.95);
 
         for (BeneficiaryMarker b : beneficiaries) {
             if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
 
+            // Only draw beneficiaries that fall inside at least one disaster circle
             boolean isInsideDisaster = false;
             for (DisasterCircleInfo c : disasterCircles) {
                 if (GeographicUtils.isInsideCircle(b.lat, b.lon, c.lat, c.lon, c.radius)) {
@@ -266,26 +305,22 @@ public class DisasterMappingController {
                     break;
                 }
             }
-
             if (!isInsideDisaster) continue;
 
             try {
                 Mapping.Point p = mapping.latLonToScreen(b.lat, b.lon);
 
-                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) continue;
+                // AABB cull — allow marker dimensions as margin
+                if (p.x + halfW < 0 || p.x - halfW > canvasW ||
+                        p.y + halfH < 0 || p.y - halfH > canvasH) continue;
 
                 if (usePersonMarker) {
-                    gc.drawImage(
-                            personMarker,
-                            p.x - (PERSON_MARKER_W / 2.0),
-                            p.y - (PERSON_MARKER_H / 2.0),
-                            PERSON_MARKER_W,
-                            PERSON_MARKER_H
-                    );
+                    gc.drawImage(personMarker,
+                            p.x - halfW, p.y - halfH,
+                            PERSON_MARKER_W, PERSON_MARKER_H);
                 } else {
                     gc.setFill(dotFill);
                     gc.fillOval(p.x - 5, p.y - 5, 10, 10);
-
                     gc.setStroke(dotStroke);
                     gc.setLineWidth(1.5);
                     gc.strokeOval(p.x - 5, p.y - 5, 10, 10);
@@ -297,86 +332,17 @@ public class DisasterMappingController {
         }
     }
 
-    private void drawDisasterCircles() {
-        if (!mapping.isInitialized() || disasterCircles.isEmpty()) {
-            return;
-        }
-
-        GraphicsContext gc = mapping.getGc();
-        double canvasWidth = mapping.getCanvas().getWidth();
-        double canvasHeight = mapping.getCanvas().getHeight();
-
-        double padding = 2000;
-        double minX = -padding;
-        double maxX = canvasWidth + padding;
-        double minY = -padding;
-        double maxY = canvasHeight + padding;
-
-        for (DisasterCircleInfo c : disasterCircles) {
-            try {
-                if (!Mapping.isValidCoordinate(c.lat, c.lon) ||
-                        Double.isNaN(c.radius) || c.radius <= 0) {
-                    continue;
-                }
-
-                Mapping.Point center = mapping.latLonToScreen(c.lat, c.lon);
-                if (center.x < 0 || center.y < 0) continue;
-
-                double px = c.radius / mapping.metersPerPixel(c.lat);
-
-                if (center.x < minX || center.x > maxX || center.y < minY || center.y > maxY) {
-                    if (center.x + px < minX || center.x - px > maxX ||
-                            center.y + px < minY || center.y - px > maxY) {
-                        continue;
-                    }
-                }
-
-                gc.setFill(Color.rgb(255, 0, 0, 0.25));
-                gc.fillOval(center.x - px, center.y - px, px * 2, px * 2);
-
-                gc.setStroke(Color.RED);
-                gc.setLineWidth(2);
-                gc.strokeOval(center.x - px, center.y - px, px * 2, px * 2);
-
-                if (px > 20) {
-                    String type = c.disasterType != null ? c.disasterType : "";
-                    String name = c.disasterName != null ? c.disasterName : "";
-                    String label = (type + " " + name).trim();
-
-                    if (!label.isEmpty()) {
-                        gc.setFont(Font.font("Segoe UI", 10));
-                        double labelWidth = textWidth(label, gc);
-
-                        gc.setFill(Color.rgb(255, 255, 255, 0.95));
-                        gc.fillRect(center.x - labelWidth / 2 - 4, center.y - 10, labelWidth + 8, 16);
-
-                        gc.setFill(Color.DARKRED);
-                        gc.fillText(label, center.x - labelWidth / 2, center.y + 2);
-                    }
-                }
-            } catch (Exception e) {
-                java.util.logging.Logger.getLogger(DisasterMappingController.class.getName())
-                        .log(java.util.logging.Level.FINE, "Error drawing disaster circle", e);
-            }
-        }
-    }
-
     private void drawBoundary() {
         GraphicsContext gc = mapping.getGc();
 
         gc.setStroke(Color.rgb(120, 0, 0, 0.35));
         gc.setLineWidth(6);
         gc.beginPath();
-
         boolean first = true;
-        for (double[] c : boundary) {
-            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
-            if (first) {
-                gc.moveTo(p.x, p.y);
-                first = false;
-            } else {
-                gc.lineTo(p.x, p.y);
-            }
+        for (double[] coord : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(coord[0], coord[1]);
+            if (first) { gc.moveTo(p.x, p.y); first = false; }
+            else gc.lineTo(p.x, p.y);
         }
         gc.closePath();
         gc.stroke();
@@ -384,16 +350,11 @@ public class DisasterMappingController {
         gc.setStroke(Color.rgb(255, 50, 50, 0.9));
         gc.setLineWidth(2.5);
         gc.beginPath();
-
         first = true;
-        for (double[] c : boundary) {
-            Mapping.Point p = mapping.latLonToScreen(c[0], c[1]);
-            if (first) {
-                gc.moveTo(p.x, p.y);
-                first = false;
-            } else {
-                gc.lineTo(p.x, p.y);
-            }
+        for (double[] coord : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(coord[0], coord[1]);
+            if (first) { gc.moveTo(p.x, p.y); first = false; }
+            else gc.lineTo(p.x, p.y);
         }
         gc.closePath();
         gc.stroke();
@@ -406,32 +367,22 @@ public class DisasterMappingController {
     }
 
     private void handleMapClick(MouseEvent event) {
-        if (event.getClickCount() != 2) return;
-        if (disasterCircles.isEmpty()) return;
+        if (event.getClickCount() != 2 || disasterCircles.isEmpty()) return;
 
-        double clickX = event.getX();
-        double clickY = event.getY();
-
-        Mapping.LatLng clickLatLon = mapping.screenToLatLon(clickX, clickY);
+        Mapping.LatLng clickLatLon = mapping.screenToLatLon(event.getX(), event.getY());
 
         for (DisasterCircleInfo circle : disasterCircles) {
             if (Double.isNaN(circle.lat) || Double.isNaN(circle.lon) ||
-                    Double.isNaN(circle.radius) || circle.radius <= 0) {
-                continue;
-            }
+                    Double.isNaN(circle.radius) || circle.radius <= 0) continue;
 
             double distance = GeographicUtils.calculateDistance(
-                    clickLatLon.lat, clickLatLon.lon,
-                    circle.lat, circle.lon
-            );
+                    clickLatLon.lat, clickLatLon.lon, circle.lat, circle.lon);
 
             if (!Double.isNaN(distance) && distance <= circle.radius) {
-                List<BeneficiaryMarker> beneficiariesInCircle =
+                List<BeneficiaryMarker> inCircle =
                         disasterMappingService.getBeneficiariesInsideCircle(
-                                circle.lat, circle.lon, circle.radius
-                        );
-
-                showBeneficiariesDialog(circle, beneficiariesInCircle);
+                                circle.lat, circle.lon, circle.radius);
+                showBeneficiariesDialog(circle, inCircle);
                 break;
             }
         }
@@ -440,9 +391,7 @@ public class DisasterMappingController {
     private void showBeneficiariesDialog(DisasterCircleInfo circle, List<BeneficiaryMarker> beneficiaries) {
         try {
             BeneficiariesInCircleDialogController controller = DialogManager.getController(
-                    "beneficiariesInCircle",
-                    BeneficiariesInCircleDialogController.class
-            );
+                    "beneficiariesInCircle", BeneficiariesInCircleDialogController.class);
 
             if (controller != null) {
                 int disasterId = (disasterComboBox.getValue() != null)

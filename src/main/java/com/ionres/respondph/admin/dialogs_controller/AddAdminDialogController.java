@@ -93,7 +93,7 @@ public class AddAdminDialogController {
             }
 
             AlertDialogManager.showSuccess("User Created",
-                    "New user has been successfully added to the system.");
+                    "New user has been successfully added.");
 
             adminAdded = true;
             adminController.refreshAdminTable();

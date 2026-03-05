@@ -5,6 +5,7 @@ import com.ionres.respondph.aid.AidDAOImpl;
 import com.ionres.respondph.aid.KMeansAidDistribution.BeneficiaryCluster;
 import com.ionres.respondph.database.DBConnection;
 
+import com.ionres.respondph.util.ThemeManager;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -76,7 +77,6 @@ public class PreviewDistributionController {
                 new Label("No low priority beneficiaries."));
     }
 
-    /* ── PUBLIC API — called from AddAidController ───────────────── */
     public void initData(List<BeneficiaryCluster> clusters,
                          String scopeText,
                          boolean fcm,
@@ -85,6 +85,25 @@ public class PreviewDistributionController {
         this.allClusters = clusters != null ? clusters : new ArrayList<>();
         this.scopeText   = scopeText;
         this.fcmSelected = fcm;
+
+        // ── Apply theme ───────────────────────────────────────────────
+        // ── Apply theme ───────────────────────────────────────────────
+        boolean light = ThemeManager.getInstance().isLightMode();
+        if (light) {
+            if (!root.getStyleClass().contains("root-light"))
+                root.getStyleClass().add("root-light");
+
+            highCountBadge.setStyle("-fx-text-fill: black; -fx-font-size: 16px; -fx-font-weight: 900; ");
+            moderateCountBadge.setStyle("-fx-text-fill: black; -fx-font-size: 16px; -fx-font-weight: 900;");
+            lowCountBadge.setStyle("-fx-text-fill: black; -fx-font-size: 16px; -fx-font-weight: 900;");
+        } else {
+            root.getStyleClass().remove("root-light");
+
+            highCountBadge.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 900;");
+            moderateCountBadge.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 900;");
+            lowCountBadge.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 900;");
+        }
+        // ─────────────────────────────────────────────────────────────
 
         if (!allClusters.isEmpty()) {
             List<Integer> ids = allClusters.stream()

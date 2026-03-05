@@ -145,7 +145,7 @@
 
 .section-title {
     -fx-text-fill: rgba(248,250,252,0.98);
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
     -fx-font-weight: 900;
 }
 
@@ -163,21 +163,14 @@
     -fx-font-size: 11px;
     -fx-font-weight: 800;
 }
-.section-badge-high {
-    -fx-background-color: rgba(41,128,185,0.20);
-    -fx-border-color: rgba(41,128,185,0.50);
-    -fx-text-fill: #74b9e8;
-}
-.section-badge-moderate {
-    -fx-background-color: rgba(243,156,18,0.18);
-    -fx-border-color: rgba(243,156,18,0.48);
-    -fx-text-fill: #f8c471;
-}
-.section-badge-low {
-    -fx-background-color: rgba(149,165,166,0.16);
-    -fx-border-color: rgba(149,165,166,0.40);
-    -fx-text-fill: #bdc3c7;
-}
+.section-badge-high     { -fx-background-color: rgba(41,128,185,0.20);  -fx-border-color: rgba(41,128,185,0.50); }
+.section-badge-moderate { -fx-background-color: rgba(243,156,18,0.18);  -fx-border-color: rgba(243,156,18,0.48); }
+.section-badge-low      { -fx-background-color: rgba(149,165,166,0.16); -fx-border-color: rgba(149,165,166,0.40); }
+
+/* Dark mode badge text — via .label sub-selector (JavaFX Label requirement) */
+.section-badge-high .label     { -fx-text-fill: #74b9e8; }
+.section-badge-moderate .label { -fx-text-fill: #f8c471; }
+.section-badge-low .label      { -fx-text-fill: #bdc3c7; }
 
 /* Avg label pill */
 .section-avg {
@@ -213,7 +206,6 @@
     -fx-background-radius: 0;
 }
 
-/* ── FIXED: column header font reduced from 15px → 12px ── */
 .priority-table .column-header .label {
     -fx-text-fill: #ffffff;
     -fx-font-size: 12px;
@@ -243,7 +235,6 @@
     -fx-border-width: 0 0 0 3px;
 }
 
-/* ── FIXED: cell font reduced from 15px → 12px, padding tightened ── */
 .priority-table .table-cell {
     -fx-text-fill: rgba(226,232,240,0.95);
     -fx-font-size: 12px;
@@ -259,7 +250,7 @@
     -fx-background-color: rgba(255,255,255,0.04);
 }
 
-/* Table-internal scrollbars — minimal orange */
+/* Table-internal scrollbars */
 .priority-table .scroll-bar:vertical,
 .priority-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
@@ -323,6 +314,7 @@
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
 }
+
 /* ==================================================================
    LIGHT MODE  -  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
    ================================================================== */
@@ -347,7 +339,9 @@
 .root-light .form-section { -fx-background-color: rgba(232, 224, 212, 0.65); -fx-border-color: rgba(176, 200, 178, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2); }
 .root-light .section-header { -fx-border-color: rgba(193,216,195,0.40); }
 .root-light .section-icon { -fx-fill: #B85507; }
-.root-light .section-title { -fx-text-fill: #1A1A1A; }
+.root-light .section-title { -fx-text-fill: #1A1A1A;
+    -fx-font-size: 16px;
+    -fx-font-weight: 900;}
 .root-light .section-subtitle { -fx-text-fill: #5C8A79; -fx-background-color: rgba(193,216,195,0.30); }
 .root-light .info-box { -fx-background-color: rgba(193,216,195,0.18); -fx-border-color: rgba(193,216,195,0.55); }
 .root-light .info-icon { -fx-fill: #5C8A79; }
@@ -420,7 +414,19 @@
 .root-light .meta-chip-value { -fx-text-fill: #1A1A1A; }
 
 /* ── Section badges (light mode) ─────────────────────────────────────── */
-.root-light .section-badge-high { -fx-background-color: rgba(41,128,185,0.12); -fx-border-color: rgba(41,128,185,0.40); -fx-text-fill: #2471a3; }
-.root-light .section-badge-moderate { -fx-background-color: rgba(243,156,18,0.12); -fx-border-color: rgba(243,156,18,0.40); -fx-text-fill: #c27d0e; }
-.root-light .section-badge-low { -fx-background-color: rgba(149,165,166,0.14); -fx-border-color: rgba(149,165,166,0.35); -fx-text-fill: #7f8c8d; }
-.root-light .section-avg { -fx-text-fill: #4A7566; -fx-background-color: rgba(193,216,195,0.30); }
+.root-light .section-badge-high     { -fx-background-color: rgba(41,128,185,0.12);  -fx-border-color: rgba(41,128,185,0.40);  -fx-font-size: 16px; }
+.root-light .section-badge-moderate { -fx-background-color: rgba(243,156,18,0.12);  -fx-border-color: rgba(243,156,18,0.40);  -fx-font-size: 16px; }
+.root-light .section-badge-low      { -fx-background-color: rgba(149,165,166,0.14); -fx-border-color: rgba(149,165,166,0.35); -fx-font-size: 16px; }
+
+/* Light mode badge text — BLACK via .label sub-selector (the correct JavaFX way) */
+.root-light .section-badge-high .label     { -fx-text-fill: #000000; -fx-font-size: 16px; }
+.root-light .section-badge-moderate .label { -fx-text-fill: #000000; -fx-font-size: 16px; }
+.root-light .section-badge-low .label      { -fx-text-fill: #000000; -fx-font-size: 16px; }
+
+/* ── Avg pill (light mode) — BLACK text, 16 px ───────────────────────── */
+.root-light .section-avg {
+    -fx-text-fill: #000000;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-background-color: rgba(193,216,195,0.30);
+}

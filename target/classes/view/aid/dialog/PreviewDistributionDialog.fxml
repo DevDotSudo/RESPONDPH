@@ -72,9 +72,9 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="ARROW_UP" size="13" styleClass="section-icon-high" />
+                    <Label fx:id="highCountBadge" styleClass="section-badge section-badge-high" text="0" />
                     <Label styleClass="section-title" text="HIGH PRIORITY" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="highCountBadge" styleClass="section-badge section-badge-high" text="0" />
                     <Label fx:id="highAvgLabel" styleClass="section-avg" text="Avg: —" />
                 </HBox>
 
@@ -97,9 +97,9 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="MINUS" size="13" styleClass="section-icon-moderate" />
+                    <Label fx:id="moderateCountBadge" styleClass="section-badge section-badge-moderate" text="0" />
                     <Label styleClass="section-title" text="MODERATE PRIORITY" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="moderateCountBadge" styleClass="section-badge section-badge-moderate" text="0" />
                     <Label fx:id="moderateAvgLabel" styleClass="section-avg" text="Avg: —" />
                 </HBox>
 
@@ -122,9 +122,9 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="ARROW_DOWN" size="13" styleClass="section-icon-low" />
+                    <Label fx:id="lowCountBadge" styleClass="section-badge section-badge-low" text="0" />
                     <Label styleClass="section-title" text="LOW PRIORITY" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="lowCountBadge" styleClass="section-badge section-badge-low" text="0" />
                     <Label fx:id="lowAvgLabel" styleClass="section-avg" text="Avg: —" />
                 </HBox>
 

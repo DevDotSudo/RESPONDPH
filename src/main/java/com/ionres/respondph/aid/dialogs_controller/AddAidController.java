@@ -1965,7 +1965,7 @@ public class AddAidController {
         doc1.add(summaryTable);
 
         doc1.add(new Paragraph(
-                "This report was generated automatically by RespondPH. "
+                "This report was generated automatically by RESPOND-PH. "
                         + "Beneficiary priority levels are determined by clustering algorithms "
                         + "applied to vulnerability and needs-assessment scores.")
                 .setFont(fontNormal).setFontSize(8)

@@ -1265,7 +1265,7 @@ public class PrintAidDialogController {
 
         // ── CLOSING NOTE ─────────────────────────────────────────────────────────
         doc1.add(new Paragraph(
-                "This report was generated automatically by RespondPH. "
+                "This report was generated automatically by RESPOND-PH. "
                         + "Beneficiary data reflects the latest aid distribution records.")
                 .setFont(fontNormal).setFontSize(8)
                 .setFontColor(new DeviceRgb(120, 130, 140))

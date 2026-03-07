@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.ionres.respondph.exception.ExceptionTest$ExceptionFactoryTests
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ionres.respondph.exception.ExceptionTest$ExceptionFactoryTests

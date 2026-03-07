@@ -693,7 +693,7 @@ public class SendSMSController implements Initializable {
                 "Confirm Send",
                 "Send to " + recipients.size() + " recipient(s) via " + method + "?",
                 ButtonType.OK, ButtonType.CANCEL);
-        if (confirmed) sendSMSToRecipients(recipients, "RESPONDPH: " + txtMessage.getText(), method);
+        if (confirmed) sendSMSToRecipients(recipients, "RESPOND-PH: " + txtMessage.getText(), method);
     }
 
     private List<BeneficiaryModel> getRecipients(String group) {

@@ -24,7 +24,7 @@ public class RESPONDPH extends Application {
             Scene scene = new Scene(root, 1200, 800);
             scene.getStylesheets().add(getClass().getResource("/styles/auth/splashscreen.css").toExternalForm());
 
-            primaryStage.setTitle("RespondPH - Login");
+            primaryStage.setTitle("RESPOND-PH - Login");
             primaryStage.setScene(scene);
             primaryStage.setMinWidth(1600);
             primaryStage.setMinHeight(800);

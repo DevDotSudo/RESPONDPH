@@ -1014,7 +1014,7 @@ public class EvacuationPlanPrintingController {
 
         progress.update(68.0, "Writing footer note...");
         doc1.add(new Paragraph(
-                "This report was generated automatically by RespondPH. " +
+                "This report was generated automatically by RESPOND-PH. " +
                         "Data reflects the latest evacuation plan records.")
                 .setFont(fontNormal).setFontSize(8)
                 .setFontColor(new DeviceRgb(120, 130, 140))

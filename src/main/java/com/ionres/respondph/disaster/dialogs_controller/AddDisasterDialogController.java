@@ -86,6 +86,7 @@ public class AddDisasterDialogController {
 
     private void handleGetLocationBtn(){
         MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+        controller.setMarkerType(MappingDialogController.MarkerType.DISASTER);
         controller.setListener(latLng -> {
             latitudeFld.setText(String.valueOf(latLng.lat));
             longitudeFld.setText(String.valueOf(latLng.lon));

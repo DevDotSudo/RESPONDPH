@@ -196,14 +196,18 @@ public class MappingDialogController {
 
     public enum MarkerType {
         BENEFICIARY,
-        EVAC_SITE
+        EVAC_SITE,
+        DISASTER
     }
 
     public void setMarkerType(MarkerType type) {
         if (type == MarkerType.EVAC_SITE) {
             mapping.setMarkerImage("/images/location-pin.png");
-        } else {
+        } else if (type == MarkerType.BENEFICIARY) {
             mapping.setMarkerImage("/images/placeholder.png");
+        }
+        else if (type == MarkerType.DISASTER) {
+            mapping.setMarkerImage("/images/hazzard-sign.png");
         }
     }
 }

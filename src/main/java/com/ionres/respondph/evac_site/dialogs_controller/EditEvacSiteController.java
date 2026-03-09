@@ -74,11 +74,10 @@ public class EditEvacSiteController {
 
     private void handleGetLocationBtn() {
         MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
+        controller.setMarkerType(MappingDialogController.MarkerType.EVAC_SITE);
 
-        // Reset state for fresh session
         controller.resetForNewSession();
 
-        // Pre-place the marker at the evac site's current coordinates
         String latStr = latitudeFld.getText().trim();
         String lonStr = longitudeFld.getText().trim();
         if (!latStr.isEmpty() && !lonStr.isEmpty()) {
@@ -89,7 +88,6 @@ public class EditEvacSiteController {
             } catch (NumberFormatException ignored) {}
         }
 
-        controller.setMarkerType(MappingDialogController.MarkerType.EVAC_SITE);
         controller.setListener(latLng -> {
             latitudeFld.setText(String.valueOf(latLng.lat));
             longitudeFld.setText(String.valueOf(latLng.lon));

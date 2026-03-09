@@ -127,10 +127,8 @@ public class EditBeneficiariesDialogController {
 
     private void handleGetLocationBtn() {
         MappingDialogController controller = DialogManager.getController("mapping", MappingDialogController.class);
-
+        controller.setMarkerType(MappingDialogController.MarkerType.BENEFICIARY);
         controller.resetForNewSession();
-
-        // Pre-place the marker at the beneficiary's current coordinates
         String latStr = latitudeFld.getText().trim();
         String lonStr = longitudeFld.getText().trim();
         if (!latStr.isEmpty() && !lonStr.isEmpty()) {

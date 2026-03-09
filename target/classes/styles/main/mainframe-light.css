@@ -364,7 +364,7 @@
 
 /* ── Footer bar ──────────────────────────────────────────────────────── */
 .root-light .main-footer {
-    -fx-background-color: rgba(240, 232, 220, 0.70);
+    -fx-background-color: rgba(255,255,255,0.95);
     -fx-border-color: rgba(193, 216, 195, 0.55) transparent transparent transparent;
 }
 .root-light .footer-text         { -fx-text-fill: #5C8A79; }

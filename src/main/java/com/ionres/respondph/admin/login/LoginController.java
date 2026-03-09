@@ -87,7 +87,7 @@ public class LoginController {
                         SceneManager.clearCache("/view/main/MainScreen.fxml");
 
                         System.out.println("Opening main screen...");
-                        SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
+                        SceneManager.showStage("/view/main/MainScreen.fxml", "RESPOND-PH - Main Screen");
                         System.out.println("Auto-login completed successfully!");
                     }else {
                         System.out.println("ERROR: Scene or Window is not available!");
@@ -106,6 +106,7 @@ public class LoginController {
             prefs.clearRememberMe();
         }
     }
+
     @FXML
     private void handleLogin() {
         String username = usernameField.getText();
@@ -145,7 +146,7 @@ public class LoginController {
 
                 // Close login FIRST, then show main
                 loginStage.close();
-                SceneManager.showStage("/view/main/MainScreen.fxml", "ResponPH - Main Screen");
+                SceneManager.showStage("/view/main/MainScreen.fxml", "RESPOND-PH - Main Screen");
                 usernameField.clear();
                 passwordField.clear();
                 roleComboBox.setValue(null);

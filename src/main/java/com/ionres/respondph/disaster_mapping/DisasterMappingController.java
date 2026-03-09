@@ -212,12 +212,25 @@ public class DisasterMappingController {
     //   the visible area on the right/bottom.
     // ═══════════════════════════════════════════════════════════════════
     private void drawDisasterCircles() {
-        if (!mapping.isInitialized() || disasterCircles.isEmpty()) return;
+        if (!mapping.isInitialized()) return;
+
+        DisasterModel selectedDisaster = disasterComboBox.getValue();
+        boolean isBanateArea = selectedDisaster != null && selectedDisaster.isBanateArea();
+
+        // If Banate Area is checked, draw the boundary polygon instead
+        if (isBanateArea) {
+            drawBanateAreaHighlight();
+            return;
+        }
+
+        // For regular circles, we need at least one circle to draw
+        if (disasterCircles.isEmpty()) return;
 
         GraphicsContext gc   = mapping.getGc();
         double canvasW       = mapping.getCanvas().getWidth();
         double canvasH       = mapping.getCanvas().getHeight();
 
+        // Otherwise, draw circles as before
         for (DisasterCircleInfo c : disasterCircles) {
             try {
                 if (!Mapping.isValidCoordinate(c.lat, c.lon) ||
@@ -269,6 +282,60 @@ public class DisasterMappingController {
         }
     }
 
+    private void drawBanateAreaHighlight() {
+        GraphicsContext gc = mapping.getGc();
+
+        // Draw filled polygon for disaster area
+        gc.setFill(Color.rgb(255, 0, 0, 0.25));
+        gc.beginPath();
+        boolean first = true;
+        for (double[] coord : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(coord[0], coord[1]);
+            if (first) {
+                gc.moveTo(p.x, p.y);
+                first = false;
+            } else {
+                gc.lineTo(p.x, p.y);
+            }
+        }
+        gc.closePath();
+        gc.fill();
+
+        // Draw border
+        gc.setStroke(Color.RED);
+        gc.setLineWidth(3);
+        gc.beginPath();
+        first = true;
+        for (double[] coord : boundary) {
+            Mapping.Point p = mapping.latLonToScreen(coord[0], coord[1]);
+            if (first) {
+                gc.moveTo(p.x, p.y);
+                first = false;
+            } else {
+                gc.lineTo(p.x, p.y);
+            }
+        }
+        gc.closePath();
+        gc.stroke();
+
+        // Add label
+        DisasterModel disaster = disasterComboBox.getValue();
+        if (disaster != null) {
+            String label = (disaster.getDisasterType() + " " + disaster.getDisasterName()).trim();
+            if (!label.isEmpty()) {
+                Mapping.Point center = mapping.latLonToScreen(11.04, 122.78); // approximate center
+                gc.setFont(Font.font("Segoe UI", 12));
+                double labelW = textWidth(label, gc);
+
+                gc.setFill(Color.rgb(255, 255, 255, 0.95));
+                gc.fillRect(center.x - labelW / 2 - 4, center.y - 10, labelW + 8, 16);
+
+                gc.setFill(Color.DARKRED);
+                gc.fillText(label, center.x - labelW / 2, center.y + 2);
+            }
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // DRAW BENEFICIARIES
     // ─────────────────────────────────────────────────────────────────
@@ -278,7 +345,13 @@ public class DisasterMappingController {
     // negative screen coordinate even though they were still visible.
     // ═══════════════════════════════════════════════════════════════════
     private void drawBeneficiaries() {
-        if (!mapping.isInitialized() || disasterCircles.isEmpty() || beneficiaries.isEmpty()) return;
+        if (!mapping.isInitialized() || beneficiaries.isEmpty()) return;
+
+        DisasterModel selectedDisaster = disasterComboBox.getValue();
+        boolean isBanateArea = selectedDisaster != null && selectedDisaster.isBanateArea();
+
+        // If not Banate Area and no disaster circles, nothing to show
+        if (!isBanateArea && disasterCircles.isEmpty()) return;
 
         GraphicsContext gc  = mapping.getGc();
         double canvasW      = mapping.getCanvas().getWidth();
@@ -297,12 +370,17 @@ public class DisasterMappingController {
         for (BeneficiaryMarker b : beneficiaries) {
             if (!Mapping.isValidCoordinate(b.lat, b.lon)) continue;
 
-            // Only draw beneficiaries that fall inside at least one disaster circle
-            boolean isInsideDisaster = false;
-            for (DisasterCircleInfo c : disasterCircles) {
-                if (GeographicUtils.isInsideCircle(b.lat, b.lon, c.lat, c.lon, c.radius)) {
-                    isInsideDisaster = true;
-                    break;
+            // Only draw beneficiaries that fall inside the disaster area
+            boolean isInsideDisaster;
+            if (isBanateArea) {
+                isInsideDisaster = isPointInPolygon(b.lat, b.lon, boundary);
+            } else {
+                isInsideDisaster = false;
+                for (DisasterCircleInfo c : disasterCircles) {
+                    if (GeographicUtils.isInsideCircle(b.lat, b.lon, c.lat, c.lon, c.radius)) {
+                        isInsideDisaster = true;
+                        break;
+                    }
                 }
             }
             if (!isInsideDisaster) continue;
@@ -330,6 +408,20 @@ public class DisasterMappingController {
                         .log(java.util.logging.Level.FINE, "Error drawing beneficiary marker", e);
             }
         }
+    }
+
+    private boolean isPointInPolygon(double lat, double lon, double[][] polygon) {
+        int intersections = 0;
+        for (int i = 0; i < polygon.length; i++) {
+            double[] p1 = polygon[i];
+            double[] p2 = polygon[(i + 1) % polygon.length];
+
+            if (((p1[0] > lat) != (p2[0] > lat)) &&
+                (lon < (p2[1] - p1[1]) * (lat - p1[0]) / (p2[0] - p1[0]) + p1[1])) {
+                intersections++;
+            }
+        }
+        return (intersections % 2) == 1;
     }
 
     private void drawBoundary() {
@@ -367,23 +459,47 @@ public class DisasterMappingController {
     }
 
     private void handleMapClick(MouseEvent event) {
-        if (event.getClickCount() != 2 || disasterCircles.isEmpty()) return;
+        if (event.getClickCount() != 2) return;
+
+        DisasterModel selectedDisaster = disasterComboBox.getValue();
+        boolean isBanateArea = selectedDisaster != null && selectedDisaster.isBanateArea();
 
         Mapping.LatLng clickLatLon = mapping.screenToLatLon(event.getX(), event.getY());
 
-        for (DisasterCircleInfo circle : disasterCircles) {
-            if (Double.isNaN(circle.lat) || Double.isNaN(circle.lon) ||
-                    Double.isNaN(circle.radius) || circle.radius <= 0) continue;
+        if (isBanateArea) {
+            // Check if click is inside the Banate Area polygon
+            if (isPointInPolygon(clickLatLon.lat, clickLatLon.lon, boundary)) {
+                List<BeneficiaryMarker> inArea = new ArrayList<>();
+                for (BeneficiaryMarker b : beneficiaries) {
+                    if (Mapping.isValidCoordinate(b.lat, b.lon)
+                            && isPointInPolygon(b.lat, b.lon, boundary)) {
+                        inArea.add(b);
+                    }
+                }
+                // Create a placeholder DisasterCircleInfo for the dialog
+                DisasterCircleInfo banateInfo = new DisasterCircleInfo(
+                        11.04, 122.78, 0,
+                        selectedDisaster.getDisasterName(),
+                        selectedDisaster.getDisasterType());
+                showBeneficiariesDialog(banateInfo, inArea);
+            }
+        } else {
+            if (disasterCircles.isEmpty()) return;
 
-            double distance = GeographicUtils.calculateDistance(
-                    clickLatLon.lat, clickLatLon.lon, circle.lat, circle.lon);
+            for (DisasterCircleInfo circle : disasterCircles) {
+                if (Double.isNaN(circle.lat) || Double.isNaN(circle.lon) ||
+                        Double.isNaN(circle.radius) || circle.radius <= 0) continue;
 
-            if (!Double.isNaN(distance) && distance <= circle.radius) {
-                List<BeneficiaryMarker> inCircle =
-                        disasterMappingService.getBeneficiariesInsideCircle(
-                                circle.lat, circle.lon, circle.radius);
-                showBeneficiariesDialog(circle, inCircle);
-                break;
+                double distance = GeographicUtils.calculateDistance(
+                        clickLatLon.lat, clickLatLon.lon, circle.lat, circle.lon);
+
+                if (!Double.isNaN(distance) && distance <= circle.radius) {
+                    List<BeneficiaryMarker> inCircle =
+                            disasterMappingService.getBeneficiariesInsideCircle(
+                                    circle.lat, circle.lon, circle.radius);
+                    showBeneficiariesDialog(circle, inCircle);
+                    break;
+                }
             }
         }
     }

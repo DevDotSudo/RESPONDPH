@@ -48,7 +48,7 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
     @Override
     public List<DisasterModel> getAllDisasters() {
         List<DisasterModel> disasters = new ArrayList<>();
-        String sql = "SELECT disaster_id, type, name FROM disaster";
+        String sql = "SELECT disaster_id, type, name, is_banate_area FROM disaster";
 
         try (Connection conn = connection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -58,8 +58,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
                 int id = rs.getInt("disaster_id");
                 String type = rs.getString("type");
                 String name = rs.getString("name");
+                boolean isBanateArea = rs.getBoolean("is_banate_area");
 
-                disasters.add(new DisasterModel(id, type, name));
+                disasters.add(new DisasterModel(id, type, name, isBanateArea));
             }
 
             LOGGER.info("Fetched " + disasters.size() + " encrypted disasters from database");
@@ -74,7 +75,7 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
     @Override
     public List<DisasterModel> getDisastersByType(String encryptedType) {
         List<DisasterModel> disasters = new ArrayList<>();
-        String sql = "SELECT disaster_id, type, name FROM disaster WHERE type = ?";
+        String sql = "SELECT disaster_id, type, name, is_banate_area FROM disaster WHERE type = ?";
 
         try (Connection conn = connection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -84,8 +85,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
                     int id = rs.getInt("disaster_id");
                     String disasterType = rs.getString("type");
                     String name = rs.getString("name");
+                    boolean isBanateArea = rs.getBoolean("is_banate_area");
 
-                    disasters.add(new DisasterModel(id, disasterType, name));
+                    disasters.add(new DisasterModel(id, disasterType, name, isBanateArea));
                 }
             }
 
@@ -197,7 +199,7 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
 
     @Override
     public DisasterModel getDisasterById(int disasterId) {
-        String sql = "SELECT disaster_id, type, name FROM disaster WHERE disaster_id = ?";
+        String sql = "SELECT disaster_id, type, name, is_banate_area FROM disaster WHERE disaster_id = ?";
 
         try (Connection conn = connection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -207,8 +209,9 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
                     int id = rs.getInt("disaster_id");
                     String type = rs.getString("type");
                     String name = rs.getString("name");
+                    boolean isBanateArea = rs.getBoolean("is_banate_area");
 
-                    return new DisasterModel(id, type, name);
+                    return new DisasterModel(id, type, name, isBanateArea);
                 }
             }
 

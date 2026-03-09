@@ -27,6 +27,7 @@ public class AddDisasterDialogController {
     @FXML public TextField longitudeFld;
     @FXML private TextField radiusFld;
     @FXML private TextArea notesFld;
+    @FXML private CheckBox banateAreaCheckBox;
     @FXML Button getLocationBtn;
     private Stage dialogStage;
     private DisasterService disasterService;
@@ -42,6 +43,21 @@ public class AddDisasterDialogController {
         saveBtn.setOnAction(handler);
         exitBtn.setOnAction(handler);
         getLocationBtn.setOnAction(handler);
+        setupBanateAreaCheckBox();
+    }
+
+    private void setupBanateAreaCheckBox() {
+        banateAreaCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            latitudeFld.setDisable(newVal);
+            longitudeFld.setDisable(newVal);
+            radiusFld.setDisable(newVal);
+            getLocationBtn.setDisable(newVal);
+            if (newVal) {
+                latitudeFld.clear();
+                longitudeFld.clear();
+                radiusFld.clear();
+            }
+        });
     }
 
     private void handleActions(ActionEvent event) {
@@ -90,11 +106,12 @@ public class AddDisasterDialogController {
             String longitude = longitudeFld.getText().trim();
             String radius = radiusFld.getText().trim();
             String notes = notesFld.getText().trim();
+            boolean isBanateArea = banateAreaCheckBox.isSelected();
 
             String regDate = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("MMMM d, yyyy, hh:mm a"));
 
-            DisasterModel disaster = new DisasterModel(type, disasterName, date, latitude, longitude, radius, notes, regDate);
+            DisasterModel disaster = new DisasterModel(type, disasterName, date, latitude, longitude, radius, notes, regDate, isBanateArea);
 
             boolean success = disasterService.createDisaster(disaster);
 
@@ -135,22 +152,25 @@ public class AddDisasterDialogController {
             return false;
         }
 
-        if (latitudeFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Latitude is required.");
-            latitudeFld.requestFocus();
-            return false;
-        }
+        // Skip location validation when Banate Area is checked
+        if (!banateAreaCheckBox.isSelected()) {
+            if (latitudeFld.getText().trim().isEmpty()) {
+                AlertDialogManager.showWarning("Validation Error", "Latitude is required.");
+                latitudeFld.requestFocus();
+                return false;
+            }
 
-        if (longitudeFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Longitude is required.");
-            longitudeFld.requestFocus();
-            return false;
-        }
+            if (longitudeFld.getText().trim().isEmpty()) {
+                AlertDialogManager.showWarning("Validation Error", "Longitude is required.");
+                longitudeFld.requestFocus();
+                return false;
+            }
 
-        if (radiusFld.getText().trim().isEmpty()) {
-            AlertDialogManager.showWarning("Validation Error", "Radius is required.");
-            radiusFld.requestFocus();
-            return false;
+            if (radiusFld.getText().trim().isEmpty()) {
+                AlertDialogManager.showWarning("Validation Error", "Radius is required.");
+                radiusFld.requestFocus();
+                return false;
+            }
         }
 
 
@@ -165,6 +185,11 @@ public class AddDisasterDialogController {
         longitudeFld.clear();
         radiusFld.clear();
         notesFld.clear();
+        banateAreaCheckBox.setSelected(false);
+        latitudeFld.setDisable(false);
+        longitudeFld.setDisable(false);
+        radiusFld.setDisable(false);
+        getLocationBtn.setDisable(false);
     }
 
     private void closeDialog() {

@@ -53,13 +53,13 @@
                 </HBox>
             </VBox>
 
-             <HBox spacing="12" styleClass="info-box">
-                 <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="18" styleClass="info-icon" />
-                 <VBox spacing="4" HBox.hgrow="ALWAYS">
-                     <Label styleClass="info-title" text="Quick Actions" />
-                     <Label styleClass="info-text" text="• Click 'Designated Site' to view the nearest evacuation site for these beneficiaries.&#10;• Click 'Evacuate Now' to allocate beneficiaries to the nearest available evacuation site." wrapText="true" />
-                 </VBox>
-             </HBox>
+            <HBox spacing="12" styleClass="info-box">
+                <FontAwesomeIconView glyphName="LIGHTBULB_ALT" size="18" styleClass="info-icon" />
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label styleClass="info-title" text="Quick Actions" />
+                    <Label styleClass="info-text" text="• Click 'Designated Site' to view the nearest evacuation site for these beneficiaries.&#10;• Click 'Evacuate Now' to allocate beneficiaries to the nearest available evacuation site." wrapText="true" />
+                </VBox>
+            </HBox>
 
             <Separator />
 

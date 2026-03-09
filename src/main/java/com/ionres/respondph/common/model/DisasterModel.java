@@ -8,11 +8,20 @@ public class DisasterModel {
     private int disasterId;
     private String disasterType;
     private String disasterName;
+    private boolean isBanateArea;
 
     public DisasterModel(int id, String type, String name) {
         this.disasterId = id;
         this.disasterType = type;
         this.disasterName = name;
+        this.isBanateArea = false;
+    }
+
+    public DisasterModel(int id, String type, String name, boolean isBanateArea) {
+        this.disasterId = id;
+        this.disasterType = type;
+        this.disasterName = name;
+        this.isBanateArea = isBanateArea;
     }
 
     public int getDisasterId() {
@@ -25,6 +34,14 @@ public class DisasterModel {
 
     public String getDisasterName() {
         return disasterName;
+    }
+
+    public boolean isBanateArea() {
+        return isBanateArea;
+    }
+
+    public void setIsBanateArea(boolean isBanateArea) {
+        this.isBanateArea = isBanateArea;
     }
 
     @Override

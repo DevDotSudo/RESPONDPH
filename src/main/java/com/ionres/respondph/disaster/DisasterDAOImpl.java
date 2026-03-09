@@ -24,8 +24,8 @@ public class DisasterDAOImpl implements DisasterDAO{
 
     @Override
     public boolean saving(DisasterModel dm) {
-        String sql = "INSERT INTO disaster (type, name, date, lat, `long`, radius, notes, reg_date)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO disaster (type, name, date, lat, `long`, radius, notes, reg_date, is_banate_area)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -38,6 +38,7 @@ public class DisasterDAOImpl implements DisasterDAO{
             ps.setString(6,dm.getRadius());
             ps.setString(7,dm.getNotes());
             ps.setString(8,dm.getRegDate());
+            ps.setBoolean(9,dm.isBanateArea());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -158,9 +159,14 @@ public class DisasterDAOImpl implements DisasterDAO{
                     encrypted.add(rs.getString("type"));
                     encrypted.add(rs.getString("name"));
                     encrypted.add(rs.getString("date"));
-                    encrypted.add(rs.getString("lat"));
-                    encrypted.add(rs.getString("long"));
-                    encrypted.add(rs.getString("radius"));
+
+                    String encLat = rs.getString("lat");
+                    String encLong = rs.getString("long");
+                    String encRadius = rs.getString("radius");
+
+                    encrypted.add(encLat != null ? encLat : "");
+                    encrypted.add(encLong != null ? encLong : "");
+                    encrypted.add(encRadius != null ? encRadius : "");
                     encrypted.add(rs.getString("notes"));
                     encrypted.add(rs.getString("reg_date"));
 
@@ -231,19 +237,25 @@ public class DisasterDAOImpl implements DisasterDAO{
         String encryptedLat = rs.getString("lat");
         if (encryptedLat != null && !encryptedLat.isEmpty()) {
             String decryptedLat = cs.decryptWithOneParameter(encryptedLat);
-            disaster.setLatitude(new java.math.BigDecimal(decryptedLat));
+            if (decryptedLat != null && !decryptedLat.trim().isEmpty()) {
+                disaster.setLatitude(new java.math.BigDecimal(decryptedLat.trim()));
+            }
         }
 
         String encryptedLong = rs.getString("long");
         if (encryptedLong != null && !encryptedLong.isEmpty()) {
             String decryptedLong = cs.decryptWithOneParameter(encryptedLong);
-            disaster.setLongitude(new java.math.BigDecimal(decryptedLong));
+            if (decryptedLong != null && !decryptedLong.trim().isEmpty()) {
+                disaster.setLongitude(new java.math.BigDecimal(decryptedLong.trim()));
+            }
         }
 
         String encryptedRadius = rs.getString("radius");
         if (encryptedRadius != null && !encryptedRadius.isEmpty()) {
             String decryptedRadius = cs.decryptWithOneParameter(encryptedRadius);
-            disaster.setRadiusKm(new java.math.BigDecimal(decryptedRadius));
+            if (decryptedRadius != null && !decryptedRadius.trim().isEmpty()) {
+                disaster.setRadiusKm(new java.math.BigDecimal(decryptedRadius.trim()));
+            }
         }
 
         String encryptedNotes = rs.getString("notes");

@@ -141,6 +141,15 @@
                     <Label styleClass="section-subtitle" text="Step 2 of 3" />
                 </HBox>
 
+                <!-- Banate Area Checkbox -->
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="banate-area-box">
+                    <CheckBox fx:id="banateAreaCheckBox" styleClass="banate-checkbox" />
+                    <VBox spacing="2">
+                        <Label styleClass="banate-label" text="Banate Area" />
+                        <Label styleClass="banate-description" text="Covers the entire Banate municipal boundary — disables location fields" />
+                    </VBox>
+                </HBox>
+
                 <!-- Get Location Button -->
                 <HBox alignment="CENTER_LEFT">
                     <Button fx:id="getLocationBtn" styleClass="action-button">

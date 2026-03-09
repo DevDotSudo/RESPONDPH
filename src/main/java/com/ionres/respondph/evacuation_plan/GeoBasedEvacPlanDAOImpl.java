@@ -183,6 +183,8 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
             return ranked;
         }
 
+        boolean isBanateArea = disasterCircle.radius == -1;
+
         //  Get ALL beneficiaries with scores (no disaster_id filter)
         String sql =
                 "SELECT " +
@@ -225,9 +227,13 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
 
             ResultSet rs = ps.executeQuery();
 
-            System.out.println(" Fetching ALL beneficiaries, filtering by geographic location");
-            System.out.println(" Disaster circle - Lat: " + disasterCircle.lat +
-                    ", Lon: " + disasterCircle.lon + ", Radius: " + disasterCircle.radius + "m");
+            if (isBanateArea) {
+                System.out.println(" Banate Area disaster — filtering by boundary polygon");
+            } else {
+                System.out.println(" Fetching ALL beneficiaries, filtering by geographic location");
+                System.out.println(" Disaster circle - Lat: " + disasterCircle.lat +
+                        ", Lon: " + disasterCircle.lon + ", Radius: " + disasterCircle.radius + "m");
+            }
 
             int processedCount = 0;
             int insideCount = 0;
@@ -273,24 +279,24 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
                     continue;
                 }
 
-                // Calculate distance in kilometers
-                double distanceInKm = GeoDistanceCalculator.calculateDistance(
-                        beneficiaryLat,
-                        beneficiaryLon,
-                        disasterCircle.lat,
-                        disasterCircle.lon
-                );
+                boolean isInside;
+                if (isBanateArea) {
+                    isInside = isPointInBanateBoundary(beneficiaryLat, beneficiaryLon);
+                } else {
+                    double distanceInKm = GeoDistanceCalculator.calculateDistance(
+                            beneficiaryLat, beneficiaryLon,
+                            disasterCircle.lat, disasterCircle.lon
+                    );
+                    double distanceInMeters = distanceInKm * 1000;
+                    isInside = distanceInMeters <= disasterCircle.radius;
 
-                // Convert to meters
-                double distanceInMeters = distanceInKm * 1000;
+                    System.out.println("   Beneficiary #" + beneficiaryId +
+                            " - Distance: " + String.format("%.2f", distanceInMeters) + "m");
+                }
 
-                System.out.println("   Beneficiary #" + beneficiaryId +
-                        " - Distance: " + String.format("%.2f", distanceInMeters) + "m");
-
-                //  Filter by geographic distance ONLY
-                if (distanceInMeters > disasterCircle.radius) {
+                if (!isInside) {
                     outsideCount++;
-                    System.out.println(" OUTSIDE (distance > radius)");
+                    System.out.println(" OUTSIDE disaster area");
                     continue;
                 }
 
@@ -316,8 +322,8 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
             System.out.println("\n SUMMARY:");
             System.out.println("   Total beneficiaries processed: " + processedCount);
             System.out.println("   Wrong aid type (not Evac Weight): " + wrongAidTypeCount);
-            System.out.println("   Inside disaster radius: " + insideCount);
-            System.out.println("   Outside disaster radius: " + outsideCount);
+            System.out.println("   Inside disaster area: " + insideCount);
+            System.out.println("   Outside disaster area: " + outsideCount);
             System.out.println("   FINAL: " + ranked.size() + " beneficiaries ready for allocation");
 
         } catch (Exception ex) {
@@ -330,9 +336,37 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
         return ranked;
     }
 
+    /** Banate municipal boundary polygon coordinates */
+    private static final double[][] BANATE_BOUNDARY = {
+            {11.0775,122.7315},{11.1031,122.7581},{11.0925,122.7618},
+            {11.0912,122.7648},{11.0897,122.7662},{11.0896,122.7796},
+            {11.0756,122.7942},{11.0674,122.7957},{11.0584,122.7991},
+            {11.0533,122.8023},{11.0416,122.8200},{10.9914,122.8514},
+            {10.9907,122.8483},{10.9899,122.8462},{10.9904,122.8449},
+            {10.9920,122.8447},{10.9951,122.8433},{10.9968,122.8443},
+            {10.9966,122.8417},{10.9963,122.8340},{10.9988,122.8287},
+            {10.9976,122.8156},{10.9909,122.7957},{10.9919,122.7865},
+            {11.0034,122.7861},{11.0480,122.7722},{11.0613,122.7499},
+            {11.0681,122.7489},{11.0719,122.7453},{11.0761,122.7454}
+    };
+
+    /** Ray-casting point-in-polygon test */
+    private boolean isPointInBanateBoundary(double lat, double lon) {
+        int intersections = 0;
+        for (int i = 0; i < BANATE_BOUNDARY.length; i++) {
+            double[] p1 = BANATE_BOUNDARY[i];
+            double[] p2 = BANATE_BOUNDARY[(i + 1) % BANATE_BOUNDARY.length];
+            if (((p1[0] > lat) != (p2[0] > lat)) &&
+                (lon < (p2[1] - p1[1]) * (lat - p1[0]) / (p2[0] - p1[0]) + p1[1])) {
+                intersections++;
+            }
+        }
+        return (intersections % 2) == 1;
+    }
+
     //  Helper method to get disaster circle info
     private DisasterCircleInfo getDisasterCircleInfo(int disasterId) {
-        String sql = "SELECT lat, `long`, radius, type, name FROM disaster WHERE disaster_id = ?";
+        String sql = "SELECT lat, `long`, radius, type, name, is_banate_area FROM disaster WHERE disaster_id = ?";
 
         try {
             conn = dbConnection.getConnection();
@@ -341,17 +375,34 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+                boolean isBanateArea = rs.getBoolean("is_banate_area");
+                String encryptedType = rs.getString("type");
+                String encryptedName = rs.getString("name");
+                String type = cs.decryptWithOneParameter(encryptedType);
+                String name = cs.decryptWithOneParameter(encryptedName);
+
+                if (isBanateArea) {
+                    // Banate Area — use a sentinel radius of -1 to signal polygon mode
+                    System.out.println("Banate Area disaster detected - using boundary polygon");
+                    rs.close();
+                    ps.close();
+                    return new DisasterCircleInfo(0, 0, -1, name, type);
+                }
+
                 String encryptedLat = rs.getString("lat");
                 String encryptedLon = rs.getString("long");
                 String encryptedRadius = rs.getString("radius");
-                String encryptedType = rs.getString("type");
-                String encryptedName = rs.getString("name");
+
+                if (encryptedLat == null || encryptedLon == null || encryptedRadius == null) {
+                    System.out.println("Disaster has null location fields");
+                    rs.close();
+                    ps.close();
+                    return null;
+                }
 
                 double lat = Double.parseDouble(cs.decryptWithOneParameter(encryptedLat));
                 double lon = Double.parseDouble(cs.decryptWithOneParameter(encryptedLon));
                 double radius = Double.parseDouble(cs.decryptWithOneParameter(encryptedRadius));
-                String type = cs.decryptWithOneParameter(encryptedType);
-                String name = cs.decryptWithOneParameter(encryptedName);
 
                 System.out.println("Disaster Circle Info - Lat: " + lat + ", Lon: " + lon +
                         ", Radius: " + radius + "m, Type: " + type + ", Name: " + name);

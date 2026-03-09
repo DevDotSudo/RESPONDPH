@@ -31,17 +31,22 @@ public class DisasterServiceImpl implements  DisasterService{
             String encryptedDisasterType = cs.encryptWithOneParameter(dm.getDisasterType());
             String encryptedDisasterName = cs.encryptWithOneParameter(dm.getDisasterName());
             String encryptedDate = cs.encryptWithOneParameter(dm.getDate());
-            String encryptedLat = cs.encryptWithOneParameter(dm.getLat());
-            String encryptedLongi = cs.encryptWithOneParameter(dm.getLongi());
-            String encryptedRadius = cs.encryptWithOneParameter(dm.getRadius());
+            String encryptedLat = (dm.getLat() != null && !dm.getLat().trim().isEmpty())
+                    ? cs.encryptWithOneParameter(dm.getLat()) : null;
+            String encryptedLongi = (dm.getLongi() != null && !dm.getLongi().trim().isEmpty())
+                    ? cs.encryptWithOneParameter(dm.getLongi()) : null;
+            String encryptedRadius = (dm.getRadius() != null && !dm.getRadius().trim().isEmpty())
+                    ? cs.encryptWithOneParameter(dm.getRadius()) : null;
             String encryptedNotes = cs.encryptWithOneParameter(dm.getNotes());
             String encryptedRegDate = cs.encryptWithOneParameter(dm.getRegDate());
 
 
-            boolean flag = disasterDAO.saving(new DisasterModel(
+            DisasterModel encryptedModel = new DisasterModel(
                     encryptedDisasterType, encryptedDisasterName, encryptedDate, encryptedLat, encryptedLongi, encryptedRadius,
-                    encryptedNotes, encryptedRegDate
-            ));
+                    encryptedNotes, encryptedRegDate, dm.isBanateArea()
+            );
+
+            boolean flag = disasterDAO.saving(encryptedModel);
 
             if (!flag) {
                 throw ExceptionFactory.failedToCreate("Disaster");

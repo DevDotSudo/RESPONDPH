@@ -11,6 +11,7 @@ public class DisasterModel {
     private String radius;
     private String notes;
     private String regDate;
+    private boolean isBanateArea;
 
     public DisasterModel() {
     }
@@ -26,6 +27,21 @@ public class DisasterModel {
         this.radius = radius;
         this.notes = notes;
         this.regDate = regDate;
+        this.isBanateArea = false;
+    }
+
+    public DisasterModel(String disasterType, String disasterName,
+                         String date, String lat, String longi, String radius,
+                         String notes, String regDate, boolean isBanateArea) {
+        this.disasterType = disasterType;
+        this.disasterName = disasterName;
+        this.date = date;
+        this.lat = lat;
+        this.longi = longi;
+        this.radius = radius;
+        this.notes = notes;
+        this.regDate = regDate;
+        this.isBanateArea = isBanateArea;
     }
 
     public int getDisasterId() {
@@ -98,5 +114,13 @@ public class DisasterModel {
 
     public void setRegDate(String regDate) {
         this.regDate = regDate;
+    }
+
+    public boolean isBanateArea() {
+        return isBanateArea;
+    }
+
+    public void setIsBanateArea(boolean isBanateArea) {
+        this.isBanateArea = isBanateArea;
     }
 }

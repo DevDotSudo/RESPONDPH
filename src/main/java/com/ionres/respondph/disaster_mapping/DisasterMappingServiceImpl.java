@@ -83,7 +83,8 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
                 disasters.add(new DisasterModel(
                         encryptedDisaster.getDisasterId(),
                         decryptedType,
-                        decryptedName
+                        decryptedName,
+                        encryptedDisaster.isBanateArea()
                 ));
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error decrypting disaster", e);
@@ -277,7 +278,8 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
             return new DisasterModel(
                     encryptedDisaster.getDisasterId(),
                     decryptedType,
-                    decryptedName
+                    decryptedName,
+                    encryptedDisaster.isBanateArea()
             );
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error decrypting disaster by ID", e);

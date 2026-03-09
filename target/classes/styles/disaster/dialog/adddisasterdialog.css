@@ -698,3 +698,109 @@
 .root-light .field-combo > .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .field-combo .arrow { -fx-background-color: #4A7566; }
 .root-light .field-helper-text { -fx-text-fill: #4A7566; }
+
+/* ===================================================================
+   BANATE AREA CHECKBOX  —  DARK MODE
+   =================================================================== */
+.banate-area-box {
+    -fx-background-color: rgba(249,115,22,0.06);
+    -fx-border-color: rgba(249,115,22,0.25);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px 16px;
+    -fx-cursor: hand;
+}
+.banate-area-box:hover {
+    -fx-background-color: rgba(249,115,22,0.10);
+    -fx-border-color: rgba(249,115,22,0.40);
+}
+
+/* Checkbox box */
+.banate-checkbox .box {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(148,163,184,0.45);
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 3px;
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+}
+.banate-checkbox:hover .box {
+    -fx-border-color: rgba(249,115,22,0.70);
+    -fx-background-color: rgba(249,115,22,0.08);
+}
+.banate-checkbox:selected .box {
+    -fx-background-color: rgba(249,115,22,0.90);
+    -fx-border-color: rgba(249,115,22,1.0);
+}
+.banate-checkbox:selected:hover .box {
+    -fx-background-color: rgba(220,100,20,0.95);
+    -fx-border-color: rgba(220,100,20,1.0);
+}
+
+/* Checkmark */
+.banate-checkbox .mark {
+    -fx-background-color: transparent;
+    -fx-shape: "M9.86 18a1 1 0 0 1-.73-.32l-4.86-5.17a1 1 0 1 1 1.46-1.37l4.12 4.39 8.41-9.2a1 1 0 1 1 1.48 1.34l-9.14 10a1 1 0 0 1-.73.33Z";
+    -fx-min-width: 12px;
+    -fx-min-height: 12px;
+    -fx-max-width: 12px;
+    -fx-max-height: 12px;
+}
+.banate-checkbox:selected .mark {
+    -fx-background-color: white;
+}
+
+/* Label + description */
+.banate-label {
+    -fx-text-fill: rgba(248,250,252,0.95);
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+.banate-description {
+    -fx-text-fill: rgba(148,163,184,0.70);
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+}
+
+/* ===================================================================
+   BANATE AREA CHECKBOX  —  LIGHT MODE
+   =================================================================== */
+.root-light .banate-area-box {
+    -fx-background-color: rgba(184,85,7,0.06);
+    -fx-border-color: rgba(184,85,7,0.25);
+}
+.root-light .banate-area-box:hover {
+    -fx-background-color: rgba(184,85,7,0.10);
+    -fx-border-color: rgba(184,85,7,0.40);
+}
+.root-light .banate-checkbox .box {
+    -fx-background-color: rgba(0,0,0,0.04);
+    -fx-border-color: rgba(106,156,137,0.65);
+}
+.root-light .banate-checkbox:hover .box {
+    -fx-border-color: rgba(184,85,7,0.70);
+    -fx-background-color: rgba(184,85,7,0.08);
+}
+.root-light .banate-checkbox:selected .box {
+    -fx-background-color: rgba(184,85,7,0.90);
+    -fx-border-color: rgba(184,85,7,1.0);
+}
+.root-light .banate-checkbox:selected:hover .box {
+    -fx-background-color: rgba(163,74,6,0.95);
+    -fx-border-color: rgba(163,74,6,1.0);
+}
+.root-light .banate-checkbox:selected .mark {
+    -fx-background-color: white;
+}
+.root-light .banate-label {
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .banate-description {
+    -fx-text-fill: #5C8A79;
+}
+

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.ionres.respondph.util.GeographicUtilsTest
+-------------------------------------------------------------------------------
+Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.ionres.respondph.util.GeographicUtilsTest

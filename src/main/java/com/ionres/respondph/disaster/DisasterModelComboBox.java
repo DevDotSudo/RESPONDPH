@@ -11,7 +11,7 @@ public class DisasterModelComboBox {
 
     private int disasterId;
     private int disasterTypeId;
-    private String disasterTypeName; // From join
+    private String disasterTypeName;
     private String disasterName;
     private LocalDate disasterDate;
     private BigDecimal latitude;
@@ -19,10 +19,10 @@ public class DisasterModelComboBox {
     private BigDecimal radiusKm;
     private String notes;
     private LocalDateTime createdAt;
+    private String polyLatLong; // ── NEW: "lat,lon;lat,lon;..." or null if not polygon
 
     // Constructors
-    public DisasterModelComboBox() {
-    }
+    public DisasterModelComboBox() {}
 
     public DisasterModelComboBox(int disasterId, String disasterName, String disasterTypeName) {
         this.disasterId = disasterId;
@@ -31,95 +31,45 @@ public class DisasterModelComboBox {
     }
 
     // Getters and Setters
-    public int getDisasterId() {
-        return disasterId;
-    }
+    public int getDisasterId() { return disasterId; }
+    public void setDisasterId(int disasterId) { this.disasterId = disasterId; }
 
-    public void setDisasterId(int disasterId) {
-        this.disasterId = disasterId;
-    }
+    public int getDisasterTypeId() { return disasterTypeId; }
+    public void setDisasterTypeId(int disasterTypeId) { this.disasterTypeId = disasterTypeId; }
 
-    public int getDisasterTypeId() {
-        return disasterTypeId;
-    }
+    public String getDisasterTypeName() { return disasterTypeName; }
+    public void setDisasterTypeName(String disasterTypeName) { this.disasterTypeName = disasterTypeName; }
 
-    public void setDisasterTypeId(int disasterTypeId) {
-        this.disasterTypeId = disasterTypeId;
-    }
+    public String getDisasterName() { return disasterName; }
+    public void setDisasterName(String disasterName) { this.disasterName = disasterName; }
 
-    public String getDisasterTypeName() {
-        return disasterTypeName;
-    }
+    public LocalDate getDisasterDate() { return disasterDate; }
+    public void setDisasterDate(LocalDate disasterDate) { this.disasterDate = disasterDate; }
 
-    public void setDisasterTypeName(String disasterTypeName) {
-        this.disasterTypeName = disasterTypeName;
-    }
+    public BigDecimal getLatitude() { return latitude; }
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; }
 
-    public String getDisasterName() {
-        return disasterName;
-    }
+    public BigDecimal getLongitude() { return longitude; }
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
 
-    public void setDisasterName(String disasterName) {
-        this.disasterName = disasterName;
-    }
+    public BigDecimal getRadiusKm() { return radiusKm; }
+    public void setRadiusKm(BigDecimal radiusKm) { this.radiusKm = radiusKm; }
 
-    public LocalDate getDisasterDate() {
-        return disasterDate;
-    }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
-    public void setDisasterDate(LocalDate disasterDate) {
-        this.disasterDate = disasterDate;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public BigDecimal getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(BigDecimal latitude) {
-        this.latitude = latitude;
-    }
-
-    public BigDecimal getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(BigDecimal longitude) {
-        this.longitude = longitude;
-    }
-
-    public BigDecimal getRadiusKm() {
-        return radiusKm;
-    }
-
-    public void setRadiusKm(BigDecimal radiusKm) {
-        this.radiusKm = radiusKm;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
+    // ── NEW ──────────────────────────────────────────────────────────────────
+    public String getPolyLatLong() { return polyLatLong; }
+    public void setPolyLatLong(String polyLatLong) { this.polyLatLong = polyLatLong; }
+    // ─────────────────────────────────────────────────────────────────────────
 
     @Override
     public String toString() {
         if (disasterTypeName != null && disasterDate != null) {
-            return String.format("%s - %s (%s)",
-                    disasterName,
-                    disasterTypeName,
-                    disasterDate.toString()
-            );
+            return String.format("%s - %s (%s)", disasterName, disasterTypeName, disasterDate.toString());
         } else if (disasterTypeName != null) {
             return String.format("%s - %s", disasterName, disasterTypeName);
         } else {

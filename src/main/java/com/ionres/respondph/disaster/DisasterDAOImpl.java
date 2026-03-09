@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DisasterDAOImpl implements DisasterDAO{
+public class DisasterDAOImpl implements DisasterDAO {
     private final DBConnection dbConnection;
     private final Cryptography cs;
 
@@ -24,21 +24,23 @@ public class DisasterDAOImpl implements DisasterDAO{
 
     @Override
     public boolean saving(DisasterModel dm) {
-        String sql = "INSERT INTO disaster (type, name, date, lat, `long`, radius, notes, reg_date, is_banate_area)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // ── UPDATED: now includes poly_lat_long ──────────────────────────────
+        String sql = "INSERT INTO disaster (type, name, date, lat, `long`, radius, notes, reg_date, is_banate_area, poly_lat_long)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1,dm.getDisasterType());
-            ps.setString(2,dm.getDisasterName());
-            ps.setString(3,dm.getDate());
-            ps.setString(4,dm.getLat());
-            ps.setString(5,dm.getLongi());
-            ps.setString(6,dm.getRadius());
-            ps.setString(7,dm.getNotes());
-            ps.setString(8,dm.getRegDate());
-            ps.setBoolean(9,dm.isBanateArea());
+            ps.setString(1, dm.getDisasterType());
+            ps.setString(2, dm.getDisasterName());
+            ps.setString(3, dm.getDate());
+            ps.setString(4, dm.getLat());
+            ps.setString(5, dm.getLongi());
+            ps.setString(6, dm.getRadius());
+            ps.setString(7, dm.getNotes());
+            ps.setString(8, dm.getRegDate());
+            ps.setBoolean(9, dm.isBanateArea());
+            ps.setString(10, dm.getPolyLatLong()); // null if not polygon
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -53,25 +55,21 @@ public class DisasterDAOImpl implements DisasterDAO{
     @Override
     public List<DisasterModel> getAll() {
         List<DisasterModel> disaster = new ArrayList<>();
-        String sql = "SELECT disaster_id, type, name, date, notes, reg_date  FROM disaster";
+        String sql = "SELECT disaster_id, type, name, date, notes, reg_date FROM disaster";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-
                 DisasterModel dm = new DisasterModel();
 
                 List<String> encrypted = new ArrayList<>();
-
                 encrypted.add(rs.getString("type"));
                 encrypted.add(rs.getString("name"));
                 encrypted.add(rs.getString("date"));
                 encrypted.add(rs.getString("notes"));
                 encrypted.add(rs.getString("reg_date"));
-
-
 
                 List<String> decrypted = cs.decrypt(encrypted);
 
@@ -82,14 +80,12 @@ public class DisasterDAOImpl implements DisasterDAO{
                 dm.setNotes(decrypted.get(3));
                 dm.setRegDate(decrypted.get(4));
 
-
-
                 disaster.add(dm);
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(null, "Error fetching data: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Error fetching data: " + ex.getMessage());
         }
 
         return disaster;
@@ -103,7 +99,6 @@ public class DisasterDAOImpl implements DisasterDAO{
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, dm.getDisasterId());
-
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
@@ -116,8 +111,10 @@ public class DisasterDAOImpl implements DisasterDAO{
 
     @Override
     public boolean update(DisasterModel dm) {
+        // ── UPDATED: now includes poly_lat_long ──────────────────────────────
         String sql = "UPDATE disaster SET " +
-                "type = ?, name = ?, date = ?, lat = ?, `long` = ?, radius = ?, notes = ?, reg_date = ? " +
+                "type = ?, name = ?, date = ?, lat = ?, `long` = ?, radius = ?, " +
+                "notes = ?, reg_date = ?, poly_lat_long = ? " +
                 "WHERE disaster_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -131,7 +128,8 @@ public class DisasterDAOImpl implements DisasterDAO{
             ps.setString(6, dm.getRadius());
             ps.setString(7, dm.getNotes());
             ps.setString(8, dm.getRegDate());
-            ps.setInt(9, dm.getDisasterId());
+            ps.setString(9, dm.getPolyLatLong()); // null if not polygon
+            ps.setInt(10, dm.getDisasterId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -146,6 +144,7 @@ public class DisasterDAOImpl implements DisasterDAO{
     @Override
     public DisasterModel getById(int id) {
         DisasterModel dm = null;
+        // ── UPDATED: fetch poly_lat_long too ────────────────────────────────
         String sql = "SELECT * FROM disaster WHERE disaster_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -160,15 +159,18 @@ public class DisasterDAOImpl implements DisasterDAO{
                     encrypted.add(rs.getString("name"));
                     encrypted.add(rs.getString("date"));
 
-                    String encLat = rs.getString("lat");
-                    String encLong = rs.getString("long");
+                    String encLat    = rs.getString("lat");
+                    String encLong   = rs.getString("long");
                     String encRadius = rs.getString("radius");
 
-                    encrypted.add(encLat != null ? encLat : "");
-                    encrypted.add(encLong != null ? encLong : "");
+                    encrypted.add(encLat    != null ? encLat    : "");
+                    encrypted.add(encLong   != null ? encLong   : "");
                     encrypted.add(encRadius != null ? encRadius : "");
                     encrypted.add(rs.getString("notes"));
                     encrypted.add(rs.getString("reg_date"));
+
+                    // poly_lat_long is decrypted separately (may be null)
+                    String encPoly = rs.getString("poly_lat_long");
 
                     List<String> decrypted = cs.decrypt(encrypted);
 
@@ -181,6 +183,17 @@ public class DisasterDAOImpl implements DisasterDAO{
                     dm.setRadius(decrypted.get(5));
                     dm.setNotes(decrypted.get(6));
                     dm.setRegDate(decrypted.get(7));
+                    dm.setIsBanateArea(rs.getBoolean("is_banate_area"));
+
+                    // Decrypt poly_lat_long if present
+                    if (encPoly != null && !encPoly.isEmpty()) {
+                        dm.setPolyLatLong(cs.decryptWithOneParameter(encPoly));
+                        dm.setLocationType("POLYGON");
+                    } else if (dm.isBanateArea()) {
+                        dm.setLocationType("BANATE");
+                    } else {
+                        dm.setLocationType("CIRCLE");
+                    }
                 }
             }
 
@@ -191,10 +204,9 @@ public class DisasterDAOImpl implements DisasterDAO{
         return dm;
     }
 
-
     @Override
     public List<DisasterModelComboBox> findAll() {
-        List<DisasterModelComboBox> aidTypes = new ArrayList<>();
+        List<DisasterModelComboBox> disasters = new ArrayList<>();
         String sql = "SELECT * FROM disaster ORDER BY date DESC";
 
         try (Connection conn = dbConnection.getConnection();
@@ -202,18 +214,18 @@ public class DisasterDAOImpl implements DisasterDAO{
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                DisasterModelComboBox aidType = mapResultSetToDisaster(rs);
-                aidTypes.add(aidType);
+                DisasterModelComboBox disaster = mapResultSetToDisaster(rs);
+                disasters.add(disaster);
             }
 
-            System.out.println("Loaded " + aidTypes.size() + " aid types");
+            System.out.println("Loaded " + disasters.size() + " disasters");
 
         } catch (Exception e) {
-            System.err.println("Error fetching all aid types: " + e.getMessage());
+            System.err.println("Error fetching all disasters: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return aidTypes;
+        return disasters;
     }
 
     @Override
@@ -222,46 +234,47 @@ public class DisasterDAOImpl implements DisasterDAO{
 
         disaster.setDisasterId(rs.getInt("disaster_id"));
 
-        // Decrypt fields
-        String encryptedType = rs.getString("type");
-        disaster.setDisasterTypeName(cs.decryptWithOneParameter(encryptedType));
+        disaster.setDisasterTypeName(cs.decryptWithOneParameter(rs.getString("type")));
+        disaster.setDisasterName(cs.decryptWithOneParameter(rs.getString("name")));
 
-        String encryptedName = rs.getString("name");
-        disaster.setDisasterName(cs.decryptWithOneParameter(encryptedName));
-
-        String encryptedDate = rs.getString("date");
-        String decryptedDate = cs.decryptWithOneParameter(encryptedDate);
+        String decryptedDate = cs.decryptWithOneParameter(rs.getString("date"));
         disaster.setDisasterDate(java.time.LocalDate.parse(decryptedDate));
 
-        // Decrypt optional fields
-        String encryptedLat = rs.getString("lat");
-        if (encryptedLat != null && !encryptedLat.isEmpty()) {
-            String decryptedLat = cs.decryptWithOneParameter(encryptedLat);
-            if (decryptedLat != null && !decryptedLat.trim().isEmpty()) {
-                disaster.setLatitude(new java.math.BigDecimal(decryptedLat.trim()));
+        String encLat = rs.getString("lat");
+        if (encLat != null && !encLat.isEmpty()) {
+            String decLat = cs.decryptWithOneParameter(encLat);
+            if (decLat != null && !decLat.trim().isEmpty()) {
+                disaster.setLatitude(new java.math.BigDecimal(decLat.trim()));
             }
         }
 
-        String encryptedLong = rs.getString("long");
-        if (encryptedLong != null && !encryptedLong.isEmpty()) {
-            String decryptedLong = cs.decryptWithOneParameter(encryptedLong);
-            if (decryptedLong != null && !decryptedLong.trim().isEmpty()) {
-                disaster.setLongitude(new java.math.BigDecimal(decryptedLong.trim()));
+        String encLong = rs.getString("long");
+        if (encLong != null && !encLong.isEmpty()) {
+            String decLong = cs.decryptWithOneParameter(encLong);
+            if (decLong != null && !decLong.trim().isEmpty()) {
+                disaster.setLongitude(new java.math.BigDecimal(decLong.trim()));
             }
         }
 
-        String encryptedRadius = rs.getString("radius");
-        if (encryptedRadius != null && !encryptedRadius.isEmpty()) {
-            String decryptedRadius = cs.decryptWithOneParameter(encryptedRadius);
-            if (decryptedRadius != null && !decryptedRadius.trim().isEmpty()) {
-                disaster.setRadiusKm(new java.math.BigDecimal(decryptedRadius.trim()));
+        String encRadius = rs.getString("radius");
+        if (encRadius != null && !encRadius.isEmpty()) {
+            String decRadius = cs.decryptWithOneParameter(encRadius);
+            if (decRadius != null && !decRadius.trim().isEmpty()) {
+                disaster.setRadiusKm(new java.math.BigDecimal(decRadius.trim()));
             }
         }
 
-        String encryptedNotes = rs.getString("notes");
-        if (encryptedNotes != null && !encryptedNotes.isEmpty()) {
-            disaster.setNotes(cs.decryptWithOneParameter(encryptedNotes));
+        String encNotes = rs.getString("notes");
+        if (encNotes != null && !encNotes.isEmpty()) {
+            disaster.setNotes(cs.decryptWithOneParameter(encNotes));
         }
+
+        // ── NEW: poly_lat_long ───────────────────────────────────────────────
+        String encPoly = rs.getString("poly_lat_long");
+        if (encPoly != null && !encPoly.isEmpty()) {
+            disaster.setPolyLatLong(cs.decryptWithOneParameter(encPoly));
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         return disaster;
     }

@@ -89,6 +89,7 @@ public class AppLoader {
         DialogManager.preload("editDisaster", "/view/disaster/dialog/EditDisasterDialog.fxml");
         DialogManager.preload("addDisasterDamage", "/view/disaster_damage/dialog/AddDisasterDamageDialog.fxml");
         DialogManager.preload("editDisasterDamage", "/view/disaster_damage/dialog/EditDisasterDamageDialog.fxml");
+        DialogManager.preload("polygonMap", "/view/disaster/dialog/PolygonMapping.fxml");
 
         // Beneficiary dialogs
         DialogManager.preload("addBeneficiary", "/view/beneficiary/dialog/AddBeneficiariesDialog.fxml");

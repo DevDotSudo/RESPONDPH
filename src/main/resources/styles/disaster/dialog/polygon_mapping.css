@@ -1,0 +1,661 @@
+/* ==================================================================
+   POLYGON MAP DIALOG  —  DARK MODE (default)
+   Palette matches adddisasterdialog: #0b1220 bg, #f97316 accent
+   ================================================================== */
+
+/* ---------- ROOT ---------- */
+.polygon-dialog-root {
+    -fx-background-color: #0b1220;
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 24, 0.0, 0, 6);
+    -fx-pref-width: 1450;
+    -fx-pref-height: 900;
+}
+
+/* ---------- HEADER ---------- */
+.dialog-header {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-radius: 8px 8px 0 0;
+}
+
+.header-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.4), 8, 0.0, 0, 0);
+}
+
+.dialog-title {
+    -fx-text-fill: rgba(248,250,252,0.98);
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+}
+
+.dialog-subtitle {
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+}
+
+/* Point counter badge */
+.point-counter-box {
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-border-color: rgba(249,115,22,0.28);
+    -fx-border-width: 1px;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-padding: 5px 14px;
+}
+
+.counter-icon {
+    -fx-fill: rgba(249,115,22,0.90);
+}
+
+.counter-label {
+    -fx-text-fill: rgba(249,115,22,0.98);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 900;
+}
+
+/* Close button */
+.dialog-close {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 9px 13px;
+    -fx-cursor: hand;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+}
+.dialog-close:hover {
+    -fx-background-color: rgba(239,68,68,0.12);
+    -fx-border-color: rgba(239,68,68,0.50);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+.dialog-close:pressed {
+    -fx-scale-x: 0.97;
+    -fx-scale-y: 0.97;
+}
+.dialog-close:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.close-icon { -fx-fill: rgba(248,250,252,0.90); }
+
+/* ==================================================================
+   LEFT PANEL
+   ================================================================== */
+.left-panel {
+    -fx-background-color: rgba(255,255,255,0.018);
+    -fx-border-color: transparent;
+}
+
+.panel-header {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: transparent;
+}
+
+.panel-header-icon {
+    -fx-fill: rgba(249,115,22,0.85);
+}
+
+.panel-header-label {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
+}
+
+.panel-separator {
+    -fx-padding: 0;
+}
+.panel-separator .line {
+    -fx-background-color: rgba(148,163,184,0.10);
+    -fx-border-color: transparent;
+}
+
+/* Clear all button */
+.clear-all-btn {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.20);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px 10px;
+    -fx-cursor: hand;
+}
+.clear-all-btn:hover {
+    -fx-background-color: rgba(239,68,68,0.16);
+    -fx-border-color: rgba(239,68,68,0.40);
+}
+.clear-all-btn:pressed {
+    -fx-background-color: rgba(239,68,68,0.24);
+}
+.clear-all-btn:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.clear-all-icon { -fx-fill: rgba(248,113,113,0.90); }
+.clear-all-text {
+    -fx-text-fill: rgba(248,113,113,0.90);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 800;
+}
+
+/* Empty state */
+.list-empty-state {
+    -fx-background-color: transparent;
+}
+
+.empty-icon {
+    -fx-fill: rgba(148,163,184,0.22);
+}
+
+.empty-title {
+    -fx-text-fill: rgba(148,163,184,0.55);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+.empty-desc {
+    -fx-text-fill: rgba(148,163,184,0.40);
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-alignment: CENTER;
+    -fx-alignment: CENTER;
+}
+
+/* Points scroll */
+.points-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+.points-scroll .viewport { -fx-background-color: transparent; }
+.points-scroll .corner { -fx-background-color: transparent; }
+.points-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
+}
+.points-scroll .scroll-bar .track {
+    -fx-background-color: rgba(148,163,184,0.06);
+    -fx-background-radius: 4px;
+}
+.points-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(249,115,22,0.25);
+    -fx-background-radius: 4px;
+}
+.points-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(249,115,22,0.45);
+}
+.points-scroll .increment-button,
+.points-scroll .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* Points list */
+.points-list {
+    -fx-background-color: transparent;
+}
+
+/* Individual point row */
+.point-row {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(148,163,184,0.08);
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 10px 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: default;
+    -fx-min-height: 56px;
+}
+.point-row:hover {
+    -fx-background-color: rgba(249,115,22,0.05);
+    -fx-border-color: rgba(249,115,22,0.12);
+}
+
+/* Index badge */
+.point-index-badge {
+    -fx-text-fill: rgba(249,115,22,0.92);
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 900;
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-background-radius: 4px;
+    -fx-padding: 2px 7px;
+    -fx-border-color: rgba(249,115,22,0.22);
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-min-width: 28px;
+    -fx-alignment: CENTER;
+}
+
+/* Coordinate labels */
+.point-coord-key {
+    -fx-text-fill: rgba(148,163,184,0.65);
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 700;
+    -fx-min-width: 22px;
+}
+
+.point-coord-value {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+/* Delete button */
+.point-delete-btn {
+    -fx-background-color: rgba(239,68,68,0.07);
+    -fx-border-color: rgba(239,68,68,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px 8px;
+    -fx-cursor: hand;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+}
+.point-delete-btn:hover {
+    -fx-background-color: rgba(239,68,68,0.18);
+    -fx-border-color: rgba(239,68,68,0.45);
+    -fx-scale-x: 1.06;
+    -fx-scale-y: 1.06;
+}
+.point-delete-btn:pressed {
+    -fx-scale-x: 0.94;
+    -fx-scale-y: 0.94;
+}
+.point-delete-btn:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.point-delete-icon { -fx-fill: rgba(248,113,113,0.88); }
+
+/* List footer */
+.list-footer {
+    -fx-background-color: rgba(255,255,255,0.015);
+    -fx-border-color: rgba(148,163,184,0.10);
+    -fx-border-width: 1px 0 0 0;
+}
+
+.footer-info-icon { -fx-fill: rgba(148,163,184,0.45); }
+.footer-info-text {
+    -fx-text-fill: rgba(148,163,184,0.50);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 600;
+    -fx-font-style: italic;
+}
+
+/* ==================================================================
+   VERTICAL DIVIDER
+   ================================================================== */
+.vertical-divider {
+    -fx-padding: 0;
+}
+.vertical-divider .line {
+    -fx-background-color: rgba(148,163,184,0.12);
+    -fx-border-color: transparent;
+}
+
+/* ==================================================================
+   MAP PANEL
+   ================================================================== */
+.map-panel {
+    -fx-background-color: #0d1829;
+}
+
+/* Map toolbar */
+.map-toolbar {
+    -fx-background-color: rgba(255,255,255,0.025);
+    -fx-border-color: rgba(148,163,184,0.10);
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* Zoom group */
+.zoom-group {
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.zoom-btn {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 7px 12px;
+    -fx-cursor: hand;
+    -fx-min-width: 34px;
+    -fx-min-height: 34px;
+}
+.zoom-btn:hover {
+    -fx-background-color: rgba(249,115,22,0.12);
+}
+.zoom-btn:pressed {
+    -fx-background-color: rgba(249,115,22,0.22);
+}
+.zoom-btn:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.zoom-icon { -fx-fill: rgba(226,232,240,0.80); }
+
+/* Toolbar buttons */
+.toolbar-btn {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 7px 12px;
+    -fx-cursor: hand;
+    -fx-min-height: 34px;
+}
+.toolbar-btn:hover {
+    -fx-background-color: rgba(249,115,22,0.08);
+    -fx-border-color: rgba(249,115,22,0.35);
+}
+.toolbar-btn:pressed {
+    -fx-background-color: rgba(249,115,22,0.15);
+}
+.toolbar-btn:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.toolbar-icon { -fx-fill: rgba(226,232,240,0.75); }
+.toolbar-btn-text {
+    -fx-text-fill: rgba(226,232,240,0.85);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+/* Mode indicator */
+.mode-indicator {
+    -fx-background-color: rgba(59,130,246,0.10);
+    -fx-border-color: rgba(59,130,246,0.22);
+    -fx-border-width: 1px;
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-padding: 5px 12px;
+}
+.mode-icon { -fx-fill: rgba(96,165,250,0.85); }
+.mode-label {
+    -fx-text-fill: rgba(147,197,253,0.85);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 700;
+}
+
+/* Map container */
+.map-container {
+    -fx-background-color: #1a2a4a;
+    -fx-cursor: crosshair;
+}
+
+/* ==================================================================
+   FOOTER
+   ================================================================== */
+.dialog-footer {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px 0 0 0;
+    -fx-background-radius: 0 0 8px 8px;
+}
+
+/* Validation hint */
+.validation-hint {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.22);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 7px 12px;
+}
+.hint-warn-icon { -fx-fill: rgba(248,113,113,0.90); }
+.hint-warn-text {
+    -fx-text-fill: rgba(248,113,113,0.90);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 700;
+}
+
+/* Secondary button */
+.btn-secondary {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-border-color: rgba(148,163,184,0.22);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+    -fx-min-height: 40px;
+}
+.btn-secondary:hover {
+    -fx-background-color: rgba(255,255,255,0.07);
+    -fx-border-color: rgba(148,163,184,0.40);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+.btn-secondary:pressed {
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+.btn-secondary:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.btn-sec-icon { -fx-fill: rgba(226,232,240,0.80); }
+.btn-sec-text {
+    -fx-text-fill: rgba(226,232,240,0.88);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+/* Primary button */
+.btn-primary {
+    -fx-background-color: rgba(249,115,22,0.92);
+    -fx-border-color: rgba(249,115,22,0.30);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+    -fx-min-height: 40px;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.30), 10, 0.0, 0, 3);
+}
+.btn-primary:hover {
+    -fx-background-color: rgba(249,115,22,1.00);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.45), 14, 0.0, 0, 4);
+}
+.btn-primary:pressed {
+    -fx-background-color: rgba(234,88,12,1.00);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+.btn-primary:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.btn-icon { -fx-fill: rgba(255,255,255,0.98); }
+.btn-text {
+    -fx-text-fill: rgba(255,255,255,0.98);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 900;
+}
+
+/* ==================================================================
+   LIGHT MODE  -  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
+   ================================================================== */
+.polygon-dialog-root.root-light {
+    -fx-background-color: #F7EFE3;
+    -fx-border-color: #C1D8C3;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 20, 0, 0, 4);
+}
+
+.root-light .dialog-header {
+    -fx-background-color: #5C8A79;
+    -fx-border-color: rgba(106,156,137,0.30);
+}
+.root-light .header-icon { -fx-fill: rgba(255,255,255,0.92); -fx-effect: none; }
+.root-light .dialog-title { -fx-text-fill: rgba(255,255,255,0.96); }
+.root-light .dialog-subtitle { -fx-text-fill: rgba(255,255,255,0.65); }
+.root-light .point-counter-box {
+    -fx-background-color: rgba(255,255,255,0.18);
+    -fx-border-color: rgba(255,255,255,0.30);
+}
+.root-light .counter-icon { -fx-fill: rgba(255,255,255,0.88); }
+.root-light .counter-label { -fx-text-fill: rgba(255,255,255,0.96); }
+.root-light .dialog-close {
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-border-color: rgba(255,255,255,0.25);
+}
+.root-light .dialog-close:hover {
+    -fx-background-color: rgba(220,60,60,0.18);
+    -fx-border-color: rgba(220,60,60,0.45);
+}
+.root-light .close-icon { -fx-fill: rgba(255,255,255,0.90); }
+
+/* Left panel */
+.root-light .left-panel { -fx-background-color: rgba(232,224,212,0.55); }
+.root-light .panel-header { -fx-background-color: rgba(193,216,195,0.22); }
+.root-light .panel-header-icon { -fx-fill: #B85507; }
+.root-light .panel-header-label { -fx-text-fill: #1A1A1A; }
+.root-light .panel-separator .line { -fx-background-color: rgba(176,200,178,0.50); }
+
+.root-light .clear-all-btn {
+    -fx-background-color: rgba(220,38,38,0.07);
+    -fx-border-color: rgba(220,38,38,0.18);
+}
+.root-light .clear-all-btn:hover {
+    -fx-background-color: rgba(220,38,38,0.14);
+    -fx-border-color: rgba(220,38,38,0.35);
+}
+.root-light .clear-all-icon { -fx-fill: rgba(185,28,28,0.88); }
+.root-light .clear-all-text { -fx-text-fill: rgba(185,28,28,0.88); }
+
+.root-light .empty-icon { -fx-fill: rgba(106,156,137,0.28); }
+.root-light .empty-title { -fx-text-fill: rgba(92,138,121,0.60); }
+.root-light .empty-desc { -fx-text-fill: rgba(92,138,121,0.45); }
+
+.root-light .points-scroll .scroll-bar .track {
+    -fx-background-color: rgba(193,216,195,0.20);
+}
+.root-light .points-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(106,156,137,0.40);
+}
+.root-light .points-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(92,138,121,0.60);
+}
+
+.root-light .point-row {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(176,200,178,0.35);
+}
+.root-light .point-row:hover {
+    -fx-background-color: rgba(184,85,7,0.05);
+    -fx-border-color: rgba(184,85,7,0.14);
+}
+.root-light .point-index-badge {
+    -fx-text-fill: #B85507;
+    -fx-background-color: rgba(184,85,7,0.10);
+    -fx-border-color: rgba(184,85,7,0.22);
+}
+.root-light .point-coord-key { -fx-text-fill: rgba(92,138,121,0.70); }
+.root-light .point-coord-value { -fx-text-fill: #1A1A1A; }
+.root-light .point-delete-btn {
+    -fx-background-color: rgba(220,38,38,0.06);
+    -fx-border-color: rgba(220,38,38,0.18);
+}
+.root-light .point-delete-btn:hover {
+    -fx-background-color: rgba(220,38,38,0.14);
+    -fx-border-color: rgba(220,38,38,0.40);
+}
+.root-light .point-delete-icon { -fx-fill: rgba(185,28,28,0.88); }
+
+.root-light .list-footer {
+    -fx-background-color: rgba(193,216,195,0.15);
+    -fx-border-color: rgba(176,200,178,0.40);
+}
+.root-light .footer-info-icon { -fx-fill: rgba(92,138,121,0.50); }
+.root-light .footer-info-text { -fx-text-fill: rgba(92,138,121,0.55); }
+
+/* Divider */
+.root-light .vertical-divider .line { -fx-background-color: rgba(176,200,178,0.45); }
+
+/* Map panel */
+.root-light .map-panel { -fx-background-color: #DDE8DD; }
+.root-light .map-toolbar {
+    -fx-background-color: rgba(193,216,195,0.30);
+    -fx-border-color: rgba(176,200,178,0.45);
+}
+.root-light .zoom-group {
+    -fx-border-color: rgba(176,200,178,0.55);
+}
+.root-light .zoom-btn {
+    -fx-background-color: rgba(255,255,255,0.45);
+}
+.root-light .zoom-btn:hover {
+    -fx-background-color: rgba(184,85,7,0.10);
+}
+.root-light .zoom-icon { -fx-fill: #4A7566; }
+.root-light .toolbar-btn {
+    -fx-background-color: rgba(255,255,255,0.45);
+    -fx-border-color: rgba(176,200,178,0.55);
+}
+.root-light .toolbar-btn:hover {
+    -fx-background-color: rgba(184,85,7,0.08);
+    -fx-border-color: rgba(184,85,7,0.30);
+}
+.root-light .toolbar-icon { -fx-fill: #4A7566; }
+.root-light .toolbar-btn-text { -fx-text-fill: #2A2A2A; }
+.root-light .mode-indicator {
+    -fx-background-color: rgba(193,216,195,0.35);
+    -fx-border-color: rgba(106,156,137,0.35);
+}
+.root-light .mode-icon { -fx-fill: #5C8A79; }
+.root-light .mode-label { -fx-text-fill: #4A7566; }
+.root-light .map-container { -fx-background-color: #C8D8C8; }
+
+/* Footer */
+.root-light .dialog-footer {
+    -fx-background-color: rgba(240,232,220,0.70);
+    -fx-border-color: rgba(193,216,195,0.55);
+}
+.root-light .validation-hint {
+    -fx-background-color: rgba(220,38,38,0.07);
+    -fx-border-color: rgba(220,38,38,0.20);
+}
+.root-light .hint-warn-icon { -fx-fill: #b91c1c; }
+.root-light .hint-warn-text { -fx-text-fill: #b91c1c; }
+.root-light .btn-secondary {
+    -fx-background-color: rgba(0,0,0,0.04);
+    -fx-border-color: rgba(176,200,178,0.60);
+}
+.root-light .btn-secondary:hover {
+    -fx-background-color: rgba(0,0,0,0.07);
+    -fx-border-color: rgba(106,156,137,0.55);
+}
+.root-light .btn-sec-icon { -fx-fill: #4A7566; }
+.root-light .btn-sec-text { -fx-text-fill: #2A2A2A; }
+.root-light .btn-primary {
+    -fx-background-color: #B85507;
+    -fx-border-color: rgba(205,92,8,0.40);
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.25), 8, 0, 0, 2);
+}
+.root-light .btn-primary:hover {
+    -fx-background-color: #A34A06;
+    -fx-effect: dropshadow(gaussian, rgba(205,92,8,0.40), 12, 0, 0, 3);
+}
+.root-light .btn-primary:pressed { -fx-background-color: #8E4005; }
+.root-light .btn-icon { -fx-fill: #FFFFFF; }
+.root-light .btn-text { -fx-text-fill: #FFFFFF; }

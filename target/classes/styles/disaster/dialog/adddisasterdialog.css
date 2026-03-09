@@ -85,7 +85,6 @@
 .dialog-scroll .viewport { -fx-background-color: transparent; }
 .dialog-scroll .corner { -fx-background-color: transparent; }
 
-/* scrollbars - modern minimal design */
 .dialog-scroll .scroll-bar:vertical,
 .dialog-scroll .scroll-bar:horizontal {
     -fx-background-color: transparent;
@@ -136,7 +135,6 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.0, 0, 2);
 }
 
-/* section header */
 .section-header {
     -fx-padding: 0 0 12px 0;
     -fx-border-color: rgba(148,163,184,0.08);
@@ -159,33 +157,6 @@
     -fx-background-color: rgba(249,115,22,0.10);
     -fx-background-radius: 12px;
     -fx-padding: 4px 12px;
-}
-
-/* ---------- INFO BOX ---------- */
-.info-box {
-    -fx-background-color: rgba(59,130,246,0.08);
-    -fx-border-color: rgba(59,130,246,0.25);
-    -fx-border-width: 1px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-padding: 14px 16px;
-}
-
-.info-icon {
-    -fx-fill: rgba(96,165,250,0.95);
-}
-
-.info-title {
-    -fx-text-fill: rgba(147,197,253,0.98);
-    -fx-font-size: 13px;
-    -fx-font-weight: 800;
-}
-
-.info-text {
-    -fx-text-fill: rgba(148,163,184,0.85);
-    -fx-font-size: 12.5px;
-    -fx-font-weight: 600;
-    -fx-padding: 0 0 0 22px;
 }
 
 /* ---------- FIELD LABEL ---------- */
@@ -329,7 +300,6 @@
     -fx-background-color: rgba(249,115,22,0.75);
 }
 
-/* ---------- EDITABLE COMBO BOX FIX ---------- */
 .field-combo.combo-box-base:editable > .text-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -354,7 +324,6 @@
     -fx-background-color: transparent;
 }
 
-/* ---------- COMBO BOX PROMPT TEXT FIX ---------- */
 .field-combo .list-cell:empty {
     -fx-text-fill: rgba(148,163,184,0.60);
 }
@@ -363,7 +332,6 @@
     -fx-fill: rgba(148,163,184,0.60);
 }
 
-/* Combo box dropdown popup */
 .combo-box-popup .list-view {
     -fx-background-color: #0f172a;
     -fx-border-color: rgba(148,163,184,0.25);
@@ -439,7 +407,6 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 20, 0.0, 0, 6);
 }
 
-/* Month/Year header bar */
 .date-picker-popup .month-year-pane {
     -fx-background-color: rgba(255,255,255,0.03);
     -fx-border-color: rgba(148,163,184,0.12);
@@ -453,7 +420,6 @@
     -fx-font-size: 14px;
 }
 
-/* Navigation arrows */
 .date-picker-popup .spinner .button {
     -fx-background-color: rgba(255,255,255,0.02);
     -fx-padding: 8px 12px;
@@ -471,7 +437,6 @@
     -fx-background-color: rgba(226,232,240,0.80);
 }
 
-/* Day names row */
 .date-picker-popup .day-name-cell {
     -fx-text-fill: rgba(226,232,240,0.85);
     -fx-font-weight: 800;
@@ -479,7 +444,6 @@
     -fx-padding: 8px 0;
 }
 
-/* Day cells */
 .date-picker-popup .day-cell {
     -fx-background-color: transparent;
     -fx-background-radius: 6px;
@@ -498,19 +462,16 @@
     -fx-font-weight: 900;
 }
 
-/* Previous/next month days */
 .date-picker-popup .day-cell.previous-month,
 .date-picker-popup .day-cell.next-month {
     -fx-text-fill: rgba(148,163,184,0.50);
 }
 
-/* Disabled days */
 .date-picker-popup .day-cell:disabled {
     -fx-text-fill: rgba(148,163,184,0.30);
     -fx-opacity: 1.0;
 }
 
-/* Today highlight */
 .date-picker-popup .day-cell.today {
     -fx-border-color: rgba(59,130,246,0.70);
     -fx-border-radius: 6px;
@@ -518,7 +479,6 @@
     -fx-font-weight: 800;
 }
 
-/* Calendar grid */
 .date-picker-popup .calendar-grid {
     -fx-background-color: transparent;
     -fx-padding: 8px 4px 4px 4px;
@@ -631,7 +591,320 @@
 .text-area:focused {
     -fx-faint-focus-color: transparent;
     -fx-focus-color: transparent;
-}/* ==================================================================
+}
+
+/* ==================================================================
+   LOCATION TAB PANE  —  DARK MODE
+   ================================================================== */
+.location-tab-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Kill every focus ring on the tab pane itself */
+.location-tab-pane:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+}
+
+/* Tab header area background */
+.location-tab-pane > .tab-header-area {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 0;
+}
+
+.location-tab-pane > .tab-header-area > .headers-region {
+    -fx-background-color: transparent;
+}
+
+/* Tab header background */
+.location-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* Individual tab */
+.location-tab-pane .location-tab {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+}
+
+.location-tab-pane .tab {
+    -fx-background-color: rgba(255,255,255,0.00);
+    -fx-background-insets: 0;
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-border-color: transparent;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.location-tab-pane .tab:hover {
+    -fx-background-color: rgba(249,115,22,0.06);
+}
+
+.location-tab-pane .tab:selected {
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-border-color: rgba(249,115,22,0.70) transparent transparent transparent;
+    -fx-border-width: 2px 0 0 0;
+    -fx-border-insets: 0;
+}
+
+/* Tab focus ring — full removal */
+.location-tab-pane .tab:focused,
+.location-tab-pane .tab-label:focused,
+.location-tab-pane .tab-container:focused,
+.location-tab-pane .headers-region:focused,
+.location-tab-pane .tab-header-area:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-insets: 0;
+    -fx-effect: none;
+}
+
+.location-tab-pane .tab:focused > .tab-container {
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Tab label */
+.tab-label {
+    -fx-text-fill: rgba(148,163,184,0.80);
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 800;
+}
+
+.location-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: rgba(249,115,22,0.98);
+}
+
+.location-tab-pane .tab:hover .tab-label {
+    -fx-text-fill: rgba(226,232,240,0.90);
+}
+
+/* Tab icon */
+.tab-icon {
+    -fx-fill: rgba(148,163,184,0.70);
+}
+
+.location-tab-pane .tab:selected .tab-icon {
+    -fx-fill: rgba(249,115,22,0.95);
+}
+
+.location-tab-pane .tab:hover .tab-icon {
+    -fx-fill: rgba(226,232,240,0.85);
+}
+
+/* Tab content pane */
+.tab-content-pane {
+    -fx-background-color: rgba(255,255,255,0.015);
+    -fx-border-color: rgba(148,163,184,0.10);
+    -fx-border-width: 0 1px 1px 1px;
+    -fx-border-radius: 0 0 6px 6px;
+    -fx-background-radius: 0 0 6px 6px;
+}
+
+/* Tab pane content area */
+.location-tab-pane > .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* ==================================================================
+   POLYGON TAB CONTENT  —  DARK MODE
+   ================================================================== */
+
+/* Hint label */
+.polygon-hint-label {
+    -fx-text-fill: rgba(148,163,184,0.65);
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 600;
+    -fx-font-style: italic;
+}
+
+/* Points list header */
+.polygon-list-header {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-border-radius: 6px 6px 0 0;
+    -fx-padding: 10px 14px;
+}
+
+.polygon-header-icon {
+    -fx-fill: rgba(249,115,22,0.80);
+}
+
+.polygon-header-label {
+    -fx-text-fill: rgba(226,232,240,0.92);
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+.polygon-count-badge {
+    -fx-text-fill: rgba(249,115,22,0.95);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 800;
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-background-radius: 10px;
+    -fx-padding: 3px 10px;
+    -fx-border-color: rgba(249,115,22,0.25);
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+}
+
+/* Empty state */
+.polygon-empty-state {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 1px;
+    -fx-border-radius: 0 0 6px 6px;
+    -fx-background-radius: 0 0 6px 6px;
+    -fx-border-style: dashed;
+}
+
+.polygon-empty-icon {
+    -fx-fill: rgba(148,163,184,0.25);
+}
+
+.polygon-empty-title {
+    -fx-text-fill: rgba(148,163,184,0.60);
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.polygon-empty-desc {
+    -fx-text-fill: rgba(148,163,184,0.45);
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+}
+
+/* Polygon scroll pane */
+.polygon-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: rgba(148,163,184,0.12);
+    -fx-border-width: 0 1px 1px 1px;
+    -fx-border-radius: 0 0 6px 6px;
+    -fx-background-radius: 0 0 6px 6px;
+    -fx-padding: 0;
+}
+.polygon-scroll .viewport {
+    -fx-background-color: rgba(255,255,255,0.015);
+    -fx-background-radius: 0 0 6px 6px;
+}
+.polygon-scroll .corner { -fx-background-color: transparent; }
+
+.polygon-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
+}
+.polygon-scroll .scroll-bar .track {
+    -fx-background-color: rgba(148,163,184,0.06);
+    -fx-background-radius: 4px;
+}
+.polygon-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(249,115,22,0.25);
+    -fx-background-radius: 4px;
+}
+.polygon-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(249,115,22,0.45);
+}
+.polygon-scroll .increment-button,
+.polygon-scroll .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* Polygon point row */
+.polygon-point-row {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(148,163,184,0.10);
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 12px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: default;
+}
+
+.polygon-point-row:hover {
+    -fx-background-color: rgba(249,115,22,0.06);
+    -fx-border-color: rgba(249,115,22,0.20);
+}
+
+/* Point index badge */
+.polygon-point-index {
+    -fx-text-fill: rgba(249,115,22,0.90);
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+    -fx-background-color: rgba(249,115,22,0.12);
+    -fx-background-radius: 4px;
+    -fx-padding: 2px 7px;
+    -fx-border-color: rgba(249,115,22,0.22);
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-min-width: 32px;
+    -fx-alignment: CENTER;
+}
+
+/* Lat/Lon labels */
+.polygon-point-label {
+    -fx-text-fill: rgba(148,163,184,0.75);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 700;
+}
+
+.polygon-point-value {
+    -fx-text-fill: rgba(226,232,240,0.95);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+/* Delete button */
+.polygon-delete-btn {
+    -fx-background-color: rgba(239,68,68,0.08);
+    -fx-border-color: rgba(239,68,68,0.22);
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 6px 10px;
+    -fx-cursor: hand;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+}
+.polygon-delete-btn:hover {
+    -fx-background-color: rgba(239,68,68,0.18);
+    -fx-border-color: rgba(239,68,68,0.50);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+.polygon-delete-btn:pressed {
+    -fx-background-color: rgba(239,68,68,0.28);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+.polygon-delete-icon {
+    -fx-fill: rgba(248,113,113,0.90);
+}
+
+/* ==================================================================
    LIGHT MODE  -  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
    ================================================================== */
 .dialog-root.root-light { -fx-background-color: #F7EFE3; -fx-border-color: #C1D8C3; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 4); }
@@ -657,10 +930,6 @@
 .root-light .section-icon { -fx-fill: #B85507; }
 .root-light .section-title { -fx-text-fill: #1A1A1A; }
 .root-light .section-subtitle { -fx-text-fill: #5C8A79; -fx-background-color: rgba(193,216,195,0.30); }
-.root-light .info-box { -fx-background-color: rgba(193,216,195,0.18); -fx-border-color: rgba(193,216,195,0.55); }
-.root-light .info-icon { -fx-fill: #5C8A79; }
-.root-light .info-title { -fx-text-fill: #4A7566; }
-.root-light .info-text { -fx-text-fill: #4A4A4A; }
 .root-light .field-label { -fx-text-fill: #1A1A1A; }
 .root-light .flat-input { -fx-background-color: #EDE8DF; -fx-border-color: rgba(176, 200, 178, 0.75); }
 .root-light .flat-input:hover { -fx-border-color: rgba(184, 85, 7, 0.50); -fx-background-color: #E8E2D8; }
@@ -680,8 +949,7 @@
 .root-light .combo-box .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .combo-box-popup .list-view { -fx-background-color: #F0EAE0; -fx-border-color: rgba(193, 216, 195, 0.65); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 4); }
 .root-light .combo-box-popup .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
-.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35);
-    -fx-text-fill: #000000 }
+.root-light .combo-box-popup .list-cell:hover { -fx-background-color: rgba(193,216,195,0.35); -fx-text-fill: #000000; }
 .root-light .combo-box-popup .list-cell:selected { -fx-background-color: rgba(184, 85, 7, 0.85); -fx-text-fill: #FFFFFF; }
 .root-light .date-picker { -fx-background-color: transparent; -fx-border-color: transparent; }
 .root-light .date-picker .text-field { -fx-text-fill: #1A1A1A; -fx-prompt-text-fill: rgba(106,156,137,0.60); }
@@ -698,6 +966,133 @@
 .root-light .field-combo > .list-cell { -fx-text-fill: #1A1A1A; -fx-background-color: transparent; }
 .root-light .field-combo .arrow { -fx-background-color: #4A7566; }
 .root-light .field-helper-text { -fx-text-fill: #4A7566; }
+
+/* ==================================================================
+   LOCATION TAB PANE  —  LIGHT MODE
+   ================================================================== */
+.root-light .location-tab-pane > .tab-header-area {
+    -fx-background-color: rgba(193,216,195,0.20);
+    -fx-border-color: rgba(176,200,178,0.50);
+}
+.root-light .location-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: rgba(193,216,195,0.20);
+    -fx-border-color: rgba(176,200,178,0.50);
+}
+.root-light .location-tab-pane .tab {
+    -fx-background-color: transparent;
+}
+.root-light .location-tab-pane .tab:hover {
+    -fx-background-color: rgba(184,85,7,0.06);
+}
+.root-light .location-tab-pane .tab:selected {
+    -fx-background-color: rgba(184,85,7,0.10);
+    -fx-border-color: rgba(184,85,7,0.65) transparent transparent transparent;
+}
+.root-light .tab-label {
+    -fx-text-fill: rgba(92,138,121,0.85);
+}
+.root-light .location-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #B85507;
+}
+.root-light .location-tab-pane .tab:hover .tab-label {
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .tab-icon {
+    -fx-fill: rgba(92,138,121,0.70);
+}
+.root-light .location-tab-pane .tab:selected .tab-icon {
+    -fx-fill: #B85507;
+}
+.root-light .location-tab-pane .tab:hover .tab-icon {
+    -fx-fill: #1A1A1A;
+}
+.root-light .tab-content-pane {
+    -fx-background-color: rgba(232,224,212,0.40);
+    -fx-border-color: rgba(176,200,178,0.50);
+}
+
+/* ==================================================================
+   POLYGON STYLES  —  LIGHT MODE
+   ================================================================== */
+.root-light .polygon-hint-label {
+    -fx-text-fill: #5C8A79;
+}
+.root-light .polygon-list-header {
+    -fx-background-color: rgba(193,216,195,0.25);
+    -fx-border-color: rgba(176,200,178,0.50);
+}
+.root-light .polygon-header-icon {
+    -fx-fill: #B85507;
+}
+.root-light .polygon-header-label {
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .polygon-count-badge {
+    -fx-text-fill: #B85507;
+    -fx-background-color: rgba(184,85,7,0.10);
+    -fx-border-color: rgba(184,85,7,0.25);
+}
+.root-light .polygon-empty-state {
+    -fx-background-color: rgba(193,216,195,0.12);
+    -fx-border-color: rgba(176,200,178,0.40);
+}
+.root-light .polygon-empty-icon {
+    -fx-fill: rgba(106,156,137,0.30);
+}
+.root-light .polygon-empty-title {
+    -fx-text-fill: rgba(92,138,121,0.65);
+}
+.root-light .polygon-empty-desc {
+    -fx-text-fill: rgba(92,138,121,0.50);
+}
+.root-light .polygon-scroll {
+    -fx-border-color: rgba(176,200,178,0.45);
+}
+.root-light .polygon-scroll .viewport {
+    -fx-background-color: rgba(232,224,212,0.30);
+}
+.root-light .polygon-scroll .scroll-bar .track {
+    -fx-background-color: rgba(193,216,195,0.20);
+}
+.root-light .polygon-scroll .scroll-bar .thumb {
+    -fx-background-color: rgba(106,156,137,0.40);
+}
+.root-light .polygon-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(92,138,121,0.60);
+}
+.root-light .polygon-point-row {
+    -fx-background-color: rgba(240,232,220,0.80);
+    -fx-border-color: rgba(176,200,178,0.45);
+}
+.root-light .polygon-point-row:hover {
+    -fx-background-color: rgba(184,85,7,0.06);
+    -fx-border-color: rgba(184,85,7,0.20);
+}
+.root-light .polygon-point-index {
+    -fx-text-fill: #B85507;
+    -fx-background-color: rgba(184,85,7,0.10);
+    -fx-border-color: rgba(184,85,7,0.22);
+}
+.root-light .polygon-point-label {
+    -fx-text-fill: rgba(92,138,121,0.80);
+}
+.root-light .polygon-point-value {
+    -fx-text-fill: #1A1A1A;
+}
+.root-light .polygon-delete-btn {
+    -fx-background-color: rgba(220,38,38,0.06);
+    -fx-border-color: rgba(220,38,38,0.20);
+}
+.root-light .polygon-delete-btn:hover {
+    -fx-background-color: rgba(220,38,38,0.14);
+    -fx-border-color: rgba(220,38,38,0.45);
+}
+.root-light .polygon-delete-btn:pressed {
+    -fx-background-color: rgba(220,38,38,0.22);
+}
+.root-light .polygon-delete-icon {
+    -fx-fill: rgba(185,28,28,0.90);
+}
 
 /* ===================================================================
    BANATE AREA CHECKBOX  —  DARK MODE
@@ -716,7 +1111,6 @@
     -fx-border-color: rgba(249,115,22,0.40);
 }
 
-/* Checkbox box */
 .banate-checkbox .box {
     -fx-background-color: rgba(255,255,255,0.06);
     -fx-border-color: rgba(148,163,184,0.45);
@@ -742,7 +1136,6 @@
     -fx-border-color: rgba(220,100,20,1.0);
 }
 
-/* Checkmark */
 .banate-checkbox .mark {
     -fx-background-color: transparent;
     -fx-shape: "M9.86 18a1 1 0 0 1-.73-.32l-4.86-5.17a1 1 0 1 1 1.46-1.37l4.12 4.39 8.41-9.2a1 1 0 1 1 1.48 1.34l-9.14 10a1 1 0 0 1-.73.33Z";
@@ -755,7 +1148,6 @@
     -fx-background-color: white;
 }
 
-/* Label + description */
 .banate-label {
     -fx-text-fill: rgba(248,250,252,0.95);
     -fx-font-size: 14px;
@@ -803,4 +1195,3 @@
 .root-light .banate-description {
     -fx-text-fill: #5C8A79;
 }
-

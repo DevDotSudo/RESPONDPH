@@ -123,16 +123,16 @@
                             <DatePicker fx:id="datePicker" maxWidth="1.7976931348623157E308" promptText="Select date" styleClass="field-date" HBox.hgrow="ALWAYS" />
                         </HBox>
                     </VBox>
-               <rowConstraints>
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
             </VBox>
 
             <Separator />
 
             <!-- ==================== SECTION 2: LOCATION INFORMATION ==================== -->
-            <VBox spacing="18" styleClass="form-section">
+            <VBox spacing="18" styleClass="form-section" VBox.vgrow="NEVER">
                 <!-- Section Header -->
                 <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header">
                     <FontAwesomeIconView glyphName="MAP_MARKER" size="18" styleClass="section-icon" />
@@ -150,56 +150,134 @@
                     </VBox>
                 </HBox>
 
-                <!-- Get Location Button -->
-                <HBox alignment="CENTER_LEFT">
-                    <Button fx:id="getLocationBtn" styleClass="action-button">
+                <!-- ==================== LOCATION TYPE TABPANE ==================== -->
+                <TabPane fx:id="locationTabPane" maxHeight="-1" minHeight="-1" prefHeight="-1" styleClass="location-tab-pane" tabClosingPolicy="UNAVAILABLE">
+
+                    <!-- ===== TAB 1: CIRCLE ===== -->
+                    <Tab fx:id="circleTab" styleClass="location-tab">
                         <graphic>
-                            <HBox alignment="CENTER" spacing="10">
-                                <FontAwesomeIconView glyphName="LOCATION_ARROW" size="14" styleClass="action-icon" />
-                                <Label styleClass="action-text" text="Get Location" />
+                            <HBox alignment="CENTER" spacing="8">
+                                <Label styleClass="tab-label" text="Circle" />
                             </HBox>
                         </graphic>
-                    </Button>
-                </HBox>
+                        <content>
+                            <VBox spacing="16" styleClass="tab-content-pane">
+                                <padding>
+                                    <Insets bottom="18" left="16" right="16" top="18" />
+                                </padding>
 
-                <!-- Location Fields -->
-                <GridPane hgap="16" vgap="14">
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
-                    </columnConstraints>
+                                <!-- Get Location Button -->
+                                <HBox alignment="CENTER_LEFT">
+                                    <Button fx:id="getLocationBtn" styleClass="action-button">
+                                        <graphic>
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <FontAwesomeIconView glyphName="LOCATION_ARROW" size="14" styleClass="action-icon" />
+                                                <Label styleClass="action-text" text="Get Location" />
+                                            </HBox>
+                                        </graphic>
+                                    </Button>
+                                </HBox>
 
-                    <!-- Latitude -->
-                    <VBox spacing="8" GridPane.columnIndex="0">
-                        <Label styleClass="field-label" text="Latitude *" />
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="GLOBE" size="14" styleClass="field-icon" />
-                            <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="field-input" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
+                                <!-- Location Fields -->
+                                <GridPane hgap="16" vgap="14">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                                    </columnConstraints>
 
-                    <!-- Longitude -->
-                    <VBox spacing="8" GridPane.columnIndex="1">
-                        <Label styleClass="field-label" text="Longitude *" />
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="GLOBE" size="14" styleClass="field-icon" />
-                            <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="field-input" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
+                                    <!-- Latitude -->
+                                    <VBox spacing="8" GridPane.columnIndex="0">
+                                        <Label styleClass="field-label" text="Latitude *" />
+                                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                                            <FontAwesomeIconView glyphName="GLOBE" size="14" styleClass="field-icon" />
+                                            <TextField fx:id="latitudeFld" promptText="Enter latitude" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                                        </HBox>
+                                    </VBox>
 
-                    <!-- Radius -->
-                    <VBox spacing="8" GridPane.columnIndex="2">
-                        <Label styleClass="field-label" text="Radius (meters) *" />
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
-                            <FontAwesomeIconView glyphName="COMPASS" size="14" styleClass="field-icon" />
-                            <TextField fx:id="radiusFld" promptText="Enter radius" styleClass="field-input" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
-               <rowConstraints>
-                  <RowConstraints />
-               </rowConstraints>
-                </GridPane>
+                                    <!-- Longitude -->
+                                    <VBox spacing="8" GridPane.columnIndex="1">
+                                        <Label styleClass="field-label" text="Longitude *" />
+                                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                                            <FontAwesomeIconView glyphName="GLOBE" size="14" styleClass="field-icon" />
+                                            <TextField fx:id="longitudeFld" promptText="Enter longitude" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                                        </HBox>
+                                    </VBox>
+
+                                    <!-- Radius -->
+                                    <VBox spacing="8" GridPane.columnIndex="2">
+                                        <Label styleClass="field-label" text="Radius (meters) *" />
+                                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="flat-input">
+                                            <FontAwesomeIconView glyphName="COMPASS" size="14" styleClass="field-icon" />
+                                            <TextField fx:id="radiusFld" promptText="Enter radius" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                                        </HBox>
+                                    </VBox>
+                                    <rowConstraints>
+                                        <RowConstraints />
+                                    </rowConstraints>
+                                </GridPane>
+                            </VBox>
+                        </content>
+                    </Tab>
+
+                    <!-- ===== TAB 2: POLYGON ===== -->
+                    <Tab fx:id="polygonTab" styleClass="location-tab">
+                        <graphic>
+                            <HBox alignment="CENTER" spacing="8">
+                                <Label styleClass="tab-label" text="Polygon" />
+                            </HBox>
+                        </graphic>
+                        <content>
+                            <VBox spacing="16" styleClass="tab-content-pane">
+                                <padding>
+                                    <Insets bottom="18" left="16" right="16" top="18" />
+                                </padding>
+
+                                <!-- Select on Map Button -->
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Button fx:id="selectOnMapBtn" styleClass="action-button">
+                                        <graphic>
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <FontAwesomeIconView glyphName="MAP_MARKER" size="14" styleClass="action-icon" />
+                                                <Label styleClass="action-text" text="Select on Map" />
+                                            </HBox>
+                                        </graphic>
+                                    </Button>
+                                    <Label styleClass="polygon-hint-label" text="Click points on the map to define the polygon boundary." />
+                                </HBox>
+
+                                <!-- Polygon Points List Header -->
+                                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="polygon-list-header">
+                                    <FontAwesomeIconView glyphName="LIST" size="12" styleClass="polygon-header-icon" />
+                                    <Label styleClass="polygon-header-label" text="Selected Points" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="polygonPointCountLabel" styleClass="polygon-count-badge" text="0 points" />
+                                </HBox>
+
+                                <!-- Polygon Points Empty State -->
+                                <VBox fx:id="polygonEmptyState" alignment="CENTER" spacing="10" styleClass="polygon-empty-state">
+                                    <padding>
+                                        <Insets bottom="24" left="16" right="16" top="24" />
+                                    </padding>
+                                    <FontAwesomeIconView glyphName="MAP_O" size="28" styleClass="polygon-empty-icon" />
+                                    <Label styleClass="polygon-empty-title" text="No Points Selected" />
+                                    <Label styleClass="polygon-empty-desc" text="Use &quot;Select on Map&quot; to add polygon boundary points." />
+                                </VBox>
+
+                                <!-- Polygon Points List Container -->
+                                <ScrollPane fx:id="polygonScrollPane" fitToWidth="true" managed="false" maxHeight="200" minHeight="0" styleClass="polygon-scroll" visible="false">
+                                    <VBox fx:id="polygonPointsContainer" spacing="6" styleClass="polygon-points-list">
+                                        <padding>
+                                            <Insets bottom="6" left="4" right="4" top="6" />
+                                        </padding>
+                                    </VBox>
+                                </ScrollPane>
+
+                            </VBox>
+                        </content>
+                    </Tab>
+
+                </TabPane>
             </VBox>
 
             <Separator />

@@ -275,15 +275,33 @@ public class DisasterMappingServiceImpl implements DisasterMappingService {
             String decryptedType = CRYPTO.decryptWithOneParameter(encryptedDisaster.getDisasterType());
             String decryptedName = CRYPTO.decryptWithOneParameter(encryptedDisaster.getDisasterName());
 
-            return new DisasterModel(
+            DisasterModel result = new DisasterModel(
                     encryptedDisaster.getDisasterId(),
                     decryptedType,
                     decryptedName,
                     encryptedDisaster.isBanateArea()
             );
+
+            // After decrypting type and name...
+            result.setLocationType(encryptedDisaster.getLocationType());
+
+            // Decrypt polyLatLong if present
+            String encPoly = encryptedDisaster.getPolyLatLong();
+            if (encPoly != null && !encPoly.isEmpty()) {
+                try {
+                    result.setPolyLatLong(CRYPTO.decryptWithOneParameter(encPoly));
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error decrypting poly_lat_long", e);
+                }
+            }
+
+            return result;
+
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error decrypting disaster by ID", e);
             return null;
         }
     }
+
+
 }

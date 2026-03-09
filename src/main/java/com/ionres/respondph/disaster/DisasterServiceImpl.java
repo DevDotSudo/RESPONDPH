@@ -1,6 +1,5 @@
 package com.ionres.respondph.disaster;
 
-import com.ionres.respondph.beneficiary.BeneficiaryModel;
 import com.ionres.respondph.database.DBConnection;
 import com.ionres.respondph.exception.ExceptionFactory;
 import com.ionres.respondph.util.Cryptography;
@@ -9,42 +8,48 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DisasterServiceImpl implements  DisasterService{
+public class DisasterServiceImpl implements DisasterService {
     Cryptography cs = new Cryptography("f3ChNqKb/MumOr5XzvtWrTyh0YZsc2cw+VyoILwvBm8=");
 
     private final DisasterDAO disasterDAO;
 
     public DisasterServiceImpl(DBConnection dbConnection) {
-
         this.disasterDAO = new DisasterDAOImpl(dbConnection);
     }
+
     @Override
     public List<DisasterModel> getAllDisaster() {
-        List<DisasterModel> disasterModels = disasterDAO.getAll();
-        return  disasterModels;
+        return disasterDAO.getAll();
     }
 
     @Override
     public boolean createDisaster(DisasterModel dm) {
         try {
-
             String encryptedDisasterType = cs.encryptWithOneParameter(dm.getDisasterType());
             String encryptedDisasterName = cs.encryptWithOneParameter(dm.getDisasterName());
-            String encryptedDate = cs.encryptWithOneParameter(dm.getDate());
-            String encryptedLat = (dm.getLat() != null && !dm.getLat().trim().isEmpty())
+            String encryptedDate         = cs.encryptWithOneParameter(dm.getDate());
+            String encryptedNotes        = cs.encryptWithOneParameter(dm.getNotes());
+            String encryptedRegDate      = cs.encryptWithOneParameter(dm.getRegDate());
+
+            String encryptedLat    = (dm.getLat()    != null && !dm.getLat().trim().isEmpty())
                     ? cs.encryptWithOneParameter(dm.getLat()) : null;
-            String encryptedLongi = (dm.getLongi() != null && !dm.getLongi().trim().isEmpty())
+            String encryptedLongi  = (dm.getLongi()  != null && !dm.getLongi().trim().isEmpty())
                     ? cs.encryptWithOneParameter(dm.getLongi()) : null;
             String encryptedRadius = (dm.getRadius() != null && !dm.getRadius().trim().isEmpty())
                     ? cs.encryptWithOneParameter(dm.getRadius()) : null;
-            String encryptedNotes = cs.encryptWithOneParameter(dm.getNotes());
-            String encryptedRegDate = cs.encryptWithOneParameter(dm.getRegDate());
 
+            // ── NEW: encrypt poly_lat_long if present ────────────────────────
+            String encryptedPoly = (dm.getPolyLatLong() != null && !dm.getPolyLatLong().trim().isEmpty())
+                    ? cs.encryptWithOneParameter(dm.getPolyLatLong()) : null;
+            // ─────────────────────────────────────────────────────────────────
 
             DisasterModel encryptedModel = new DisasterModel(
-                    encryptedDisasterType, encryptedDisasterName, encryptedDate, encryptedLat, encryptedLongi, encryptedRadius,
+                    encryptedDisasterType, encryptedDisasterName, encryptedDate,
+                    encryptedLat, encryptedLongi, encryptedRadius,
                     encryptedNotes, encryptedRegDate, dm.isBanateArea()
             );
+            encryptedModel.setPolyLatLong(encryptedPoly); // ── NEW
+            encryptedModel.setLocationType(dm.getLocationType()); // ── NEW
 
             boolean flag = disasterDAO.saving(encryptedModel);
 
@@ -52,13 +57,13 @@ public class DisasterServiceImpl implements  DisasterService{
                 throw ExceptionFactory.failedToCreate("Disaster");
             }
             return flag;
-        } catch (SQLException ex) {
-            System.out.println("Error : " + ex);
-            return  false;
 
+        } catch (SQLException ex) {
+            System.out.println("Error: " + ex);
+            return false;
         } catch (Exception ex) {
             System.out.println("Error: " + ex);
-            return  false;
+            return false;
         }
     }
 
@@ -68,15 +73,9 @@ public class DisasterServiceImpl implements  DisasterService{
             if (dm == null || dm.getDisasterId() <= 0) {
                 throw ExceptionFactory.missingField("Disaster ID");
             }
-
             boolean deleted = disasterDAO.delete(dm);
-
-            if (!deleted) {
-                throw ExceptionFactory.failedToDelete("Disaster");
-            }
-
+            if (!deleted) throw ExceptionFactory.failedToDelete("Disaster");
             return deleted;
-
         } catch (Exception ex) {
             System.out.println("Error: " + ex.getMessage());
             return false;
@@ -92,12 +91,17 @@ public class DisasterServiceImpl implements  DisasterService{
 
             String encryptedDisasterType = cs.encryptWithOneParameter(dm.getDisasterType());
             String encryptedDisasterName = cs.encryptWithOneParameter(dm.getDisasterName());
-            String encryptedDate = cs.encryptWithOneParameter(dm.getDate());
-            String encryptedLat = cs.encryptWithOneParameter(dm.getLat());
-            String encryptedLongi = cs.encryptWithOneParameter(dm.getLongi());
-            String encryptedRadius = cs.encryptWithOneParameter(dm.getRadius());
-            String encryptedNotes = cs.encryptWithOneParameter(dm.getNotes());
-            String encryptedRegDate = cs.encryptWithOneParameter(dm.getRegDate());
+            String encryptedDate         = cs.encryptWithOneParameter(dm.getDate());
+            String encryptedLat          = cs.encryptWithOneParameter(dm.getLat());
+            String encryptedLongi        = cs.encryptWithOneParameter(dm.getLongi());
+            String encryptedRadius       = cs.encryptWithOneParameter(dm.getRadius());
+            String encryptedNotes        = cs.encryptWithOneParameter(dm.getNotes());
+            String encryptedRegDate      = cs.encryptWithOneParameter(dm.getRegDate());
+
+            // ── NEW: encrypt poly_lat_long if present ────────────────────────
+            String encryptedPoly = (dm.getPolyLatLong() != null && !dm.getPolyLatLong().trim().isEmpty())
+                    ? cs.encryptWithOneParameter(dm.getPolyLatLong()) : null;
+            // ─────────────────────────────────────────────────────────────────
 
             DisasterModel encryptedDm = new DisasterModel(
                     encryptedDisasterType, encryptedDisasterName, encryptedDate,
@@ -105,13 +109,10 @@ public class DisasterServiceImpl implements  DisasterService{
                     encryptedNotes, encryptedRegDate
             );
             encryptedDm.setDisasterId(dm.getDisasterId());
+            encryptedDm.setPolyLatLong(encryptedPoly); // ── NEW
 
             boolean updated = disasterDAO.update(encryptedDm);
-
-            if (!updated) {
-                throw ExceptionFactory.failedToUpdate("Disaster");
-            }
-
+            if (!updated) throw ExceptionFactory.failedToUpdate("Disaster");
             return updated;
 
         } catch (Exception ex) {
@@ -141,8 +142,7 @@ public class DisasterServiceImpl implements  DisasterService{
 
         for (DisasterModel disasterModel : allDisaster) {
             if (disasterModel.getDisasterType().toLowerCase().contains(searchTxt.toLowerCase()) ||
-                    disasterModel.getDisasterName().toLowerCase().contains(searchTxt.toLowerCase())
-            ) {
+                    disasterModel.getDisasterName().toLowerCase().contains(searchTxt.toLowerCase())) {
                 filteredDisaster.add(disasterModel);
             }
         }

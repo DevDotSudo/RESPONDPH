@@ -75,19 +75,31 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
     @Override
     public List<DisasterModel> getDisastersByType(String encryptedType) {
         List<DisasterModel> disasters = new ArrayList<>();
-        String sql = "SELECT disaster_id, type, name, is_banate_area FROM disaster WHERE type = ?";
+        // ── FIX: also fetch poly_lat_long ─────────────────────────────────────
+        String sql = "SELECT disaster_id, type, name, is_banate_area, poly_lat_long FROM disaster WHERE type = ?";
 
         try (Connection conn = connection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, encryptedType);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    int id = rs.getInt("disaster_id");
-                    String disasterType = rs.getString("type");
-                    String name = rs.getString("name");
-                    boolean isBanateArea = rs.getBoolean("is_banate_area");
+                    int id           = rs.getInt("disaster_id");
+                    String type      = rs.getString("type");
+                    String name      = rs.getString("name");
+                    boolean isBanate = rs.getBoolean("is_banate_area");
+                    String encPoly   = rs.getString("poly_lat_long");
 
-                    disasters.add(new DisasterModel(id, disasterType, name, isBanateArea));
+                    DisasterModel model = new DisasterModel(id, type, name, isBanate);
+
+                    if (encPoly != null && !encPoly.isEmpty()) {
+                        model.setLocationType("POLYGON");
+                    } else if (isBanate) {
+                        model.setLocationType("BANATE");
+                    } else {
+                        model.setLocationType("CIRCLE");
+                    }
+
+                    disasters.add(model);
                 }
             }
 
@@ -199,26 +211,39 @@ public class DisasterMappingDAOImpl implements DisasterMappingDAO {
 
     @Override
     public DisasterModel getDisasterById(int disasterId) {
-        String sql = "SELECT disaster_id, type, name, is_banate_area FROM disaster WHERE disaster_id = ?";
+        // ── FIX: also fetch poly_lat_long ─────────────────────────────────────
+        String sql = "SELECT disaster_id, type, name, is_banate_area, poly_lat_long " +
+                "FROM disaster WHERE disaster_id = ?";
 
         try (Connection conn = connection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, disasterId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    int id = rs.getInt("disaster_id");
-                    String type = rs.getString("type");
-                    String name = rs.getString("name");
-                    boolean isBanateArea = rs.getBoolean("is_banate_area");
+                    int id         = rs.getInt("disaster_id");
+                    String type    = rs.getString("type");
+                    String name    = rs.getString("name");
+                    boolean isBanate = rs.getBoolean("is_banate_area");
+                    String encPoly = rs.getString("poly_lat_long");
 
-                    return new DisasterModel(id, type, name, isBanateArea);
+                    DisasterModel model = new DisasterModel(id, type, name, isBanate);
+
+                    // Set locationType and raw encrypted poly so the service can decrypt it
+                    if (encPoly != null && !encPoly.isEmpty()) {
+                        model.setPolyLatLong(encPoly);       // service will decrypt this
+                        model.setLocationType("POLYGON");
+                    } else if (isBanate) {
+                        model.setLocationType("BANATE");
+                    } else {
+                        model.setLocationType("CIRCLE");
+                    }
+
+                    return model;
                 }
             }
-
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching disaster by ID", e);
         }
-
         return null;
     }
 }

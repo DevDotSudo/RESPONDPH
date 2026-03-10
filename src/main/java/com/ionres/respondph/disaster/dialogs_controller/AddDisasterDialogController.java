@@ -189,13 +189,6 @@ public class AddDisasterDialogController {
         refreshPolygonPointsList();
     }
 
-    private void removePolygonPoint(int index) {
-        if (index >= 0 && index < polygonPoints.size()) {
-            polygonPoints.remove(index);
-            refreshPolygonPointsList();
-        }
-    }
-
     private void refreshPolygonPointsList() {
         polygonPointsContainer.getChildren().clear();
 
@@ -209,16 +202,15 @@ public class AddDisasterDialogController {
         polygonPointCountLabel.setText(count + (count == 1 ? " point" : " points"));
 
         for (int i = 0; i < polygonPoints.size(); i++) {
-            final int index = i;
             double[] point = polygonPoints.get(i);
-            HBox row = buildPolygonPointRow(index + 1, point[0], point[1], () -> removePolygonPoint(index));
+            HBox row = buildPolygonPointRow(i + 1, point[0], point[1]);
             polygonPointsContainer.getChildren().add(row);
         }
 
         bindTabPaneHeightToContent();
     }
 
-    private HBox buildPolygonPointRow(int number, double lat, double lon, Runnable onDelete) {
+    private HBox buildPolygonPointRow(int number, double lat, double lon) {
         HBox row = new HBox(10);
         row.getStyleClass().add("polygon-point-row");
         row.setAlignment(Pos.CENTER_LEFT);
@@ -245,19 +237,7 @@ public class AddDisasterDialogController {
 
         coordsBox.getChildren().addAll(latRow, lonRow);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Button deleteBtn = new Button();
-        deleteBtn.getStyleClass().add("polygon-delete-btn");
-        FontAwesomeIconView deleteIcon = new FontAwesomeIconView();
-        deleteIcon.setGlyphName("TIMES");
-        deleteIcon.setSize("12");
-        deleteIcon.getStyleClass().add("polygon-delete-icon");
-        deleteBtn.setGraphic(deleteIcon);
-        deleteBtn.setOnAction(e -> onDelete.run());
-
-        row.getChildren().addAll(indexLabel, coordsBox, spacer, deleteBtn);
+        row.getChildren().addAll(indexLabel, coordsBox);
         return row;
     }
 

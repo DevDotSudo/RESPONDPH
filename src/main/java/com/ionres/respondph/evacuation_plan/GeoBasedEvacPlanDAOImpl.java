@@ -19,6 +19,9 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
     private Connection conn;
     private final DBConnection dbConnection;
 
+    /** Temporary polygon coordinates loaded by getDisasterCircleInfo for POLYGON disasters */
+    private double[][] currentPolygon;
+
     public GeoBasedEvacPlanDAOImpl(DBConnection dbConnection) {
         super(dbConnection);
         this.dbConnection = dbConnection;
@@ -184,6 +187,13 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
         }
 
         boolean isBanateArea = disasterCircle.radius == -1;
+        boolean isPolygon   = disasterCircle.radius == -2;
+
+        // For polygon disasters, currentPolygon was set by getDisasterCircleInfo
+        if (isPolygon && (currentPolygon == null || currentPolygon.length < 3)) {
+            System.out.println(" Polygon disaster detected but polygon data is invalid");
+            return ranked;
+        }
 
         //  Get ALL beneficiaries with scores (no disaster_id filter)
         String sql =
@@ -229,6 +239,8 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
 
             if (isBanateArea) {
                 System.out.println(" Banate Area disaster — filtering by boundary polygon");
+            } else if (isPolygon) {
+                System.out.println(" Polygon disaster — filtering by custom polygon (" + currentPolygon.length + " points)");
             } else {
                 System.out.println(" Fetching ALL beneficiaries, filtering by geographic location");
                 System.out.println(" Disaster circle - Lat: " + disasterCircle.lat +
@@ -282,6 +294,8 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
                 boolean isInside;
                 if (isBanateArea) {
                     isInside = isPointInBanateBoundary(beneficiaryLat, beneficiaryLon);
+                } else if (isPolygon) {
+                    isInside = isPointInPolygon(beneficiaryLat, beneficiaryLon, currentPolygon);
                 } else {
                     double distanceInKm = GeoDistanceCalculator.calculateDistance(
                             beneficiaryLat, beneficiaryLon,
@@ -352,10 +366,15 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
 
     /** Ray-casting point-in-polygon test */
     private boolean isPointInBanateBoundary(double lat, double lon) {
+        return isPointInPolygon(lat, lon, BANATE_BOUNDARY);
+    }
+
+    /** General ray-casting point-in-polygon test for any polygon */
+    private boolean isPointInPolygon(double lat, double lon, double[][] polygon) {
         int intersections = 0;
-        for (int i = 0; i < BANATE_BOUNDARY.length; i++) {
-            double[] p1 = BANATE_BOUNDARY[i];
-            double[] p2 = BANATE_BOUNDARY[(i + 1) % BANATE_BOUNDARY.length];
+        for (int i = 0; i < polygon.length; i++) {
+            double[] p1 = polygon[i];
+            double[] p2 = polygon[(i + 1) % polygon.length];
             if (((p1[0] > lat) != (p2[0] > lat)) &&
                 (lon < (p2[1] - p1[1]) * (lat - p1[0]) / (p2[0] - p1[0]) + p1[1])) {
                 intersections++;
@@ -366,7 +385,7 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
 
     //  Helper method to get disaster circle info
     private DisasterCircleInfo getDisasterCircleInfo(int disasterId) {
-        String sql = "SELECT lat, `long`, radius, type, name, is_banate_area FROM disaster WHERE disaster_id = ?";
+        String sql = "SELECT lat, `long`, radius, type, name, is_banate_area, poly_lat_long FROM disaster WHERE disaster_id = ?";
 
         try {
             conn = dbConnection.getConnection();
@@ -382,11 +401,27 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
                 String name = cs.decryptWithOneParameter(encryptedName);
 
                 if (isBanateArea) {
-                    // Banate Area — use a sentinel radius of -1 to signal polygon mode
                     System.out.println("Banate Area disaster detected - using boundary polygon");
+                    currentPolygon = null;
                     rs.close();
                     ps.close();
                     return new DisasterCircleInfo(0, 0, -1, name, type);
+                }
+
+                // Check for polygon disaster (poly_lat_long present)
+                String encryptedPoly = rs.getString("poly_lat_long");
+                if (encryptedPoly != null && !encryptedPoly.isEmpty()) {
+                    String decryptedPoly = cs.decryptWithOneParameter(encryptedPoly);
+                    if (decryptedPoly != null && !decryptedPoly.trim().isEmpty()) {
+                        currentPolygon = parsePolyLatLong(decryptedPoly);
+                        if (currentPolygon != null && currentPolygon.length >= 3) {
+                            System.out.println("Polygon disaster detected - " + currentPolygon.length + " points, Name: " + name);
+                            rs.close();
+                            ps.close();
+                            // Use radius = -2 to signal polygon disaster (vs -1 for Banate)
+                            return new DisasterCircleInfo(0, 0, -2, name, type);
+                        }
+                    }
                 }
 
                 String encryptedLat = rs.getString("lat");
@@ -400,13 +435,27 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
                     return null;
                 }
 
-                double lat = Double.parseDouble(cs.decryptWithOneParameter(encryptedLat));
-                double lon = Double.parseDouble(cs.decryptWithOneParameter(encryptedLon));
-                double radius = Double.parseDouble(cs.decryptWithOneParameter(encryptedRadius));
+                String decLat = cs.decryptWithOneParameter(encryptedLat);
+                String decLon = cs.decryptWithOneParameter(encryptedLon);
+                String decRadius = cs.decryptWithOneParameter(encryptedRadius);
+
+                if (decLat == null || decLat.trim().isEmpty()
+                        || decLon == null || decLon.trim().isEmpty()
+                        || decRadius == null || decRadius.trim().isEmpty()) {
+                    System.out.println("Disaster has empty decrypted location fields");
+                    rs.close();
+                    ps.close();
+                    return null;
+                }
+
+                double lat = Double.parseDouble(decLat.trim());
+                double lon = Double.parseDouble(decLon.trim());
+                double radius = Double.parseDouble(decRadius.trim());
 
                 System.out.println("Disaster Circle Info - Lat: " + lat + ", Lon: " + lon +
                         ", Radius: " + radius + "m, Type: " + type + ", Name: " + name);
 
+                currentPolygon = null;
                 rs.close();
                 ps.close();
 
@@ -423,217 +472,26 @@ public class GeoBasedEvacPlanDAOImpl extends EvacuationPlanDAOImpl implements Ge
         return null;
     }
 
+    /** Parses "lat,lon;lat,lon;..." into double[][] */
+    private double[][] parsePolyLatLong(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return null;
+        String[] parts = raw.split(";");
+        List<double[]> points = new ArrayList<>();
+        for (String part : parts) {
+            String[] coords = part.trim().split(",");
+            if (coords.length == 2) {
+                try {
+                    double lat = Double.parseDouble(coords[0].trim());
+                    double lon = Double.parseDouble(coords[1].trim());
+                    points.add(new double[]{lat, lon});
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid polygon coordinate: " + part);
+                }
+            }
+        }
+        return points.isEmpty() ? null : points.toArray(new double[0][]);
+    }
 
-
-    //    @Override
-//    public List<RankedBeneficiaryWithLocation> getRankedBeneficiariesWithLocation(int disasterId, boolean includeAssigned) {
-//        List<RankedBeneficiaryWithLocation> ranked = new ArrayList<>();
-//
-//        DisasterCircleInfo disasterCircle = getDisasterCircleInfo(disasterId);
-//
-//        if (disasterCircle == null) {
-//            System.out.println("⚠ No disaster circle found for disaster ID: " + disasterId);
-//            return ranked;
-//        }
-//
-//
-//        String sql =
-//                "SELECT " +
-//                        "    ahs.beneficiary_id, " +
-//                        "    b.first_name, " +
-//                        "    b.last_name, " +
-//                        "    b.latitude, " +
-//                        "    b.longitude, " +
-//                        "    ahs.final_score, " +
-//                        "    ahs.score_category, " +
-//                        "    ahs.aid_type_id, " +
-//                        "    at.aid_name, " +
-//                        "    CASE " +
-//                        "        WHEN ahs.household_members IS NOT NULL AND ahs.household_members > 0 " +
-//                        "            THEN ahs.household_members " +
-//                        "        ELSE (SELECT COUNT(*) FROM family_member fm WHERE fm.beneficiary_id = ahs.beneficiary_id) + 1 " +
-//                        "    END AS household_members " +
-//                        "FROM aid_and_household_score ahs " +
-//                        "INNER JOIN beneficiary b ON ahs.beneficiary_id = b.beneficiary_id " +
-//                        "INNER JOIN aid_type at ON ahs.aid_type_id = at.aid_type_id " +
-//                        "WHERE 1=1 ";
-//
-//        if (!includeAssigned) {
-//            sql += "  AND NOT EXISTS ( " +
-//                    "    SELECT 1 FROM evac_plan ep " +
-//                    "    WHERE ep.beneficiary_id = ahs.beneficiary_id " +
-//                    "      AND ep.disaster_id = ? " +
-//                    "  ) ";
-//        }
-//
-//        sql += "ORDER BY ahs.final_score DESC";
-//
-//        try {
-//            conn = dbConnection.getConnection();
-//            PreparedStatement ps = conn.prepareStatement(sql);
-//
-//            // ✅ Step 4: Set parameter for the NOT EXISTS clause (if includeAssigned = false)
-//            if (!includeAssigned) {
-//                ps.setInt(1, disasterId);
-//            }
-//
-//            ResultSet rs = ps.executeQuery();
-//
-//            System.out.println("✅ Fetching ALL beneficiaries, filtering by geographic location");
-//            System.out.println("   Disaster circle - Lat: " + disasterCircle.lat +
-//                    ", Lon: " + disasterCircle.lon + ", Radius: " + disasterCircle.radius + "m");
-//
-//            int processedCount = 0;
-//            int insideCount = 0;
-//            int outsideCount = 0;
-//            int wrongAidTypeCount = 0;
-//
-//            // ✅ Step 5: Process each beneficiary
-//            while (rs.next()) {
-//                processedCount++;
-//                int beneficiaryId = rs.getInt("beneficiary_id");
-//
-//                // ✅ Filter 1: Check aid type (must be "Evac Weight")
-//                String encryptedAidName = rs.getString("aid_name");
-//                String decryptedAidName = "";
-//                try {
-//                    decryptedAidName = cs.decryptWithOneParameter(encryptedAidName);
-//                } catch (Exception e) {
-//                    System.err.println("⚠ Error decrypting aid name: " + e.getMessage());
-//                    continue;
-//                }
-//
-//                // Skip if not "Evac Weight"
-//                if (!"Evac Weight".equalsIgnoreCase(decryptedAidName)) {
-//                    wrongAidTypeCount++;
-//                    continue;
-//                }
-//
-//                // ✅ Decrypt beneficiary data
-//                List<String> encrypted = new ArrayList<>();
-//                encrypted.add(rs.getString("first_name"));
-//                encrypted.add(rs.getString("last_name"));
-//                encrypted.add(rs.getString("latitude"));
-//                encrypted.add(rs.getString("longitude"));
-//
-//                List<String> decrypted = cs.decrypt(encrypted);
-//
-//                double beneficiaryLat = 0.0;
-//                double beneficiaryLon = 0.0;
-//
-//                try {
-//                    beneficiaryLat = Double.parseDouble(decrypted.get(2));
-//                    beneficiaryLon = Double.parseDouble(decrypted.get(3));
-//                } catch (NumberFormatException e) {
-//                    System.err.println("⚠ Invalid coordinates for beneficiary " + beneficiaryId);
-//                    continue;
-//                }
-//
-//                // ✅ Filter 2: Check geographic distance
-//                // Calculate distance in kilometers
-//                double distanceInKm = GeoDistanceCalculator.calculateDistance(
-//                        beneficiaryLat,
-//                        beneficiaryLon,
-//                        disasterCircle.lat,
-//                        disasterCircle.lon
-//                );
-//
-//                // Convert to meters
-//                double distanceInMeters = distanceInKm * 1000;
-//
-//                System.out.println("   Beneficiary #" + beneficiaryId +
-//                        " - Distance: " + String.format("%.2f", distanceInMeters) + "m");
-//
-//                // Skip if OUTSIDE the disaster radius
-//                if (distanceInMeters > disasterCircle.radius) {
-//                    outsideCount++;
-//                    System.out.println("      ❌ OUTSIDE (distance > radius)");
-//                    continue;
-//                }
-//
-//                insideCount++;
-//                System.out.println("      ✅ INSIDE disaster area");
-//
-//                // ✅ Create model for beneficiaries that passed all filters
-//                RankedBeneficiaryWithLocation model = new RankedBeneficiaryWithLocation();
-//                model.setBeneficiaryId(beneficiaryId);
-//                model.setFirstName(decrypted.get(0));
-//                model.setLastName(decrypted.get(1));
-//                model.setFinalScore(rs.getDouble("final_score"));
-//                model.setScoreCategory(rs.getString("score_category"));
-//                model.setHouseholdMembers(rs.getInt("household_members"));
-//                model.setLatitude(beneficiaryLat);
-//                model.setLongitude(beneficiaryLon);
-//
-//                ranked.add(model);
-//            }
-//
-//            rs.close();
-//            ps.close();
-//
-//            // ✅ Step 6: Log summary
-//            System.out.println("\n📊 SUMMARY:");
-//            System.out.println("   Total beneficiaries processed: " + processedCount);
-//            System.out.println("   Wrong aid type (not Evac Weight): " + wrongAidTypeCount);
-//            System.out.println("   Inside disaster radius: " + insideCount);
-//            System.out.println("   Outside disaster radius: " + outsideCount);
-//            System.out.println("   ✅ FINAL: " + ranked.size() + " beneficiaries ready for allocation");
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            System.err.println("❌ Error fetching beneficiaries: " + ex.getMessage());
-//        } finally {
-//            closeConnection();
-//        }
-//
-//        return ranked;
-//    }
-//
-//    /**
-//     * ✅ HELPER METHOD: Get disaster circle info
-//     * Retrieves the disaster's geographic information (lat, lon, radius)
-//     */
-//    private DisasterCircleInfo getDisasterCircleInfo(int disasterId) {
-//        String sql = "SELECT lat, long, radius, type, name FROM disaster WHERE disaster_id = ?";
-//
-//        try {
-//            conn = dbConnection.getConnection();
-//            PreparedStatement ps = conn.prepareStatement(sql);
-//            ps.setInt(1, disasterId);
-//            ResultSet rs = ps.executeQuery();
-//
-//            if (rs.next()) {
-//                String encryptedLat = rs.getString("lat");
-//                String encryptedLon = rs.getString("long");
-//                String encryptedRadius = rs.getString("radius");
-//                String encryptedType = rs.getString("type");
-//                String encryptedName = rs.getString("name");
-//
-//                double lat = Double.parseDouble(cs.decryptWithOneParameter(encryptedLat));
-//                double lon = Double.parseDouble(cs.decryptWithOneParameter(encryptedLon));
-//                double radius = Double.parseDouble(cs.decryptWithOneParameter(encryptedRadius));
-//                String type = cs.decryptWithOneParameter(encryptedType);
-//                String name = cs.decryptWithOneParameter(encryptedName);
-//
-//                System.out.println("📍 Disaster Circle Info - Lat: " + lat + ", Lon: " + lon +
-//                        ", Radius: " + radius + "m, Type: " + type + ", Name: " + name);
-//
-//                rs.close();
-//                ps.close();
-//
-//                return new DisasterCircleInfo(lat, lon, radius, name, type);
-//            }
-//
-//            rs.close();
-//            ps.close();
-//        } catch (Exception e) {
-//            System.err.println("❌ Error getting disaster circle info: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-//
-//        return null;
-//    }
-    //  NEW: Helper method to get encrypted aid name
     private String getEncryptedAidName(String aidName) {
         try {
             return cs.encryptWithOneParameter(aidName);

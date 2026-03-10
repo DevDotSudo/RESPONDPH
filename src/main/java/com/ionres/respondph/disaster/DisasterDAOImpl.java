@@ -111,10 +111,10 @@ public class DisasterDAOImpl implements DisasterDAO {
 
     @Override
     public boolean update(DisasterModel dm) {
-        // ── UPDATED: now includes poly_lat_long ──────────────────────────────
+        // ── UPDATED: now includes poly_lat_long and is_banate_area ───────────
         String sql = "UPDATE disaster SET " +
                 "type = ?, name = ?, date = ?, lat = ?, `long` = ?, radius = ?, " +
-                "notes = ?, reg_date = ?, poly_lat_long = ? " +
+                "notes = ?, reg_date = ?, poly_lat_long = ?, is_banate_area = ? " +
                 "WHERE disaster_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -129,7 +129,8 @@ public class DisasterDAOImpl implements DisasterDAO {
             ps.setString(7, dm.getNotes());
             ps.setString(8, dm.getRegDate());
             ps.setString(9, dm.getPolyLatLong()); // null if not polygon
-            ps.setInt(10, dm.getDisasterId());
+            ps.setBoolean(10, dm.isBanateArea());
+            ps.setInt(11, dm.getDisasterId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -244,7 +245,9 @@ public class DisasterDAOImpl implements DisasterDAO {
         if (encLat != null && !encLat.isEmpty()) {
             String decLat = cs.decryptWithOneParameter(encLat);
             if (decLat != null && !decLat.trim().isEmpty()) {
-                disaster.setLatitude(new java.math.BigDecimal(decLat.trim()));
+                try {
+                    disaster.setLatitude(new java.math.BigDecimal(decLat.trim()));
+                } catch (NumberFormatException ignored) { }
             }
         }
 
@@ -252,7 +255,9 @@ public class DisasterDAOImpl implements DisasterDAO {
         if (encLong != null && !encLong.isEmpty()) {
             String decLong = cs.decryptWithOneParameter(encLong);
             if (decLong != null && !decLong.trim().isEmpty()) {
-                disaster.setLongitude(new java.math.BigDecimal(decLong.trim()));
+                try {
+                    disaster.setLongitude(new java.math.BigDecimal(decLong.trim()));
+                } catch (NumberFormatException ignored) { }
             }
         }
 
@@ -260,7 +265,9 @@ public class DisasterDAOImpl implements DisasterDAO {
         if (encRadius != null && !encRadius.isEmpty()) {
             String decRadius = cs.decryptWithOneParameter(encRadius);
             if (decRadius != null && !decRadius.trim().isEmpty()) {
-                disaster.setRadiusKm(new java.math.BigDecimal(decRadius.trim()));
+                try {
+                    disaster.setRadiusKm(new java.math.BigDecimal(decRadius.trim()));
+                } catch (NumberFormatException ignored) { }
             }
         }
 

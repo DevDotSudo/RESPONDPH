@@ -122,6 +122,50 @@
 .footer-link-button  { -fx-background-color: transparent; -fx-text-fill: #F97316; -fx-font-size: 11px; -fx-cursor: hand; -fx-underline: true; -fx-padding: 0; }
 .footer-link-button:hover { -fx-text-fill: #FB923C; }
 
+/* ── Global Table Scrollbars DARK — FIX for JavaFX 25 Modena ClassCastException ── */
+.table-view .scroll-bar:vertical {
+    -fx-background-color: #0b1220;
+    -fx-pref-width: 12px;
+    -fx-background-insets: 0;
+    -fx-padding: 2px;
+}
+.table-view .scroll-bar:horizontal {
+    -fx-background-color: #0b1220;
+    -fx-pref-height: 12px;
+    -fx-background-insets: 0;
+    -fx-padding: 2px;
+}
+.table-view .scroll-bar .track {
+    -fx-background-color: #121d2e;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+}
+.table-view .scroll-bar .thumb {
+    -fx-background-color: #3b4f6b;
+    -fx-background-radius: 6px;
+    -fx-background-insets: 1px;
+}
+.table-view .scroll-bar .thumb:hover {
+    -fx-background-color: #516b8a;
+}
+.table-view .scroll-bar .increment-button,
+.table-view .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+.table-view .scroll-bar .increment-arrow,
+.table-view .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+.table-view .corner {
+    -fx-background-color: #0b1220;
+}
+
 
 /* ═══════════════════════════════ LIGHT OVERRIDES ══════════════════════ */
 
@@ -298,10 +342,13 @@
 .root-light .footer-link-button:hover { -fx-text-fill: #A34A06; }
 
 /* ── Scrollbars LIGHT ─────────────────────────────────────────────────── */
-.root-light .scroll-bar:vertical .thumb, .root-light .scroll-bar:horizontal .thumb { -fx-background-color: rgba(193,216,195,0.65); -fx-background-radius: 10; }
-.root-light .scroll-bar:vertical .thumb:hover, .root-light .scroll-bar:horizontal .thumb:hover { -fx-background-color: rgba(92,138,121,0.75); }
-.root-light .scroll-bar:vertical .track, .root-light .scroll-bar:horizontal .track { -fx-background-color: rgba(193,216,195,0.20); }
+.root-light .scroll-bar:vertical .thumb, .root-light .scroll-bar:horizontal .thumb { -fx-background-color: #A8C5AB; -fx-background-radius: 10; }
+.root-light .scroll-bar:vertical .thumb:hover, .root-light .scroll-bar:horizontal .thumb:hover { -fx-background-color: #5C8A79; }
+.root-light .scroll-bar:vertical .track, .root-light .scroll-bar:horizontal .track { -fx-background-color: #E8E0D4; -fx-border-color: transparent; }
 .root-light .scroll-bar .increment-button, .root-light .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
-.root-light .scroll-bar .increment-arrow, .root-light .scroll-bar .decrement-arrow  { -fx-shape: ""; -fx-padding: 0; }
+.root-light .scroll-bar .increment-arrow, .root-light .scroll-bar .decrement-arrow  { -fx-background-color: transparent; -fx-effect: null; -fx-shape: ""; -fx-padding: 0; }
+.root-light .table-view .scroll-bar:vertical { -fx-background-color: #F5EDE0; -fx-pref-width: 12px; }
+.root-light .table-view .scroll-bar:horizontal { -fx-background-color: #F5EDE0; -fx-pref-height: 12px; }
+.root-light .table-view .corner { -fx-background-color: #F5EDE0; }
 
 .root-light .tooltip { -fx-background-color: #5C8A79; -fx-text-fill: rgba(255,255,255,0.95); -fx-background-radius: 6; -fx-padding: 6 10; }

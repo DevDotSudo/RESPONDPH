@@ -612,6 +612,50 @@
     -fx-padding: 12px 12px;
 }
 
+/* scrollbar */
+.logs-table .corner { -fx-background-color: rgba(255,255,255,0.04); }
+
+.logs-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-padding: 2px;
+}
+
+.logs-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+    -fx-padding: 2px;
+}
+
+.logs-table .scroll-bar .track {
+    -fx-background-color: #121d2e;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+}
+
+.logs-table .scroll-bar .thumb {
+    -fx-background-color: #3b4f6b;
+    -fx-background-radius: 6px;
+}
+
+.logs-table .scroll-bar .thumb:hover {
+    -fx-background-color: #516b8a;
+}
+
+.logs-table .scroll-bar .increment-button,
+.logs-table .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.logs-table .scroll-bar .increment-arrow,
+.logs-table .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
 /* ---------- SMALL LABELS ---------- */
 .logs-count {
     -fx-text-fill: rgba(148,163,184,0.85);
@@ -719,5 +763,12 @@
 .root-light .logs-table .table-row-cell:filled:hover { -fx-background-color: rgba(193,216,195,0.25); }
 .root-light .logs-table .table-row-cell:filled:selected { -fx-background-color: rgba(205,92,8,0.12); }
 .root-light .logs-table .table-cell { -fx-text-fill: #1A1A1A; }
+.root-light .logs-table .corner { -fx-background-color: #6A9C89; }
+.root-light .logs-table .scroll-bar:vertical, .root-light .logs-table .scroll-bar:horizontal { -fx-background-color: transparent; }
+.root-light .logs-table .scroll-bar .track { -fx-background-color: #FFF5E4; }
+.root-light .logs-table .scroll-bar .thumb { -fx-background-color: #C1D8C3; -fx-background-radius: 8px; }
+.root-light .logs-table .scroll-bar .thumb:hover { -fx-background-color: #6A9C89; }
+.root-light .logs-table .scroll-bar .increment-button, .root-light .logs-table .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
+.root-light .logs-table .scroll-bar .increment-arrow, .root-light .logs-table .scroll-bar .decrement-arrow { -fx-background-color: transparent; -fx-effect: null; -fx-shape: ""; -fx-padding: 0; }
 .root-light .logs-count { -fx-text-fill: #4A7566; }
 

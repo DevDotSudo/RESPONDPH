@@ -251,9 +251,14 @@
 }
 
 /* Table-internal scrollbars */
-.priority-table .scroll-bar:vertical,
+.priority-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-padding: 2px;
+}
 .priority-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-pref-height: 12px;
     -fx-padding: 2px;
 }
 .priority-table .scroll-bar .track {
@@ -269,6 +274,12 @@
 .priority-table .scroll-bar .increment-button,
 .priority-table .scroll-bar .decrement-button {
     -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.priority-table .scroll-bar .increment-arrow,
+.priority-table .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: "";
     -fx-padding: 0;
 }
 

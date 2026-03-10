@@ -374,19 +374,22 @@
 /* ── Scrollbars (global) ─────────────────────────────────────────────── */
 .root-light .scroll-bar:vertical .thumb,
 .root-light .scroll-bar:horizontal .thumb {
-    -fx-background-color: rgba(193, 216, 195, 0.65);
+    -fx-background-color: #A8C5AB;
     -fx-background-radius: 10;
 }
 .root-light .scroll-bar:vertical .thumb:hover,
 .root-light .scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: rgba(92, 138, 121, 0.75);
+    -fx-background-color: #5C8A79;
 }
 .root-light .scroll-bar:vertical .track,
-.root-light .scroll-bar:horizontal .track { -fx-background-color: rgba(193, 216, 195, 0.20); }
+.root-light .scroll-bar:horizontal .track { -fx-background-color: #E8E0D4; -fx-border-color: transparent; }
 .root-light .scroll-bar .increment-button,
 .root-light .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
 .root-light .scroll-bar .increment-arrow,
-.root-light .scroll-bar .decrement-arrow  { -fx-shape: ""; -fx-padding: 0; }
+.root-light .scroll-bar .decrement-arrow  { -fx-background-color: transparent; -fx-effect: null; -fx-shape: ""; -fx-padding: 0; }
+.root-light .table-view .scroll-bar:vertical { -fx-background-color: #F5EDE0; -fx-pref-width: 12px; }
+.root-light .table-view .scroll-bar:horizontal { -fx-background-color: #F5EDE0; -fx-pref-height: 12px; }
+.root-light .table-view .corner { -fx-background-color: #F5EDE0; }
 
 /* ── Tooltips ────────────────────────────────────────────────────────── */
 .root-light .tooltip {

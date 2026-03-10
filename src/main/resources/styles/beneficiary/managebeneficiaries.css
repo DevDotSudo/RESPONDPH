@@ -201,22 +201,45 @@
 }
 
 /* Scrollbars */
-.beneficiary-table .scroll-bar:vertical,
+.beneficiary-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-padding: 2px;
+}
+
 .beneficiary-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+    -fx-padding: 2px;
 }
 
 .beneficiary-table .scroll-bar .track {
-    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-background-color: #121d2e;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
 }
 
 .beneficiary-table .scroll-bar .thumb {
-    -fx-background-color: rgba(148,163,184,0.25);
-    -fx-background-radius: 8px;
+    -fx-background-color: #3b4f6b;
+    -fx-background-radius: 6px;
 }
 
 .beneficiary-table .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148,163,184,0.40);
+    -fx-background-color: #516b8a;
+}
+
+.beneficiary-table .scroll-bar .increment-button,
+.beneficiary-table .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.beneficiary-table .scroll-bar .increment-arrow,
+.beneficiary-table .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
 }
 
 /* ===== ACTION BUTTONS (if you use edit/delete in table) ===== */
@@ -281,6 +304,8 @@
 .root-light .beneficiary-table .scroll-bar .track { -fx-background-color: #FFF5E4; }
 .root-light .beneficiary-table .scroll-bar .thumb { -fx-background-color: #C1D8C3; -fx-background-radius: 8px; }
 .root-light .beneficiary-table .scroll-bar .thumb:hover { -fx-background-color: #6A9C89; }
+.root-light .beneficiary-table .scroll-bar .increment-button, .root-light .beneficiary-table .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
+.root-light .beneficiary-table .scroll-bar .increment-arrow, .root-light .beneficiary-table .scroll-bar .decrement-arrow { -fx-background-color: transparent; -fx-effect: null; -fx-shape: ""; -fx-padding: 0; }
 .root-light .beneficiary-table .placeholder .label { -fx-text-fill: #4A7566; }
 .root-light .edit-button { -fx-background-color: rgba(106,156,137,0.18); -fx-border-color: #6A9C89; }
 .root-light .edit-button:hover { -fx-background-color: rgba(106,156,137,0.30); }

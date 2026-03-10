@@ -386,28 +386,35 @@
 
 /* Table scrollbar */
 .custom-table .scroll-bar:vertical,
+.table-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-padding: 2px;
+}
+
 .custom-table .scroll-bar:horizontal,
-.table-view .scroll-bar:vertical,
 .table-view .scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-pref-height: 12px;
     -fx-padding: 2px;
 }
 
 .custom-table .scroll-bar .track,
 .table-view .scroll-bar .track {
-    -fx-background-color: rgba(255,255,255,0.04);
-    -fx-background-radius: 8px;
+    -fx-background-color: #121d2e;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
 }
 
 .custom-table .scroll-bar .thumb,
 .table-view .scroll-bar .thumb {
-    -fx-background-color: rgba(148,163,184,0.25);
-    -fx-background-radius: 8px;
+    -fx-background-color: #3b4f6b;
+    -fx-background-radius: 6px;
 }
 
 .custom-table .scroll-bar .thumb:hover,
 .table-view .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148,163,184,0.40);
+    -fx-background-color: #516b8a;
 }
 
 .custom-table .scroll-bar .increment-button,
@@ -422,13 +429,16 @@
 .custom-table .scroll-bar .decrement-arrow,
 .table-view .scroll-bar .increment-arrow,
 .table-view .scroll-bar .decrement-arrow {
-    -fx-background-color: rgba(148,163,184,0.40);
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
 }
 
 /* Corner where scrollbars meet */
 .custom-table .corner,
 .table-view .corner {
-    -fx-background-color: transparent;
+    -fx-background-color: #0b1220;
 }
 
 /* Table viewport */

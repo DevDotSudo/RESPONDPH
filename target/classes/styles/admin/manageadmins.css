@@ -189,22 +189,45 @@
     -fx-background-color: rgba(255,255,255,0.04);
 }
 
-.admin-table .scroll-bar:vertical,
+.admin-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-padding: 2px;
+}
+
 .admin-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+    -fx-padding: 2px;
 }
 
 .admin-table .scroll-bar .track {
-    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-background-color: #121d2e;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
 }
 
 .admin-table .scroll-bar .thumb {
-    -fx-background-color: rgba(148, 163, 184, 0.25);
-    -fx-background-radius: 8px;
+    -fx-background-color: #3b4f6b;
+    -fx-background-radius: 6px;
 }
 
 .admin-table .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148, 163, 184, 0.40);
+    -fx-background-color: #516b8a;
+}
+
+.admin-table .scroll-bar .increment-button,
+.admin-table .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.admin-table .scroll-bar .increment-arrow,
+.admin-table .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
 }
 
 .edit-button,
@@ -383,16 +406,31 @@
 }
 
 .root-light .admin-table .scroll-bar .track {
-    -fx-background-color: rgba(193, 216, 195, 0.30);
+    -fx-background-color: #E8E0D4;
+    -fx-border-color: transparent;
 }
 
 .root-light .admin-table .scroll-bar .thumb {
     -fx-background-color: #A8C5AB;
-    -fx-background-radius: 8px;
+    -fx-background-radius: 6px;
 }
 
 .root-light .admin-table .scroll-bar .thumb:hover {
     -fx-background-color: #6A9C89;
+}
+
+.root-light .admin-table .scroll-bar .increment-button,
+.root-light .admin-table .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.root-light .admin-table .scroll-bar .increment-arrow,
+.root-light .admin-table .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
 }
 
 /* ── Action buttons ──────────────────────────────────────────────────── */

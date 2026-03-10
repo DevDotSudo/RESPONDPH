@@ -171,22 +171,46 @@
     -fx-background-color: rgba(255,255,255,0.04);
 }
 
-.aid-table .scroll-bar:vertical,
+.aid-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-padding: 2px;
+}
+
 .aid-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+    -fx-padding: 2px;
 }
 
 .aid-table .scroll-bar .track {
-    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-background-color: #121d2e;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
 }
 
 .aid-table .scroll-bar .thumb {
-    -fx-background-color: rgba(148, 163, 184, 0.25);
-    -fx-background-radius: 8px;
+    -fx-background-color: #3b4f6b;
+    -fx-background-radius: 6px;
 }
 .aid-table .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(148, 163, 184, 0.40);
+    -fx-background-color: #516b8a;
 }
+
+.aid-table .scroll-bar .increment-button,
+.aid-table .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.aid-table .scroll-bar .increment-arrow,
+.aid-table .scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
 /* ==================================================================
    LIGHT MODE  -  Palette: #CD5C08  #FFF5E4  #C1D8C3  #6A9C89
    ================================================================== */
@@ -222,6 +246,8 @@
 .root-light .aid-table .scroll-bar .track { -fx-background-color: #FFF5E4; }
 .root-light .aid-table .scroll-bar .thumb { -fx-background-color: #C1D8C3; -fx-background-radius: 8px; }
 .root-light .aid-table .scroll-bar .thumb:hover { -fx-background-color: #6A9C89; }
+.root-light .aid-table .scroll-bar .increment-button, .root-light .aid-table .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
+.root-light .aid-table .scroll-bar .increment-arrow, .root-light .aid-table .scroll-bar .decrement-arrow { -fx-background-color: transparent; -fx-effect: null; -fx-shape: ""; -fx-padding: 0; }
 .root-light .aid-table .placeholder .label { -fx-text-fill: #4A7566; }
 .root-light .edit-button { -fx-background-color: rgba(106,156,137,0.18); -fx-border-color: #6A9C89; }
 .root-light .edit-button:hover { -fx-background-color: rgba(106,156,137,0.30); }

@@ -15,7 +15,8 @@ public class DisasterDAOImpl implements DisasterDAO {
     public List<DisasterModel> getAllDisasters() {
         List<DisasterModel> disasters = new ArrayList<>();
 
-        String sql = "SELECT disaster_id, type, name, date FROM disaster ORDER BY date DESC";
+        String sql = "SELECT disaster_id, type, name, date, poly_lat_long, is_banate_area " +
+                "FROM disaster ORDER BY date DESC";
 
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -27,6 +28,19 @@ public class DisasterDAOImpl implements DisasterDAO {
                 disaster.setType(decryptField(rs.getString("type")));
                 disaster.setName(decryptField(rs.getString("name")));
                 disaster.setDate(decryptField(rs.getString("date")));
+
+                String encPoly   = rs.getString("poly_lat_long");
+                boolean isBanate = rs.getBoolean("is_banate_area");
+
+                if (encPoly != null && !encPoly.isBlank()) {
+                    disaster.setPolyLatLong(decryptField(encPoly));
+                    disaster.setLocationType("POLYGON");
+                } else if (isBanate) {
+                    disaster.setLocationType("BANATE");
+                } else {
+                    disaster.setLocationType("CIRCLE");
+                }
+
                 disasters.add(disaster);
             }
 
@@ -42,7 +56,8 @@ public class DisasterDAOImpl implements DisasterDAO {
 
     @Override
     public DisasterModel getDisasterById(int disasterId) {
-        String sql = "SELECT disaster_id, type, name, date FROM disaster WHERE disaster_id = ?";
+        String sql = "SELECT disaster_id, type, name, date, poly_lat_long, is_banate_area " +
+                "FROM disaster WHERE disaster_id = ?";
 
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -56,6 +71,20 @@ public class DisasterDAOImpl implements DisasterDAO {
                     disaster.setType(decryptField(rs.getString("type")));
                     disaster.setName(decryptField(rs.getString("name")));
                     disaster.setDate(decryptField(rs.getString("date")));
+
+                    // ── Resolve locationType and polyLatLong ─────────────────
+                    String encPoly   = rs.getString("poly_lat_long");
+                    boolean isBanate = rs.getBoolean("is_banate_area");
+
+                    if (encPoly != null && !encPoly.isBlank()) {
+                        disaster.setPolyLatLong(decryptField(encPoly));
+                        disaster.setLocationType("POLYGON");
+                    } else if (isBanate) {
+                        disaster.setLocationType("BANATE");
+                    } else {
+                        disaster.setLocationType("CIRCLE");
+                    }
+
                     return disaster;
                 }
             }
@@ -72,11 +101,9 @@ public class DisasterDAOImpl implements DisasterDAO {
         if (encryptedValue == null || encryptedValue.isEmpty()) {
             return null;
         }
-
         if (!encryptedValue.contains(":")) {
             return encryptedValue;
         }
-
         try {
             if (crypto == null) {
                 System.err.println("Cryptography instance is null - cannot decrypt field");

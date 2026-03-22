@@ -1137,39 +1137,118 @@ public class SendSMSController implements Initializable {
     private List<BeneficiaryModel> getBeneficiariesInDisasterArea(DisasterModel disaster) {
         List<BeneficiaryModel> result = new ArrayList<>();
         try {
-            List<DisasterCircleInfo> circles = disasterMappingService
-                    .getDisasterCirclesByDisasterId(disaster.getDisasterId());
-            if (circles == null || circles.isEmpty()) {
-                AlertDialogManager.showWarning("No Disaster Area",
-                        "No geographic area defined for: " + disaster.getName()
-                                + "\n\nPlease set the disaster location in Disaster Mapping first.");
-                return result;
-            }
-            Set<Integer> addedIds = new HashSet<>();
-            for (DisasterCircleInfo circle : circles) {
+            // ── 1. Try to load the full disaster (with polygon/location type) ──
+            DisasterModel fullDisaster = disasterDAO.getDisasterById(disaster.getDisasterId());
+            if (fullDisaster == null) fullDisaster = disaster;
+
+            String locationType = fullDisaster.getLocationType(); // "CIRCLE", "POLYGON", "BANATE"
+
+            // ── 2. POLYGON path ───────────────────────────────────────────────
+            if ("POLYGON".equalsIgnoreCase(locationType)) {
+                String polyRaw = fullDisaster.getPolyLatLong();
+                if (polyRaw == null || polyRaw.isBlank()) {
+                    AlertDialogManager.showWarning("No Disaster Area",
+                            "No geographic area defined for: " + fullDisaster.getName()
+                                    + "\n\nPlease set the disaster location in Disaster Mapping first.");
+                    return result;
+                }
+
+                List<double[]> polygon = parsePolyLatLong(polyRaw);
+                if (polygon.size() < 3) {
+                    AlertDialogManager.showWarning("Invalid Polygon",
+                            "The polygon for \"" + fullDisaster.getName()
+                                    + "\" has fewer than 3 points and cannot be used.");
+                    return result;
+                }
+
+                Set<Integer> addedIds = new HashSet<>();
                 for (BeneficiaryModel b : beneficiaryDAO.getAllBeneficiaries()) {
                     if (addedIds.contains(b.getId())) continue;
+                    if (b.getMobileNumber() == null || b.getMobileNumber().trim().isEmpty()) continue;
                     try {
                         double lat = Double.parseDouble(b.getLatitude() != null ? b.getLatitude() : "");
                         double lon = Double.parseDouble(b.getLongitude() != null ? b.getLongitude() : "");
-                        double dist = com.ionres.respondph.util.GeographicUtils
-                                .calculateDistance(lat, lon, circle.lat, circle.lon);
-                        if (!Double.isNaN(dist) && dist <= circle.radius
-                                && b.getMobileNumber() != null && !b.getMobileNumber().trim().isEmpty()) {
+                        if (isPointInPolygon(lat, lon, polygon)) {
                             result.add(b);
                             addedIds.add(b.getId());
                         }
                     } catch (NumberFormatException ignored) {}
                 }
+
+                // ── 3. CIRCLE / BANATE / fallback path ───────────────────────────
+            } else {
+                List<DisasterCircleInfo> circles = disasterMappingService
+                        .getDisasterCirclesByDisasterId(disaster.getDisasterId());
+
+                if (circles == null || circles.isEmpty()) {
+                    AlertDialogManager.showWarning("No Disaster Area",
+                            "No geographic area defined for: " + disaster.getName()
+                                    + "\n\nPlease set the disaster location in Disaster Mapping first.");
+                    return result;
+                }
+
+                Set<Integer> addedIds = new HashSet<>();
+                for (DisasterCircleInfo circle : circles) {
+                    for (BeneficiaryModel b : beneficiaryDAO.getAllBeneficiaries()) {
+                        if (addedIds.contains(b.getId())) continue;
+                        try {
+                            double lat = Double.parseDouble(b.getLatitude() != null ? b.getLatitude() : "");
+                            double lon = Double.parseDouble(b.getLongitude() != null ? b.getLongitude() : "");
+                            double dist = com.ionres.respondph.util.GeographicUtils
+                                    .calculateDistance(lat, lon, circle.lat, circle.lon);
+                            if (!Double.isNaN(dist) && dist <= circle.radius
+                                    && b.getMobileNumber() != null && !b.getMobileNumber().trim().isEmpty()) {
+                                result.add(b);
+                                addedIds.add(b.getId());
+                            }
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
             }
-            if (result.isEmpty())
+
+            if (result.isEmpty()) {
                 AlertDialogManager.showWarning("No Beneficiaries in Area",
-                        "No beneficiaries with phone numbers found inside: " + disaster.getName());
+                        "No beneficiaries with phone numbers found inside: "
+                                + fullDisaster.getName());
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialogManager.showError("Error",
                     "Failed to get beneficiaries in disaster area: " + e.getMessage());
         }
         return result;
+    }
+
+    // ── Helper: parse "lat,lon|lat,lon|..." string from DB ─────────────────────
+    private List<double[]> parsePolyLatLong(String raw) {
+        List<double[]> points = new ArrayList<>();
+        if (raw == null || raw.isBlank()) return points;
+        for (String pair : raw.split(";")) {          // ← semicolon separator
+            String[] parts = pair.trim().split(",");
+            if (parts.length == 2) {
+                try {
+                    points.add(new double[]{
+                            Double.parseDouble(parts[0].trim()),
+                            Double.parseDouble(parts[1].trim())
+                    });
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return points;
+    }
+
+    // ── Helper: Ray-casting point-in-polygon test ───────────────────────────────
+    private boolean isPointInPolygon(double lat, double lon, List<double[]> polygon) {
+        int n = polygon.size();
+        boolean inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = polygon.get(i)[0], yi = polygon.get(i)[1];
+            double xj = polygon.get(j)[0], yj = polygon.get(j)[1];
+            boolean intersect = ((yi > lon) != (yj > lon))
+                    && (lat < (xj - xi) * (lon - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
     }
 }
